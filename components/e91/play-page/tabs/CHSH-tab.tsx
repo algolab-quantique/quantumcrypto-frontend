@@ -121,6 +121,7 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
     const [isPopupVisible, setPopupVisible] = useState(false);
 
     const [buttonsActivated, setButtonsActivated] = useState(true);
+    const formatNumber = (value: number) => (value % 1 === 0 ? value : value.toFixed(2));
 
     const onShowGraph = () => {
       setPopupVisible(true);
@@ -186,10 +187,16 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
         if (securedDecision !== null) {
             let partnerName = playerRole === 'B' ? 'Alice': 'Bob';
             if (securedDecision) {
-                toast(localize('component.e91.decsion.secured') + `${partnerName}`);
+                toast(localize('component.e91.decsion.secured') + `${partnerName}`,
+                {
+                    duration: 15000
+                });
                 moveToExchangeTab();
             } else {
-                toast(localize('component.e91.decsion.unsecured') + `${partnerName}`);
+                toast(localize('component.e91.decsion.unsecured') + `${partnerName}`,
+                {
+                    duration: 15000
+                });
                 if (evePresent) {
                     pushLines([
                         {
@@ -288,7 +295,7 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
                     setEspApB((prev) => [...prev, value]);
                     setButtonState((prev) => ({
                         ...prev,
-                        [index]: { color: 'bg-green-200', value: value === 1 ? '+1' : '-1' },
+                        [index]: { color: 'bg-green-300', value: value === 1 ? '+1' : '-1' },
                     }));
                 }
                 break;
@@ -337,7 +344,7 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
                                 <TableHead colSpan={2} className="text-center rounded-tr-lg">
                                 </TableHead>
                             </TableRow>
-                                <TableRow className="text-sm md:text-md border-secondary">
+                            <TableRow className="text-sm md:text-md border-secondary">
                                 <TableHead className="text-center">Base</TableHead>
                                 <TableHead className="text-center">Photon</TableHead>
                                 <TableHead className="text-center">Base</TableHead>
@@ -395,11 +402,25 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
                     <Button onClick={onShowGraph} variant="secondary">{localize('component.e91.button.showGraph')}</Button>
                     <GraphPopup isVisible={isPopupVisible} onClose={closePopup} sValues={sValues} photonNumber={aliceInvalidBases.length}/>
                 </div>
-                <div className="flex justify-end p-4">              
-                    <Button onClick={onSecure} variant="default" disabled={!buttonsActivated}>{localize('component.e91.button.secure')}</Button>
-                    <Button onClick={onUnsecure} variant="destructive" disabled={!buttonsActivated}>{localize('component.e91.button.unsecure')}</Button>
+                <div className="flex justify-end p-2 gap-2">
+                    <Button
+                        onClick={onSecure}
+                        variant="outline"
+                        className="bg-green-500 bg-opacity-80 text-gray-800 hover:bg-green-800 disabled:opacity-50"
+                        disabled={!buttonsActivated}
+                    >
+                        {localize('component.e91.button.secure')}
+                    </Button>
+                    <Button
+                        onClick={onUnsecure}
+                        variant="outline"
+                        className="bg-rose-500 bg-opacity-80 text-gray-800 hover:bg-rose-800 disabled:opacity-50"
+                        disabled={!buttonsActivated}
+                    >
+                        {localize('component.e91.button.unsecure')}
+                    </Button>
                 </div>
-                <div className="flex justify-around items-center h-64 w-full border border-secondary rounded-lg mt-4 gap-4">
+                <div className="flex justify-around items-center h-40 w-full border border-secondary rounded-lg mt-4 gap-4">
                     <DropZone 
                         onDrop={(index, value) => handleDrop('AB', index, value)} 
                         backgroundColor="#2C6E49" 
@@ -423,36 +444,36 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
                 </div>
             </DndProvider>
             <div className="p-6 bg-background border-t border-secondary rounded-b-lg text-center mt-4">
-                <table className="w-full table-auto border-collapse border border-secondary">
-                    <thead>
-                        <tr className="bg-secondary text-white text-lg">
-                            <th className="border border-secondary p-2">E(a, b)</th>
-                            <th className="border border-secondary p-2">E(a', b)</th>
-                            <th className="border border-secondary p-2">E(a, b')</th>
-                            <th className="border border-secondary p-2">E(a', b')</th>
-                            <th className="border border-secondary p-2">S</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <tr className="text-xl">
-                        <td className="border border-secondary p-2 text-3xl" style={{ color: '#2C6E49' }}>
-                            {calculateAverage(espAB)}
-                        </td>
-                        <td className="border border-secondary p-2 text-3xl" style={{ color: '#88D4AB' }}>
-                            {calculateAverage(espApB)}
-                        </td>
-                        <td className="border border-secondary p-2 text-3xl" style={{ color: '#80d1ef' }}>
-                            {calculateAverage(espABp)}
-                        </td>
-                        <td className="border border-secondary p-2 text-3xl" style={{ color: '#0a629e' }}>
-                            {calculateAverage(espApBp)}
-                        </td>
-                        <td className="border border-secondary p-2 text-3xl font-bold">
-                            {sValue}
-                        </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <Table className="w-full table-auto border-collapse border border-secondary">
+                    <TableHeader>
+                        <TableRow className="bg-secondary text-white text-lg">
+                            <TableHead className="border border-secondary text-center">E(a, b)</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a', b)</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a, b')</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a', b')</TableHead>
+                            <TableHead className="border border-secondary text-center">S</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow className="text-xl">
+                            <TableCell className="border border-secondary p-2 text-3xl" style={{ color: '#2C6E49' }}>
+                                {formatNumber(calculateAverage(espAB))}
+                            </TableCell>
+                            <TableCell className="border border-secondary p-2 text-3xl" style={{ color: '#88D4AB' }}>
+                                {formatNumber(calculateAverage(espApB))}
+                            </TableCell>
+                            <TableCell className="border border-secondary p-2 text-3xl" style={{ color: '#80d1ef' }}>
+                                {formatNumber(calculateAverage(espABp))}
+                            </TableCell>
+                            <TableCell className="border border-secondary p-2 text-3xl" style={{ color: '#0a629e' }}>
+                                {formatNumber(calculateAverage(espApBp))}
+                            </TableCell>
+                            <TableCell className="border border-secondary p-2 text-3xl font-bold">
+                                {formatNumber(sValue)}
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
         </div>
         </>

@@ -46,7 +46,7 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
       .attr("y", -40)
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
-      .text(localize('component.e91.graph.values') ?? 'S'); 
+      .text('S'); 
 
 
     // Data points
@@ -99,7 +99,7 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-center font-bold mb-4">{localize('component.e91.graph.title')}</h2>
+        <h2 className="text-center font-bold mb-4">{'CHSH'}</h2>
         <svg id="sGraph" className="block mx-auto"></svg>
         <button onClick={onClose} className="close-btn">x</button>
       </div>
