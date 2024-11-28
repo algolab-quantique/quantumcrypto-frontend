@@ -13,7 +13,7 @@ import {
 import {Input} from '@/components/ui/input';
 import {useLanguage} from '@/components/providers/language-provider';
 import {Checkbox} from '@/components/ui/checkbox';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import * as z from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -69,11 +69,11 @@ const CreateGameModal = ({
             }),
     }).refine(schema =>
             (schema.eve &&
-                (schema.photonNumber >= 16 && schema.photonNumber <= 30)) ||
+                (schema.photonNumber >= 20 && schema.photonNumber <= 30)) ||
             (!schema.eve &&
                 (schema.photonNumber >= 10 && schema.photonNumber <= 30)),
         {
-            message: localize('component.createGame.keyMin'),
+            message: localize('component.e91.createGame.keyMin'),
             path: ['photonNumber'],
         });
 
@@ -91,6 +91,14 @@ const CreateGameModal = ({
         setEveChecked(!eveChecked);
         onChange(checked);
     };
+
+    useEffect(() => {
+        if (eveChecked) {
+            form.setValue('photonNumber', 20); 
+        } else {
+            form.setValue('photonNumber', 10); 
+        }
+    }, [eveChecked, form]);
 
     return (
         <Dialog>

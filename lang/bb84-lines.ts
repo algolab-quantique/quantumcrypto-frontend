@@ -395,7 +395,8 @@ export const bb84Lines: LanguageItem[] = [
         'component.e91.graph.values': 'S Values',
         'component.e91.graph.title': 'CHSH Graph',
         'component.e91.text.seeResults': 'See Results',
-        'component.quantumCrypto.gamesPlayed': 'Total games played: '
+        'component.quantumCrypto.gamesPlayed': 'Total games played: ',
+        'component.e91.createGame.keyMin': 'The minimum number of photons is 20 if Eve is present and 10 otherwise',
         
 
 
