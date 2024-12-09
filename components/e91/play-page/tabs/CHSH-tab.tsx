@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { useDrag, DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import clsx from 'clsx';
-import GraphPopup from '../graphPopup';
+import dynamic from 'next/dynamic';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { RESTART_WITHOUT_EVE_EVENT } from '@/bb84-constants';
 
@@ -96,6 +96,8 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
 
     const [buttonsActivated, setButtonsActivated] = useState(true);
     const formatNumber = (value: number) => (value % 1 === 0 ? value : value.toFixed(2));
+
+    const GraphPopup = dynamic(() => import('../graphPopup'), { ssr: false });
 
     const onShowGraph = () => {
       setPopupVisible(true);
