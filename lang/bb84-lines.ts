@@ -766,7 +766,7 @@ export const bb84Lines: LanguageItem[] = [
         'component.e91.basisDesc': ' (a, b, a\', b\')',
         'component.e91.button.secure': 'Sécuritaire',
         'component.e91.button.unsecure': 'Non sécuritaire',
-        'component.e91.button.showGraph': 'Monter le graphique',
+        'component.e91.button.showGraph': 'Montrer le graphique',
         'component.e91.graph.title': 'CHSH',
         'component.e91.text.seeResults': 'Voir les résultats',
         'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
