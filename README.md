@@ -38,10 +38,8 @@ To run the QuantumCrypto frontend locally, follow these steps:
    npm run dev
    ```
 
-5. Create a .env.local file following the .env.sample file included in the repo:
-   ```
-   This file contains the URL addresses of the backend API and the WebSocket. Their values will depend on where you run the backend application. For example, your 'NEXT_PUBLIC_API_URL' might be 'http://localhost:8000' and the 'NEXT_PUBLIC_WEBSOCKET_URL' might be 'ws://localhost:8000/ws'.
-   ```
+5. Create a .env.local file following the .env.sample file included in the repo. This file contains the URL addresses of the backend API and the WebSocket. Their values will depend on where you run the backend application. For example, your 'NEXT_PUBLIC_API_URL' might be 'http://localhost:8000' and the 'NEXT_PUBLIC_WEBSOCKET_URL' might be 'ws://localhost:8000/ws'.
+   
 
 6. Open your browser and visit `http://localhost:3000` to view the
    QuantumCrypto frontend.
@@ -53,10 +51,10 @@ repository [here](https://github.com/algolab-quantique/quantumcrypto-backend).
 ## Useful VS Code extensions
 
 These are the VS Code extensions you should have installed to make your life easier with this project:
--Tailwind CSS IntelliSense
--Simple React Snippets
--Prettier
--Color info
+- Tailwind CSS IntelliSense
+- Simple React Snippets
+- Prettier
+- Color info
 
 ## Contributing
 
