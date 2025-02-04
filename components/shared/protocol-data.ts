@@ -9,4 +9,10 @@ export const protocols = [
         description: 'component.homePage.protocolsSection.e91.description',
         href: '/e91',
     },
+    {
+        name: 'ZQKD',
+        description: 'component.homePage.protocolsSection.zqkd.description',
+        href: '/zqkd',
+    },
+
 ];
