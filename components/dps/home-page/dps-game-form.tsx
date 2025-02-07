@@ -23,7 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {TailSpin} from 'react-loading-icons';
 
-const ZQKDMain: React.FC = () => {
+const DPSMain: React.FC = () => {
 
     const {
             connectToWaitingRoom,
@@ -135,4 +135,4 @@ const ZQKDMain: React.FC = () => {
     )
 }
 
-export default ZQKDMain;
+export default DPSMain;
