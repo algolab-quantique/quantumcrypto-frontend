@@ -1,6 +1,6 @@
 'use client';
 
-import CreateGameModal from '@/components/zqkd/home-page/create-game-modal';
+import CreateGameModal from '@/components/dps/home-page/create-game-modal';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,7 @@ const ZQKDMain: React.FC = () => {
         <>
             <div className="h-fit w-fit mx-auto p-2 mt-6 flex flex-col gap-y-16">
                 <div className="flex flex-col gap-y-4 text-center">
-                    <h1 className="text-5xl font-bold text-primary">ZQKD</h1>
+                    <h1 className="text-5xl font-bold text-primary">DPS</h1>
                     <h1 className="text-4xl font-bold">{localize(
                         'component.main.game')}</h1>
                 </div>

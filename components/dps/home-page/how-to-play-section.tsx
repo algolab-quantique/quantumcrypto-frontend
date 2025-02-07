@@ -13,8 +13,8 @@ const HowToPlaySection = React.forwardRef<HTMLElement>((_, ref) => {
         <section ref={ref}
                  className="w-full text-lg h-fit mt-20 px-5 md:px-20">
             <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize(
-                'component.zqkd.howToPlayTitle')}</h1>
-            <p>{localize('component.zqkd.howToPlayDescription')}</p>
+                'component.dps.howToPlayTitle')}</h1>
+            <p>{localize('component.dps.howToPlayDescription')}</p>
             
         </section>
     );

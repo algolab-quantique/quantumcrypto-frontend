@@ -398,9 +398,9 @@ export const bb84Lines: LanguageItem[] = [
         'component.e91.about.figures.part6': 'It turns out that when S is calculated from entangled photons, this inequality is violated. In fact, it can be shown that S = 2√2 ≈ 2.83 for maximally entangled photons. Thus, if the photon pair emitter is reliable and the communication channel is neither noisy nor eavesdropped upon, Alice and Bob should observe that the value of S approaches 2√2 as they increase the number of photon pairs considered in their calculations. They can then use the key obtained to encrypt their messages. Conversely, if this value remains below 2, they cannot trust the key and should refrain from using it. Be aware that average values are statistical quantities that require many samples to be significant. For a limited number of samples, statistical anomalies may occur, making it difficult to draw conclusions. ',
         'component.e91.about.figures.part7.1': 'Finally, note that three combinations of measurement bases are not used in the E91 protocol: ',
         'component.e91.about.figures.part7.2': 'The measurements made with these base pairs are simply discarded. ',
-        'component.header.about.zqkd': 'About ZQKD',
-        'component.zqkd.howToPlayTitle': 'How to play ZQKD',
-        'component.zqkd.howToPlayDescription': 'The zqkd protocol has two' +
+        'component.header.about.dps': 'About DPS',
+        'component.dps.howToPlayTitle': 'How to play DPS',
+        'component.dps.howToPlayDescription': 'The dps protocol has two' +
             ' main actors: Alice and Bob, who play different roles. Here' +
             ' you can explore the set of steps that each one of them must' +
             ' take in order to complete the protocol successfully.',
@@ -603,7 +603,7 @@ export const bb84Lines: LanguageItem[] = [
             ' cryptographiques entre deux parties sur un canal de' +
             ' communication non sécurisé.',
         'component.homePage.protocolsSection.e91.description': 'Le protocole E91 utilise l\'intrication quantique pour garantir la sécurité des communications en permettant aux parties d\'échanger des clés cryptographiques inviolables.',
-        'component.homePage.protocolsSection.zqkd.description': 'Le protocole ZQKD utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
         'component.homePage.title.description': 'Apprenez et pratiquez les' +
             ' protocoles de cryptographie quantique',
         'component.homePage.aboutSection': 'QuantumCrypto est une' +
@@ -806,9 +806,9 @@ export const bb84Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'En attente des bases d\'Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Les bases de Bob sont arrivées!',
         'component.e91.basis.arrivedFrom.alice': 'Les bases d\'Alice sont arrivées!',
-        'component.header.about.zqkd': 'À propos de ZQKD',
-        'component.zqkd.howToPlayTitle': 'Comment jouer ZQKD',
-        'component.zqkd.howToPlayDescription': 'Le protocole ZQKD implique' +
+        'component.header.about.dps': 'À propos de DPS',
+        'component.dps.howToPlayTitle': 'Comment jouer DPS',
+        'component.dps.howToPlayDescription': 'Le protocole DPS implique' +
             ' deux acteurs principaux : Alice et Bob, qui jouent des rôles' +
             ' différents. Vous pouvez ici explorer l\'ensemble des étapes' +
             ' que chacun d\'eux doit suivre pour mener à bien le protocole.',
@@ -1201,9 +1201,9 @@ export const bb84Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'Esperando las bases de Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Las bases de Bob han llegado!',
         'component.e91.basis.arrivedFrom.alice': 'Las bases de Alice han llegado!',
-        'component.header.about.zqkd': 'Acerca de ZQKD',
-        'component.zqkd.howToPlayTitle': 'Cómo jugar ZQKD',
-        'component.zqkd.howToPlayDescription': 'El protocolo ZQKD tiene dos' +
+        'component.header.about.dps': 'Acerca de DPS',
+        'component.dps.howToPlayTitle': 'Cómo jugar DPS',
+        'component.dps.howToPlayDescription': 'El protocolo DPS tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +
             ' diferentes. Aquí puedes explorar el conjunto de pasos que' +
             ' cada uno de ellos debe seguir para completar el protocolo con' +
@@ -1554,9 +1554,9 @@ export const bb84Lines: LanguageItem[] = [
         'component.bb84.playSolo': 'Alleine spielen',
         'component.bb84.startSolo': 'Einzelspiel starten',
         'component.bb84.soloRoleSelect': 'Wähle deine Rolle',
-        'component.header.about.zqkd': 'Über ZQKD',
-        'component.zqkd.howToPlayTitle': 'Wie man E91 ZQKD',
-        'component.zqkd.howToPlayDescription': 'Das ZKQD-Protokoll hat zwei' +
+        'component.header.about.dps': 'Über DPS',
+        'component.dps.howToPlayTitle': 'Wie man E91 DPS',
+        'component.dps.howToPlayDescription': 'Das ZKQD-Protokoll hat zwei' +
             ' Hauptdarsteller: Alice und Bob, die verschiedene Rollen' +
             ' spielen. Hier kannst du die Reihe von Schritten erkunden, die' +
             ' jeder von ihnen unternehmen muss, um das Protokoll' +
