@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/shared/header';
-import DPSMain from '@/components/dps/home-page/dps-game-form';
+import ZQKDMain from '@/components/dps/home-page/zqkd-game-form';
 import Footer from '@/components/shared/footer';
 import {useEffect, useRef, useState} from 'react';
 import HowToPlaySection from '@/components/dps/home-page/how-to-play-section';
@@ -25,7 +25,7 @@ export default function DPS() {
     return (
        <>
         <Header links={headerLinks}/>
-        <DPSMain/>
+        <ZQKDMain/>
         <HowToPlaySection ref={howToPlayRef}/>
         <section ref={aboutRef}
                 className="w-full h-fit mt-20 px-5 md:px-20">
