@@ -2,7 +2,6 @@
 // 0: English
 // 1: French
 // 2: Spanish
-// 3: German
 
 import {LanguageItem} from '@/types';
 
