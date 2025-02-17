@@ -2,11 +2,10 @@
 // 0: English
 // 1: French
 // 2: Spanish
-// 3: German
 
 import {LanguageItem} from '@/types';
 
-export const bb84Lines: LanguageItem[] = [
+export const e91Lines: LanguageItem[] = [
     {
 
         'component.e91.measurement.welcome': 'Welcome to E91!',
