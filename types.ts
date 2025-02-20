@@ -18,6 +18,13 @@ export enum E91GameStep {
     MESSAGING,
 }
 
+export enum DPSGameStep {
+    MEASUREMENT,
+    BASIS,
+    VALIDATION,
+    MESSAGING,
+}
+
 export interface Line {
     title?: string,
     content?: string,
