@@ -29,21 +29,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.restart.unsecured.description': ' Eve has been found out',
         'component.e91.gameLoss.title': 'You lose!',
         'component.e91.gameLoss': ' Eve did not interfere on this channel',
-        'component.e91.highlights.highlight1': 'Randomly pick a measurement basis',
-        'component.e91.steps.step1': ' for incoming photons, the measurement outcomes will' +
-            ' be used to establish your encryption key and detect the presence of Eve.',
-        'component.e91.highlights.highlight2': 'Share your measurement bases',
-        'component.e91.steps.step2Alice': ' with Bob.',
-        'component.e91.steps.step2Bob': ' with Alice.',
-        'component.e91.highlights.highlight3': 'Extract your encryption key',
-        'component.e91.steps.step3': ' from the measurement outcomes obtained for identical base pairs.',
-        'component.e91.highlights.highlight4': 'Validate your key',
-        'component.e91.steps.step4': ' by testing the CHSH inequality with the measurements taken with the other base' +
-            ' combinations.',
-        'component.e91.highlights.highlight5Alice': 'Encrypt and send your message',
-        'component.e91.steps.step5Alice': ' to Bob.',
-        'component.e91.highlights.highlight5Bob': 'Decrypt Alice\'s message',
-        'component.e91.steps.step5Bob': ' using your key.',
         'component.e91.validation.invalid.start': 'Drag the correct value (+1 or -1) to the appropriate container' +
             ' for each photon pair. Reminder: multiply Alice\'s and Bob\'s measurement outcomes to' +
             ' determine this value.',
@@ -91,23 +76,7 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.restart.unsecured': 'Canal compromis',
         'component.e91.restart.unsecured.description': ' Ève a été démasquée',
         'component.e91.gameLoss.title': 'Vous avez perdu!',
-        'component.e91.gameLoss': ' Ève n\'a pas interféré sur ce canal',
-        'component.e91.highlights.highlight1': 'Choisissez de façon aléatoire une base de mesure ',
-        'component.e91.steps.step1': ' pour les photons incidents, les résultats de mesure' + 
-            ' seront utilisés pour établir votre clé de chiffrement et détecter la présence d\'Ève.',
-        'component.e91.highlights.highlight2': 'Partagez vos bases de mesure',
-        'component.e91.steps.step2Alice': ' avec Bob.',
-        'component.e91.steps.step2Bob': ' avec Alice.',
-        'component.e91.highlights.highlight3': 'Extrayez votre clé de chiffrement',
-        'component.e91.steps.step3': ' à partir des résultats de mesure obtenus pour des paires de' +
-            ' bases identiques.',
-        'component.e91.highlights.highlight4': 'Validez votre clé',
-        'component.e91.steps.step4': ' en testant l\'inégalité de CHSH avec les mesures effectuées avec les autres' +
-            ' combinaisons de bases.',
-        'component.e91.highlights.highlight5Alice': 'Chiffrez et envoyez votre message',
-        'component.e91.steps.step5Alice': ' à Bob.',
-        'component.e91.highlights.highlight5Bob': 'Déchiffrez le message d\'Alice',
-        'component.e91.steps.step5Bob': ' en utilisant votre clé.',
+        'component.e91.gameLoss': ' Ève n\'a pas interféré sur ce canal',        
         'component.e91.validation.invalid.start': 'Glissez la bonne valeur (+1 or -1) vers le contenant approprié' +
             ' pour chaque paire de photons. Rappel: multipliez les résultats des mesures d\'Alice et de' +
             ' Bob pour obtenir cette valeur.',
@@ -154,21 +123,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.restart.unsecured.description': ' Eve ha sido descubierta',
         'component.e91.gameLoss.title': '¡Perdiste!',
         'component.e91.gameLoss': ' Eve no interfirió en este canal',
-        'component.e91.highlights.highlight1': 'Elige al azar una base de medición',
-        'component.e91.steps.step1': ' para los fotones entrantes, los resultados de la medición se usarán para establecer' +
-            ' tu clave de cifrado y detectar la presencia de Eve.',
-        'component.e91.highlights.highlight2': 'Comparte tus bases de medición',
-        'component.e91.steps.step2Alice': ' con Bob.',
-        'component.e91.steps.step2Bob': ' con Alice.',
-        'component.e91.highlights.highlight3': 'Extrae tu clave de cifrado',
-        'component.e91.steps.step3': ' a partir de los resultados de medición obtenidos para pares de bases idénticas.',
-        'component.e91.highlights.highlight4': 'Valida tu clave',
-        'component.e91.steps.step4': ' probando la desigualdad CHSH con las mediciones tomadas con las otras combinaciones ' +
-            'de bases.',
-        'component.e91.highlights.highlight5Alice': 'Cifra y envía tu mensaje',
-        'component.e91.steps.step5Alice': ' a Bob.',
-        'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
-        'component.e91.steps.step5Bob': ' usando tu clave.',
         'component.e91.validation.invalid.start': 'Arrastra el valor correcto (+1 o -1) al contenedor' +
             ' correspondiente para cada par de fotones. Recordatorio: multiplica los resultados de' +
             ' medición de Alice y Bob para determinar este valor.',

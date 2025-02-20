@@ -18,6 +18,13 @@ export enum E91GameStep {
     MESSAGING,
 }
 
+export enum GameLines {
+    QUANTUMCRYPTO,
+    BB84,
+    E91,
+    DPS,
+}
+
 export interface Line {
     title?: string,
     content?: string,

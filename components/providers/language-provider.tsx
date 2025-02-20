@@ -1,5 +1,9 @@
 'use client';
-import {bb84Lines} from '@/lang/bb84-lines';
+import { bb84Lines } from '@/lang/bb84-lines';
+import { e91Lines } from '@/lang/e91-lines';
+import { quantumcryptoLines } from '@/lang/quantumcrypto-lines';
+import { dpsLines } from '@/lang/dps-lines';
+// import { useGameLinesStore } from '@/store/game-lines-store';
 import React, {
     createContext,
     useContext,
@@ -12,6 +16,13 @@ export enum Language {
     SPANISH,
     GERMAN,
 }
+
+const gameLines = [
+    ...quantumcryptoLines,
+    ...bb84Lines,
+    ...e91Lines,
+    ...dpsLines,
+];
 
 type LanguageContextType = {
     language: Language;
@@ -32,8 +43,11 @@ export const useLanguage = () => {
 
 export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
     const [language, setLanguage] = useState(Language.FRENCH);
+    // const { gameLines } = useGameLinesStore();
+
     const localize = (str: string, extra?: string) => {
-        const languageItem = bb84Lines[language];
+        
+        const languageItem = gameLines[language];
         let result = languageItem ? (languageItem[str] ?? "") : "";
         if (extra) {
             result = result + " " + extra;
