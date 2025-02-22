@@ -856,6 +856,18 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
             toast.success('Game started!');
             setTimeout(() => (waitingRoomSocket as any).close(), 5000);
             useE91GameStore.setState({players: [], playerCount: 0});
+        } else if (gameType === 'dps') {
+            const payload = {
+                event: START_EVENT,
+                message: {
+                    game_code: useDPSGameStore.getState().gameCode,
+                    game_id: id
+                },
+            };
+            (waitingRoomSocket as any).send(JSON.stringify(payload));
+            toast.success('Game started!');
+            setTimeout(() => (waitingRoomSocket as any).close(), 5000);
+            useDPSGameStore.setState({players: [], playerCount: 0});
         }
        
     };
