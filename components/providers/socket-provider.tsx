@@ -5,6 +5,7 @@ import React, {createContext, useContext, useState} from 'react';
 import {w3cwebsocket as W3CWebSocket} from 'websocket';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import useE91GameStore from '@/store/e91/e91-game-store';
+import useDPSGameStore from '@/store/dps/dps-game-store';
 import {toast} from 'sonner';
 import {useLanguage} from '@/components/providers/language-provider';
 import {useRouter} from 'next/navigation';
@@ -57,7 +58,18 @@ import {
     SCORE_EVENT,
     VALIDATION_INDICES_EVENT,
 } from '@/e91-constants';
+
+import {
+    DPS_GAME_ID_EVENT,
+    DPS_PLAYER_COUNT_EVENT,
+    DPS_CONNECTED_EVENT,
+    DPS_START_EVENT,
+    DPS_END_EVENT,
+} from '@/dps-constants';
+
 import { recordIPAddress } from '@/app/(main)/services/api';
+import useDPSRoomStore from '@/store/dps/dps-room-store';
+import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 
 type SocketContextType = {
     waitingRoomSocket: any | null;
@@ -87,6 +99,7 @@ type SocketContextType = {
     sendBobSuccess: (gameType: string) => void;
     disconnectBB84WaitingRoom: () => void;
     disconnectE91WaitingRoom: () => void;
+    disconnectDPSWaitingRoom: () => void;
     sendEveSpotted: () => void;
     saveScore: (score: number) => void;
 }
@@ -140,6 +153,8 @@ const SocketContext = createContext<SocketContextType>({
     },
     disconnectE91WaitingRoom: () => {
     },
+    disconnectDPSWaitingRoom: () => {
+    },
     sendBobSuccess: () => {
     },
 });
@@ -183,7 +198,13 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
             setIsWaitingRoomConnected(false);
             setWaitingRoomConnecting(false);
             setWaitingRoomError(false);
-            gameType === 'bb84' ? useBB84GameStore.setState({players: [], playerCount: 0}): useE91GameStore.setState({players: [], playerCount: 0})           
+            if (gameType === 'bb84') {
+                useBB84GameStore.setState({players: [], playerCount: 0});
+            } else if (gameType === 'e91') {
+                useE91GameStore.setState({players: [], playerCount: 0});
+            } else if (gameType === 'dps') {
+                useDPSGameStore.setState({players: [], playerCount: 0});
+            }
         };
 
         (socketInstance as any).onmessage = (json: any) => {
@@ -200,7 +221,9 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         useBB84GameStore.setState({playerCount: message['count']});
                     } else if (gameType === 'e91') {
                         useE91GameStore.setState({playerCount: message['count']});
-                    }
+                    } else if (gameType === 'dps'){
+                        useDPSGameStore.setState({playerCount:message['count']});
+                    }                    
                     break;
                 
                 case GAME_ID_EVENT:
@@ -240,6 +263,22 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                             localStorage.setItem('e91ValidationBitsLength',
                                 JSON.stringify(message['game']['validation_bits_length']));
                         }
+                    } else if (gameType === 'dps'){
+                        router.push('dps/waiting-room');
+                        setIsWaitingRoomConnected(true);
+                        setWaitingRoomConnecting(false);
+                        if (!usePlayerStore.getState().isAdmin) {
+                            usePlayerStore.setState({playerId: message['player']['id']});
+                            useDPSGameStore.setState(
+                                {
+                                    photonNumber: message['game']['photon_number'],
+                                    validationBitsLength: message['game']['validation_bits_length'],
+                                });
+                            localStorage.setItem('dpsPhotonNumber',
+                                JSON.stringify(message['game']['photon_number']));
+                            localStorage.setItem('dpsValidationBitsLength',
+                                JSON.stringify(message['game']['validation_bits_length']));
+                        }
                     }                  
                     break;
 
@@ -252,6 +291,11 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                             useBB84GameStore.setState({players: updatedPlayers});
                         } else if (gameType === 'e91') {
                             const updatedPlayers = [...useE91GameStore.getState().players];
+                            const player = { name: message['player']['name'] };
+                            updatedPlayers.push(player);
+                            useE91GameStore.setState({players: updatedPlayers});
+                        } else if (gameType === 'dps') {
+                            const updatedPlayers = [...useDPSGameStore.getState().players];
                             const player = { name: message['player']['name'] };
                             updatedPlayers.push(player);
                             useE91GameStore.setState({players: updatedPlayers});
@@ -313,6 +357,15 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                             localStorage.setItem('e91Tab', useE91ProgressStore.getState().e91Tab);
                             localStorage.setItem('e91GameData', JSON.stringify({evePresent}));
             
+                        } else if (gameType === 'dps') {
+                            useDPSGameStore.setState({gameHasEve: gameHasEve});
+                            useDPSRoomStore.setState({evePresent});
+            
+                            localStorage.setItem('dpsPlayerData', JSON.stringify(playerData));
+                            localStorage.setItem('dpsStep', JSON.stringify(useBB84ProgressStore.getState().step));
+                            localStorage.setItem('dpsTab', useDPSProgressStore.getState().dpsTab);
+                            localStorage.setItem('dpsGameData', JSON.stringify({evePresent}));
+
                         }
                         connectToPlayRoom(gameType, gameCode, role, room);
                         setTimeout(() => socketInstance.close(), 10000);
@@ -324,6 +377,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         useBB84GameStore.setState({players: [], playerCount: 0});
                     } else if (gameType === 'e91') {
                         useE91GameStore.setState({players: [], playerCount: 0});
+                    } else if (gameType === 'dps') {
+                        useDPSGameStore.setState({players: [], playerCount: 0});
                     }
                     
                     if (!usePlayerStore.getState().isAdmin) {
@@ -378,6 +433,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         router.replace('/bb84/play');
                     } else if (gameType === 'e91') {
                         router.replace('/e91/play')
+                    } else if (gameType === 'dps') {
+                        router.replace('/dps/play')
                     }
                     
                     break;
@@ -997,6 +1054,29 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         (waitingRoomSocket as any).close();
     };
 
+    const disconnectDPSWaitingRoom = () => {
+        if (usePlayerStore.getState().isAdmin) {
+            const payload = {
+                event: END_ADMIN_EVENT,
+                message: {
+                    game_code: useDPSGameStore.getState().gameCode,
+                    player_name: usePlayerStore.getState().playerName,
+                },
+            };
+            (waitingRoomSocket as any).send(JSON.stringify(payload));
+        } else {
+            const payload = {
+                event: END_PLAYER_EVENT,
+                message: {
+                    game_code: useDPSGameStore.getState().gameCode,
+                    player_name: usePlayerStore.getState().playerName,
+                },
+            };
+            (waitingRoomSocket as any).send(JSON.stringify(payload));
+        }
+        (waitingRoomSocket as any).close();
+    };
+
     return (
         <SocketContext.Provider
             value={{
@@ -1029,6 +1109,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 shareDiceValue,
                 disconnectBB84WaitingRoom,
                 disconnectE91WaitingRoom,
+                disconnectDPSWaitingRoom,
             }}>
             {children}
         </SocketContext.Provider>
