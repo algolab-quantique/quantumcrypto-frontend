@@ -1,0 +1,151 @@
+// Order derived from Language enum defined in the LanguageProvider
+// 0: English
+// 1: French
+// 2: Spanish
+
+import {LanguageItem} from '@/types';
+
+export const e91Lines: LanguageItem[] = [
+    {
+
+        'component.e91.measurement.welcome': 'Welcome to E91!',
+        'component.e91.measurement.start': 'Choose a measurement basis for each photon.',
+        'component.e91.measurement.tab': 'Photon measurements',
+        'component.e91.photons': 'Photons',
+        'component.e91.measure': 'Measure',
+        'component.e91.shareBases': 'Share my bases',
+        'component.e91.shareBases.alice': 'Now share your bases with Bob',
+        'component.e91.shareBases.bob': 'Now share your bases with Alice',
+        'component.e91.classifyBases': 'Categorize measurement base pairs according to their usefulness in the' +
+            ' protocol.',
+        'component.e91.shortKey.restart': 'The length of your key is too short, you can restart the game now.',
+        'component.e91.restart': 'Restart',
+        'component.e91.moveToMessaging': 'Exchange a message',
+        'component.e91.evePresent': 'Eve was present!',
+        'component.e91.evePresent.stats': ' Eve has successfully read this number of bits: ',
+        'component.e91.decsion.unsecured': 'The channel was deemed unsafe by ',
+        'component.e91.decsion.secured': 'The channel was deemed safe by ',
+        'component.e91.restart.unsecured': 'Channel compromised',
+        'component.e91.restart.unsecured.description': ' Eve has been found out',
+        'component.e91.gameLoss.title': 'You lose!',
+        'component.e91.gameLoss': ' Eve did not interfere on this channel',
+        'component.e91.validation.invalid.start': 'Drag the correct value (+1 or -1) to the appropriate container' +
+            ' for each photon pair. Reminder: multiply Alice\'s and Bob\'s measurement outcomes to' +
+            ' determine this value.',
+        'component.e91.basisDesc': ' (a, b, a\', b\')',
+        'component.e91.button.secure': 'Secure',
+        'component.e91.button.unsecure': 'Not secure',
+        'component.e91.button.showGraph': 'Show graph',
+        'component.e91.text.values': 'Values',
+        'component.e91.text.seeResults': 'See Results',
+        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
+        'component.tooltip.bobBase': 'Bob\'s Base',
+        'component.tooltip.aliceBase': 'Alice\'s Base',
+        'component.tooltip.category': "Category",
+        'component.tooltip.description': "Description",
+        'component.tooltip.key': "Key",
+        'component.tooltip.discard': "Discard",
+        'component.tooltip.bell': "Bell",
+        'component.e91.dropHere': 'Drop here',
+        'component.e91.basis.waitingOn.bob': 'Waiting for Bob\'s bases.',
+        'component.e91.basis.waitingOn.alice': 'Waiting for Alice\'s bases.',
+        'component.e91.basis.arrivedFrom.bob': 'Bob\'s bases have arrived!',
+        'component.e91.basis.arrivedFrom.alice': 'Alice\'s bases have arrived!',
+    },
+    {
+         // ... (French translations)
+
+        'component.e91.measurement.welcome': 'Bienvenue dans E91!',
+        'component.e91.measurement.start': 'Choisissez une base de mesure pour chaque photon.',
+        'component.e91.measurement.tab': 'Mesure des photons',
+        'component.e91.photons': 'Photons',
+        'component.e91.measure': 'Mesure',
+        'component.e91.shareBases': 'Partager les bases',
+        'component.e91.shareBases.alice': 'Maintenant, partagez vos bases avec Bob.',
+        'component.e91.shareBases.bob': 'Maintenant, partagez vos bases avec Alice.',
+        'component.e91.classifyBases': 'Catégorisez les paires de bases de mesure en fonction de leur utilité dans' +
+            ' le protocole.',
+        'component.e91.shortKey.restart': 'La longueur de votre clé est trop courte, vous pouvez redémarrer le jeu' +
+            ' maintenant.',
+        'component.e91.restart': 'Redémarrer',
+        'component.e91.moveToMessaging': 'Échanger un message',
+        'component.e91.evePresent': 'Ève était présente!',
+        'component.e91.evePresent.stats': ' Ève a réussi à lire ce nombre de bits: ',
+        'component.e91.decsion.unsecured': 'Le canal a été jugé non sécure par ',
+        'component.e91.decsion.secured': 'Le canal a été jugé sécure par ',
+        'component.e91.restart.unsecured': 'Canal compromis',
+        'component.e91.restart.unsecured.description': ' Ève a été démasquée',
+        'component.e91.gameLoss.title': 'Vous avez perdu!',
+        'component.e91.gameLoss': ' Ève n\'a pas interféré sur ce canal',        
+        'component.e91.validation.invalid.start': 'Glissez la bonne valeur (+1 or -1) vers le contenant approprié' +
+            ' pour chaque paire de photons. Rappel: multipliez les résultats des mesures d\'Alice et de' +
+            ' Bob pour obtenir cette valeur.',
+        'component.e91.basisDesc': ' (a, b, a\', b\')',
+        'component.e91.button.secure': 'Sécuritaire',
+        'component.e91.button.unsecure': 'Non sécuritaire',
+        'component.e91.button.showGraph': 'Monter le graphique',
+        'component.e91.graph.title': 'CHSH',
+        'component.e91.text.seeResults': 'Voir les résultats',
+        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
+        'component.tooltip.bobBase': 'Base de Bob',
+        'component.tooltip.aliceBase': 'Base d\'Alice',
+        'component.tooltip.category': "Catégorie",
+        'component.tooltip.description': "Description",
+        'component.tooltip.key': "Clé",
+        'component.tooltip.discard': "Jeter",
+        'component.tooltip.bell': "Bell",
+        'component.e91.dropHere': 'Déposez ici',
+        'component.e91.basis.waitingOn.bob': 'En attente des bases de Bob.',
+        'component.e91.basis.waitingOn.alice': 'En attente des bases d\'Alice.',
+        'component.e91.basis.arrivedFrom.bob': 'Les bases de Bob sont arrivées!',
+        'component.e91.basis.arrivedFrom.alice': 'Les bases d\'Alice sont arrivées!',
+        
+    },
+    {
+        // ... (Spanish translations)
+        'component.e91.measurement.welcome': '¡Bienvenido a E91!',
+        'component.e91.measurement.start': 'Elige una base de medición para cada fotón.',
+        'component.e91.measurement.tab': 'Mediciones de fotones',
+        'component.e91.photons': 'Fotones',
+        'component.e91.measure': 'Medida',
+        'component.e91.shareBases': 'Compartir mis bases',
+        'component.e91.shareBases.alice': 'Ahora comparte tus bases con Bob',
+        'component.e91.shareBases.bob': 'Ahora comparte tus bases con Alice',
+        'component.e91.classifyBases': 'Categoriza los pares de bases de medición según su utilidad en el protocolo.',
+        'component.e91.shortKey.restart': 'La longitud de tu clave es demasiado corta, puedes reiniciar el juego ahora.',
+        'component.e91.restart': 'Reiniciar',
+        'component.e91.moveToMessaging': 'Intercambiar un mensaje',
+        'component.e91.evePresent': '¡Eve estuvo presente!',
+        'component.e91.evePresent.stats': ' Eve ha leído con éxito este número de bits: ',
+        'component.e91.decsion.unsecured': 'El canal fue considerado inseguro por ',
+        'component.e91.decsion.secured': 'El canal fue considerado seguro por ',
+        'component.e91.restart.unsecured': 'Canal comprometido',
+        'component.e91.restart.unsecured.description': ' Eve ha sido descubierta',
+        'component.e91.gameLoss.title': '¡Perdiste!',
+        'component.e91.gameLoss': ' Eve no interfirió en este canal',
+        'component.e91.validation.invalid.start': 'Arrastra el valor correcto (+1 o -1) al contenedor' +
+            ' correspondiente para cada par de fotones. Recordatorio: multiplica los resultados de' +
+            ' medición de Alice y Bob para determinar este valor.',
+        'component.e91.basisDesc': ' (a, b, a\', b\')',
+        'component.e91.button.secure': 'Seguro',
+        'component.e91.button.unsecure': 'No seguro',
+        'component.e91.button.showGraph': 'Mostrar gráfico',
+        'component.e91.text.values': 'Valores',
+        'component.e91.text.seeResults': 'Ver resultados',
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente, y 10 en' +
+            ' caso contrario.',
+        'component.tooltip.bobBase': 'Base de Bob',
+        'component.tooltip.aliceBase': 'Base de Alice',
+        'component.tooltip.category': "Categoría",
+        'component.tooltip.description': "Descripción",
+        'component.tooltip.key': "Clave",
+        'component.tooltip.discard': "Descartar",
+        'component.tooltip.bell': "Bell",
+        'component.e91.dropHere': 'Caer aquí',
+        'component.e91.basis.waitingOn.bob': 'Esperando las bases de Bob.',
+        'component.e91.basis.waitingOn.alice': 'Esperando las bases de Alice.',
+        'component.e91.basis.arrivedFrom.bob': 'Las bases de Bob han llegado!',
+        'component.e91.basis.arrivedFrom.alice': 'Las bases de Alice han llegado!',
+    }
+    
+];
