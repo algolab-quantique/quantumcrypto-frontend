@@ -5,15 +5,34 @@ import React, {
     useContext,
     useState,
 } from 'react';
-import { useGameLines } from '@/components/providers/game-lines-provider';
+import { usePathname } from "next/navigation";
+import { bb84Lines } from '@/lang/bb84-lines';
+import { e91Lines } from '@/lang/e91-lines';
+import { dpsLines } from '@/lang/dps-lines';
+import { quantumcryptoLines } from '@/lang/quantumcrypto-lines';
+import { LanguageItem } from '@/types';
+
+
 
 export enum Language {
     ENGLISH,
     FRENCH,
     SPANISH,
-    GERMAN,
 }
 
+export enum Game {
+    QUANTUMCRYPTO = 'quantumcrypto', // default page
+    BB84 = 'bb84',
+    E91 = 'e91',
+    DPS = 'dps',
+}
+
+const gameLines: Record<string, LanguageItem[]> = {
+    QUANTUMCRYPTO: quantumcryptoLines, //default lines
+    BB84: bb84Lines,
+    E91: e91Lines,
+    DPS: dpsLines,
+};
 
 
 type LanguageContextType = {
@@ -35,19 +54,25 @@ export const useLanguage = () => {
 
 export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
     const [language, setLanguage] = useState(Language.FRENCH);
-    const gameLines = useGameLines(); // Récupérer toutes les lignes
+    const pathname = usePathname();
+    const pathParts = pathname.split("/");
+ 
+
+    const gameType = pathParts[1] as Game;
+    const isGameActive = pathParts[2] === 'play';
+   
+
+    const currentGame = isGameActive && Object.values(Game).includes(gameType)
+    ? gameType.toUpperCase()
+    : Game.QUANTUMCRYPTO.toUpperCase();
+    const currentGameLines = gameLines[currentGame] || [];
+
 
 
     const localize = (str: string, extra?: string) => {
 
-        let result = "";
-        for (const game in gameLines) {
-            const languageItem = gameLines[game][language];
-            if (languageItem && languageItem[str]) {
-                result = languageItem[str];
-                break;
-            }
-        }
+        const languageItem = currentGameLines[language];
+        let result = languageItem?.[str] || str;
        
         if (extra) {
             result = result + " " + extra;
@@ -59,6 +84,7 @@ export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
         setLanguage,
         localize,
     };
+    
     return (
         <LanguageContext.Provider value={contextValue}>
             {children}

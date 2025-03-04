@@ -13,12 +13,13 @@ import {
     MoveHorizontal, MoveVertical,
 } from 'lucide-react';
 import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
-import BasisTab from '@/components/dps/play-page/tabs/basis-tab';
-import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
+// import BasisTab from '@/components/dps/play-page/tabs/basis-tab';
+// import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
 import isConnected from '@/components/hoc/is-connected';
-import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
+// import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
+import { GaussianCurve, InvertedGaussianCurve } from '@/components/icons/gaussian-curves';
 
 
 const Game = () => {
@@ -26,8 +27,10 @@ const Game = () => {
     const polarIcons =
 
         [
-           
-            <Minus/>, <MoveHorizontal/>, <MoveVertical/>];
+            <Minus/>, 
+            <GaussianCurve style={{ fontSize: "50px", margin:"12px", width: "100%"}} />,
+            <InvertedGaussianCurve style={{ fontSize: "24px", margin:"0" }} />,
+        ];
 
     const {localize} = useLanguage();
     const {step, displayedLines, dpsTab} = useDPSProgressStore();
@@ -40,7 +43,7 @@ const Game = () => {
             if (playerRole === 'A') {
                 pushLines([
                     {
-                        title: 'component.exchange.welcome',
+                        title: 'component.dps.exchange.welcome',
                     },
                     {
                         title: 'component.game.step1',
@@ -50,7 +53,7 @@ const Game = () => {
             } else if (playerRole === 'B') {
                 pushLines([
                     {
-                        title: 'component.exchange.welcome',
+                        title: 'component.dps.exchange.welcome',
                     },
                     {
                         content: 'component.bobExchange.waiting',
@@ -101,19 +104,20 @@ const Game = () => {
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value={'exchange'}>
+                                
                                 {playerRole === 'A' ?
                                     <AliceExchangeTab photonNumber={photonNumber}
                                                       polarIcons={polarIcons}/> :
                                     <BobExchangeTab photonNumber={photonNumber}/>}
                             </TabsContent>
                             <TabsContent value={'basis'}>
-                                <BasisTab playerRole={playerRole}/>
+                                {/* <BasisTab playerRole={playerRole}/> */}
                             </TabsContent>
                             {gameHasEve && <TabsContent value={'validation'}>
-                                <ValidationTab playerRole={playerRole}/>
+                                {/* <ValidationTab playerRole={playerRole}/> */}
                             </TabsContent>}
                             <TabsContent value={'messaging'}>
-                                <MessagingTab playerRole={playerRole}/>
+                                {/* <MessagingTab playerRole={playerRole}/> */}
                             </TabsContent>
                         </Tabs>
                     </div>

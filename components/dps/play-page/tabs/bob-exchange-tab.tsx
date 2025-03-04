@@ -33,3 +33,5 @@ const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
             </div>
         );
 }
+
+export default BobExchangeTab;
