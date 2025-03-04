@@ -144,6 +144,28 @@ body,
             transform: scale(0.75);
         }
     }
+
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+    
+    .gaussian-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .gaussian-item {
+        animation: slideIn 1s ease-out forwards;
+        pointer-events: none;
+    }
     
     @media (min-height: 901px) {
         .table-head {

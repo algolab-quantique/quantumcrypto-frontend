@@ -3,32 +3,22 @@ import {create} from 'zustand';
 interface DPSRoomStore {
     evePresent: boolean;
     validationIndices: number[];
-    alicePhotons: number[];
-    bobBases: string[];
-    aliceBases: string[];
-    aliceBits: string[];
+    alicePhotons: string[];
+    alicePhases: string [];
     bobMeasurements: string[];
     keyBits: string[];
     partnerBits: string[];
-    aliceCipher: string[];
-    aliceCipherSolo: string[];
-    aliceCipherSent: boolean;
     gameSuccess: boolean;
     validated: boolean;
     crypto: string[];
     message: string[];
     validatedByPartner: boolean;
     eveUndetected: boolean;
-    setAlicePhotons: (photons: number[]) => void;
-    setBobBases: (bases: string[]) => void;
-    setAliceBases: (bases: string[]) => void;
-    setAliceBits: (bits: string[]) => void;
+    setAlicePhotons: (photons: string[]) => void;
+    setAlicePhases: (phases: string []) => void;
     setBobMeasurements: (measurements: string[]) => void;
     setKeyBits: (bits: string[]) => void;
     setPartnerBits: (bits: string[]) => void;
-    setAliceCipher: (bits: string[]) => void;
-    setAliceCipherSolo: (bits: string[]) => void;
-    setAliceCipherSent: (sent: boolean) => void;
     setValidated: (validated: boolean) => void;
     setValidatedByPartner: (validatedByPartner: boolean) => void;
     setGameSuccess: (success: boolean) => void;
@@ -55,15 +45,10 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     evePresent: false,
     validationIndices: [],
     alicePhotons: [],
-    bobBases: [],
-    aliceBases: [],
-    aliceBits: [],
+    alicePhases: [],
     bobMeasurements: [],
     keyBits: [],
     partnerBits: [],
-    aliceCipher: [],
-    aliceCipherSolo: [],
-    aliceCipherSent: false,
     gameSuccess: false,
     validated: false,
     validatedByPartner: false,
@@ -71,16 +56,11 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     message: [],
     eveUndetected: false,
     setAlicePhotons: photons => updateAndStore('alicePhotons', photons, set),
-    setBobBases: bases => updateAndStore('bobBases', bases, set),
-    setAliceBases: bases => updateAndStore('aliceBases', bases, set),
-    setAliceBits: bits => updateAndStore('aliceBits', bits, set),
+    setAlicePhases: phases => updateAndStore('alicePhases', phases, set),
     setBobMeasurements: measurements => updateAndStore('bobMeasurements',
         measurements, set),
     setKeyBits: bits => updateAndStore('keyBits', bits, set),
     setPartnerBits: bits => updateAndStore('partnerBits', bits, set),
-    setAliceCipher: bits => updateAndStore('aliceCipher', bits, set),
-    setAliceCipherSolo: bits => updateAndStore('aliceCipherSolo', bits, set),
-    setAliceCipherSent: sent => updateAndStore('aliceCipherSent', sent, set),
     setGameSuccess: success => updateAndStore('gameSuccess', success, set),
     setValidatedByPartner: validatedByPartner => updateAndStore(
         'validatedByPartner', validatedByPartner, set),
@@ -94,15 +74,10 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         eveUndetected, set),
     resetRoom: () => set({
         alicePhotons: [],
-        bobBases: [],
-        aliceBases: [],
-        aliceBits: [],
+        alicePhases: [],      
         bobMeasurements: [],
         keyBits: [],
         partnerBits: [],
-        aliceCipher: [],
-        aliceCipherSolo: [],
-        aliceCipherSent: false,
         gameSuccess: false,
         validated: false,
         validatedByPartner: false,

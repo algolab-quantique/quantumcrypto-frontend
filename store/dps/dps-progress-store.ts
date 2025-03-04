@@ -13,8 +13,8 @@ interface DPSProgressStore {
 }
 
 export const useDPSProgressStore = create<DPSProgressStore>((set) => ({
-    step: DPSGameStep.MEASUREMENT,
-    dpsTab: 'measurement',
+    step: DPSGameStep.EXCHANGE,
+    dpsTab: 'exchange',
     displayedLines: [],
     setStep: (step) => {
         localStorage.setItem('dpsStep', JSON.stringify(step));
@@ -34,8 +34,8 @@ export const useDPSProgressStore = create<DPSProgressStore>((set) => ({
         };
     }),
     resetProgress: () => set({
-        dpsTab: 'measurement',
-        step: DPSGameStep.MEASUREMENT,
+        dpsTab: 'exchange',
+        step: DPSGameStep.EXCHANGE,
         displayedLines: [],
     }),
 }));
