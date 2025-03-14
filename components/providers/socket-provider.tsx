@@ -65,6 +65,7 @@ import {
     DPS_CONNECTED_EVENT,
     DPS_START_EVENT,
     DPS_END_EVENT,
+    A_PHASES_EVENT
 } from '@/dps-constants';
 
 import { recordIPAddress } from '@/app/(main)/services/api';
@@ -86,6 +87,7 @@ type SocketContextType = {
     sendEvent: (event: string, message?: any) => void;
     measurePhotons: (bases: string[]) => void;
     sendPhotons: (photons: number[]) => void;
+    sendPhases: (photons: String[]) => void;
     sendCipher: (cipher: string[]) => void;
     shareBases: (bases: string[], event: string, socket?: any) => void;
     shareBits: (bits: string[], event: string, socket?: any) => void;
@@ -124,6 +126,8 @@ const SocketContext = createContext<SocketContextType>({
     measurePhotons: () => {
     },
     sendPhotons: () => {
+    },
+    sendPhases: () => {
     },
     sendCipher: () => {
     },
@@ -401,6 +405,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
 
         setPlayRoomConnecting(true);
 
+
         const socketInstance = new W3CWebSocket(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/rooms/${room}/`);
 
         setPlayRoomSocket(socketInstance);
@@ -418,6 +423,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         };
 
         socketInstance.onmessage = async (json: any) => {
+            
 
             const data = JSON.parse(json.data)['payload'];
             const message = data['message'];
@@ -425,7 +431,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
             console.log(event);
 
             switch (event) {
-
+                
                 case CONNECTED_EVENT:
                     setIsPlayRoomConnected(true);
                     setPlayRoomConnecting(false);
@@ -535,8 +541,22 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                                 content: 'component.bobExchange.choose',
                             },
                         ]);
-                    }
+                    }                  
                     break;
+                case A_PHASES_EVENT:
+                    if (usePlayerStore.getState().playerRole === 'B') {
+                        useDPSRoomStore.getState().setAlicePhotons(message.photons);
+                        useDPSProgressStore.getState().pushLines([
+                            {
+                                content: 'component.bobExchange.photonsArrived',
+                            },
+                            {
+                                title: 'component.game.step1',
+                                content: 'component.bobExchange.Measurement',
+                            },
+                        ]);
+                        console.log("Nouvel état après pushLines:", useDPSProgressStore.getState().displayedLines);
+                    }
 
                 case B_BASES_EVENT:
                     if (gameType === 'bb84') {
@@ -885,7 +905,6 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         if (message) {
             payload.message = {...message};
         }
-        console.log("Sending event:", payload);
         if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
             console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
         } else {
@@ -912,6 +931,9 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         }
     }
 
+    const sendPhases = (photons: String[]) => {
+        sendEvent(A_PHASES_EVENT, {photons});
+    }
     const sendPhotons = (photons: number[]) => {
         sendEvent(A_PHOTONS_EVENT, {photons});
     };
@@ -1106,6 +1128,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 sendEvent,
                 measurePhotons,
                 sendPhotons,
+                sendPhases,
                 sendCipher,
                 shareBases,
                 saveScore,

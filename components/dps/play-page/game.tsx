@@ -19,7 +19,7 @@ import isConnected from '@/components/hoc/is-connected';
 // import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
-import { GaussianCurve, InvertedGaussianCurve } from '@/components/icons/gaussian-curves';
+import { GaussianCurve1, InvertedGaussianCurve1 } from '@/components/icons/gaussian-curves';
 
 
 const Game = () => {
@@ -28,8 +28,8 @@ const Game = () => {
 
         [
             <Minus/>, 
-            <GaussianCurve style={{ fontSize: "50px", margin:"12px", width: "100%"}} />,
-            <InvertedGaussianCurve style={{ fontSize: "24px", margin:"0" }} />,
+            <GaussianCurve1/>,
+            <InvertedGaussianCurve1/>,
         ];
 
     const {localize} = useLanguage();

@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Table,
     TableBody,
@@ -33,9 +33,10 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
     polarIcons: any[]
 }) => {
     const {localize} = useLanguage();
+    const {sendPhases} = useSocket();
     const {pushLines, setDPSTab, setStep} = useDPSProgressStore();
     const {
-        alicePhotons,
+        alicePhotons ,
         alicePhases,
     } = useDPSRoomStore();
     const {
@@ -83,6 +84,11 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         });
     
         setPhaseInputs(newList);
+
+        validatePulse({
+            phaseList: newList,
+            pulseInputs: pulseInputs,
+        }, true);
     };
 
     const onPhaseClick = (rowIndex: number, buttonIndex: number) => {
@@ -180,15 +186,23 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         return arePhasesValid && arePulsesValid && areErrorsAbsent;
     });
 
+
     const onSendPulsePhotons = () => {
         
         if (validateForm && !photonsSent) {
+
+          console.log("pulseInputs: ", pulseInputs);
+          console.log("phaseInputs", phaseInputs);
+          setAlicePhotons(pulseInputs.map(({values }) => values));
+          setAlicePhases(phaseInputs.map(({values}) => values));
           
-           // setAlicePhotons(pulseInputs.map(({values}) => values));
-           // setAlicePhases(phaseInputs.map(({values}) => values));
-    
-           // sendPhotons(finalPhotons);
-           
+          //const updatedPhases = useDPSRoomStore.getState().alicePhases;
+          const updatedPhotons = useDPSRoomStore.getState().alicePhotons;
+          console.log("alicePhases après mise à jour:", updatedPhotons);
+      
+          sendPhases(updatedPhotons);
+
+
            pushLines([
                 {
                     content: 'component.dps.aliceExchange.sent',
@@ -272,7 +286,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                         key={buttonIndex}
                                         variant="outline"
                                         className={cn(
-                                            'disabled:opacity-100',
+                                            'disabled:opacity-100', 
                                             pulseInputs[i].error[buttonIndex] && pulseInputs[i].touched[buttonIndex] ? 'border border-red' : ''
                                         )}
                                         onClick={() => onModulatedClick(i, buttonIndex)}
@@ -291,7 +305,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
             </Table>
             <div className="md:block fixed right-6 bottom-6 shadow-xl">
             <Button
-                //disabled={!validateForm || photonsSent}
+                disabled={!validateForm || photonsSent}
                 size="lg"
                 onClick={onSendPulsePhotons}
                 className="text-lg font-bold"
