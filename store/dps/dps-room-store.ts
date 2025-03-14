@@ -5,7 +5,7 @@ interface DPSRoomStore {
     validationIndices: number[];
     alicePhotons: string[];
     alicePhases: string [];
-    bobMeasurements: string[];
+    bobTimeMeasurements: string[];
     keyBits: string[];
     partnerBits: string[];
     gameSuccess: boolean;
@@ -14,9 +14,9 @@ interface DPSRoomStore {
     message: string[];
     validatedByPartner: boolean;
     eveUndetected: boolean;
-    setAlicePhotons: (photons: string[]) => void;
-    setAlicePhases: (phases: string []) => void;
-    setBobMeasurements: (measurements: string[]) => void;
+    setAlicePhotons: (photons: string[][]) => void;
+    setAlicePhases: (phases: string [][]) => void;
+    setBobTimeMeasurements: (measurements: string[]) => void;
     setKeyBits: (bits: string[]) => void;
     setPartnerBits: (bits: string[]) => void;
     setValidated: (validated: boolean) => void;
@@ -46,7 +46,7 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     validationIndices: [],
     alicePhotons: [],
     alicePhases: [],
-    bobMeasurements: [],
+    bobTimeMeasurements: [],
     keyBits: [],
     partnerBits: [],
     gameSuccess: false,
@@ -55,9 +55,9 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     crypto: [],
     message: [],
     eveUndetected: false,
-    setAlicePhotons: photons => updateAndStore('alicePhotons', photons, set),
-    setAlicePhases: phases => updateAndStore('alicePhases', phases, set),
-    setBobMeasurements: measurements => updateAndStore('bobMeasurements',
+    setAlicePhotons: (photons: string[][]) => updateAndStore('alicePhotons', photons, set),
+    setAlicePhases: (phases: string[][]) => updateAndStore('alicePhases', phases, set),
+    setBobTimeMeasurements: measurements => updateAndStore('bobTimeMeasurements',
         measurements, set),
     setKeyBits: bits => updateAndStore('keyBits', bits, set),
     setPartnerBits: bits => updateAndStore('partnerBits', bits, set),
@@ -75,7 +75,7 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     resetRoom: () => set({
         alicePhotons: [],
         alicePhases: [],      
-        bobMeasurements: [],
+        bobTimeMeasurements: [],
         keyBits: [],
         partnerBits: [],
         gameSuccess: false,

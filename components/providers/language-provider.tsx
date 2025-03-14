@@ -55,10 +55,10 @@ export const useLanguage = () => {
 export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
     const [language, setLanguage] = useState(Language.FRENCH);
     const pathname = usePathname();
-    const pathParts = pathname.split("/");
+    const pathParts = pathname ? pathname.split("/") : [];
  
 
-    const gameType = pathParts[1] as Game;
+    const gameType = (pathParts[1] as Game) || Game.QUANTUMCRYPTO;
     const isGameActive = pathParts[2] === 'play';
    
 
