@@ -46,12 +46,39 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.timesSent': 'The arrival times have been successfully transmitted.',
         'component.bobExchange.sentTimes': 'Arrival times are sent to Alice.',
         'component.basis.verify': 'Verify arrival times',
+        'component.basis.correct': 'Correct!',
 
 
+        'component.bobMessaging.encryptedMessage' : 'Your encrypted message (0 or 1)',
+        'component.bobMessaging.message' : 'Your message',
+        'component.bobMessaging.detector' : 'Detector (your key)',
+        'component.bobMessaging.arrivalTime' : 'Arrival time',
+        'component.bobMessaging.phase' : 'phase',
+        'component.bobExchange.secretKey': 'Your secret key is obtained from the clicks of the two detectors,' +
+            'by tracking the photon arrival times.' +
+            'DET1 generates a "0" bit and DET2 a "1" bit, depending on the measured phase difference.',
 
+        'component.messaging.bob.last': 'Enter a message and' +
+            ' encrypt it using your secret key. Then send' +
+            ' the message to Alice!', 
+        'component.messaging.cipherError': 'Verify your message and' +
+            ' encrypted bits',
+        'component.messaging.validateAndSend': 'Validate and send',    
+        'component.messaging.cipherSent': 'Sent!',
+        'component.messaging.congratulations': 'Congratulations ',
+        'component.messaging.bob.sent': 'Your message has been sent! Now,' +
+            ' let\'s wait for Alice\'s decryption...',
+        'component.messaging.alice.arrived': 'Bob\'s encrypted message is' +
+            ' here!',
+        'component.messaging.alice.decrypt': 'Use the secret key to decrypt' +
+            ' the message.',
+        'component.messaging.alice.end': 'You decrypted Bob\'s message!',
+        'component.messaging.bob.end': 'Alice was able to decrypt your' +
+            ' message!',
+        'component.messaging.alice.reveal': 'Your Bob was ',
+        'component.messaging.bob.reveal': 'Your Alice was ',
 
         
-
 
 
 
@@ -95,6 +122,43 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.sentTimes': 'Les temps d\'arrivées sont envoyés à Alice.',
         'component.bobExchange.timesSent': 'Les temps d\'arrivées ont été transmis avec succès.',
         'component.basis.verify': 'Vérifiez les temps d\'arrivées',
+        'component.basis.correct': 'Correct !',
+
+        'component.bobMessaging.encryptedMessage' : 'Votre message chiffré (0 ou 1)',
+        'component.bobMessaging.message' : 'Votre message',
+        'component.bobMessaging.detector' : 'Detecteur (votre clé)',
+        'component.bobMessaging.arrivalTime' : 'temps d\'arrivées',
+        'component.bobMessaging.phase' : 'phase',
+        'component.bobExchange.secretKey': ' Votre clé secrète est obtenue à partir des clics des 02 détecteurs,' +
+            ' en suivant les temps d’arrivée des photons.' +
+            ' DET1 génère un bit "0" et DET2 un bit "1", selon la différence de phase mesurée.',
+        
+        'component.messaging.bob.last': 'Saisissez un message et' +
+            ' chiffrez-le en utilisant votre clé secrète. Ensuite, envoyez' +
+            ' le message à Alice !', 
+        'component.messaging.cipherError': 'Vérifiez votre message et vos' +
+            ' bits chiffrés',
+        'component.messaging.validateAndSend': 'Valider et envoyer',
+        'component.messaging.cipherSent': 'Envoyé !',
+        'component.messaging.congratulations': 'Félicitations ',
+        'component.messaging.bob.sent': 'Votre message a été envoyé !' +
+            ' Maintenant, attendons le déchiffrement de Alice...',
+        'component.messaging.alice.arrived': 'Le message chiffré de Bob est' +
+            ' arrivé !',
+        'component.messaging.alice.decrypt': 'Utilisez la clé secrète pour' +
+            ' déchiffrer le message.',
+        'component.messaging.alice.end': 'Vous avez déchiffré le message' +
+            ' de Bob !',
+        'component.messaging.bob.end': 'Alice a réussi à déchiffrer votre' +
+            ' message !',
+        'component.messaging.alice.reveal': 'Votre Bob était ',
+        'component.messaging.bob.reveal': 'Votre Alice était ',
+
+        
+
+
+
+
 
 
      
@@ -134,7 +198,44 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.timesSent': 'Los tiempos de llegada han sido transmitidos con éxito.',
         'component.bobExchange.sentTimes': 'Los tiempos de llegada se envían a Alice.',
         'component.basis.verify': 'Verifica horarios de llegada',
+        'component.basis.correct': '¡Correcto!',
 
+        'component.bobMessaging.encryptedMessage' : 'Tu mensaje cifrado (0 o 1)',
+        'component.bobMessaging.message' : 'Tu mensaje',
+        'component.bobMessaging.detector' : 'Detector (Tu clave)',
+        'component.bobMessaging.arrivalTime' : 'Hora de llegada',
+        'component.bobMessaging.phase' : 'face',
+        'component.bobExchange.secretKey': 'Su clave secreta se obtiene de los clics de los detectores O2' +
+            'mediante el seguimiento de los tiempos de llegada de los fotones.' +
+            'DET1 genera un bit "0" y DET2 un bit "1", dependiendo de la diferencia de fase medida.',
+
+
+        'component.messaging.bob.last': 'Ingresa un mensaje y' +
+            ' encriptelo usando su clave secreta. Luego envía' +
+            '¡El mensaje para Alicia!',    
+        'component.messaging.cipherError': 'Verifica tu mensaje y tus bits' +
+            ' cifrados',
+        'component.messaging.validateAndSend': 'Validar y enviar',
+        'component.messaging.cipherSent': '¡Enviado!',
+        'component.messaging.congratulations': 'Felicidades ',
+        'component.messaging.bob.sent': '¡Tu mensaje ha sido enviado!' +
+            ' Ahora, esperemos el descifrado de Alice...',
+        'component.messaging.alice.arrived': '¡El mensaje cifrado de Bob' +
+            ' está aquí!',
+        'component.messaging.alice.decrypt': 'Usa la clave secreta para' +
+            ' descifrar el mensaje.',
+        'component.messaging.alice.end': '¡Has descifrado el mensaje de Bob!',
+        'component.messaging.bob.end': '¡Alice pudo descifrar tu mensaje!',
+        'component.messaging.alice.reveal': 'Tu Bob era ',
+        'component.messaging.bob.reveal': 'Tu Alice era ',
+        
+
+        
+
+
+
+
+        
 
 
 

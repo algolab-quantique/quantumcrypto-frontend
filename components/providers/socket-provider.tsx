@@ -87,7 +87,7 @@ type SocketContextType = {
     sendEvent: (event: string, message?: any) => void;
     measurePhotons: (bases: string[]) => void;
     sendPhotons: (photons: number[]) => void;
-    sendPhases: (photons: String[]) => void;
+    sendPhases: (photons: string[][], phases: string[][]) => void;
     sendCipher: (cipher: string[]) => void;
     shareBases: (bases: string[], event: string, socket?: any) => void;
     shareBits: (bits: string[], event: string, socket?: any) => void;
@@ -546,6 +546,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 case A_PHASES_EVENT:
                     if (usePlayerStore.getState().playerRole === 'B') {
                         useDPSRoomStore.getState().setAlicePhotons(message.photons);
+                        useDPSRoomStore.getState().setAlicePhases(message.phases);
+
                         useDPSProgressStore.getState().pushLines([
                             {
                                 content: 'component.bobExchange.photonsArrived',
@@ -555,7 +557,6 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                                 content: 'component.bobExchange.Measurement',
                             },
                         ]);
-                        console.log("Nouvel état après pushLines:", useDPSProgressStore.getState().displayedLines);
                     }
 
                 case B_BASES_EVENT:
@@ -931,8 +932,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         }
     }
 
-    const sendPhases = (photons: String[]) => {
-        sendEvent(A_PHASES_EVENT, {photons});
+    const sendPhases = (photons: string[][], phases: string[][]) => {
+        sendEvent(A_PHASES_EVENT, {photons, phases});
     }
     const sendPhotons = (photons: number[]) => {
         sendEvent(A_PHOTONS_EVENT, {photons});

@@ -8,6 +8,8 @@ interface DPSRoomStore {
     bobTimeMeasurements: string[];
     keyBits: string[];
     partnerBits: string[];
+    bobCipher: string[],
+    bobCipherSent: boolean,
     gameSuccess: boolean;
     validated: boolean;
     crypto: string[];
@@ -21,6 +23,8 @@ interface DPSRoomStore {
     setPartnerBits: (bits: string[]) => void;
     setValidated: (validated: boolean) => void;
     setValidatedByPartner: (validatedByPartner: boolean) => void;
+    setBobCipher: (bits: string[]) => void;
+    setBobCipherSent: (sent: boolean) => void;
     setGameSuccess: (success: boolean) => void;
     setCrypto: (cipher: string[]) => void;
     setMessage: (message: string[]) => void;
@@ -49,6 +53,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     bobTimeMeasurements: [],
     keyBits: [],
     partnerBits: [],
+    bobCipher: [],
+    bobCipherSent: false,
     gameSuccess: false,
     validated: false,
     validatedByPartner: false,
@@ -61,6 +67,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         measurements, set),
     setKeyBits: bits => updateAndStore('keyBits', bits, set),
     setPartnerBits: bits => updateAndStore('partnerBits', bits, set),
+    setBobCipher: bits => updateAndStore('bobCipher', bits, set),
+    setBobCipherSent: sent => updateAndStore('bobCipherSent', sent, set),
     setGameSuccess: success => updateAndStore('gameSuccess', success, set),
     setValidatedByPartner: validatedByPartner => updateAndStore(
         'validatedByPartner', validatedByPartner, set),
@@ -78,6 +86,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         bobTimeMeasurements: [],
         keyBits: [],
         partnerBits: [],
+        bobCipher: [],
+        bobCipherSent: false,
         gameSuccess: false,
         validated: false,
         validatedByPartner: false,

@@ -189,18 +189,20 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
 
     const onSendPulsePhotons = () => {
         
-        if (validateForm && !photonsSent) {
+     //   if (validateForm && !photonsSent) {
 
           console.log("pulseInputs: ", pulseInputs);
           console.log("phaseInputs", phaseInputs);
-          setAlicePhotons(pulseInputs.map(({values }) => values));
-          setAlicePhases(phaseInputs.map(({values}) => values));
-          
-          //const updatedPhases = useDPSRoomStore.getState().alicePhases;
-          const updatedPhotons = useDPSRoomStore.getState().alicePhotons;
-          console.log("alicePhases après mise à jour:", updatedPhotons);
-      
-          sendPhases(updatedPhotons);
+          const photonsToSend = pulseInputs.map(({ values }) => values);
+          const phasesToSend = phaseInputs.map(({ values }) => values);
+  
+          setAlicePhotons(photonsToSend);
+          setAlicePhases(phasesToSend);
+  
+          console.log("alicePhotons après mise à jour:", photonsToSend);
+          console.log("alicePhases après mise à jour:", phasesToSend);
+  
+          sendPhases(photonsToSend, phasesToSend);
 
 
            pushLines([
@@ -210,7 +212,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
             ]);
     
             setPhotonsSent(true);
-        }
+     //   }
     };
     
     return (
@@ -305,7 +307,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
             </Table>
             <div className="md:block fixed right-6 bottom-6 shadow-xl">
             <Button
-                disabled={!validateForm || photonsSent}
+              //  disabled={!validateForm || photonsSent}
                 size="lg"
                 onClick={onSendPulsePhotons}
                 className="text-lg font-bold"
