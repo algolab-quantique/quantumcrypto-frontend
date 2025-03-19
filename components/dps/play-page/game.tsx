@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
 // import BasisTab from '@/components/dps/play-page/tabs/basis-tab';
-// import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
+import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
+import BobMessagingTab from '@/components/dps/play-page/tabs/bob-messaging-tab';
+import AliceMessagingTab from '@/components/dps/play-page/tabs/alice-messaging-tab';
 import isConnected from '@/components/hoc/is-connected';
 // import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
@@ -117,7 +119,12 @@ const Game = () => {
                                 {/* <ValidationTab playerRole={playerRole}/> */}
                             </TabsContent>}
                             <TabsContent value={'messaging'}>
-                                {/* <MessagingTab playerRole={playerRole}/> */}
+                                {
+                                    playerRole === 'A' ? 
+                                        <AliceMessagingTab /> : 
+                                        <BobMessagingTab />
+                                }
+                               {/* <MessagingTab playerRole={playerRole}/> */}
                             </TabsContent>
                         </Tabs>
                     </div>

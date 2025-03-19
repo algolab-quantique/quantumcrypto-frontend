@@ -22,7 +22,7 @@ import {
 import {useLanguage} from '@/components/providers/language-provider';
 import {useSocket} from '@/components/providers/socket-provider';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
-import {inputPhaseField } from '@/types';
+import {DPSGameStep, inputPhaseField } from '@/types';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import {CheckCircle2, SearchCode} from 'lucide-react';
 
@@ -30,8 +30,13 @@ import {CheckCircle2, SearchCode} from 'lucide-react';
 
 const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
     const { localize } = useLanguage();
-    const { pushLines } = useDPSProgressStore();
-    const { alicePhotons, setBobTimeMeasurements } = useDPSRoomStore();
+    const { 
+        setStep,
+        pushLines,
+        setDPSTab,
+         } = useDPSProgressStore();
+    const { alicePhotons, alicePhases, setBobTimeMeasurements } = useDPSRoomStore();
+    
 
     const [showSendButton, setShowSendButton] = useState(false);
     const [showValidateButton, setShowValidateButton] = useState(true);
@@ -98,7 +103,7 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
 
             setIsValidated(true);
             setShowValidateButton(false);
-            setTimeout(() => setShowSendButton(true), 200);
+            setTimeout(() => setShowSendButton(true), 500);
         }
 
         setValidatedTimes(updatedTimes);
@@ -113,9 +118,31 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
         );
         console.log("validTimes: ", validTimes);
         setBobTimeMeasurements(validTimes as string[]);
-
-        pushLines([{ content: 'component.bobExchange.sentTimes' }]);
+        
         toast.success(localize('component.bobExchange.timesSent'));
+        pushLines([{ content: 'component.bobExchange.sentTimes' }]);
+
+        setTimeout( () => {
+
+            setStep(DPSGameStep.MESSAGING);
+            setDPSTab('messaging');
+            pushLines([
+                {
+                    title: 'component.game.step2',
+                    content: 'component.bobExchange.secretKey',
+                },
+            ]);
+
+        }, 1000);
+        setTimeout( () => {
+            pushLines([
+                {
+                    title: 'component.game.step3',
+                    content: 'component.messaging.bob.last',
+                },
+            ]);
+        },2000)
+       
     };
 
     return (
