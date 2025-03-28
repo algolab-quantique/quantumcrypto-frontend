@@ -20,10 +20,11 @@ import {
 import {cn, forbiddenSymbols} from '@/lib/utils';
 import {useLanguage} from '@/components/providers/language-provider';
 import {useSocket} from '@/components/providers/socket-provider';
-import {inputPhaseField } from '@/types';
+import {DPSGameStep, inputPhaseField } from '@/types';
 import { log } from 'console';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
+import {CheckCircle2, Info} from 'lucide-react';
 
 
 
@@ -36,7 +37,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
     const {sendPhases} = useSocket();
     const {pushLines, setDPSTab, setStep} = useDPSProgressStore();
     const {
-        alicePhotons ,
+        alicePhotons,
         alicePhases,
     } = useDPSRoomStore();
     const {
@@ -44,7 +45,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         setAlicePhases,
     } = useDPSRoomStore();
     const possiblePhases = ['0', 'π'];
-    const [photonsSent, setPhotonsSent] = useState(false);
+    const photonsSent = alicePhotons.length > 0;
     const [phaseInputs, setPhaseInputs] = useState(() => {
         const inputs: inputPhaseField[] = [];
         for (let _ = 0; _ < photonNumber; _++) {
@@ -189,7 +190,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
 
     const onSendPulsePhotons = () => {
         
-     //   if (validateForm && !photonsSent) {
+        if (validateForm && !photonsSent) {
 
           console.log("pulseInputs: ", pulseInputs);
           console.log("phaseInputs", phaseInputs);
@@ -211,8 +212,8 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                 },
             ]);
     
-            setPhotonsSent(true);
-     //   }
+
+        }
     };
     
     return (
@@ -231,7 +232,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                 </div>
                             </div>
                         </TableHead>
-                        <TableHead className="text-center">
+                        <TableHead className="text-center w-[200px]">
                             <div className="flex flex-col gap-y-1 py-1">
                                 <div
                                     className="flex flex-col md:flex-row md:gap-x-1 justify-center">
@@ -245,7 +246,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                     'component.aliceGame.random')}</Button>
                             </div>
                         </TableHead>
-                        <TableHead className="text-center">
+                        <TableHead className="text-center w-[200px]">
                             <div className="flex flex-col gap-y-1 py-1">
                                 <div
                                     className="flex flex-col md:flex-row md:gap-x-1 justify-center">
@@ -269,45 +270,69 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                     ))}
                                 </div>
                             </TableCell>   
-                            <TableCell>
-                                {phaseInputs[i].values.map((value, buttonIndex) => (
-                                    <Button
-                                        key={buttonIndex}
-                                        variant="outline"
-                                        className={cn('disabled:opacity-100')}
-                                        onClick={() => onPhaseClick(i, buttonIndex)}
-                                        size="icon"
-                                    >
-                                        {value}
-                                    </Button>
-                                ))}
+                            <TableCell className="w-[200px]">
+                                <div className="gaussian-container">
+                                    {phaseInputs[i].values.map((value, buttonIndex) => (
+                                    
+                                        <Button
+                                            key={buttonIndex}
+                                            variant="outline"
+                                            className={cn('disabled:opacity-100')}
+                                            onClick={() => onPhaseClick(i, buttonIndex)}
+                                            size="icon"
+                                        > {photonsSent ? alicePhases[i][buttonIndex]: value}
+                                        </Button>
+                                    ))}
+                                </div>
+                                
                             </TableCell>  
-                            <TableCell>
-                                {pulseInputs[i].values.map((value, buttonIndex) => (
-                                    <Button
-                                        key={buttonIndex}
-                                        variant="outline"
-                                        className={cn(
-                                            'disabled:opacity-100', 
-                                            pulseInputs[i].error[buttonIndex] && pulseInputs[i].touched[buttonIndex] ? 'border border-red' : ''
-                                        )}
-                                        onClick={() => onModulatedClick(i, buttonIndex)}
-                                        size="icon"
-                                    >
-                                        {value === '1' ? polarIcons[1] : value === '2' ? polarIcons[2] : polarIcons[0]}
-                                    </Button>
-                                ))}
+                            <TableCell className="w-[200px]">
+                                <div className="gaussian-container">
+                                    {pulseInputs[i].values.map((value, buttonIndex) => (
+                                        <Button
+                                            key={buttonIndex}
+                                            variant="outline"
+                                            className={cn(
+                                                'disabled:opacity-100',
+                                                'flex items-center justify-center', 
+                                                pulseInputs[i].error[buttonIndex] && pulseInputs[i].touched[buttonIndex] ? 'border border-red' : ''
+                                            )}
+                                            onClick={() => onModulatedClick(i, buttonIndex)}
+                                            size="icon"
+                                        >
+                                            {photonsSent 
+                                                ? (alicePhotons[i][buttonIndex] === '1' 
+                                                    ? polarIcons[1] 
+                                                    : polarIcons[2]) 
+                                                : (value === '1' 
+                                                    ? polarIcons[1] 
+                                                    : value === '2' 
+                                                        ? polarIcons[2] 
+                                                        : polarIcons[0])
+                                            }
+                                        </Button>
+                                    ))}
+                                </div>
+                                
                             </TableCell>  
-                            <TableCell>
-                            </TableCell>   
+                             
                         </TableRow>
                     ))}
                     
                 </TableBody>
             </Table>
+            <div
+                className="fixed bottom-3 right-3 md:hidden">
+                <Button 
+                    onClick={onSendPulsePhotons} 
+                    size={'icon'}
+                    disabled={!validateForm || photonsSent}>
+                    <CheckCircle2/>
+                </Button>
+            </div>
             <div className="md:block fixed right-6 bottom-6 shadow-xl">
             <Button
-              //  disabled={!validateForm || photonsSent}
+                disabled={!validateForm || photonsSent}
                 size="lg"
                 onClick={onSendPulsePhotons}
                 className="text-lg font-bold"

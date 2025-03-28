@@ -79,7 +79,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Show graph',
         'component.e91.text.values': 'Values',
         'component.e91.text.seeResults': 'See Results',
-        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
         'component.tooltip.bobBase': 'Bob\'s Base',
         'component.tooltip.aliceBase': 'Alice\'s Base',
         'component.tooltip.category': "Category",
@@ -171,7 +170,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Monter le graphique',
         'component.e91.graph.title': 'CHSH',
         'component.e91.text.seeResults': 'Voir les résultats',
-        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
         'component.tooltip.bobBase': 'Base de Bob',
         'component.tooltip.aliceBase': 'Base d\'Alice',
         'component.tooltip.category': "Catégorie",
@@ -259,8 +257,7 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Mostrar gráfico',
         'component.e91.text.values': 'Valores',
         'component.e91.text.seeResults': 'Ver resultados',
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente, y 10 en' +
-            ' caso contrario.',
+       
         'component.tooltip.bobBase': 'Base de Bob',
         'component.tooltip.aliceBase': 'Base de Alice',
         'component.tooltip.category': "Categoría",

@@ -30,12 +30,17 @@ import {CheckCircle2, SearchCode} from 'lucide-react';
 
 const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
     const { localize } = useLanguage();
+    const {sendArrivalTimes} = useSocket();
+    
     const { 
         setStep,
         pushLines,
         setDPSTab,
          } = useDPSProgressStore();
-    const { alicePhotons, alicePhases, setBobTimeMeasurements } = useDPSRoomStore();
+
+    const { alicePhotons, alicePhases, bobTimeMeasurements, setBobTimeMeasurements } = useDPSRoomStore();
+    const arrivalTimesSent = bobTimeMeasurements.length > 0;
+    const alicePhasesArrived = alicePhases.length > 0;
     
 
     const [showSendButton, setShowSendButton] = useState(false);
@@ -122,6 +127,8 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
         toast.success(localize('component.bobExchange.timesSent'));
         pushLines([{ content: 'component.bobExchange.sentTimes' }]);
 
+        sendArrivalTimes(validTimes as string[]);
+
         setTimeout( () => {
 
             setStep(DPSGameStep.MESSAGING);
@@ -159,7 +166,7 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                                 <TooltipProvider delayDuration={200}>
                                     <Tooltip>
                                         <TooltipTrigger
-                                            disabled={measured}
+                                            disabled={!alicePhasesArrived || measured || arrivalTimesSent}
                                             onClick={measureArrivalTime}
                                             className="disabled:opacity-50 disabled:pointer-events-none rounded-md p-1 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                                         >
@@ -181,7 +188,7 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                             <TableCell>
                                 <Input
                                     disabled
-                                    value={alicePhotons.length > 0 ? '*' : ''}
+                                    value={alicePhasesArrived ? '*' : ''}
                                     className="disabled:bg-background disabled:opacity-100 disabled:cursor-default w-10 text-lg text-center mx-auto"
                                 />
                             </TableCell>
@@ -194,7 +201,7 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                                         validatedTimes[i]?.error ? 'border-red' : ''
                                     )}
                                 >
-                                    <p>{validatedTimes[i]?.value ?? '-'}</p>
+                                    <p>{arrivalTimesSent ? bobTimeMeasurements[i] : (validatedTimes[i]?.value ?? '-')}</p>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -205,21 +212,22 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                 {showValidateButton && (
                     <Button
                         size="lg"
-                        disabled={!measured}
+                        disabled={!measured || arrivalTimesSent}
                         onClick={onValidateTimes}
                         className="text-lg font-bold"
                     >
-                        {localize('component.basis.validateBtn')}
+                        {localize('component.dps.validateBtn')}
                     </Button>
                 )}
                 
                 {showSendButton && (
                     <Button
                         size="lg"
+                        disabled={arrivalTimesSent}
                         onClick={onSendTimes}
                         className="text-lg font-bold ml-4"
                     >
-                        {localize('component.bobExchange.sendTimes')}
+                        {localize('component.bobExchange.sendArrivalTimes')}
                     </Button>
                 )}
             </div>
