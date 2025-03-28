@@ -17,6 +17,7 @@ import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
 import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
 import BobMessagingTab from '@/components/dps/play-page/tabs/bob-messaging-tab';
 import AliceMessagingTab from '@/components/dps/play-page/tabs/alice-messaging-tab';
+import AliceInferenceTab from '@/components/dps/play-page/tabs/alice-inference-tab';
 import isConnected from '@/components/hoc/is-connected';
 // import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
@@ -84,15 +85,15 @@ const Game = () => {
                             value={dpsTab}
                             onValueChange={(value) => setDPSTab(value)}>
                             <TabsList className={cn('w-full grid sticky h-fit',
-                                gameHasEve ? 'grid-cols-4' : 'grid-cols-3')}>
+                                playerRole === 'A' ? 'grid-cols-3' : 'grid-cols-2')}>
                                 <TabsTrigger value={'exchange'}><p
                                     className={'text-wrap text-md md:text-lg'}>{localize(
                                     'component.game.tabs1')}</p></TabsTrigger>
-                                <TabsTrigger value={'basis'}
+                                {playerRole === 'A' && <TabsTrigger value={'inference'}
                                              disabled={step < 1}>
                                     <p className={'text-wrap text-md md:text-lg'}>{localize(
                                         'component.game.tabs2')}</p>
-                                </TabsTrigger>
+                                </TabsTrigger>}
                                 {gameHasEve && <TabsTrigger
                                     disabled={step < 2}
                                     value={'validation'}>
@@ -112,8 +113,8 @@ const Game = () => {
                                                       polarIcons={polarIcons}/> :
                                     <BobExchangeTab photonNumber={photonNumber}/>}
                             </TabsContent>
-                            <TabsContent value={'basis'}>
-                                {/* <BasisTab playerRole={playerRole}/> */}
+                            <TabsContent value={'inference'}>
+                                {playerRole === 'A' && <AliceInferenceTab polarIcons={polarIcons} /> }
                             </TabsContent>
                             {gameHasEve && <TabsContent value={'validation'}>
                                 {/* <ValidationTab playerRole={playerRole}/> */}

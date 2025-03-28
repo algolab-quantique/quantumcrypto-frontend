@@ -6,6 +6,7 @@ interface DPSRoomStore {
     alicePhotons: string[];
     alicePhases: string [];
     bobTimeMeasurements: string[];
+    inferredPhases: string[];
     keyBits: string[];
     partnerBits: string[];
     bobCipher: string[],
@@ -13,12 +14,15 @@ interface DPSRoomStore {
     gameSuccess: boolean;
     validated: boolean;
     crypto: string[];
+    decryptedMessage: string[];
     message: string[];
     validatedByPartner: boolean;
     eveUndetected: boolean;
+    setDecryptedMessage: (message: string[]) => void;
     setAlicePhotons: (photons: string[][]) => void;
     setAlicePhases: (phases: string [][]) => void;
     setBobTimeMeasurements: (measurements: string[]) => void;
+    setInferredPhases: (bits: string[]) => void;
     setKeyBits: (bits: string[]) => void;
     setPartnerBits: (bits: string[]) => void;
     setValidated: (validated: boolean) => void;
@@ -51,6 +55,7 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     alicePhotons: [],
     alicePhases: [],
     bobTimeMeasurements: [],
+    inferredPhases: [],
     keyBits: [],
     partnerBits: [],
     bobCipher: [],
@@ -60,11 +65,13 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     validatedByPartner: false,
     crypto: [],
     message: [],
+    decryptedMessage: [],
     eveUndetected: false,
     setAlicePhotons: (photons: string[][]) => updateAndStore('alicePhotons', photons, set),
     setAlicePhases: (phases: string[][]) => updateAndStore('alicePhases', phases, set),
     setBobTimeMeasurements: measurements => updateAndStore('bobTimeMeasurements',
         measurements, set),
+    setInferredPhases: bits => updateAndStore('inferredPhases', bits, set),
     setKeyBits: bits => updateAndStore('keyBits', bits, set),
     setPartnerBits: bits => updateAndStore('partnerBits', bits, set),
     setBobCipher: bits => updateAndStore('bobCipher', bits, set),
@@ -75,6 +82,7 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     setValidated: validated => updateAndStore('validated', validated, set),
     setCrypto: crypto => updateAndStore('crypto', crypto, set),
     setMessage: message => updateAndStore('message', message, set),
+    setDecryptedMessage: message => updateAndStore( 'decryptedMessage', message, set ),
     setEvePresent: evePresent => updateAndStore('evePresent', evePresent, set),
     setValidationIndices: validationIndices => updateAndStore(
         'validationIndices', validationIndices, set),
@@ -84,6 +92,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         alicePhotons: [],
         alicePhases: [],      
         bobTimeMeasurements: [],
+        decryptedMessage: [],
+        inferredPhases: [],
         keyBits: [],
         partnerBits: [],
         bobCipher: [],

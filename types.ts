@@ -27,7 +27,7 @@ export enum E91GameStep {
 
 export enum DPSGameStep {
     EXCHANGE,
-    BASIS,
+    INFERENCE,
     VALIDATION,
     MESSAGING,
 }

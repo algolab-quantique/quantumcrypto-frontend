@@ -64,7 +64,7 @@ const DPSProgression = () => {
                         className="font-bold text-highlight"> {partnerName}</span>
                 </p>
                 <div className="w-full h-fit mb-1 flex justify-center">
-                    <Button onClick={goToResultsPage}>{localize('component.dps.text.seeResults')}</Button>
+                    <Button onClick={goToResultsPage}>{localize('component.results.seeResults')}</Button>
                 </div>
             </div>}
         </GameProgression>

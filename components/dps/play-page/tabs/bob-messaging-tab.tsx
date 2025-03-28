@@ -28,7 +28,6 @@ const BobMessagingTab = () => {
         bobTimeMeasurements,
         bobCipher,
         bobCipherSent,
-        keyBits,
         message: persistedMessage,
         crypto: persistedCrypto,
         gameSuccess,
@@ -43,12 +42,10 @@ const BobMessagingTab = () => {
         setGameSuccess,
     } = useDPSRoomStore();
     
-    console.log("alicePhases:", alicePhases);
-    console.log("bobTimeMeasurements:", bobTimeMeasurements);
-
-    // Filtrer les phases avec un temps valide
+   
+    // Filter phases with valid time
     const validEntries = alicePhases.map((phase, index) => ({
-        phase: Array.isArray(phase) ? phase : phase.split(""), // S'assurer que c'est un tableau
+        phase: Array.isArray(phase) ? phase : phase.split(""),
         time: bobTimeMeasurements[index] ?? "", 
     })).filter(entry => entry.time !== "");
 
@@ -127,9 +124,6 @@ const BobMessagingTab = () => {
             const detectorValue = detectorValues[index];
             const messageValue = message[index].value;
     
-            console.log(`Detector[${index}]:`, detectorValue);
-            console.log(`Message[${index}]:`, messageValue);
-    
             if (detectorValue === "Erreur") {
                 console.warn(`Erreur dans getDetector pour l'entrée ${index}`);
                 return { ...cryptoBit, error: true };
@@ -137,11 +131,9 @@ const BobMessagingTab = () => {
 
             const keyNumber = parseInt(detectorValue);
 
-            console.log("**message[index].value: ", message[index].value);
             const messageNumber = parseInt(messageValue);
             
             const result = (keyNumber + messageNumber) % 2;
-            console.log("result: ", result);
             return {
                 ...cryptoBit,
                 touched: true,
@@ -151,7 +143,6 @@ const BobMessagingTab = () => {
 
         setCrypto(updatedCrypto);
         const allValid = !updatedCrypto.some(bit => bit.error);
-        console.log("**allValid:  ", allValid);
 
         if (allValid) {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
@@ -160,16 +151,6 @@ const BobMessagingTab = () => {
             sendCipher(payload);
             toast.success(localize('component.messaging.cipherSent'));
             setBobCipherSent(true);
-            pushLines([{ 
-                content: 'component.messaging.bob.sent'
-            }]);
-            /*
-            pushLines([{ 
-                        title: 'component.messaging.congratulations',
-                        content: 'component.messaging.bob.end'
-                    }]);
-            setGameSuccess(true);
-            */
         } else {
             toast.error(localize('component.messaging.cipherError'));
         }
@@ -183,7 +164,7 @@ const BobMessagingTab = () => {
             <Table className="w-full">
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg border-secondary">
-                        <TableHead className="text-center rounded-tl-lg"><p>{localize('component.bobMessaging.phase')}</p></TableHead>
+                        
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.arrivalTime')}</p></TableHead>
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.detector')}</p></TableHead>
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.message')}</p></TableHead>
@@ -191,9 +172,8 @@ const BobMessagingTab = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody className="h-full overflow-y-auto">
-                    {validEntries.map(({ phase, time }, index) => (
+                    {validEntries.map(({ time }, index) => (
                         <TableRow key={index} className="text-center border-secondary">
-                            <TableCell>{phase.join(" ")}</TableCell>
                             <TableCell>{time}</TableCell>
                             <TableCell>{detectorValues[index]}</TableCell>
                             <TableCell>
