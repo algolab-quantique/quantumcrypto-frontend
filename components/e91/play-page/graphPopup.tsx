@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { useLanguage } from '@/components/providers/language-provider';
 
 const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any, isVisible: boolean, sValues: number[], photonNumber: number}) => {
-  if (!isVisible) return null;
+  
   const {localize} = useLanguage();
 
   useEffect(() => {
@@ -95,6 +95,8 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
     .attr("text-anchor", "end")
     .text("S = 2");
   }, [sValues]);
+
+  if (!isVisible) return null;
 
   return (
     <div className="popup-overlay" onClick={onClose}>

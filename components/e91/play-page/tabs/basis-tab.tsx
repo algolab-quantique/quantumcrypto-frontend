@@ -95,7 +95,7 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const CategoryIcons = 
 
     [
-        <Minus/>, <Bell/>, <Trash/>, <Key/>
+        <Minus key="minus"/>, <Bell key="bell"/>, <Trash key="trash"/>, <Key key="key"/>
     ];
     
 

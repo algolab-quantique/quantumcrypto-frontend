@@ -448,9 +448,9 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
                     <TableHeader>
                         <TableRow className="bg-secondary text-white text-lg">
                             <TableHead className="border border-secondary text-center">E(a, b)</TableHead>
-                            <TableHead className="border border-secondary text-center">E(a', b)</TableHead>
-                            <TableHead className="border border-secondary text-center">E(a, b')</TableHead>
-                            <TableHead className="border border-secondary text-center">E(a', b')</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a&apos;, b)</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a, b&apos;)</TableHead>
+                            <TableHead className="border border-secondary text-center">E(a&apos;, b&apos;)</TableHead>
                             <TableHead className="border border-secondary text-center">S</TableHead>
                         </TableRow>
                     </TableHeader>
