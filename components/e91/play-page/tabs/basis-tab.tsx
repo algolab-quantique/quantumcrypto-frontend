@@ -212,12 +212,12 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const onValidate = () => {
         if (validateForm) { 
             const validBitIndices = categoryList
-                .map((field, index) => (field.value === '3' ? index : null))
-                .filter(index => index !== null); 
+                .map((field, index) => (field.value === '3' ? index : -1))
+                .filter(index => index !== -1); 
     
             const invalidBitIndices = categoryList
-                .map((field, index) => (field.value === '1' ? index : null))
-                .filter(index => index !== null); 
+                .map((field, index) => (field.value === '1' ? index : -1))
+                .filter(index => index !== -1); 
     
             
             setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
