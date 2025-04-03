@@ -27,6 +27,7 @@ const AliceMessagingTab = () => {
     const { 
         inferredPhases,
         bobCipher,
+        aliceKeyBits,
         gameSuccess,
         decryptedMessage: persistedDecryptedMessage,        
     } = useDPSRoomStore();
@@ -34,10 +35,12 @@ const AliceMessagingTab = () => {
     const {
         setDecryptedMessage: setPersistedDecryptedMessage,
         setGameSuccess,
+        setAliceKeyBits,
     } = useDPSRoomStore();
 
-
+    console.log("bobCipher: ", bobCipher.length);
     const secretKey = inferredPhases.map(phase => (phase === "π" ? "1" : "0"));
+    
 
     const [decryptedMessage, setDecryptedMessage] = useState(() => {
         return bobCipher.map(() => ({
@@ -79,6 +82,7 @@ const AliceMessagingTab = () => {
         const allValid = !updatedMessage.some(bit => bit.error);
 
         if (allValid) {
+            setAliceKeyBits(secretKey);
             setPersistedDecryptedMessage(updatedMessage.map(({value}) => value));
             toast.success(localize('component.basis.correct'));
             if(!gameSuccess){
@@ -112,9 +116,19 @@ const AliceMessagingTab = () => {
                         <TableRow key={index} className="text-center border-secondary">
                             <TableCell>{phase}</TableCell>
                             <TableCell>{secretKey[index]}</TableCell>
-                            <TableCell>{bobCipher[index] || ""}</TableCell>
                             <TableCell>
                                 <Input
+                                    className={cn('w-10 text-lg text-center' +
+                                        ' mx-auto disabled:opacity-100' +
+                                        ' disabled:bg-background' +
+                                        ' disabled:cursor-default',
+                                        )}
+                                    disabled={true}    
+                                    value={bobCipher[index] || ""} />
+                                </TableCell>
+                            <TableCell>
+                                <Input
+                                    disabled={bobCipher.length==0 || gameSuccess}
                                     onKeyDown={e => forbiddenSymbols.includes(e.key) && e.preventDefault()}
                                     value={ gameSuccess 
                                             ? persistedDecryptedMessage[index] 
@@ -139,14 +153,14 @@ const AliceMessagingTab = () => {
             <div
                 className="fixed bottom-3 right-3 md:hidden">
                 <Button size={'icon'}
-                        disabled={bobCipher.length==0 && gameSuccess}
+                        disabled={bobCipher.length==0 || gameSuccess}
                         onClick={onValidateDecryption}>
                     <CheckCircle2/>
                 </Button>
             </div>
             <div className="hidden md:block fixed right-6 bottom-6 shadow-xl">
                 <Button size="lg" 
-                        disabled={bobCipher.length==0 && gameSuccess}
+                        disabled={bobCipher.length==0 || gameSuccess}
                         onClick={onValidateDecryption} className="text-lg font-bold">
                     {localize('component.dps.validateBtn')}
                 </Button>

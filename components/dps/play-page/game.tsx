@@ -22,18 +22,36 @@ import isConnected from '@/components/hoc/is-connected';
 // import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
-import { GaussianCurve1, InvertedGaussianCurve1 } from '@/components/icons/gaussian-curves';
+import { useTheme } from "next-themes";
+
 
 
 const Game = () => {
 
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+
     const polarIcons =
 
-        [
-            <Minus/>, 
-            <GaussianCurve1/>,
-            <InvertedGaussianCurve1/>,
-        ];
+    [
+        <Minus key="minus"/>,
+        <img
+            key="zero"
+            src={isDark ? "/images/zero_bb.svg" : "/images/zero_wb.svg"}
+            alt="Zero"
+            width={50}
+            height={50}
+        />,
+        <img
+            key="pi"
+            src={isDark ? "/images/pi_bb.svg" : "/images/pi_wb.svg"}
+            alt="Pi"
+            width={50}
+            height={50}
+        />,
+        
+        
+    ];
 
     const {localize} = useLanguage();
     const {step, displayedLines, dpsTab} = useDPSProgressStore();
