@@ -8,6 +8,8 @@ interface DPSRoomStore {
     bobTimeMeasurements: string[];
     inferredPhases: string[];
     keyBits: string[];
+    aliceKeyBits: string[];
+    bobKeyBits: string[];
     partnerBits: string[];
     bobCipher: string[],
     bobCipherSent: boolean,
@@ -24,6 +26,8 @@ interface DPSRoomStore {
     setBobTimeMeasurements: (measurements: string[]) => void;
     setInferredPhases: (bits: string[]) => void;
     setKeyBits: (bits: string[]) => void;
+    setAliceKeyBits: (bits: string[]) => void;
+    setBobKeyBits: (bits: string[]) => void;
     setPartnerBits: (bits: string[]) => void;
     setValidated: (validated: boolean) => void;
     setValidatedByPartner: (validatedByPartner: boolean) => void;
@@ -57,6 +61,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     bobTimeMeasurements: [],
     inferredPhases: [],
     keyBits: [],
+    aliceKeyBits: [],
+    bobKeyBits: [],
     partnerBits: [],
     bobCipher: [],
     bobCipherSent: false,
@@ -73,6 +79,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         measurements, set),
     setInferredPhases: bits => updateAndStore('inferredPhases', bits, set),
     setKeyBits: bits => updateAndStore('keyBits', bits, set),
+    setAliceKeyBits: bits => updateAndStore('aliceKeyBits', bits, set),
+    setBobKeyBits: bits => updateAndStore('bobKeyBits', bits, set),
     setPartnerBits: bits => updateAndStore('partnerBits', bits, set),
     setBobCipher: bits => updateAndStore('bobCipher', bits, set),
     setBobCipherSent: sent => updateAndStore('bobCipherSent', sent, set),
@@ -95,6 +103,8 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         decryptedMessage: [],
         inferredPhases: [],
         keyBits: [],
+        aliceKeyBits: [],
+        bobKeyBits: [],
         partnerBits: [],
         bobCipher: [],
         bobCipherSent: false,

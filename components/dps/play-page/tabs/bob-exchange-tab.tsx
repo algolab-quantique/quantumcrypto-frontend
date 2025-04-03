@@ -148,7 +148,7 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                     content: 'component.messaging.bob.last',
                 },
             ]);
-        },2000)
+        },3000);
        
     };
 

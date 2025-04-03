@@ -27,6 +27,7 @@ const BobMessagingTab = () => {
         alicePhases, 
         bobTimeMeasurements,
         bobCipher,
+        bobKeyBits,
         bobCipherSent,
         message: persistedMessage,
         crypto: persistedCrypto,
@@ -36,12 +37,17 @@ const BobMessagingTab = () => {
 
     const {
         setBobCipher,
+        setBobKeyBits,
         setBobCipherSent,
         setMessage: setPersistedMessage,
         setCrypto: setPersistedCrypto,
         setGameSuccess,
     } = useDPSRoomStore();
     
+    const bobKeyBitsOn = bobKeyBits?.length > 0;
+    console.log("bobKeyBitsOn: ", bobKeyBitsOn);
+    console.log("***bobKeyBits: ", bobKeyBits);
+
    
     // Filter phases with valid time
     const validEntries = alicePhases.map((phase, index) => ({
@@ -68,25 +74,47 @@ const BobMessagingTab = () => {
         }));
     });
 
+    const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
 
     const [detectorValues, setDetectorValues] = useState<string[]>([]);
-    const generateDetectorValues = (entries: { phase: string[]; time: string }[]) => {
-        return entries.map(({ phase, time }) => {
-            if (phase.length !== 3) return "Erreur";
-            if (time === "t1") {
-                const [B, A] = phase.slice(-2);
-                return (A === "π" && B === "0") || (A === "0" && B === "π") ? "1" : "0";
-            } 
-            if (time === "t2") {
-                const [C, B] = phase.slice(0, 2);
-                return (B === "π" && C === "0") || (B === "0" && C === "π") ? "1" : "0";
-            }
-            return "Erreur"; 
+
+   
+
+    const revealDetectorValues = (entries: { phase: string[]; time: string }[]) => {
+        entries.forEach((entry, i) => {
+            setTimeout(() => {
+                setDetectorValues(prev => {
+                    const newValues = [...prev];
+                    newValues[i] = computeDetectorValue(entry);
+                    return newValues;
+                });
+                setHighlightedIndex(i);
+            }, i * (2000 / entries.length));
         });
+    
+        setTimeout(() => {
+            setHighlightedIndex(null); 
+        }, entries.length * (2000 / entries.length));
+    };
+    
+    const computeDetectorValue = ({ phase, time }: { phase: string[]; time: string }) => {
+        if (phase.length !== 3) return "Erreur";
+        if (time === "t1") {
+            const [B, A] = phase.slice(-2);
+            return (A === "π" && B === "0") || (A === "0" && B === "π") ? "1" : "0";
+        } 
+        if (time === "t2") {
+            const [C, B] = phase.slice(0, 2);
+            return (B === "π" && C === "0") || (B === "0" && C === "π") ? "1" : "0";
+        }
+        return "Erreur"; 
     };
     useEffect(() => {
-        setDetectorValues(generateDetectorValues(validEntries));
+        if (validEntries.length > 0) {
+            revealDetectorValues(validEntries);
+        }
     }, []);
+    
         
 
 
@@ -145,6 +173,7 @@ const BobMessagingTab = () => {
         const allValid = !updatedCrypto.some(bit => bit.error);
 
         if (allValid) {
+            setBobKeyBits(detectorValues);
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             const payload = crypto.map(({value}) => value);
@@ -175,7 +204,23 @@ const BobMessagingTab = () => {
                     {validEntries.map(({ time }, index) => (
                         <TableRow key={index} className="text-center border-secondary">
                             <TableCell>{time}</TableCell>
-                            <TableCell>{detectorValues[index]}</TableCell>
+                            <TableCell>
+                                <Input
+                                    disabled={true}
+                                    style={{
+                                        borderColor: highlightedIndex === index ? 'rgba(0, 255, 0, 0.6)' : undefined,   
+                                        transition: 'border-color 0.5s easeOut'                             
+                                    }}
+                                    onKeyDown={e => forbiddenSymbols.includes(
+                                        e.key) && e.preventDefault()}
+                                    value={bobKeyBitsOn ? bobKeyBits[index] : (detectorValues[index] || '*')}                                  
+                                    className={cn('w-10 text-lg text-center' +
+                                    ' mx-auto disabled:opacity-100' +
+                                    ' disabled:bg-background' +
+                                    ' disabled:cursor-default',
+                                    )}/>
+
+                            </TableCell>
                             <TableCell>
                                 <Input
                                     value={bobCipherSent || gameSuccess ?

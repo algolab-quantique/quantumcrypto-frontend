@@ -264,12 +264,16 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                             <TableCell>
                                 <div className="gaussian-container">
                                     {[1, 2, 3].map((_, index) => (
-                                        <div key={index} className="gaussian-item">
-                                            {polarIcons[1]}
-                                        </div>
+                                        <Button
+                                            key={index}
+                                            variant="outline"
+                                            size="icon"
+                                            className="flex items-center justify-center"
+                                        >{polarIcons[1]}
+                                        </Button>
                                     ))}
                                 </div>
-                            </TableCell>   
+                            </TableCell>     
                             <TableCell className="w-[200px]">
                                 <div className="gaussian-container">
                                     {phaseInputs[i].values.map((value, buttonIndex) => (
