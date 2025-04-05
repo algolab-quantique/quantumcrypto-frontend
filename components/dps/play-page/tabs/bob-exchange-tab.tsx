@@ -28,7 +28,10 @@ import {CheckCircle2, SearchCode} from 'lucide-react';
 
 
 
-const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
+const BobExchangeTab = ({ photonNumber, polarIcons }: { 
+    photonNumber: number,
+    polarIcons: any[]
+ }) => {
     const { localize } = useLanguage();
     const {sendArrivalTimes} = useSocket();
     
@@ -186,11 +189,15 @@ const BobExchangeTab = ({ photonNumber }: { photonNumber: number }) => {
                     {Array.from({ length: photonNumber }).map((_, i) => (
                         <TableRow key={i} className="text-center border-secondary">
                             <TableCell>
-                                <Input
-                                    disabled
-                                    value={alicePhasesArrived ? '*' : ''}
-                                    className="disabled:bg-background disabled:opacity-100 disabled:cursor-default w-10 text-lg text-center mx-auto"
-                                />
+                            <div className="gaussian-container">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="flex items-center justify-center"
+                                >{polarIcons[3]}
+                                </Button>
+                            </div>
+                                
                             </TableCell>
                             <TableCell>
                                 <div

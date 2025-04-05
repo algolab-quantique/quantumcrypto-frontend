@@ -334,7 +334,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                     <CheckCircle2/>
                 </Button>
             </div>
-            <div className="md:block fixed right-6 bottom-6 shadow-xl">
+            <div className="hidden md:block fixed right-6 bottom-6 shadow-xl">
             <Button
                 disabled={!validateForm || photonsSent}
                 size="lg"

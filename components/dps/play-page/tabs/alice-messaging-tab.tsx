@@ -38,7 +38,6 @@ const AliceMessagingTab = () => {
         setAliceKeyBits,
     } = useDPSRoomStore();
 
-    console.log("bobCipher: ", bobCipher.length);
     const secretKey = inferredPhases.map(phase => (phase === "π" ? "1" : "0"));
     
 

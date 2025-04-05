@@ -14,10 +14,14 @@ import useDPSGameStore from '@/store/dps/dps-game-store';
 const DPSProgression = () => {
 
     const {localize} = useLanguage();
-    const {sendEvent, restartGameWithoutEve} = useSocket();
+    const {sendEvent, restartGameAndSwappedRoles} = useSocket();
     const router = useRouter();
 
     const {gameCode} = useDPSGameStore();
+
+
+    const {setPlayerRole, setPartner} = usePlayerStore();
+
 
     const {playerRole, partner: partnerName} = usePlayerStore();
 
@@ -27,7 +31,6 @@ const DPSProgression = () => {
         gameSuccess,
         evePresent,
         validated,
-       // eveSpotted,
     } = useDPSRoomStore();
 
 
@@ -44,10 +47,17 @@ const DPSProgression = () => {
         );
     });
 
+    const restartWithSwappedRoles = () => {
+
+        restartGameAndSwappedRoles();
+
+        router.replace(`/dps/play`);
+    };
+
     const goToResultsPage = () => {
         router.replace(`/games/dps/${gameCode}/results`);
     };
-
+   
     return (
         <GameProgression className="border-none">
             {getFeed()}
@@ -63,7 +73,10 @@ const DPSProgression = () => {
                     <span
                         className="font-bold text-highlight"> {partnerName}</span>
                 </p>
-                <div className="w-full h-fit mb-1 flex justify-center">
+                <div className="w-full h-fit mb-1 flex justify-center space-x-4">
+                    <Button onClick={restartWithSwappedRoles}>
+                            {localize('component.gameRestart.playAgain')}
+                    </Button>
                     <Button onClick={goToResultsPage}>{localize('component.results.seeResults')}</Button>
                 </div>
             </div>}
