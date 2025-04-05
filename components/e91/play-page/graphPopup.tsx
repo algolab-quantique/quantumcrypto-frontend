@@ -6,9 +6,12 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
   
   const {localize} = useLanguage();
 
-  if (!isVisible) return null;
+  
 
   useEffect(() => {
+
+    if (isVisible) return;
+
     const width = 800;
     const height = 400;
     const margin = { top: 20, right: 55, bottom: 40, left: 55 };
@@ -96,7 +99,9 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
     .attr("font-size", "16px")
     .attr("text-anchor", "end")
     .text("S = 2");
-  }, [sValues]);
+  }, [sValues, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <div className="popup-overlay" onClick={onClose}>
