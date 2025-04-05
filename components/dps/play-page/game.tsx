@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
 // import BasisTab from '@/components/dps/play-page/tabs/basis-tab';
-import MessagingTab from '@/components/dps/play-page/tabs/messaging-tab';
 import BobMessagingTab from '@/components/dps/play-page/tabs/bob-messaging-tab';
 import AliceMessagingTab from '@/components/dps/play-page/tabs/alice-messaging-tab';
 import AliceInferenceTab from '@/components/dps/play-page/tabs/alice-inference-tab';
@@ -46,6 +45,13 @@ const Game = () => {
             key="pi"
             src={isDark ? "/images/pi_bb.svg" : "/images/pi_wb.svg"}
             alt="Pi"
+            width={50}
+            height={50}
+        />,
+        <img
+            key="dual"
+            src={isDark ? "/images/dual_bb.svg" : "/images/dual_wb.svg"}
+            alt="Dual"
             width={50}
             height={50}
         />,
@@ -128,14 +134,14 @@ const Game = () => {
                                 
                                 {playerRole === 'A' ?
                                     <AliceExchangeTab photonNumber={photonNumber}
-                                                      polarIcons={polarIcons}/> :
-                                    <BobExchangeTab photonNumber={photonNumber}/>}
+                                                    polarIcons={polarIcons}/> :
+                                    <BobExchangeTab photonNumber={photonNumber}
+                                                    polarIcons={polarIcons}/>}
                             </TabsContent>
                             <TabsContent value={'inference'}>
                                 {playerRole === 'A' && <AliceInferenceTab polarIcons={polarIcons} /> }
                             </TabsContent>
                             {gameHasEve && <TabsContent value={'validation'}>
-                                {/* <ValidationTab playerRole={playerRole}/> */}
                             </TabsContent>}
                             <TabsContent value={'messaging'}>
                                 {
@@ -143,7 +149,6 @@ const Game = () => {
                                         <AliceMessagingTab /> : 
                                         <BobMessagingTab />
                                 }
-                               {/* <MessagingTab playerRole={playerRole}/> */}
                             </TabsContent>
                         </Tabs>
                     </div>

@@ -247,6 +247,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
 
         'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.validation.gameRestarted' : 'The game has been restarted.'
 
        
 
@@ -494,7 +495,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part7.1': 'Notez qu’il reste 3 combinaisons de bases de mesure qui ne sont pas utilisées dans le protocole E91 : ',
         'component.e91.about.figures.part7.2': 'Les mesures effectuées avec ces paires de bases sont simplement jetées. ',   
         'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
-
+        'component.validation.gameRestarted' : 'La partie a été redémarrée.'
 
         
     },
@@ -738,6 +739,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         ' caso contrario.',
         
         'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.validation.gameRestarted' : 'El juego ha sido reiniciado.',
+
 
     },
     

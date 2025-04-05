@@ -96,12 +96,8 @@ export const dpsLines: LanguageItem[] = [
             ' or 1)',
         'component.messaging.decryptError': 'Verify your decryption bits',
         'component.results.seeResults': 'See Results',
+        'component.gameRestart.playAgain': 'Play again',
 
-        
-
-
-            
-            
 
     },
     {
@@ -194,6 +190,8 @@ export const dpsLines: LanguageItem[] = [
         'component.messaging.decryptError': 'Vérifiez vos bits de' +
             ' déchiffrement',
         'component.results.seeResults': 'voir les résultats',
+        'component.gameRestart.playAgain': 'Rejouer',
+
         
      
         
@@ -284,27 +282,7 @@ export const dpsLines: LanguageItem[] = [
         'component.messaging.bobDecrypt': 'Mensaje descifrado de Bob (0 o 1)',
         'component.messaging.decryptError': 'Verifica tus bits de descifrado',
         'component.results.seeResults': 'Ver resultados',
-
-
-
-
-
-
-       
-        
-        
-
-
-
-
-
-
-        
-
-
-
-
-        
+        'component.gameRestart.playAgain': 'Jugar de nuevo',        
 
 
     }

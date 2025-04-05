@@ -45,18 +45,12 @@ const BobMessagingTab = () => {
     } = useDPSRoomStore();
     
     const bobKeyBitsOn = bobKeyBits?.length > 0;
-    console.log("bobKeyBitsOn: ", bobKeyBitsOn);
-    console.log("***bobKeyBits: ", bobKeyBits);
-
    
     // Filter phases with valid time
     const validEntries = alicePhases.map((phase, index) => ({
         phase: Array.isArray(phase) ? phase : phase.split(""),
         time: bobTimeMeasurements[index] ?? "", 
     })).filter(entry => entry.time !== "");
-
-    console.log("validEntries:", validEntries);
-
     
     const [message, setMessage] = useState(() => {
         return validEntries.map(() => ({
@@ -110,7 +104,7 @@ const BobMessagingTab = () => {
         return "Erreur"; 
     };
     useEffect(() => {
-        if (validEntries.length > 0) {
+        if (validEntries.length > 0 && !bobKeyBitsOn) {
             revealDetectorValues(validEntries);
         }
     }, []);
