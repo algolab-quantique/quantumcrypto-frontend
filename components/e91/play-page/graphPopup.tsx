@@ -10,7 +10,7 @@ const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any,
 
   useEffect(() => {
 
-    if (isVisible) return;
+    if (!isVisible) return;
 
     const width = 800;
     const height = 400;
