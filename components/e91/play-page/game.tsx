@@ -26,11 +26,11 @@ const Game = () => {
     const polarIcons =
 
         [
-            <Minus/>, 
-            <span style={{ fontSize: "24px" }}>a</span>,
-            <span style={{ fontSize: "24px" }}>b</span>, 
-            <span style={{ fontSize: "24px" }}>a'</span>,
-            <span style={{ fontSize: "24px" }}>b'</span>           
+            <Minus key="minus"/>, 
+            <span key="a" style={{ fontSize: "24px" }}>a</span>,
+            <span key="b" style={{ fontSize: "24px" }}>b</span>, 
+            <span key="a-prime" style={{ fontSize: "24px" }}>a&apos;</span>,
+            <span key="b-prime" style={{ fontSize: "24px" }}>b&apos;</span>           
         ];
 
     const {localize} = useLanguage();
