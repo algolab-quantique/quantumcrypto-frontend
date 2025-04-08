@@ -8,9 +8,50 @@ import {LanguageItem} from '@/types';
 export const e91Lines: LanguageItem[] = [
     {
 
+        'component.game.playerHeader': 'you are playing as',
         'component.e91.measurement.welcome': 'Welcome to E91!',
         'component.e91.measurement.start': 'Choose a measurement basis for each photon.',
         'component.e91.measurement.tab': 'Photon measurements',
+        'component.e91.basis': 'Basis',
+        'component.e91.random': 'Random',
+        'component.game.step1': 'Step 1: ',
+        'component.game.step2': 'Step 2: ',
+        'component.basis.aliceBases': 'Alice\'s bases',
+        'component.basis.yourBases': 'Your bases',
+        'component.basis.bobBases': 'Bob\'s bases',
+        'component.game.tabs2': 'Basis reconciliation',
+        'component.game.tabs3': 'Encrypted messaging',
+        'component.game.step3': 'Step 3: ',
+        'component.game.step4': 'Step 4: ',
+        'component.messaging.yourKey': 'Your key',
+        'component.messaging.yourMessage': 'Your message',
+        'component.messaging.yourEncrypted': 'Your encrypted message (0 or 1)',
+        'component.messaging.cipherError': 'Verify your message and' +
+        ' encrypted bits',
+        'component.messaging.validateAndSend': 'Validate and send',
+        'component.messaging.alice.start': 'Great job!',
+        'component.messaging.alice.last': 'Enter a message and encrypt it' +
+            ' using your secret key. Then, send the message to Bob!',
+        'component.messaging.bob.start': 'Great job! Now, let\'s wait for' +
+            ' Alice\'s encrypted message...',
+        'component.messaging.alice.sent': 'Your message has been sent! Now,' +
+            ' let\'s wait for Bob\'s decryption...',
+        'component.messaging.bob.arrived': 'Alice\'s encrypted message is' +
+            ' here!',
+        'component.messaging.bob.decrypt': 'Use the secret key to decrypt' +
+            ' the message.',
+        'component.messaging.congratulations': 'Congratulations ',
+        'component.messaging.bob.end': 'You decrypted Alice\'s message!',
+        'component.messaging.alice.end': 'Bob was able to decrypt your' +
+            ' message!',
+        'component.messaging.alice.reveal': 'Your Bob was ',
+        'component.messaging.bob.reveal': 'Your Alice was ',
+        'component.messaging.cipherSent': 'Sent!',
+        'component.messaging.decryptError': 'Verify your decryption bits',
+        'component.basis.validateBtn': 'Validate',
+        'component.messaging.aliceEncrypted': 'Alice\'s encrypted message',
+        'component.messaging.aliceDecrypt': 'Alice\'s decrypted message (0' +
+            ' or 1)',    
         'component.e91.photons': 'Photons',
         'component.e91.measure': 'Measure',
         'component.e91.shareBases': 'Share my bases',
@@ -38,7 +79,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Show graph',
         'component.e91.text.values': 'Values',
         'component.e91.text.seeResults': 'See Results',
-        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
         'component.tooltip.bobBase': 'Bob\'s Base',
         'component.tooltip.aliceBase': 'Alice\'s Base',
         'component.tooltip.category': "Category",
@@ -54,10 +94,54 @@ export const e91Lines: LanguageItem[] = [
     },
     {
          // ... (French translations)
-
+        'component.game.playerHeader': 'vous jouez en tant que',
         'component.e91.measurement.welcome': 'Bienvenue dans E91!',
         'component.e91.measurement.start': 'Choisissez une base de mesure pour chaque photon.',
         'component.e91.measurement.tab': 'Mesure des photons',
+        'component.e91.basis': 'Base',
+        'component.e91.random': 'Aléatoire',
+        'component.game.step1': 'Étape 1: ',
+        'component.game.step2': 'Étape 2: ',
+        'component.basis.aliceBases': 'Les bases d\'Alice',
+        'component.basis.yourBases': 'Vos bases',
+        'component.basis.bobBases': 'Les bases de Bob',
+        'component.game.step3': 'Étape 3: ',
+        'component.game.step4': 'Étape 4: ',
+        'component.game.tabs2': 'Réconciliation des bases',
+        'component.game.tabs3': 'Messagerie chiffrée',
+        'component.messaging.yourKey': 'Votre clé',
+        'component.messaging.yourMessage': 'Votre message',
+        'component.messaging.yourEncrypted': 'Votre message chiffré (0 ou 1)',
+        'component.messaging.cipherError': 'Vérifiez votre message et vos' +
+            ' bits chiffrés',
+        'component.messaging.validateAndSend': 'Valider et envoyer',
+        'component.messaging.alice.last': 'Saisissez un message et' +
+            ' chiffrez-le en utilisant votre clé secrète. Ensuite, envoyez' +
+            ' le message à Bob !',
+        'component.messaging.bob.start': 'Super travail ! Maintenant,' +
+            ' attendons le message chiffré d\'Alice...',
+        'component.messaging.alice.start': 'Super travail !',
+        'component.messaging.alice.sent': 'Votre message a été envoyé !' +
+            ' Maintenant, attendons le déchiffrement de Bob...',
+        'component.messaging.bob.arrived': 'Le message chiffré d\'Alice est' +
+            ' arrivé !',
+        'component.messaging.bob.decrypt': 'Utilisez la clé secrète pour' +
+            ' déchiffrer le message.',
+        'component.messaging.congratulations': 'Félicitations ',
+        'component.messaging.bob.end': 'Vous avez déchiffré le message' +
+            ' d\'Alice !',
+        'component.messaging.alice.end': 'Bob a réussi à déchiffrer votre' +
+            ' message !',
+        'component.messaging.alice.reveal': 'Votre Bob était ',
+        'component.messaging.bob.reveal': 'Votre Alice était ',
+        'component.basis.validateBtn': 'Valider',
+        'component.messaging.aliceEncrypted': 'Message chiffré d\'Alice',
+        'component.messaging.aliceDecrypt': 'Message d\'Alice déchiffré',
+        'component.basis.verify': 'Vérifiez vos bits',
+        'component.basis.correct': 'Correct !',
+        'component.messaging.cipherSent': 'Envoyé !',
+        'component.messaging.decryptError': 'Vérifiez vos bits de' +
+            ' déchiffrement',
         'component.e91.photons': 'Photons',
         'component.e91.measure': 'Mesure',
         'component.e91.shareBases': 'Partager les bases',
@@ -86,7 +170,6 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Monter le graphique',
         'component.e91.graph.title': 'CHSH',
         'component.e91.text.seeResults': 'Voir les résultats',
-        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
         'component.tooltip.bobBase': 'Base de Bob',
         'component.tooltip.aliceBase': 'Base d\'Alice',
         'component.tooltip.category': "Catégorie",
@@ -103,9 +186,51 @@ export const e91Lines: LanguageItem[] = [
     },
     {
         // ... (Spanish translations)
+        
+        'component.game.playerHeader': 'estás jugando como',
         'component.e91.measurement.welcome': '¡Bienvenido a E91!',
         'component.e91.measurement.start': 'Elige una base de medición para cada fotón.',
         'component.e91.measurement.tab': 'Mediciones de fotones',
+        'component.e91.basis': 'Base',
+        'component.e91.random': 'Aleatorio',
+        'component.game.step1': 'Paso 1: ',
+        'component.game.step2': 'Paso 2: ',
+        'component.basis.aliceBases': 'Bases de Alice',
+        'component.basis.yourBases': 'Tus bases',
+        'component.basis.bobBases': 'Bases de Bob',
+        'component.game.step3': 'Paso 3: ',
+        'component.game.step4': 'Paso 4: ',
+        'component.game.tabs2': 'Reconciliación de bases',
+        'component.game.tabs3': 'Mensajería cifrada',
+        'component.messaging.yourKey': 'Tu clave',
+        'component.messaging.yourMessage': 'Tu mensaje',
+        'component.messaging.yourEncrypted': 'Tu mensaje cifrado (0 o 1)',
+        'component.messaging.cipherError': 'Verifica tu mensaje y tus bits' +
+            ' cifrados',
+        'component.messaging.validateAndSend': 'Validar y enviar',
+        'component.messaging.alice.last': 'Ingresa un mensaje y encríptalo' +
+            ' usando tu clave secreta. ¡Luego, envía el mensaje a Bob!',
+            'component.messaging.bob.start': '¡Buen trabajo! Ahora, esperemos' +
+            ' el mensaje cifrado de Alice...',
+        'component.messaging.alice.start': '¡Buen trabajo!',
+        'component.messaging.alice.sent': '¡Tu mensaje ha sido enviado!' +
+            ' Ahora, esperemos el descifrado de Bob...',
+        'component.messaging.bob.arrived': '¡El mensaje cifrado de Alice' +
+            ' está aquí!',
+        'component.messaging.bob.decrypt': 'Usa la clave secreta para' +
+            ' descifrar el mensaje.',
+        'component.messaging.congratulations': 'Felicidades ',
+        'component.messaging.bob.end': '¡Has descifrado el mensaje de Alice!',
+        'component.messaging.alice.end': '¡Bob pudo descifrar tu mensaje!',
+        'component.messaging.alice.reveal': 'Tu Bob era ',
+        'component.messaging.bob.reveal': 'Tu Alice era ',
+        'component.basis.validateBtn': 'Validar',
+        'component.messaging.aliceEncrypted': 'Mensaje cifrado de Alice',
+        'component.messaging.aliceDecrypt': 'Mensaje descifrado de Alice',
+        'component.basis.verify': 'Verifica tus bits',
+        'component.basis.correct': '¡Correcto!',
+        'component.messaging.cipherSent': '¡Enviado!',
+        'component.messaging.decryptError': 'Verifica tus bits de descifrado',
         'component.e91.photons': 'Fotones',
         'component.e91.measure': 'Medida',
         'component.e91.shareBases': 'Compartir mis bases',
@@ -132,8 +257,7 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.button.showGraph': 'Mostrar gráfico',
         'component.e91.text.values': 'Valores',
         'component.e91.text.seeResults': 'Ver resultados',
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente, y 10 en' +
-            ' caso contrario.',
+       
         'component.tooltip.bobBase': 'Base de Bob',
         'component.tooltip.aliceBase': 'Base de Alice',
         'component.tooltip.category': "Categoría",

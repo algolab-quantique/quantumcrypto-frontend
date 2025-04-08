@@ -14,11 +14,12 @@ import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import {useE91ProgressStore} from '@/store/e91/e91-progress-store';
-import {BB84GameStep} from '@/types';
+import {BB84GameStep, DPSGameStep} from '@/types';
 import {
     moveToExchangeTab,
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import {clearE91LocalStorage} from '@/lib/e91/utils';
+import {clearDPSLocalStorage} from '@/lib/dps/utils';
 import {clearBB84LocalStorage, restartWithoutEve} from '@/lib/bb84/utils';
 import {
     A_BASES_EVENT,
@@ -61,10 +62,12 @@ import {
 
 import {
     DPS_GAME_ID_EVENT,
-    DPS_PLAYER_COUNT_EVENT,
     DPS_CONNECTED_EVENT,
-    DPS_START_EVENT,
     DPS_END_EVENT,
+    A_SUCCESS_EVENT,
+    A_PHASES_EVENT,
+    B_TIMES_EVENT,
+    SWAP_ROLES_AND_RESTART_EVENT,    
 } from '@/dps-constants';
 
 import { recordIPAddress } from '@/app/(main)/services/api';
@@ -86,6 +89,8 @@ type SocketContextType = {
     sendEvent: (event: string, message?: any) => void;
     measurePhotons: (bases: string[]) => void;
     sendPhotons: (photons: number[]) => void;
+    sendPhases: (photons: string[][], phases: string[][]) => void;
+    sendArrivalTimes: (times: string[]) => void;
     sendCipher: (cipher: string[]) => void;
     shareBases: (bases: string[], event: string, socket?: any) => void;
     shareBits: (bits: string[], event: string, socket?: any) => void;
@@ -95,8 +100,10 @@ type SocketContextType = {
     sharePreference: (useValidBits: boolean) => void;
     shareValidation: (valid: boolean) => void;
     restartGameWithoutEve: () => void;
+    restartGameAndSwappedRoles: () => void;
     shareDiceValue: (value: number) => void;
     sendBobSuccess: (gameType: string) => void;
+    sendAliceSuccess: () => void;
     disconnectBB84WaitingRoom: () => void;
     disconnectE91WaitingRoom: () => void;
     disconnectDPSWaitingRoom: () => void;
@@ -125,6 +132,10 @@ const SocketContext = createContext<SocketContextType>({
     },
     sendPhotons: () => {
     },
+    sendPhases: () => {
+    },
+    sendArrivalTimes: () => {
+    },
     sendCipher: () => {
     },
     shareBases: () => {
@@ -145,6 +156,8 @@ const SocketContext = createContext<SocketContextType>({
     },
     restartGameWithoutEve: () => {
     },
+    restartGameAndSwappedRoles: () => {
+    },
     shareValidation: () => {
     },
     shareDiceValue: () => {
@@ -156,6 +169,8 @@ const SocketContext = createContext<SocketContextType>({
     disconnectDPSWaitingRoom: () => {
     },
     sendBobSuccess: () => {
+    },
+    sendAliceSuccess: () => {
     },
 });
 
@@ -298,7 +313,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                             const updatedPlayers = [...useDPSGameStore.getState().players];
                             const player = { name: message['player']['name'] };
                             updatedPlayers.push(player);
-                            useE91GameStore.setState({players: updatedPlayers});
+                            useDPSGameStore.setState({players: updatedPlayers});
                         }
                     }
                     break;
@@ -401,6 +416,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
 
         setPlayRoomConnecting(true);
 
+
         const socketInstance = new W3CWebSocket(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/rooms/${room}/`);
 
         setPlayRoomSocket(socketInstance);
@@ -418,14 +434,14 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         };
 
         socketInstance.onmessage = async (json: any) => {
-
+        
             const data = JSON.parse(json.data)['payload'];
             const message = data['message'];
             const event = data['event'];
             console.log(event);
 
             switch (event) {
-
+                
                 case CONNECTED_EVENT:
                     setIsPlayRoomConnected(true);
                     setPlayRoomConnecting(false);
@@ -535,9 +551,43 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                                 content: 'component.bobExchange.choose',
                             },
                         ]);
+                    }                  
+                    break;
+                case A_PHASES_EVENT:
+                    if (usePlayerStore.getState().playerRole === 'B') {
+                        useDPSRoomStore.getState().setAlicePhotons(message.photons);
+                        useDPSRoomStore.getState().setAlicePhases(message.phases);
+
+                        useDPSProgressStore.getState().pushLines([
+                            {
+                                content: 'component.bobExchange.photonsArrived',
+                            },
+                            {
+                                title: 'component.game.step1',
+                                content: 'component.bobExchange.Measurement',
+                            },
+                        ]);
                     }
                     break;
+                case B_TIMES_EVENT:
+                    console.log("on est rentré dans B_TIMES_EVENT");
+                    if(usePlayerStore.getState().playerRole === 'A'){
+                            useDPSRoomStore.getState().setBobTimeMeasurements(message.times);
+                            useDPSProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.aliceInference.timesArrived',
+                                    },
+                                    {
+                                        title: 'component.game.step2',
+                                        content: 'component.aliceInference.inferPhaseDifference',
+                                    },
 
+                            ]);
+                            useDPSProgressStore.getState().setStep(DPSGameStep.INFERENCE);
+                            useDPSProgressStore.getState().setDPSTab('inference');
+                          
+                        }
+                    break;
                 case B_BASES_EVENT:
                     if (gameType === 'bb84') {
                         if (usePlayerStore.getState().playerRole === 'A') {
@@ -562,7 +612,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         if (usePlayerStore.getState().playerRole === 'A') {
                             useE91RoomStore.getState().setBobBases(message.bases);
                         }
-                    }                   
+                    }       
                     break;
 
                 case A_BASES_EVENT:
@@ -753,6 +803,25 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                                 },
                             ]);
                         }
+                    } else if (gameType === 'dps') {
+                        useDPSRoomStore.getState().setBobCipher(message.cipher);
+                        if (usePlayerStore.getState().playerRole === 'B'){
+                            useDPSProgressStore.getState().pushLines([
+                                {
+                                    content: 'component.messaging.bob.sent',
+                                },
+                            ]);
+                        }
+                        if (usePlayerStore.getState().playerRole === 'A'){
+                                useDPSProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.messaging.alice.arrived',
+                                    },
+                                    {
+                                        content: 'component.messaging.alice.decrypt',
+                                    },
+                                ]);
+                            }
                     }
                     
                     break;
@@ -781,10 +850,20 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         }
                         useBB84RoomStore.getState().setGameSuccess(true);
                         clearBB84LocalStorage();
+                    } else if(gameType === 'dps'){
+                        if (usePlayerStore.getState().playerRole === 'B') {
+                            useDPSProgressStore.getState().pushLines([
+                                {
+                                    title: 'component.messaging.congratulations',
+                                    content: 'component.messaging.bob.end',
+                                },
+                            ]);
+                        }
+                        useDPSRoomStore.getState().setGameSuccess(true);
+                        clearDPSLocalStorage();
                     }
                     
                     break;
-
                 case RESTART_WITHOUT_EVE_EVENT:
                     if (gameType === 'e91') {
                         localStorage.removeItem('e91PhotonNumber');
@@ -824,6 +903,49 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                     }
                     restartWithoutEve();
                     break;
+                
+                case SWAP_ROLES_AND_RESTART_EVENT:
+                    if (gameType === 'dps') {                        
+                        const currentRole = usePlayerStore.getState().playerRole;
+                        const newRole = currentRole === 'A' ? 'B' : 'A';
+                        usePlayerStore.setState({ playerRole: newRole });
+
+                        const playerData = {
+                            gameCode: useDPSGameStore.getState().gameCode,
+                            role: newRole,
+                            partner: usePlayerStore.getState().partner,
+                            playerName: usePlayerStore.getState().playerName,
+                        };
+
+                        localStorage.setItem('dpsPlayerData', JSON.stringify(playerData));
+                        localStorage.setItem('dpsGameData', JSON.stringify({}));
+                        localStorage.removeItem('dpsStep');
+                        localStorage.removeItem('dpsTab');
+                        localStorage.removeItem('dpsDisplayedLines');
+
+                        toast.message('Game restarted', {
+                            description: localize(
+                                'component.validation.gameRestarted'),
+                        });
+
+                        useDPSRoomStore.getState().resetRoom();
+                        useDPSProgressStore.getState().resetProgress();
+                        useDPSProgressStore.getState().pushLines([
+                                {
+                                    title: 'component.dps.exchange.welcome',
+                                },
+                                ...(newRole === 'A'
+                                    ? [{
+                                        title: 'component.game.step1',
+                                        content: 'component.aliceExchange.start',
+                                    }]
+                                    : [{
+                                        content: 'component.bobExchange.waiting',
+                                    }]),
+                            ]);
+
+                    }
+                    break;                
 
                 default:
                     console.log('Event: ' + event);
@@ -856,6 +978,19 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
             toast.success('Game started!');
             setTimeout(() => (waitingRoomSocket as any).close(), 5000);
             useE91GameStore.setState({players: [], playerCount: 0});
+        } else if (gameType === 'dps') {
+            clearDPSLocalStorage();
+            const payload = {
+                event: START_EVENT,
+                message: {
+                    game_code: useDPSGameStore.getState().gameCode,
+                    game_id: id
+                },
+            };
+            (waitingRoomSocket as any).send(JSON.stringify(payload));
+            toast.success('Game started!');
+            setTimeout(() => (waitingRoomSocket as any).close(), 5000);
+            useDPSGameStore.setState({players: [], playerCount: 0});
         }
        
     };
@@ -873,7 +1008,6 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         if (message) {
             payload.message = {...message};
         }
-        console.log("Sending event:", payload);
         if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
             console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
         } else {
@@ -900,8 +1034,14 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         }
     }
 
+    const sendPhases = (photons: string[][], phases: string[][]) => {
+        sendEvent(A_PHASES_EVENT, {photons, phases});
+    }
     const sendPhotons = (photons: number[]) => {
         sendEvent(A_PHOTONS_EVENT, {photons});
+    };
+    const sendArrivalTimes = (times: string[]) => {
+        sendEvent(B_TIMES_EVENT, { times });
     };
 
     const sendCipher = (cipher: string[]) => {
@@ -926,6 +1066,14 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
             player_name: usePlayerStore.getState().playerName 
         });
     };
+
+    const sendAliceSuccess = () => {
+        sendEvent(B_SUCCESS_EVENT, {
+            game_code: useDPSGameStore.getState().gameCode,
+            player_name: usePlayerStore.getState().playerName
+        });
+    };
+
 
     const shareBases = (bases: string[], event: string, socket?: any) => {
         const payload = {
@@ -982,6 +1130,9 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
     const restartGameWithoutEve = () => {
         sendEvent(RESTART_WITHOUT_EVE_EVENT, {player_name: usePlayerStore.getState().playerName});
     };
+    const restartGameAndSwappedRoles = () => {
+        sendEvent(SWAP_ROLES_AND_RESTART_EVENT);
+    }
 
     const shareIndices = (validationIndices: number[]) => {
         sendEvent(VALIDATION_INDICES_EVENT, {validationIndices});
@@ -1094,6 +1245,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 sendEvent,
                 measurePhotons,
                 sendPhotons,
+                sendPhases,
+                sendArrivalTimes,
                 sendCipher,
                 shareBases,
                 saveScore,
@@ -1104,8 +1257,10 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 sharePreference,
                 shareDecision,
                 sendBobSuccess,
+                sendAliceSuccess,
                 shareValidation,
                 restartGameWithoutEve,
+                restartGameAndSwappedRoles,
                 shareDiceValue,
                 disconnectBB84WaitingRoom,
                 disconnectE91WaitingRoom,

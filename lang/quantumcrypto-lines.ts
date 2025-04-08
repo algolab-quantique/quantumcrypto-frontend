@@ -244,6 +244,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part6': 'It turns out that when S is calculated from entangled photons, this inequality is violated. In fact, it can be shown that S = 2√2 ≈ 2.83 for maximally entangled photons. Thus, if the photon pair emitter is reliable and the communication channel is neither noisy nor eavesdropped upon, Alice and Bob should observe that the value of S approaches 2√2 as they increase the number of photon pairs considered in their calculations. They can then use the key obtained to encrypt their messages. Conversely, if this value remains below 2, they cannot trust the key and should refrain from using it. Be aware that average values are statistical quantities that require many samples to be significant. For a limited number of samples, statistical anomalies may occur, making it difficult to draw conclusions. ',
         'component.e91.about.figures.part7.1': 'Finally, note that three combinations of measurement bases are not used in the E91 protocol: ',
         'component.e91.about.figures.part7.2': 'The measurements made with these base pairs are simply discarded. ',
+        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
+
+        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.validation.gameRestarted' : 'The game has been restarted.'
+
        
 
     },
@@ -489,6 +494,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part6': 'Il s’avère que lorsque S est calculé à partir de photons intriqués, cette inégalité n’est pas vérifiée. En fait, on peut montrer que 𝑆 = 2√2 ≈ 2.83 pour des photons maximalement intriqués. Ainsi, si l’émetteur de paires de photons est fiable et que le canal de communication n’est pas bruité – ou pire espionné ! – Alice et Bob devraient observer que la valeur de S tend vers 2√2 au fur et à mesure qu’ils augmentent le nombre de paires de photons considérées dans leur calcul. Ils pourront alors utiliser la clé qu’ils ont obtenue pour chiffrer leur message. À l’inverse, si cette valeur demeure sous 2 ils ne peuvent avoir confiance en la clé obtenue et devraient s’abstenir de l’utiliser. Attention, les valeurs moyennes sont des quantités statistiques qui nécessitent un grand échantillon pour être significatives. Pour un nombre limité d’échantillons des anomalies statistiques peuvent survenir et il peut être difficile de tirer des conclusions. ',
         'component.e91.about.figures.part7.1': 'Notez qu’il reste 3 combinaisons de bases de mesure qui ne sont pas utilisées dans le protocole E91 : ',
         'component.e91.about.figures.part7.2': 'Les mesures effectuées avec ces paires de bases sont simplement jetées. ',   
+        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
+        'component.validation.gameRestarted' : 'La partie a été redémarrée.'
 
         
     },
@@ -728,6 +735,13 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part6': 'Cuando S se calcula a partir de fotones entrelazados, esta desigualdad no se cumple. De hecho, se puede demostrar que 𝑆 = 2√2 ≈ 2.83 para fotones máximamente entrelazados. Por lo tanto, si el emisor de pares de fotones es confiable y el canal de comunicación no produce ruido ni es espiado, Alice y Bob deberían observar que el valor de S tiende hacia 2√2 a medida que aumentan el número de pares de fotones considerados en sus cálculos. Luego podrán usar la clave obtenida para cifrar sus mensajes. Por el contrario, si este valor permanece por debajo de 2, no pueden confiar en la clave y deberían abstenerse de usarla. Tenga en cuenta que los valores promedio son cantidades estadísticas que requieren una gran muestra para ser significativos. Con un número limitado de muestras, pueden ocurrir anomalías estadísticas que dificulten sacar conclusiones confiables. ',
         'component.e91.about.figures.part7.1': 'Finalmente, observe que hay tres combinaciones de bases de medición que no se utilizan en el protocolo E91: ',
         'component.e91.about.figures.part7.2': 'Las mediciones realizadas con estas combinaciones de bases simplemente se descartan. ',    
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente, y 10 en' +
+        ' caso contrario.',
+        
+        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.validation.gameRestarted' : 'El juego ha sido reiniciado.',
+
+
     },
     
 ];

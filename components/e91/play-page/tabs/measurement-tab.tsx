@@ -171,7 +171,7 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                 <div
                                     className="flex flex-col md:flex-row md:gap-x-2 justify-center">
                                     <p>{localize(
-                                        'component.aliceGame.basis')}</p>
+                                        'component.e91.basis')}</p>
                                     <p>{localize(
                                         'component.e91.basisDesc')}</p>
                                     <TooltipProvider delayDuration={500}>
@@ -204,7 +204,7 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                         className="w-fit mx-auto"
                                         onClick={() => randomize(1)}
                                         variant="outline">{localize(
-                                    'component.aliceGame.random')}</Button>
+                                    'component.e91.random')}</Button>
                             </div>
                         </TableHead>
                     </TableRow>
