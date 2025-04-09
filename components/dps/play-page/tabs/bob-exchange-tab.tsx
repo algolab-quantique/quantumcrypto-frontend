@@ -194,7 +194,7 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
                                     variant="outline"
                                     size="icon"
                                     className="flex items-center justify-center"
-                                >{polarIcons[3]}
+                                >{alicePhotons.length > 0 ? polarIcons[3] : ''}
                                 </Button>
                             </div>
                                 
