@@ -4,6 +4,12 @@ export interface inputField {
     error: boolean
 }
 
+export interface inputPhaseField {
+    values: string[];
+    touched: boolean[];
+    error: boolean[];
+}
+
 export enum BB84GameStep {
     EXCHANGE,
     BASIS,
@@ -14,6 +20,13 @@ export enum BB84GameStep {
 export enum E91GameStep {
     MEASUREMENT,
     BASIS,
+    VALIDATION,
+    MESSAGING,
+}
+
+export enum DPSGameStep {
+    EXCHANGE,
+    INFERENCE,
     VALIDATION,
     MESSAGING,
 }

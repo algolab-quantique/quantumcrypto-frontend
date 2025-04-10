@@ -9,4 +9,10 @@ export const protocols = [
         description: 'component.homePage.protocolsSection.e91.description',
         href: '/e91',
     },
+    {
+        name: 'DPS',
+        description: 'component.homePage.protocolsSection.dps.description',
+        href: '/dps',
+    },
+
 ];
