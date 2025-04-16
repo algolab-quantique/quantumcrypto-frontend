@@ -6,6 +6,8 @@ import Bb84ResultsTable
 import axios from '@/commons/http';
 import {useRouter} from 'next/navigation';
 import E91ResultsTable from '@/components/e91/results-page/e91-results-table';
+import usePlayerStore from '@/store/player-store';
+
 
 interface ResultsTableProps {
     gameType: string,
@@ -53,6 +55,8 @@ const GameResultsPage = ({params}: GameResultsPageProps) => {
     const [players, setPlayers] = useState([]);
     const [gameType, setGameType] = useState('');
     const router = useRouter();
+    const {playerName, isAdmin} = usePlayerStore();
+
 
     const {lastMessage, readyState} = useWebSocket(
         `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${params.gameType}/${params.gameCode}/results/`,
@@ -108,6 +112,13 @@ const GameResultsPage = ({params}: GameResultsPageProps) => {
             <h1 className="text-center text-3xl font-bold">Results for
                 game <span className="text-highlight">{params.gameCode}</span>
             </h1>
+            {gameType === 'dps' && isAdmin ? (
+                 <h1 className="text-3xl font-bold text-center mt-10">
+                 La partie est en cours...
+               </h1>
+            ) : (
+                <ResultsTable gameType={gameType} rooms={rooms} players={players} />
+            )}
             <ResultsTable gameType={gameType} rooms={rooms} players={players}/>
         </div>
     );

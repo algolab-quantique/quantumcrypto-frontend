@@ -54,8 +54,8 @@ const DPSProgression = () => {
         router.replace(`/dps/play`);
     };
 
-    const goToResultsPage = () => {
-        router.replace(`/games/dps/${gameCode}/results`);
+    const goToMainMenu = () => {
+        router.replace('/');
     };
    
     return (
@@ -77,7 +77,7 @@ const DPSProgression = () => {
                     <Button onClick={restartWithSwappedRoles}>
                             {localize('component.gameRestart.playAgain')}
                     </Button>
-                    <Button onClick={goToResultsPage}>{localize('component.results.seeResults')}</Button>
+                    <Button onClick={goToMainMenu}>{localize('component.game.leftGame')}</Button>
                 </div>
             </div>}
         </GameProgression>
