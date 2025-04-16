@@ -35,8 +35,8 @@ const CreateGameModal = ({
                             onCreateGame,
                         } : {
                             connecting: boolean,
-                            creatingGame: boolean, onCreateGame: (photonNumber: number,
-                               ) => void                            
+                            creatingGame: boolean, onCreateGame: (photonNumber: number
+                            ) => void                            
                             
                         }) => {
 
