@@ -10,17 +10,13 @@ import {Button} from '@/components/ui/button';
 import {useSocket} from '@/components/providers/socket-provider';
 import {useRouter} from 'next/navigation';
 import useDPSGameStore from '@/store/dps/dps-game-store';
+import { clearDPSLocalStorage } from '@/lib/dps/utils';
 
 const DPSProgression = () => {
 
     const {localize} = useLanguage();
-    const {sendEvent, restartGameAndSwappedRoles} = useSocket();
+    const {restartGameAndSwappedRoles, leftGame} = useSocket();
     const router = useRouter();
-
-    const {gameCode} = useDPSGameStore();
-
-
-    const {setPlayerRole, setPartner} = usePlayerStore();
 
 
     const {playerRole, partner: partnerName} = usePlayerStore();
@@ -55,6 +51,7 @@ const DPSProgression = () => {
     };
 
     const goToMainMenu = () => {
+        leftGame();
         router.replace('/');
     };
    

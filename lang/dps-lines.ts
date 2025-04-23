@@ -98,6 +98,8 @@ export const dpsLines: LanguageItem[] = [
         'component.results.seeResults': 'See Results',
         'component.game.leftGame' : 'Left Game',
         'component.gameRestart.playAgain': 'Play again',
+        'component.game.playerLeft': 'You\'ve quit the games!',
+        'component.game.playerLeft.desc' : 'You will be redirected to the home page.',
 
 
     },
@@ -193,8 +195,8 @@ export const dpsLines: LanguageItem[] = [
         'component.results.seeResults': 'voir les résultats',
         'component.game.leftGame' : 'quitter le jeux',
         'component.gameRestart.playAgain': 'Rejouer',
-
-        
+        'component.game.playerLeft': 'Vous aviez quitter le jeux!',
+        'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',        
      
         
     },
@@ -285,7 +287,9 @@ export const dpsLines: LanguageItem[] = [
         'component.messaging.decryptError': 'Verifica tus bits de descifrado',
         'component.results.seeResults': 'Ver resultados',
         'component.game.leftGame' : 'abandonar el juego',
-        'component.gameRestart.playAgain': 'Jugar de nuevo',        
+        'component.gameRestart.playAgain': 'Jugar de nuevo',
+        'component.game.playerLeft': '¡Habías dejado los juegos!',
+        'component.game.playerLeft.desc' : 'Serás redirigido a la página de inicio.',        
 
 
     }
