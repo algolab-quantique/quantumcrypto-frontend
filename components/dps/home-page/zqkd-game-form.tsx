@@ -178,8 +178,7 @@ const DPSMain: React.FC = () => {
         connectToWaitingRoom(data);
     };
 
-    const onCreateGame = async (photonNumber: number, eve: boolean,
-                                evePercentage: number) => {
+    const onCreateGame = async (photonNumber: number) => {
 
         if (isWaitingRoomConnected) return;
 
@@ -189,9 +188,7 @@ const DPSMain: React.FC = () => {
 
             const gameData = {
                 photon_number: photonNumber,
-                eve,
                 validation_bits_length: 0,
-                eve_percentage: evePercentage,
             };
 
             const response = await axios.post('/games/dps/', gameData);

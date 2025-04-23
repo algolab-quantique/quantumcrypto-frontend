@@ -35,14 +35,12 @@ const CreateGameModal = ({
                             onCreateGame,
                         } : {
                             connecting: boolean,
-                            creatingGame: boolean, onCreateGame: (photonNumber: number,
-                                eve: boolean,
-                                evePercentage: number) => void                            
+                            creatingGame: boolean, onCreateGame: (photonNumber: number
+                            ) => void                            
                             
                         }) => {
 
         const {localize} = useLanguage();
-        const [eveChecked, setEveChecked] = useState(false);
 
         const formSchema = z.object({
                 photonNumber: z.coerce.number({
@@ -90,19 +88,10 @@ const CreateGameModal = ({
                 },
             });
         
-            const onEveChecked = (onChange: (...event: any[]) => void,
-                                  checked: CheckedState) => {
-                setEveChecked(!eveChecked);
-                onChange(checked);
-            };
-        
             useEffect(() => {
-                if (eveChecked) {
-                    form.setValue('photonNumber', 20); 
-                } else {
+               
                     form.setValue('photonNumber', 10); 
-                }
-            }, [eveChecked, form]);
+                }, [form]);
                               
         return (
             <Dialog>
@@ -128,12 +117,8 @@ const CreateGameModal = ({
                                                   onSubmit={form.handleSubmit(
                                                       ({
                                                            photonNumber,
-                                                           eve,
-                                                           evePercentage,
                                                        }) => onCreateGame(
-                                                          photonNumber,
-                                                          eve,
-                                                          evePercentage))}
+                                                          photonNumber))}
                                             >
                                                 <FormField
                                                     control={form.control}
@@ -156,50 +141,7 @@ const CreateGameModal = ({
                                                         </FormItem>
                                                     )}
                                                 />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="eve"
-                                                    render={({field}) => (
-                                                        <FormItem
-                                                            className="space-y-0 flex gap-x-5 items-center">
-                                                            <FormLabel
-                                                                className="text-nowrap col-span-1"
-                                                            >{localize(
-                                                                'component.createGame.eve')}</FormLabel>
-                                                            <FormControl className="mx-2">
-                                                                <Checkbox
-                                                                    checked={field.value}
-                                                                    onCheckedChange={(checkState) => onEveChecked(
-                                                                        field.onChange,
-                                                                        checkState)}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage/>
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                {eveChecked && <FormField
-                                                    control={form.control}
-                                                    name="evePercentage"
-                                                    render={({field}) => (
-                                                        <FormItem
-                                                            className="space-y-0 flex gap-x-5 items-center">
-                                                            <FormLabel
-                                                                className="text-nowrap col-span-1"
-                                                            >{localize(
-                                                                'component.createGame.evePercentage.label')}</FormLabel>
-                                                            <FormControl className="mx-2">
-                                                                <Input
-                                                                    // type={'number'}
-                                                                    maxLength={3}
-                                                                    placeholder="0.5"
-                                                                    className="text-center w-[50px]"
-                                                                    {...field} />
-                                                            </FormControl>
-                                                            <FormMessage/>
-                                                        </FormItem>
-                                                    )}
-                                                />}
+                                                
                                                 <DialogFooter>
                                                     <Button
                                                         disabled={connecting || creatingGame}

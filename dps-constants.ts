@@ -8,5 +8,6 @@ export const B_TIMES_EVENT='B_TIMES';
 export const A_SUCCESS_EVENT='A_SUCCESS';
 export const A_PHASES_EVENT = 'A_PHASES';
 export const SWAP_ROLES_AND_RESTART_EVENT= 'SWAP_ROLES_AND_RESTART';
+export const PLAYER_LEFT_EVENT = 'PLAYER_LEFT';
 
 

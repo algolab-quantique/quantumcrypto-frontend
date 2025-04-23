@@ -67,7 +67,8 @@ import {
     A_SUCCESS_EVENT,
     A_PHASES_EVENT,
     B_TIMES_EVENT,
-    SWAP_ROLES_AND_RESTART_EVENT,    
+    SWAP_ROLES_AND_RESTART_EVENT,
+    PLAYER_LEFT_EVENT,  
 } from '@/dps-constants';
 
 import { recordIPAddress } from '@/app/(main)/services/api';
@@ -101,6 +102,7 @@ type SocketContextType = {
     shareValidation: (valid: boolean) => void;
     restartGameWithoutEve: () => void;
     restartGameAndSwappedRoles: () => void;
+    leftGame: () => void;
     shareDiceValue: (value: number) => void;
     sendBobSuccess: (gameType: string) => void;
     sendAliceSuccess: () => void;
@@ -157,6 +159,8 @@ const SocketContext = createContext<SocketContextType>({
     restartGameWithoutEve: () => {
     },
     restartGameAndSwappedRoles: () => {
+    },
+    leftGame: () => {
     },
     shareValidation: () => {
     },
@@ -945,8 +949,30 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                             ]);
 
                     }
-                    break;                
+                    break; 
+                
+                case PLAYER_LEFT_EVENT:
+                    console.log(" in lefting paaaaarrrt");
+                    if (gameType === 'dps') {
+                        const myRole = usePlayerStore.getState().playerRole;
+                       
+                        console.log('myRole: ', myRole);
 
+                        if (myRole) {
+                            toast.warning(localize('component.game.playerLeft'), {
+                                description: localize('component.game.playerLeft.desc'),
+                            });
+                        }
+                        setIsPlayRoomConnected(false);
+                        setPlayRoomConnecting(false);
+                        router.replace('/');
+                        localStorage.setItem('dpsPlayerData', JSON.stringify({}));
+                        localStorage.setItem('dpsGameData', JSON.stringify({}));    
+                        localStorage.clear();     
+                        clearDPSLocalStorage();
+                        
+                    }
+                    break;
                 default:
                     console.log('Event: ' + event);
             }
@@ -1132,7 +1158,11 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
     };
     const restartGameAndSwappedRoles = () => {
         sendEvent(SWAP_ROLES_AND_RESTART_EVENT);
-    }
+    };
+
+    const leftGame = () => {
+        sendEvent(PLAYER_LEFT_EVENT);
+    };
 
     const shareIndices = (validationIndices: number[]) => {
         sendEvent(VALIDATION_INDICES_EVENT, {validationIndices});
@@ -1261,6 +1291,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 shareValidation,
                 restartGameWithoutEve,
                 restartGameAndSwappedRoles,
+                leftGame,
                 shareDiceValue,
                 disconnectBB84WaitingRoom,
                 disconnectE91WaitingRoom,
