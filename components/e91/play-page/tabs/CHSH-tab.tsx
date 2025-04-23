@@ -69,7 +69,9 @@ const DraggableButton = ({ index, value, setIsDragging}: { index: number, value:
 
     return (
         <Button
-            ref={drag}
+            ref={(node) => {
+                if (node) drag(node);
+              }}
             variant="outline"
             className={`w-10 h-10 mx-1 bg-gray-600 rounded-full text-lg text-center cursor-move ${isDragging ? "opacity-50" : ""}`}
             size="icon"
@@ -210,7 +212,9 @@ const CHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons: any
     
         return (
             <div
-              ref={drop}
+            ref={(node) => {
+                if (node) drop(node);
+              }}
               style={{
                 backgroundColor: isOver ? '#d1d5db' : backgroundColor, 
                 border: '2px solid var(--border-color)',
