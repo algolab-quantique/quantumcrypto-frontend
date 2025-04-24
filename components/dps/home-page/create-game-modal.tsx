@@ -109,7 +109,7 @@ const CreateGameModal = ({
                                         <DialogTitle>{localize(
                                             'component.main.createGame')}</DialogTitle>
                                         <DialogDescription>
-                                            {localize('component.main.createGame.description')}
+                                            {localize('component.main.createGame.descriptionNoEve')}
                                         </DialogDescription>
                                     </DialogHeader>
                                         <Form {...form}>

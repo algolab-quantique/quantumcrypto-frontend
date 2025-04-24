@@ -23,6 +23,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.createGame': 'Create Game',
         'component.main.createGame.description': 'Pick the number of' +
             ' photons and whether you want Eve to be present in your game',
+        'component.main.createGame.descriptionNoEve': 'Pick the number of photons',
         'component.main.join': 'Join',
         'component.main.invalidCodeTitle': 'Error joining waiting-room.',
         'component.main.invalidCodeMessage': 'Verify the waiting-room PIN',
@@ -249,6 +250,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.createGame': 'Créer un jeu',
         'component.main.createGame.description': 'Choisissez le nombre de' +
             ' photons et si vous voulez qu\'Ève soit présente dans votre jeu',
+        'component.main.createGame.descriptionNoEve': 'Choisissez le nombre de photons',
         'component.main.join': 'Rejoindre',
         'component.main.invalidCodeTitle': 'Erreur lors de la connexion au jeu.',
         'component.main.invalidCodeMessage': 'Vérifiez le code du jeu PIN',
@@ -607,6 +609,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.createGame': 'Crear juego',
         'component.main.createGame.description': 'Elige el número de' +
             ' fotones y si quieres que Eve esté presente en tu juego',
+        'component.main.createGame.descriptionNoEve': 'Elige el número de fotones',
         'component.main.join': 'Unirse',
         'component.main.invalidCodeTitle': 'Error al unirse a la sala.',
         'component.main.invalidCodeMessage': 'Verifica el código de la sala',
