@@ -144,15 +144,6 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
             ]);
 
         }, 1000);
-        setTimeout( () => {
-            pushLines([
-                {
-                    title: 'component.game.step3',
-                    content: 'component.messaging.bob.last',
-                },
-            ]);
-        },3000);
-       
     };
 
     return (
@@ -177,7 +168,6 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
                                         </TooltipTrigger>
                                         <TooltipContent className="border-secondary">
                                             <p>{localize('component.bobExchange.measure')}</p>
-                                            <p>{localize('component.bobExchange.arrivalTimeDesc')}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

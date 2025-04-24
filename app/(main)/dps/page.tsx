@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/shared/header';
-import ZQKDMain from '@/components/dps/home-page/zqkd-game-form';
+import DPSMain from '@/components/dps/home-page/dps-game-form';
 import Footer from '@/components/shared/footer';
 import {useEffect, useRef, useState} from 'react';
 import {useLanguage} from '@/components/providers/language-provider';
@@ -60,7 +60,7 @@ export default function DPS() {
     return (
         <MathJaxContext config={mathJaxConfig}>
             <Header links={headerLinks} />
-            <ZQKDMain />
+            <DPSMain/>
             <HowToPlaySection ref={howToPlayRef} />
             <section ref={aboutRef} className="w-full h-fit mt-20 px-5 md:px-20">
                 <Card className='pb-2 border-none mx-auto shadow-md'>
@@ -76,7 +76,6 @@ export default function DPS() {
                             {localize('component.dps.about.part1.3')}
 
                         </p>
-                        
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part2')}
                         </p>

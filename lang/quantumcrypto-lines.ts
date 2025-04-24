@@ -14,69 +14,61 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.game': 'A Quantum Encryption Game',
         'component.main.nameRequired': 'A name is required',
         'component.main.nameMin': 'Your name should be at least 2 characters',
-        'component.main.nameMax': 'Your name cannot be longer than 10' +
-            ' characters',
-            'component.main.pinRequired': 'A waiting-room PIN is required',
-            'component.main.pinLength': 'The waiting-room PIN must be 5' +
-                ' characters long',
-            'component.main.nameDescription': 'This will be your public display' +
-                ' name',
-            'component.main.nameLabel': 'Name',
-            'component.main.pinLabel': 'Game PIN',
-            'component.main.createGame': 'Create Game',
-            'component.main.createGame.description': 'Pick the number of' +
-                ' photons and whether you want Eve to be present in your game',
-            'component.main.join': 'Join',
-            'component.main.invalidCodeTitle': 'Error joining waiting-room.',
-            'component.main.invalidCodeMessage': 'Verify the waiting-room PIN',
-            'component.waitingRoom.players': 'Players',
-            'component.waitingRoom.joinAt': 'Join at',
-            'component.waitingRoom.start': 'Start',
-            'component.waitingRoom.exit': 'Exit',
-            'component.waitingRoom.in': 'You\'re in,',
-            'component.waitingRoom.wait': 'Wait for the host to start the' +
-                ' waiting-room',
-            'component.main.takenNameTitle': 'Name taken',
-            'component.main.takenNameDescription': 'That name is taken. Please' +
-                ' pick a different one.',
-            'component.waitingRoom.gameEndedTitle': 'Game ended',
-            'component.waitingRoom.gameEndedDescription': 'The host has ended' +
-                ' the waiting-room',
-            'component.waitingRoom.atLeastOnePlayer': 'You need at least one' +
-                ' player',
-                'component.createGame.keyLength': 'Number of photons',
-                'component.createGame.eve': 'Is Eve present?',
-                'component.createGame.keyError': 'Only numbers between 10 and 30',
-                'component.createGame.keyMin': 'The minimum number of photons is 16' +
-                    ' if Eve is present and 10 otherwise',
-                'component.createGame.keyMax': 'The maximum number of photons is 30',
-                'component.createGame.ready': 'Ready!',
-                'component.waitingRoom.connectionLostTitle': 'Connection lost',
-                'component.waitingRoom.connectionLostDescription': 'You lost' +
-                    ' connection to the server. Try re-joining the waiting-room',
-                'component.waitingRoom.copied': 'Copied!',
-            'component.main.gameStarted': 'Game started',
-            'component.main.gameStartedDescription': 'The game you are trying' +
-                ' to connect to has already started.',
-            'component.createGame.numbersOnly': 'Only numbers are allowed',
-            'component.createGame.validationLength': 'The validation bits must' +
-                ' be less than or equal to half of the key length',
-            'component.createGame.validationDescription': 'Validation bits',
-            'component.main.errorCreating': 'Error creating game',
-            'component.createGame.evePercentage.invalidType': 'Only numbers' +
+        'component.main.nameMax': 'Your name cannot be longer than 10 characters',
+        'component.main.pinRequired': 'A waiting-room PIN is required',
+        'component.main.pinLength': 'The waiting-room PIN must be 5 characters long',
+        'component.main.nameDescription': 'This will be your public display name',
+        'component.main.nameLabel': 'Name',
+        'component.main.pinLabel': 'Game PIN',
+        'component.main.createGame': 'Create Game',
+        'component.main.createGame.description': 'Pick the number of' +
+            ' photons and whether you want Eve to be present in your game',
+        'component.main.join': 'Join',
+        'component.main.invalidCodeTitle': 'Error joining waiting-room.',
+        'component.main.invalidCodeMessage': 'Verify the waiting-room PIN',
+        'component.waitingRoom.players': 'Players',
+        'component.waitingRoom.joinAt': 'Join at',
+        'component.waitingRoom.start': 'Start',
+        'component.waitingRoom.exit': 'Exit',
+        'component.waitingRoom.in': 'You\'re in,',
+        'component.waitingRoom.wait': 'Wait for the host to start the waiting-room',
+        'component.main.takenNameTitle': 'Name taken',
+        'component.main.takenNameDescription': 'That name is taken. Please' +
+            ' pick a different one.',
+        'component.waitingRoom.gameEndedTitle': 'Game ended',
+        'component.waitingRoom.gameEndedDescription': 'The host has ended the waiting-room',
+        'component.waitingRoom.atLeastOnePlayer': 'You need at least one player',
+        'component.createGame.keyLength': 'Number of photons',
+        'component.createGame.eve': 'Is Eve present?',
+        'component.createGame.keyError': 'Only numbers between 10 and 30',
+        'component.createGame.keyMin': 'The minimum number of photons is 16' +
+                ' if Eve is present and 10 otherwise',
+        'component.createGame.keyMax': 'The maximum number of photons is 30',
+        'component.createGame.ready': 'Ready!',
+        'component.waitingRoom.connectionLostTitle': 'Connection lost',
+        'component.waitingRoom.connectionLostDescription': 'You lost' +
+                ' connection to the server. Try re-joining the waiting-room',
+        'component.waitingRoom.copied': 'Copied!',
+        'component.main.gameStarted': 'Game started',
+        'component.main.gameStartedDescription': 'The game you are trying' +
+            ' to connect to has already started.',
+        'component.createGame.numbersOnly': 'Only numbers are allowed',
+        'component.createGame.validationLength': 'The validation bits must' +
+            ' be less than or equal to half of the key length',
+        'component.createGame.validationDescription': 'Validation bits',
+        'component.main.errorCreating': 'Error creating game',
+        'component.createGame.evePercentage.invalidType': 'Only numbers' +
             ' between 0.1 and 1',
         'component.createGame.evePercentage.positive': 'Must be positive',
-        'component.createGame.evePercentage.greaterThan': 'Must be 0.1 or' +
-            ' more',
+        'component.createGame.evePercentage.greaterThan': 'Must be 0.1 or more',
         'component.createGame.evePercentage.lessThan': 'Must be 1 or less',
         'component.createGame.evePercentage.label': 'Eve probability',
         'component.bb84.gameFound': 'Game Found!',
         'component.bb84.gameFound.desc': 'It looks like you left a game' +
             ' while it was still active. Would you like to rejoin?',
         'component.bb84.gameFound.action': 'Rejoin',
-            'general.close': 'Close',
-        'component.bb84.play.sorry': 'Sorry, we could not find a partner' +
-            ' for you :(',
+        'general.close': 'Close',
+        'component.bb84.play.sorry': 'Sorry, we could not find a partner for you :(',
         'component.homePage.protocolsSection.bb84.description': 'A protocol' +
             ' for securely sharing cryptographic keys between two parties' +
             ' over an insecure communication channel.',
@@ -95,11 +87,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.userFriendly': 'Enjoy an intuitive user' +
             ' interface designed for a better learning experience.',
         'component.homePage.multiplayer': 'Create and join games with your' +
-            ' friends to put into practice your quantum cryptography' +
-            ' knowledge.',
+            ' friends to put into practice your quantum cryptography knowledge.',
         'component.homePage.extensible': 'A modular design allows' +
-            ' contributors to extend our app with new features, including' +
-            ' new protocols.',
+            ' contributors to extend our app with new features, including new protocols.',
         'component.homePage.openSource': 'All our code is available on' +
             ' GitHub. You can find the links at the bottom of the page.',
         'component.bb84.about': 'The BB84 protocol was proposed in 1984 by Charles Bennett of IBM and Gilles Brassard from the Université de Montréal. ' +
@@ -114,7 +104,7 @@ export const quantumcryptoLines: LanguageItem[] = [
             'If they conclude that the quantum channel has not been compromised, they can use the generated encryption key to securely send a message. Otherwise, they must repeat the procedure. ',
         'component.bb84.about.encryptionKey.title': 'Encryption Key',
         'component.bb84.about.encryptionKey.part1': 'An encryption key is a secret code (in bits) that protects information by transforming it into an unreadable format. Only those possessing the decryption key can restore the original message. The decryption key can either be the same (symmetric keys) or different (asymmetric keys). For instance, in a symmetric key encryption scenario, Alice and Bob share the encryption key: 010010. If Alice wants to send a confidential message to Bob, she performs a bitwise XOR operation between the key and her message. Here\'s how the XOR operation works for different bit values: ',
-        'component.bb84.about.encryptionKey.part2': 'Let’s say the message Alice wants to send is 111000. The encryption operation generates the sequence 101010, as shown in this table: ',
+        'component.bb84.about.encryptionKey.part2': 'Let\'s say the message Alice wants to send is 111000. The encryption operation generates the sequence 101010, as shown in this table: ',
         'component.bb84.about.encryptionKey.part3': 'This sequence is sent to Bob, who, as the only other person possessing the key, can decrypt the message by performing a bitwise XOR operation between the encrypted message and the key. ',
         'component.bb84.about.encryptionKey.message': 'Message',
         'component.bb84.about.encryptionKey.key': 'Key',
@@ -132,7 +122,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.about.disturbance.title': 'State Disturbance by Measurement ',
         'component.bb84.about.disturbance': 'It is often said that a quantum system can be "in two states at once," meaning it is in a superposition of states. This implies that upon measurement, the system\'s outcome cannot be predicted, but the probability of each result is known. Once a measurement is made, the superposition state is destroyed, and the system collapses into the measured state. Any subsequent measurement will yield the same result. ',
         'component.bb84.about.eve.title': 'Detecting Eve\'s Presence ',
-        'component.bb84.about.eve': 'Consider only the photons for which Alice and Bob used the same basis, as these photons are used to establish the key. To obtain information about the key, Eve must choose a basis to measure the photons she intercepts. For a given photon, suppose Alice and Bob use the + basis. If Eve, by chance, also chooses the + basis, she will measure the correct value and retransmit the bit in a photon with the same polarization. In this case, Eve’s presence cannot be detected. However, if Eve measures in the x basis, which has a 50% chance of occurring, she will transmit to Bob a photon polarized in a superposition of states relative to the + basis. Bob’s measurement result will then be probabilistic, introducing errors that Alice and Bob can use to detect Eve\'s presence. ',
+        'component.bb84.about.eve': 'Consider only the photons for which Alice and Bob used the same basis, as these photons are used to establish the key. To obtain information about the key, Eve must choose a basis to measure the photons she intercepts. For a given photon, suppose Alice and Bob use the + basis. If Eve, by chance, also chooses the + basis, she will measure the correct value and retransmit the bit in a photon with the same polarization. In this case, Eve\'s presence cannot be detected. However, if Eve measures in the x basis, which has a 50% chance of occurring, she will transmit to Bob a photon polarized in a superposition of states relative to the + basis. Bob\'s measurement result will then be probabilistic, introducing errors that Alice and Bob can use to detect Eve\'s presence. ',
         'component.homePage.userFriendlyTitle': 'User-friendly',
         'component.homePage.multiplayerTitle': 'Multiplayer Experience',
         'component.homePage.extensibleTitle': 'Highly Extensible',
@@ -143,17 +133,14 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' main actors: Alice and Bob, who play different roles. Here' +
             ' you can explore the set of steps that each one of them must' +
             ' take in order to complete the protocol successfully.',
-        'component.bb84.steps.step1Alice': ' of 0s and 1s. This string will' +
-            ' be' +
+        'component.bb84.steps.step1Alice': ' of 0s and 1s. This string will be' +
             ' used to build your encryption key.',
         'component.bb84.steps.step2Alice': ' to encode each of the bits. You' +
             ' can choose between the + and x bases.',
-        'component.bb84.steps.step3Alice': ' in the polarization of your' +
-            ' photons.',
+        'component.bb84.steps.step3Alice': ' in the polarization of your photons.',
         'component.bb84.steps.step4Alice': ' with Bob and wait for him to' +
             ' finish receiving and measuring them.',
-        'component.bb84.steps.step5Alice': ' and discard the bits where the' +
-            ' bases don\'t match.',
+        'component.bb84.steps.step5Alice': ' and discard the bits where the bases don\'t match.',
         'component.bb84.steps.step6Alice': ' by verifying that the randomly' +
             ' selected bits from your raw key match with Bob\'s. If they' +
             ' match, you can assume that the probability of an eavesdropper' +
@@ -161,15 +148,11 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' Otherwise, you have detected the presence of an eavesdropper' +
             ' and must restart the protocol.',
         'component.bb84.steps.step7Alice': ' to Bob.',
-        'component.bb84.highlights.highlight1Alice': 'Create a random bit' +
-            ' string',
-        'component.bb84.highlights.highlight2Alice': 'Randomly select a set' +
-            ' of' +
-            ' bases',
+        'component.bb84.highlights.highlight1Alice': 'Create a random bit string',
+        'component.bb84.highlights.highlight2Alice': 'Randomly select a set of bases',
         'component.bb84.highlights.highlight3Alice': 'Encode your bits',
         'component.bb84.highlights.highlight4Alice': 'Share your photons',
-        'component.bb84.highlights.highlight5Alice': 'Compare your bases to' +
-            ' Bob\'s',
+        'component.bb84.highlights.highlight5Alice': 'Compare your bases to Bob\'s',
         'component.bb84.highlights.highlight6Alice': 'Validate your key',
         'component.bb84.highlights.highlight7Alice': 'Encrypt and send your' +
             ' message',
@@ -179,11 +162,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.rawKeyInfo': 'At this point, you posses the "raw' +
             ' key", which will be used to detect the presence of an' +
             ' eavesdropper.',
-        'component.bb84.steps.step1Bob': ' to' +
-            ' measure each of Alice\'s photons. You can choose between the' +
-            ' + and x bases.',
-        'component.bb84.steps.step2Bob': ' and make note' +
-            ' of your outcomes.',
+        'component.bb84.steps.step1Bob': ' to measure each of Alice\'s photons.' +
+            ' You can choose between the + and x bases.',
+        'component.bb84.steps.step2Bob': ' and make note of your outcomes.',
         'component.bb84.steps.step3Bob': ' with Alice.',
         'component.bb84.steps.step4Bob': ' and discard the bits where the bases don\'t match.',
         'component.bb84.steps.step5Bob': ' by verifying' +
@@ -192,14 +173,11 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' an eavesdropper being present is very low, and you can safely' +
             ' use the key. Otherwise, you have detected the presence of an' +
             ' eavesdropper and must restart the protocol.',
-        'component.bb84.steps.step6Bob': ' using' +
-            ' your key.',
-        'component.bb84.highlights.highlight1Bob': 'Randomly select a set' +
-            ' of bases',
+        'component.bb84.steps.step6Bob': ' using your key.',
+        'component.bb84.highlights.highlight1Bob': 'Randomly select a set of bases',
         'component.bb84.highlights.highlight2Bob': 'Measure the photons',
         'component.bb84.highlights.highlight3Bob': 'Share your bases',
-        'component.bb84.highlights.highlight4Bob': 'Compare your bases to' +
-            ' Alice\'s',
+        'component.bb84.highlights.highlight4Bob': 'Compare your bases to Alice\'s',
         'component.bb84.highlights.highlight5Bob': 'Validate your key',
         'component.bb84.highlights.highlight6Bob': 'Decrypt Alice\'s message',
         'component.quantumCrypto.gamesPlayed': 'Total games played: ',
@@ -245,13 +223,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part7.1': 'Finally, note that three combinations of measurement bases are not used in the E91 protocol: ',
         'component.e91.about.figures.part7.2': 'The measurements made with these base pairs are simply discarded. ',
         'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
-
-        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.homePage.protocolsSection.dps.description': 'The DPS protocol uses the principles' +
+            ' of superposition and interference to establish an encryption key shared by Alice and Bob.',
         'component.validation.gameRestarted' : 'The game has been restarted.',
         'component.game.playerLeft': 'You\'ve quit the games!',
         'component.game.playerLeft.desc' : 'You will be redirected to the home page.',
-       
-
     },
     {
         // ... (French translations)
@@ -261,10 +237,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.header.about.bb84': 'À propos de BB84',
         'component.main.game': 'Un jeu de chiffrement quantique',
         'component.main.nameRequired': 'Un nom est requis',
-        'component.main.nameMin': 'Votre nom doit comporter au moins 2' +
-            ' caractères',
-        'component.main.nameMax': 'Votre nom ne peut pas dépasser 10' +
-            ' caractères',
+        'component.main.nameMin': 'Votre nom doit comporter au moins 2 caractères',
+        'component.main.nameMax': 'Votre nom ne peut pas dépasser 10 caractères',
         'component.main.pinRequired': 'Un code de jeu PIN est requis',
         'component.main.pinLength': 'Le code de jeu PIN doit comporter 5' +
             ' caractères',
@@ -276,8 +250,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.createGame.description': 'Choisissez le nombre de' +
             ' photons et si vous voulez qu\'Ève soit présente dans votre jeu',
         'component.main.join': 'Rejoindre',
-        'component.main.invalidCodeTitle': 'Erreur lors de la connexion au' +
-            ' jeu.',
+        'component.main.invalidCodeTitle': 'Erreur lors de la connexion au jeu.',
         'component.main.invalidCodeMessage': 'Vérifiez le code du jeu PIN',
         'component.waitingRoom.players': 'Joueurs',
         'component.waitingRoom.joinAt': 'Rejoignez sur',
@@ -289,14 +262,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.takenNameDescription': 'Ce nom est déjà pris. Veuillez' +
             ' en choisir un différent.',
         'component.waitingRoom.gameEndedTitle': 'Partie terminée',
-        'component.waitingRoom.gameEndedDescription': 'L\'hôte a mis fin au' +
-            ' jeu',
-        'component.waitingRoom.atLeastOnePlayer': 'Vous avez besoin d\'au' +
-            ' moins un joueur',
+        'component.waitingRoom.gameEndedDescription': 'L\'hôte a mis fin au jeu',
+        'component.waitingRoom.atLeastOnePlayer': 'Vous avez besoin d\'au moins un joueur',
         'component.createGame.keyLength': 'Nombre de photons',
         'component.createGame.eve': 'Ève est-elle présente ?',
-        'component.createGame.keyError': 'Seuls les chiffres entre 10 et 30' +
-            ' sont autorisés',
+        'component.createGame.keyError': 'Seuls les chiffres entre 10 et 30 sont autorisés',
         'component.createGame.keyMin': 'Le nombre minimum de photons est' +
             ' 16 si Ève est présente et 10 sinon',
         'component.createGame.keyMax': 'La longueur maximale de la clé est 30',
@@ -308,37 +278,37 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.main.gameStarted': 'Jeu commencé',
         'component.main.gameStartedDescription': 'Le jeu auquel vous' +
             ' essayez de vous connecter a déjà commencé.',
-        'component.createGame.numbersOnly': 'Seuls les chiffres sont' +
-            ' autorisés',
+        'component.createGame.numbersOnly': 'Seuls les chiffres sont autorisés',
         'component.createGame.validationLength': 'Le nombre de bits de' +
             ' validation doit être inférieur ou égal à la moitié' +
             ' de la longueur de la clé',
         'component.createGame.validationDescription': 'Bits de validation',
         'component.main.errorCreating': 'Erreur lors de la création du jeu',
-        'component.createGame.evePercentage.invalidType': 'Doit être entre' +
-            ' 0.1 et 1',
+        'component.createGame.evePercentage.invalidType': 'Doit être entre 0.1 et 1',
         'component.createGame.evePercentage.positive': 'Doit être positif',
         'component.createGame.evePercentage.greaterThan': 'Doit être' +
             ' supérieur ou égal à 0.1',
-        'component.createGame.evePercentage.lessThan': 'Doit être inférieur' +
-            ' ou égal à 1',
+        'component.createGame.evePercentage.lessThan': 'Doit être inférieur ou égal à 1',
         'component.createGame.evePercentage.label': 'Probabilité d\'Ève',
         'component.bb84.gameFound': 'Partie trouvée !',
         'component.bb84.gameFound.desc': 'Il semble que vous avez quitté' +
-            ' une partie alors qu\'elle était encore active. Souhaitez-vous' +
-            ' rejoindre ?',
+            ' une partie alors qu\'elle était encore active. Souhaitez-vous rejoindre ?',
         'component.bb84.gameFound.action': 'Rejoindre',
-            'general.close': 'Fermer',
+        'general.close': 'Fermer',
         'component.bb84.play.sorry': 'Désolé, nous n\'avons pas pu trouver' +
             ' de partenaire pour vous :(',
         'component.homePage.protocolsSection.bb84.description': 'Un' +
             ' protocole pour établir de manière sécurisée des clés' +
             ' cryptographiques entre deux parties sur un canal de' +
             ' communication non sécurisé.',
-        'component.homePage.protocolsSection.e91.description': 'Le protocole E91 utilise l\'intrication quantique pour garantir la sécurité des communications en permettant aux parties d\'échanger des clés cryptographiques inviolables.',
-        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
-        'component.homePage.title.description': 'Apprenez et pratiquez les' +
-            ' protocoles de cryptographie quantique',
+        'component.homePage.protocolsSection.e91.description': 'Le protocole E91 utilise' +
+            ' l\'intrication quantique pour garantir la sécurité des communications en' +
+            ' permettant aux parties d\'échanger des clés cryptographiques inviolables.',
+
+        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise les principes de superposition et d\'interférence pour établir une clé de chiffrement partagée par Alice et Bob.',
+
+        'component.homePage.title.description': 'Apprenez et pratiquez les protocoles' +
+            ' de cryptographie quantique',
         'component.homePage.aboutSection': 'QuantumCrypto est une' +
             ' plateforme web dédiée à l\'éducation à la cryptographie' +
             ' quantique. Elle propose des expériences' +
@@ -349,38 +319,79 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' en temps réel de protocoles de cryptographie quantique. Les' +
             ' principales fonctionnalités de notre plateforme sont',
         'component.homePage.userFriendly': 'Profitez d\'une interface' +
-            ' utilisateur intuitive conçue pour une meilleure expérience' +
-            ' d\'apprentissage.',
+            ' utilisateur intuitive conçue pour une meilleure expérience d\'apprentissage.',
         'component.homePage.multiplayer': 'Créez et rejoignez des jeux avec' +
-            ' vos amis pour mettre en pratique vos connaissances en' +
-            ' cryptographie quantique.',
+            ' vos amis pour mettre en pratique vos connaissances en cryptographie quantique.',
         'component.homePage.extensible': 'Une conception modulaire permet' +
             ' aux contributeurs d\'étendre notre application avec de' +
             ' nouvelles fonctionnalités, y compris de nouveaux protocoles.',
         'component.homePage.openSource': 'Tout notre code est disponible' +
             ' sur GitHub. Vous trouverez les liens au bas de la page.',
-        'component.bb84.about': 'Le protocole BB84 a été proposé en 1984 par Charles Bennett d\'IBM et Gilles Brassard de l\'Université de Montréal. Il implique deux parties distinctes, Alice et Bob, qui souhaitent établir une <link2>clé de chiffrement</link2> afin de communiquer de manière sécurisée via un <link3>canal public</link3>. Le protocole commence avec Alice qui crée une séquence aléatoire de bits et qui <link5>encode chaque bit</link5> à l\’aide d\’un <link1>photon</link1>. Plus précisément, la valeur du bit est encodée dans un des deux <link6>états mutuellement orthogonaux</link6> de la polarisation du photon. Aussi, à chaque photon, la base pour décrire la polarisation de la lumière est choisie au hasard entre deux bases. Alice envoie ensuite ces photons à Bob via un <link4>canal quantique</link4> public. Lorsque Bob reçoit les photons, il les mesure en utilisant une des deux bases également choisies au hasard. Ensuite, Alice et Bob annoncent publiquement les bases qu\'ils ont utilisées pour encoder et mesurer chaque photon. Une clé est formée en conservant seulement les bits pour lesquels les bases utilisées par Alice et Bob correspondent. Enfin, en comparant un sous-ensemble des bits de leur clé, Alice et Bob peuvent détecter la <link8>présence d\'un espion</link8>, généralement appelé Ève, et s\'assurent ainsi de la sécurité de leur canal de communication quantique. En effet, en raison des principes fondamentaux de la mécanique quantique, toute tentative par Ève d\'intercepter et de mesurer ces photons <link7>perturbera leur état</link7>, introduisant ainsi des incohérences qu\'Alice et Bob peuvent détecter. S\'ils concluent que le canal quantique n\'a pas été compromis, ils peuvent utiliser la clé de chiffrement générée pour envoyer un message en toute sécurité. Sinon, ils doivent recommencer la procédure.', 
+        'component.bb84.about': 'Le protocole BB84 a été proposé en 1984 par Charles Bennett' +
+            ' d\'IBM et Gilles Brassard de l\'Université de Montréal. Il implique deux parties' +
+            ' distinctes, Alice et Bob, qui souhaitent établir une <link2>clé de chiffrement</link2>' +
+            ' afin de communiquer de manière sécurisée via un <link3>canal public</link3>.' +
+            ' Le protocole commence avec Alice qui crée une séquence aléatoire de bits et qui' +
+            ' <link5>encode chaque bit</link5> à l\'aide d\'un <link1>photon</link1>. Plus' +
+            ' précisément, la valeur du bit est encodée dans un des deux <link6>états mutuellement' +
+            ' orthogonaux</link6> de la polarisation du photon. Aussi, à chaque photon, la base pour' +
+            ' décrire la polarisation de la lumière est choisie au hasard entre deux bases. Alice' +
+            ' envoie ensuite ces photons à Bob via un <link4>canal quantique</link4> public. Lorsque' +
+            ' Bob reçoit les photons, il les mesure en utilisant une des deux bases également choisies' +
+            ' au hasard. Ensuite, Alice et Bob annoncent publiquement les bases qu\'ils ont utilisées' +
+            ' pour encoder et mesurer chaque photon. Une clé est formée en conservant seulement les bits' +
+            ' pour lesquels les bases utilisées par Alice et Bob correspondent. Enfin, en comparant un' +
+            ' sous-ensemble des bits de leur clé, Alice et Bob peuvent détecter la <link8>présence d\'un' +
+            ' espion</link8>, généralement appelé Ève, et s\'assurent ainsi de la sécurité de leur canal' +
+            ' de communication quantique. En effet, en raison des principes fondamentaux de la mécanique' +
+            ' quantique, toute tentative par Ève d\'intercepter et de mesurer ces photons' +
+            ' <link7>perturbera leur état</link7>, introduisant ainsi des incohérences qu\'Alice et Bob' +
+            ' peuvent détecter. S\'ils concluent que le canal quantique n\'a pas été compromis, ils peuvent' +
+            ' utiliser la clé de chiffrement générée pour envoyer un message en toute sécurité. Sinon,' +
+            ' ils doivent recommencer la procédure.',
         'component.bb84.about.encryptionKey.title': 'Clé de chiffrement ',
-        'component.bb84.about.encryptionKey.part1': 'Une clé de chiffrement est un code secret (en bits) qui permet de protéger des informations en les transformant en un format illisible. Seules les personnes possédant la clé de déchiffrement pourront restaurer le message original. La clé de déchiffrement peut être la même clé (on parle alors de clés symétriques), ou une clé différente (clés asymétriques). Prenons un exemple de chiffrement avec clés symétriques dans lequel Alice et Bob possèdent la clé de chiffrement suivante : 010010. Si Alice souhaite transmettre un message à Bob de manière confidentielle, elle effectue l’opération XOR (OU-exclusif) bit par bit entre la clé et son message. Voici comment fonctionne l’opération XOR pour les différentes valeurs possibles des bits b0 et b1: ',
-        'component.bb84.about.encryptionKey.part2': 'Supposons que le message qu’elle veuille envoyer à Bob est 111000. L’opération de chiffrement génère la séquence 101010 comme on peut le voir dans ce tableau',
-        'component.bb84.about.encryptionKey.part3': 'Cette séquence est transmise à Bob qui, puisqu’il est la seule autre personne possédant la clé, peut déchiffrer le message en appliquant à son tour l’opération XOR bit par bit entre le message chiffré et la clé.',
+        'component.bb84.about.encryptionKey.part1': 'Une clé de chiffrement est un code secret (en bits) qui' +
+            ' permet de protéger des informations en les transformant en un format illisible. Seules les' +
+            ' personnes possédant la clé de déchiffrement pourront restaurer le message original. La clé de' +
+            ' déchiffrement peut être la même clé (on parle alors de clés symétriques), ou une clé différente' +
+            ' (clés asymétriques). Prenons un exemple de chiffrement avec clés symétriques dans lequel Alice et' +
+            ' Bob possèdent la clé de chiffrement suivante : 010010. Si Alice souhaite transmettre un message à' +
+            ' Bob de manière confidentielle, elle effectue l\'opération XOR (OU-exclusif) bit par bit entre la' +
+            ' clé et son message. Voici comment fonctionne l\'opération XOR pour les différentes valeurs possibles' +
+            ' des bits b0 et b1: ',
+        'component.bb84.about.encryptionKey.part2': 'Supposons que le message qu\'elle veuille envoyer à Bob est' +
+            ' 111000. L\'opération de chiffrement génère la séquence 101010 comme on peut le voir dans ce tableau',
+        'component.bb84.about.encryptionKey.part3': 'Cette séquence est transmise à Bob qui, puisqu\'il est la' +
+            ' seule autre personne possédant la clé, peut déchiffrer le message en appliquant à son tour' +
+            ' l\'opération XOR bit par bit entre le message chiffré et la clé.',
         'component.bb84.about.encryptionKey.message': 'Message',
         'component.bb84.about.encryptionKey.key': 'Clé',
         'component.bb84.about.encryptionKey.cypher': 'Message encrypté',
         'component.bb84.about.photon.title': 'Photon',
-        'component.bb84.about.photon': 'On dit bien souvent que tout dans l’univers est composé de particules, même la lumière. En effet, les particules qui composent la lumière sont appelées photons, et ils sont responsables de transporter l’énergie lumineuse. Le protocole BB84 utilise la polarisation des photons pour envoyer l’information des bits (0 ou 1). En effet, cette propriété quantique essentielle des particules de lumière assure la sécurité du protocole.',
+        'component.bb84.about.photon': 'On dit bien souvent que tout dans l\'univers est composé de particules,' +
+            ' même la lumière. En effet, les particules qui composent la lumière sont appelées photons, et ils' +
+            ' sont responsables de transporter l\'énergie lumineuse. Le protocole BB84 utilise la polarisation' +
+            ' des photons pour envoyer l\'information des bits (0 ou 1). En effet, cette propriété quantique' +
+            ' essentielle des particules de lumière assure la sécurité du protocole.',
         'component.bb84.about.publicPrivate.title': 'Canal public vs privé ',
-        'component.bb84.about.publicPrivate': 'Un canal public est un moyen de communication où tout le monde peut potentiellement écouter les messages échangés, comme si vous parliez à voix haute dans une pièce pleine de gens. Un canal privé, en revanche, garantit que la communication se fait seulement entre les personnes concernées sans possibilité d’interception, un peu comme une conversation à voix basse entre deux interlocuteurs où personne d’autre ne peut entendre. Comme il peut être difficile de garantir le caractère privé d’un canal de communication, la cryptographie est utilisée pour rendre les messages incompréhensibles sur un canal public et ainsi protéger la confidentialité des données. ',
+        'component.bb84.about.publicPrivate': 'Un canal public est un moyen de communication où tout le monde' +
+            ' peut potentiellement écouter les messages échangés, comme si vous parliez à voix haute dans une' +
+            ' pièce pleine de gens. Un canal privé, en revanche, garantit que la communication se fait seulement' +
+            ' entre les personnes concernées sans possibilité d\'interception, un peu comme une conversation à' +
+            ' voix basse entre deux interlocuteurs où personne d\'autre ne peut entendre. Comme il peut être' +
+            ' difficile de garantir le caractère privé d\'un canal de communication, la cryptographie est utilisée' +
+            ' pour rendre les messages incompréhensibles sur un canal public et ainsi protéger la confidentialité' +
+            ' des données. ',
         'component.bb84.about.classicalQuantum.title': 'Canal classique vs quantique',
-        'component.bb84.about.classicalQuantum': 'Un canal classique est un moyen de communication conçu pour transmettre de l’information classique, comme des messages binaires ou textuels. L’envoie d’information quantique à travers un canal classique pose de grands défis de performance étant donné le bruit induit par l’information classique qui y circule. En revanche, un canal quantique est conçu pour transmettre de l’information quantique, comme l’état d’un photon. Ce canal permet de conserver les propriétés quantiques de l’information, garantissant ainsi une grande probabilité que la bonne information soit reçue de l’autre côté, intacte. ',
-        'component.bb84.about.encoding.title': 'Encodage d’un bit dans un photon ',
-        'component.bb84.about.encoding': 'L’encodage d’un bit dans un photon fait référence à la façon dont on utilise la polarisation des photons pour représenter des bits (0 ou 1). La polarisation est une propriété des photons qui décrit la direction dans laquelle leur champ électrique oscille. Dans le protocole BB84, cette polarisation est utilisée pour encoder des bits en choisissant entre deux bases : la base + et la base x. Dans la base +, un photon polarisé horizontalement (↔) représente le bit 0, tandis qu’un photon polarisé verticalement (↕) représente le bit 1. Dans la base x, un photon polarisé en diagonale (⤢) représente le bit 0, et un photon polarisé en diagonale opposée (⤡) représente le bit 1. Alice encode alors chaque bit de cette manière avant de l’envoyer à Bob.',
+        'component.bb84.about.classicalQuantum': 'Un canal classique est un moyen de communication conçu pour transmettre de l\'information classique, comme des messages binaires ou textuels. L\'envoie d\'information quantique à travers un canal classique pose de grands défis de performance étant donné le bruit induit par l\'information classique qui y circule. En revanche, un canal quantique est conçu pour transmettre de l\'information quantique, comme l\'état d\'un photon. Ce canal permet de conserver les propriétés quantiques de l\'information, garantissant ainsi une grande probabilité que la bonne information soit reçue de l\'autre côté, intacte. ',
+        'component.bb84.about.encoding.title': 'Encodage d\'un bit dans un photon ',
+        'component.bb84.about.encoding': 'L\'encodage d\'un bit dans un photon fait référence à la façon dont on utilise la polarisation des photons pour représenter des bits (0 ou 1). La polarisation est une propriété des photons qui décrit la direction dans laquelle leur champ électrique oscille. Dans le protocole BB84, cette polarisation est utilisée pour encoder des bits en choisissant entre deux bases : la base + et la base x. Dans la base +, un photon polarisé horizontalement (↔) représente le bit 0, tandis qu\'un photon polarisé verticalement (↕) représente le bit 1. Dans la base x, un photon polarisé en diagonale (⤢) représente le bit 0, et un photon polarisé en diagonale opposée (⤡) représente le bit 1. Alice encode alors chaque bit de cette manière avant de l\'envoyer à Bob.',
         'component.bb84.about.orthogonal.title': 'Base orthogonale ',
-        'component.bb84.about.orthogonal': 'Si on considère le plan cartésien à 2 dimensions, une base est un ensemble de deux vecteurs, v0 et v1, qui permet de représenter n’importe quel vecteur du plan par une combinaison linéaire de v0 et v1. Lorsque v0 et v1 forment un angle de 90o, ils sont orthogonaux et ils forment une base orthogonale. Une base naturelle consiste à prendre un vecteur aligné avec l’axe des x et un autre aligné avec l’axe des y, ce qu’on appelle la base + dans le protocole BB84. En effectuant une rotation de 45o des deux vecteurs de la base +, on obtient la base x. En associant les bits 0 et 1 aux vecteurs orthogonaux d’une base, on s’assure que Bob mesure toujours la valeur qui avait été encodée par Alice lorsque la même base est utilisée. Il s’agit d’une conséquence de l’utilisation d’une base orthogonale et de la règle de Born, qui stipule que la probabilité d’un résultat de mesure correspond au carré de la composante du vecteur de polarisation, exprimé dans cette base. Si les bases d’Alice et de Bob ne concordent pas, le vecteur de polarisation du photon envoyé par Alice s’exprime alors comme une combinaison linéaire des vecteurs de la base de mesure de Bob. Le résultat de la mesure est alors aléatoire.',
-        'component.bb84.about.disturbance.title': 'Perturbation de l’état par la mesure',
-        'component.bb84.about.disturbance': 'On entend souvent qu’un système quantique peut être « dans deux états en même temps », c’est-à-dire en superposition d’états. Cela signifie que si on mesure le système, on ne peut pas prédire quel sera le résultat de la mesure, mais on connaît avec quelle probabilité chacun des résultats peut être observé. Une fois la mesure effectuée, l’état de superposition est détruit et le système est dans l’état qui a été mesuré. Une nouvelle mesure donnerait le même résultat. ',
-        'component.bb84.about.eve.title': 'Détection de la présence d’Ève',
-        'component.bb84.about.eve': 'Considérons seulement les photons pour lesquels Alice et Bob ont utilisé la même base puisque ce sont ces photons qui servent à établir la clé. Pour détenir de l’information sur la clé, Ève doit choisir dans quelle base elle mesure les photons qu’elle intercepte. Pour un de ces photons, supposons qu’Alice et Bob utilisent la base +. Si, par chance, Ève choisit également la base +, elle mesurera à coup sûr la bonne valeur puis pourra retransmettre le bit dans un nouveau photon de même polarisation. La présence d’Eve ne peut pas être détectée dans ce cas-ci. Si elle fait plutôt sa mesure dans la base x, ce qui a une chance sur deux de se produire, Ève transmettra à Bob un nouveau photon dont la polarisation est en superposition d’états par rapport à la base +. Le résultat de la mesure de Bob est donc probabiliste et la présence d’Ève peut être détectée.',
+        'component.bb84.about.orthogonal': 'Si on considère le plan cartésien à 2 dimensions, une base est un ensemble de deux vecteurs, v0 et v1, qui permet de représenter n\'importe quel vecteur du plan par une combinaison linéaire de v0 et v1. Lorsque v0 et v1 forment un angle de 90o, ils sont orthogonaux et ils forment une base orthogonale. Une base naturelle consiste à prendre un vecteur aligné avec l\'axe des x et un autre aligné avec l\'axe des y, ce qu\'on appelle la base + dans le protocole BB84. En effectuant une rotation de 45o des deux vecteurs de la base +, on obtient la base x. En associant les bits 0 et 1 aux vecteurs orthogonaux d\'une base, on s\'assure que Bob mesure toujours la valeur qui avait été encodée par Alice lorsque la même base est utilisée. Il s\'agit d\'une conséquence de l\'utilisation d\'une base orthogonale et de la règle de Born, qui stipule que la probabilité d\'un résultat de mesure correspond au carré de la composante du vecteur de polarisation, exprimé dans cette base. Si les bases d\'Alice et de Bob ne concordent pas, le vecteur de polarisation du photon envoyé par Alice s\'exprime alors comme une combinaison linéaire des vecteurs de la base de mesure de Bob. Le résultat de la mesure est alors aléatoire.',
+        'component.bb84.about.disturbance.title': 'Perturbation de l\'état par la mesure',
+        'component.bb84.about.disturbance': 'On entend souvent qu\'un système quantique peut être « dans deux états en même temps », c\'est-à-dire en superposition d\'états. Cela signifie que si on mesure le système, on ne peut pas prédire quel sera le résultat de la mesure, mais on connaît avec quelle probabilité chacun des résultats peut être observé. Une fois la mesure effectuée, l\'état de superposition est détruit et le système est dans l\'état qui a été mesuré. Une nouvelle mesure donnerait le même résultat. ',
+        'component.bb84.about.eve.title': 'Détection de la présence d\'Ève',
+        'component.bb84.about.eve': 'Considérons seulement les photons pour lesquels Alice et Bob ont utilisé la même base puisque ce sont ces photons qui servent à établir la clé. Pour détenir de l\'information sur la clé, Ève doit choisir dans quelle base elle mesure les photons qu\'elle intercepte. Pour un de ces photons, supposons qu\'Alice et Bob utilisent la base +. Si, par chance, Ève choisit également la base +, elle mesurera à coup sûr la bonne valeur puis pourra retransmettre le bit dans un nouveau photon de même polarisation. La présence d\'Eve ne peut pas être détectée dans ce cas-ci. Si elle fait plutôt sa mesure dans la base x, ce qui a une chance sur deux de se produire, Ève transmettra à Bob un nouveau photon dont la polarisation est en superposition d\'états par rapport à la base +. Le résultat de la mesure de Bob est donc probabiliste et la présence d\'Ève peut être détectée.',
         'component.homePage.userFriendlyTitle': 'Convivial',    
         'component.homePage.multiplayerTitle': 'Expérience multijoueur',
         'component.homePage.extensibleTitle': 'Hautement extensible',
@@ -483,23 +494,22 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.steps.step5Alice': ' à Bob.',
         'component.e91.highlights.highlight5Bob': 'Déchiffrez le message d\'Alice',
         'component.e91.steps.step5Bob': ' en utilisant votre clé.',
-        'component.e91.about.part1': 'Le protocole a été proposé en 1991 par Artur Ekert. Il implique deux parties distinctes, Alice et Bob, qui souhaitent établir une clé de chiffrement afin de communiquer de manière sécurisée via un canal public. Dans ce protocole, Alice et Bob reçoivent tous les deux un photon provenant d’une source qui émet des paires de photons dont les polarisations sont maximalement intriquées : les photons forment ce qu’on appelle des paires de Bell. Pour chaque paire, la polarisation d’un photon sera mesurée par Alice et l’autre par Bob. Alice effectue chaque mesure en choisissant de façon aléatoire une base parmi l’ensemble de trois bases ',
+        'component.e91.about.part1': 'Le protocole a été proposé en 1991 par Artur Ekert. Il implique deux parties distinctes, Alice et Bob, qui souhaitent établir une clé de chiffrement afin de communiquer de manière sécurisée via un canal public. Dans ce protocole, Alice et Bob reçoivent tous les deux un photon provenant d\'une source qui émet des paires de photons dont les polarisations sont maximalement intriquées : les photons forment ce qu\'on appelle des paires de Bell. Pour chaque paire, la polarisation d\'un photon sera mesurée par Alice et l\'autre par Bob. Alice effectue chaque mesure en choisissant de façon aléatoire une base parmi l\'ensemble de trois bases ',
         'component.e91.about.part2': 'Bob fait de même en choisissant parmi les bases',
-        'component.e91.about.part3': '. Parmi les bases de mesure à leur disposition, Alice et Bob en ont donc 2 qu’ils partagent, ', 
+        'component.e91.about.part3': '. Parmi les bases de mesure à leur disposition, Alice et Bob en ont donc 2 qu\'ils partagent, ', 
         'component.e91.about.figures.title': 'Figure des bases ',
-        'component.e91.about.figures.part1': 'Pour chaque mesure, Alice et Bob enregistrent le résultat : +1 ou -1. Une fois la transmission des paires de photons terminée et les mesures effectuées, Alice et Bob divulguent les bases de mesure qu’ils ont utilisées pour chaque photon. Les résultats des mesures effectuées dans la même base sont conservés pour former la clé de chiffrement. Cette situation survient en moyenne 2 fois sur 9 : lorsqu’Alice et Bob mesurent tous les deux dans la base b ou encore dans la base a’. Les résultats des mesures effectuées dans des bases différentes sont révélés et utilisés pour valider la sécurité de la source et du canal quantique qui ont été utilisés. Pour ce faire, le protocole E91 s’appuie une des expériences les plus spectaculaires de la mécanique quantique : la vérification des inégalités de Bell. Il existe plusieurs formulations de ces inégalités et le protocole E91 s’appuie spécifiquement sur l’inégalité de CHSH. Alice et Bob travailleront seulement avec les résultats des mesures effectuées dans les bases suivantes ',
-        'component.e91.about.figures.part2': 'Ce sont donc, en moyenne, 4 paires de photons sur 9 qui sont utilisées pour vérifier l’inégalité de CHSH. Pour chaque paire de résultats issus des combinaisons de bases du tableau précédent, Alice et Bob calculent le produit mA × mB où mA et mB sont les résultats de la mesure effectuée par Alice et Bob respectivement. La moyenne des produits est ensuite calculée pour chacune des combinaisons de base. ',
-        'component.e91.about.figures.part3': 'En guise d’exemple, supposons qu’Alice et Bob ont effectué les mesures suivantes:',
+        'component.e91.about.figures.part1': 'Pour chaque mesure, Alice et Bob enregistrent le résultat : +1 ou -1. Une fois la transmission des paires de photons terminée et les mesures effectuées, Alice et Bob divulguent les bases de mesure qu\'ils ont utilisées pour chaque photon. Les résultats des mesures effectuées dans la même base sont conservés pour former la clé de chiffrement. Cette situation survient en moyenne 2 fois sur 9 : lorsqu\'Alice et Bob mesurent tous les deux dans la base b ou encore dans la base a\'. Les résultats des mesures effectuées dans des bases différentes sont révélés et utilisés pour valider la sécurité de la source et du canal quantique qui ont été utilisés. Pour ce faire, le protocole E91 s\'appuie une des expériences les plus spectaculaires de la mécanique quantique : la vérification des inégalités de Bell. Il existe plusieurs formulations de ces inégalités et le protocole E91 s\'appuie spécifiquement sur l\'inégalité de CHSH. Alice et Bob travailleront seulement avec les résultats des mesures effectuées dans les bases suivantes ',
+        'component.e91.about.figures.part2': 'Ce sont donc, en moyenne, 4 paires de photons sur 9 qui sont utilisées pour vérifier l\'inégalité de CHSH. Pour chaque paire de résultats issus des combinaisons de bases du tableau précédent, Alice et Bob calculent le produit mA × mB où mA et mB sont les résultats de la mesure effectuée par Alice et Bob respectivement. La moyenne des produits est ensuite calculée pour chacune des combinaisons de base. ',
+        'component.e91.about.figures.part3': 'En guise d\'exemple, supposons qu\'Alice et Bob ont effectué les mesures suivantes:',
         'component.e91.about.figures.part4': 'Le calcul des moyennes donne:',
-        'component.e91.about.figures.part5': 'L’inégalité de CHSH consiste à vérifier que',
-        'component.e91.about.figures.part6': 'Il s’avère que lorsque S est calculé à partir de photons intriqués, cette inégalité n’est pas vérifiée. En fait, on peut montrer que 𝑆 = 2√2 ≈ 2.83 pour des photons maximalement intriqués. Ainsi, si l’émetteur de paires de photons est fiable et que le canal de communication n’est pas bruité – ou pire espionné ! – Alice et Bob devraient observer que la valeur de S tend vers 2√2 au fur et à mesure qu’ils augmentent le nombre de paires de photons considérées dans leur calcul. Ils pourront alors utiliser la clé qu’ils ont obtenue pour chiffrer leur message. À l’inverse, si cette valeur demeure sous 2 ils ne peuvent avoir confiance en la clé obtenue et devraient s’abstenir de l’utiliser. Attention, les valeurs moyennes sont des quantités statistiques qui nécessitent un grand échantillon pour être significatives. Pour un nombre limité d’échantillons des anomalies statistiques peuvent survenir et il peut être difficile de tirer des conclusions. ',
-        'component.e91.about.figures.part7.1': 'Notez qu’il reste 3 combinaisons de bases de mesure qui ne sont pas utilisées dans le protocole E91 : ',
+        'component.e91.about.figures.part5': 'L\'inégalité de CHSH consiste à vérifier que',
+        'component.e91.about.figures.part6': 'Il s\'avère que lorsque S est calculé à partir de photons intriqués, cette inégalité n\'est pas vérifiée. En fait, on peut montrer que 𝑆 = 2√2 ≈ 2.83 pour des photons maximalement intriqués. Ainsi, si l\'émetteur de paires de photons est fiable et que le canal de communication n\'est pas bruité – ou pire espionné ! – Alice et Bob devraient observer que la valeur de S tend vers 2√2 au fur et à mesure qu\'ils augmentent le nombre de paires de photons considérées dans leur calcul. Ils pourront alors utiliser la clé qu\'ils ont obtenue pour chiffrer leur message. À l\'inverse, si cette valeur demeure sous 2 ils ne peuvent avoir confiance en la clé obtenue et devraient s\'abstenir de l\'utiliser. Attention, les valeurs moyennes sont des quantités statistiques qui nécessitent un grand échantillon pour être significatives. Pour un nombre limité d\'échantillons des anomalies statistiques peuvent survenir et il peut être difficile de tirer des conclusions. ',
+        'component.e91.about.figures.part7.1': 'Notez qu\'il reste 3 combinaisons de bases de mesure qui ne sont pas utilisées dans le protocole E91 : ',
         'component.e91.about.figures.part7.2': 'Les mesures effectuées avec ces paires de bases sont simplement jetées. ',   
         'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
         'component.validation.gameRestarted' : 'La partie a été redémarrée.',
         'component.game.playerLeft': 'Vous aviez quitter le jeux!',
         'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',
-
         'component.dps.aboutTitle': 'À propos du protocole DPS',
         'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
         'component.dps.about.part1.1' : 'ou DPS pour ',
@@ -575,21 +585,10 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part58' : 'ce sont donc les impulsions modulées par les bits',
         'component.dps.about.part59' :  ' qui ont interférées. Puisque la différence de phase est de π entre ces 2 impulsions, Alice enregistre le bit 1 pour sa clé. Pour le photon 3, Bob a annoncé le temps ',
         'component.dps.about.part60' : 'ce sont donc les impulsions modulées par les bits ',
-        'component.dps.about.part61' : ' qui ont interférées. Puisqu’aucun déphasage a été appliqué à ces impulsions, Alice enregistre le bit 0 pour sa clé. Vous pouvez faire l’exercice avec les photons 4 et 6.',
-
-
-
-        
-
-
-
-        
-
-        
+        'component.dps.about.part61' : ' qui ont interférées. Puisqu’aucun déphasage a été appliqué à ces impulsions, Alice enregistre le bit 0 pour sa clé. Vous pouvez faire l’exercice avec les photons 4 et 6.',        
     },
     {
         // ... (Spanish translations)
-
         'component.main.name': 'Juan',
         'component.header.howToPlay': 'Cómo jugar',
         'component.header.about': 'Acerca de QuantumCrypto',
@@ -719,8 +718,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.howToPlayDescription': 'El protocolo BB84 tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +
             ' diferentes. Aquí puedes explorar el conjunto de pasos que' +
-            ' cada uno de ellos debe seguir para completar el protocolo con' +
-            ' éxito.',
+            ' cada uno de ellos debe seguir para completar el protocolo con éxito.',
         'component.bb84.steps.step1Alice': ' de 0s y 1s. Esta cadena se' +
             ' utilizará para construir la clave de cifrado.',
         'component.bb84.steps.step2Alice': ' para codificar cada uno de los' +
@@ -731,14 +729,12 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' termine de recibirlos y medirlos.',
         'component.bb84.steps.step5Alice': 'y descarta los bits donde las' +
             ' bases no coincidan.',
-        'component.bb84.steps.step6Alice': ' verificando que' +
-            ' los' +
+        'component.bb84.steps.step6Alice': ' verificando que los' +
             ' bits seleccionados aleatoriamente de tu clave sin procesar' +
             ' coincidan con los de Bob. Si coinciden, puedes suponer que la' +
             ' probabilidad de que haya un espía es muy baja y' +
             ' puedes usar la clave con seguridad. De lo contrario, has' +
-            ' detectado la presencia de un espía y debes reiniciar el' +
-            ' protocolo.',
+            ' detectado la presencia de un espía y debes reiniciar el protocolo.',
         'component.bb84.steps.step7Alice': ' a Bob',
         'component.bb84.highlights.highlight1Alice': 'Crea una cadena de' +
             ' bits aleatoria',
@@ -746,17 +742,14 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' aleatoriamente un conjunto de bases',
         'component.bb84.highlights.highlight3Alice': 'Codifica tus bits',
         'component.bb84.highlights.highlight4Alice': 'Comparte tus fotones',
-        'component.bb84.highlights.highlight5Alice': 'Compara tus bases con' +
-            ' las de Bob',
+        'component.bb84.highlights.highlight5Alice': 'Compara tus bases con las de Bob',
         'component.bb84.highlights.highlight6Alice': 'Valida tu clave',
-        'component.bb84.highlights.highlight7Alice': 'Encripta y envía tu' +
-            ' mensaje',
+        'component.bb84.highlights.highlight7Alice': 'Encripta y envía tu mensaje',
         'component.bb84.additionalStep': 'En QuantumCrypto, no todos los' +
             ' juegos BB84 tienen un espía. Este próximo paso solo se aplica' +
             ' si hay uno en tu juego. ¡Lo descubrirás al final!',
         'component.bb84.rawKeyInfo': 'En este punto, usted posee la "clave' +
-            ' bruta", que se utilizará para detectar la presencia de un' +
-            ' espía.',
+            ' bruta", que se utilizará para detectar la presencia de un espía.',
         'component.bb84.steps.step1Bob': ' para medir cada uno de los' +
             ' fotones de Alice. Puedes elegir entre las bases + y x.',
         'component.bb84.steps.step2Bob': ' y toma nota de sus resultados.',
@@ -768,18 +761,15 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' coincidan con los de Bob. Si coinciden, puede suponer que la' +
             ' probabilidad de que haya un espía presente es muy baja y' +
             ' puede usar la clave con seguridad. De lo contrario, ha' +
-            ' detectado la presencia de un espía y debe reiniciar el' +
-            ' protocolo.',
+            ' detectado la presencia de un espía y debe reiniciar el protocolo.',
         'component.bb84.steps.step6Bob': ' usando su clave.',
         'component.bb84.highlights.highlight1Bob': 'Selecciona' +
             ' aleatoriamente un conjunto de bases',
         'component.bb84.highlights.highlight2Bob': 'Mide los fotones',
         'component.bb84.highlights.highlight3Bob': 'Comparte tus bases',
-        'component.bb84.highlights.highlight4Bob': 'Compara tus bases con' +
-            ' las de Alice',
+        'component.bb84.highlights.highlight4Bob': 'Compara tus bases con las de Alice',
         'component.bb84.highlights.highlight5Bob': 'Valida tu clave',
-        'component.bb84.highlights.highlight6Bob': 'Descifra el mensaje de' +
-            ' Alice',
+        'component.bb84.highlights.highlight6Bob': 'Descifra el mensaje de Alice',
         'component.bb84.playSolo': 'Jugar solo',
         'component.bb84.startSolo': 'Comenzar juego en solitario',
         'component.bb84.soloRoleSelect': 'Selecciona tu rol',
@@ -789,8 +779,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.howToPlayDescription': 'El protocolo E91 tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +
             ' diferentes. Aquí puedes explorar el conjunto de pasos que' +
-            ' cada uno de ellos debe seguir para completar el protocolo con' +
-            ' éxito.',
+            ' cada uno de ellos debe seguir para completar el protocolo con éxito.',
         'component.e91.results.room': 'Sala',
         'component.e91.results.evePresent': 'Eve presente',
         'component.e91.results.eveDetected': 'Eve detectada',
@@ -805,8 +794,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.highlights.highlight3': 'Extrae tu clave de cifrado',
         'component.e91.steps.step3': ' a partir de los resultados de medición obtenidos para pares de bases idénticas.',
         'component.e91.highlights.highlight4': 'Valida tu clave',
-        'component.e91.steps.step4': ' probando la desigualdad CHSH con las mediciones tomadas con las otras combinaciones ' +
-            'de bases.',
+        'component.e91.steps.step4': ' probando la desigualdad CHSH con las mediciones tomadas con' +
+            ' las otras combinaciones de bases.',
         'component.e91.highlights.highlight5Alice': 'Cifra y envía tu mensaje',
         'component.e91.steps.step5Alice': ' a Bob.',
         'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
@@ -823,10 +812,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.part6': 'Cuando S se calcula a partir de fotones entrelazados, esta desigualdad no se cumple. De hecho, se puede demostrar que 𝑆 = 2√2 ≈ 2.83 para fotones máximamente entrelazados. Por lo tanto, si el emisor de pares de fotones es confiable y el canal de comunicación no produce ruido ni es espiado, Alice y Bob deberían observar que el valor de S tiende hacia 2√2 a medida que aumentan el número de pares de fotones considerados en sus cálculos. Luego podrán usar la clave obtenida para cifrar sus mensajes. Por el contrario, si este valor permanece por debajo de 2, no pueden confiar en la clave y deberían abstenerse de usarla. Tenga en cuenta que los valores promedio son cantidades estadísticas que requieren una gran muestra para ser significativos. Con un número limitado de muestras, pueden ocurrir anomalías estadísticas que dificulten sacar conclusiones confiables. ',
         'component.e91.about.figures.part7.1': 'Finalmente, observe que hay tres combinaciones de bases de medición que no se utilizan en el protocolo E91: ',
         'component.e91.about.figures.part7.2': 'Las mediciones realizadas con estas combinaciones de bases simplemente se descartan. ',    
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente, y 10 en' +
-        ' caso contrario.',
-        
-        'component.homePage.protocolsSection.dps.description': 'Le protocole DPS utilise Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem quos molestiae harum voluptates vero totam tempora sed facere maxime sunt et.',
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando' +
+            ' Eve está presente, y 10 en caso contrario.',
+        'component.homePage.protocolsSection.dps.description': 'El protocolo DPS utiliza' +
+            ' los principios de superposición e interferencia para establecer una clave de' +
+            ' cifrado compartida por Alice y Bob.',
         'component.validation.gameRestarted' : 'El juego ha sido reiniciado.',
         'component.game.playerLeft': '¡Habías dejado los juegos!',
         'component.game.playerLeft.desc' : 'Serás redirigido a la página de inicio.',
