@@ -30,7 +30,7 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.arrivalTime': 'Detection time',
         'component.bobExchange.measure': 'Record detection times',
         'component.bobExchange.Measurement' : 'Read the detection times' +
-            ' of Alice\'s photons, then delete the times t0 and t3 by' +
+            ' of Alice\'s photons, then delete the times T0 and T3 by' +
             ' clicking on them.',
         'component.bobExchange.photonsArrived': 'Alice\'s photons just arrived!',
         'component.dps.validateBtn': 'Validate',
@@ -70,7 +70,7 @@ export const dpsLines: LanguageItem[] = [
         'component.aliceInference.error': 'Incorrect inference!',
         'component.aliceInference.inferPhaseDifference': 'Use Bob\'s photon' +
             ' detection times to identify the phase difference between the' +
-            ' interfering pulses.', 
+            ' interfering pulses.',
         'component.messaging.alice.start': 'Great job! Now let\'s wait for Bob\'s encrypted message...',
         'component.messaging.yourKey': 'Your key',
         'component.messaging.bobEncrypted': 'Bob encrypted message',
@@ -105,7 +105,7 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.arrivalTime': 'Temps de détection',
         'component.bobExchange.measure': 'Relevez les temps de détection',
         'component.bobExchange.Measurement' : 'Relevez les temps de détection des photons d\'Alice,' +
-            ' puis supprimez les temps t0 et t3 en cliquant dessus.',
+            ' puis supprimez les temps T0 et T3 en cliquant dessus.',
         'component.bobExchange.photonsArrived': 'Les photons d\'Alice sont arrivés !',
         'component.dps.validateBtn': 'Valider',
         'component.bobExchange.shareWithAlice': 'Parfait ! Partagez les temps de détection avec' +
@@ -174,7 +174,7 @@ export const dpsLines: LanguageItem[] = [
         'component.bobExchange.arrivalTime': 'Tiempo de detección',
         'component.bobExchange.measure' : 'Registrar tiempos de detección',
         'component.bobExchange.Measurement' : 'Lee los tiempos de detección' +
-            ' de los fotones de Alice, luego borra los tiempos t0 y t3 haciendo' +
+            ' de los fotones de Alice, luego borra los tiempos T0 y T3 haciendo' +
             ' clic sobre ellos.',
         'component.bobExchange.photonsArrived': '¡Los fotones de Alice han llegado!',
         'component.dps.validateBtn': 'Validar',

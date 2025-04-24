@@ -75,11 +75,11 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
     const DetectorPhase = (entries: { phase: string[]; time: string }[]) => {
         return entries.map(({ phase, time }) => {
             if (phase.length !== 3) return "Erreur";
-            if (time === "t1") {
+            if (time === "T1") {
                 const [B, A] = phase.slice(-2);
                 return (A === "π" && B === "0") || (A === "0" && B === "π") ? "π" : "0";
             } 
-            if (time === "t2") {
+            if (time === "T2") {
                 const [C, B] = phase.slice(0, 2);
                 return (B === "π" && C === "0") || (B === "0" && C === "π") ? "π" : "0";
             }

@@ -62,7 +62,7 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     
     const measureArrivalTime = () => {
         const probabilities = [1 / 6, 2 / 6, 2 / 6, 1 / 6];
-        const times = ['t0', 't1', 't2', 't3'];
+        const times = ['T0', 'T1', 'T2', 'T3'];
 
         const getRandomTime = () => {
             const random = Math.random();
@@ -98,8 +98,8 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
         let valid = true;
         const updatedTimes = validatedTimes.map(field => ({
             ...field,
-            error: (field.discarded && (field.value === 't1' || field.value === 't2')) ||
-                (!field.discarded && (field.value === 't0' || field.value === 't3')),
+            error: (field.discarded && (field.value === 'T1' || field.value === 'T2')) ||
+                (!field.discarded && (field.value === 'T0' || field.value === 'T3')),
         }));
 
         if (updatedTimes.some(field => field.error)) {
