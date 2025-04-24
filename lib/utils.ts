@@ -1,5 +1,7 @@
 import {type ClassValue, clsx} from 'clsx';
 import {twMerge} from 'tailwind-merge';
+import { Language } from '@/components/providers/language-provider';
+
 
 export const forbiddenSymbols = ['e', 'E', '+', '-', '.'];
 
@@ -27,3 +29,17 @@ export function generateUniqueRandomList(min: number, max: number,
 
     return randomList;
 }
+
+
+export const getLanguageCode = (language: Language): 'en' | 'fr' | 'eb' => {
+  switch (language) {
+    case Language.FRENCH:
+      return 'fr';
+    case Language.SPANISH:
+      return 'eb';
+    case Language.ENGLISH:
+        return 'en';
+    default:
+      return 'en';
+  }
+};
