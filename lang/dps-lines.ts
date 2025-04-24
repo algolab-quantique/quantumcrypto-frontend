@@ -44,7 +44,7 @@ export const dpsLines: LanguageItem[] = [
         'component.bobMessaging.encryptedMessage' : 'Your encrypted message',
         'component.bobMessaging.message' : 'Your message',
         'component.bobMessaging.detector' : 'Detector (your key)',
-        'component.bobMessaging.arrivalTime' : 'Arrival time',
+        'component.bobMessaging.arrivalTime' : 'Detection time',
         'component.bobMessaging.phase' : 'phase',
         'component.bobExchange.secretKey': 'Use the secret key obtained from the' +
             ' measured phase differences to encrypt your message. Then send the' +

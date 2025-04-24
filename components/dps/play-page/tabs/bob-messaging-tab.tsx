@@ -68,27 +68,16 @@ const BobMessagingTab = () => {
         }));
     });
 
-    const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-
     const [detectorValues, setDetectorValues] = useState<string[]>([]);
-
-   
 
     const revealDetectorValues = (entries: { phase: string[]; time: string }[]) => {
         entries.forEach((entry, i) => {
-            setTimeout(() => {
                 setDetectorValues(prev => {
                     const newValues = [...prev];
                     newValues[i] = computeDetectorValue(entry);
                     return newValues;
                 });
-                setHighlightedIndex(i);
-            }, i * (2000 / entries.length));
         });
-    
-        setTimeout(() => {
-            setHighlightedIndex(null); 
-        }, entries.length * (2000 / entries.length));
     };
     
     const computeDetectorValue = ({ phase, time }: { phase: string[]; time: string }) => {
@@ -180,8 +169,6 @@ const BobMessagingTab = () => {
         return allValid;
     };
 
- 
-
     return (
         <div className="block border text-card-foreground border-secondary bg-card shadow-lg rounded-lg">
             <Table className="w-full">
@@ -201,13 +188,7 @@ const BobMessagingTab = () => {
                             <TableCell>
                                 <Input
                                     disabled={true}
-                                    style={{
-                                        borderColor: highlightedIndex === index ? 'rgba(0, 255, 0, 0.6)' : undefined,   
-                                        transition: 'border-color 0.5s easeOut'                             
-                                    }}
-                                    onKeyDown={e => forbiddenSymbols.includes(
-                                        e.key) && e.preventDefault()}
-                                    value={bobKeyBitsOn ? bobKeyBits[index] : (detectorValues[index] || '*')}                                  
+                                    value={detectorValues[index]}
                                     className={cn('w-10 text-lg text-center' +
                                     ' mx-auto disabled:opacity-100' +
                                     ' disabled:bg-background' +
