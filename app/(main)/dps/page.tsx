@@ -67,8 +67,16 @@ export default function DPS() {
                     <CardContent>
                         <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.dps.aboutTitle')}</h1>
                         <p className="text-lg mb-4">
-                            {localize('component.dps.about.part1')}
+                            {localize('component.dps.about.part1.0')}
+                            <a href="#ref1" className="text-blue-500 hover:underline">[1]</a>
+                            <span>, </span>
+                            {localize('component.dps.about.part1.1')}
+                            <span className='italic font-bold'>{localize('component.dps.about.part1.2')}</span>                            
+                            <span>, </span>
+                            {localize('component.dps.about.part1.3')}
+
                         </p>
+                        
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part2')}
                         </p>
@@ -642,6 +650,11 @@ export default function DPS() {
                         </p>
                     </CardContent>
                 </Card>
+            </section>
+            <section className="w-full h-fit mt-20 px-5 md:px-20">
+                <p id="ref1" className="text-lg mt-20 font-bold">
+                    [1] Cette référence explique les bases du protocole DPS.
+                </p>
             </section>
             <Footer />
     </MathJaxContext>

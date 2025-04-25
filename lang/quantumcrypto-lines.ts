@@ -501,7 +501,10 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',
 
         'component.dps.aboutTitle': 'À propos du protocole DPS',
-        'component.dps.about.part1' : 'Le protocole à déphasage différentiel [1], ou DPS pour \'Differential phase shift\', est un protocole quantique permettant l’établissement de clés de chiffrement.',
+        'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
+        'component.dps.about.part1.1' : 'ou DPS pour ',
+        'component.dps.about.part1.2' : 'Differential phase shift',
+        'component.dps.about.part1.3' : 'est un protocole quantique permettant l’établissement de clés de chiffrement.',
         'component.dps.about.part2' : 'Contrairement aux protocoles BB84 et E91 qui encodent l’information dans la polarisation des photons, le protocole DPS encode l’information dans les phases d\'un train d’impulsions. ',
         'component.dps.about.part3' : 'Le protocole débute avec Alice qui envoie des photons uniques dans un dispositif comprenant trois trajets: A, B et C ',
         'component.dps.about.part4' : 'Dans ce montage, il y a la même différence de longueur entre les trajets ',
@@ -552,7 +555,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part41' : 'Reprenons notre exemple où ',
         'component.dps.about.part42' : 'On a alors les amplitudes de probabilités suivantes ',
         'component.dps.about.part43' : 'De façon générale si ',
-
         'component.dps.about.part44' : '(différence de phase de 0) et que le photon est détecté au temps ',
         'component.dps.about.part45' : 'le détecteur 0 est activé et Bob enregistre le bit 0 pour sa clé. À l’inverse, si ',
         'component.dps.about.part46' : '(différence de phase de ',
