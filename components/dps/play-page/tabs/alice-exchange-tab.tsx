@@ -299,6 +299,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                 <div className="gaussian-container">
                                     {pulseInputs[i].values.map((value, buttonIndex) => (
                                         <Button
+                                            disabled={photonsSent}
                                             key={buttonIndex}
                                             variant="outline"
                                             className={cn(
