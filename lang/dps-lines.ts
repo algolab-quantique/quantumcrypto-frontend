@@ -164,7 +164,7 @@ export const dpsLines: LanguageItem[] = [
             ' Maintenant, attendons le déchiffrement de Alice...',
         'component.messaging.alice.arrived': 'Le message chiffré de Bob est' +
             ' arrivé !',
-        'component.messaging.alice.decrypt': 'Après l\'inférence, utilisez la clé secrète obtenu pour' +
+        'component.messaging.alice.decrypt': 'Utilisez la clé secrète obtenu pour' +
             ' déchiffrer le message.',
         'component.messaging.alice.end': 'Vous avez déchiffré le message' +
             ' de Bob !',

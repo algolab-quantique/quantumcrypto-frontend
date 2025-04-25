@@ -5,7 +5,7 @@ import {
     TableHead,
     TableBody, TableCell,
 } from '@/components/ui/table';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import {CheckCircle2, Send} from 'lucide-react';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import {Input} from '@/components/ui/input';
@@ -27,6 +27,7 @@ const AliceMessagingTab = () => {
     const { 
         inferredPhases,
         bobCipher,
+        bobCipherSent,
         aliceKeyBits,
         gameSuccess,
         decryptedMessage: persistedDecryptedMessage,        
@@ -40,6 +41,19 @@ const AliceMessagingTab = () => {
 
     const secretKey = inferredPhases.map(phase => (phase === "π" ? "1" : "0"));
     
+    
+    useEffect(() => {
+        if (bobCipher.length) {
+            pushLines([
+                {
+                    content: 'component.messaging.alice.arrived',
+                },
+                {
+                    content: 'component.messaging.alice.decrypt',
+                },
+            ]);
+        }
+    }, []);
 
     const [decryptedMessage, setDecryptedMessage] = useState(() => {
         return bobCipher.map(() => ({

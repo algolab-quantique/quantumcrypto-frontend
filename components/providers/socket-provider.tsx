@@ -834,7 +834,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                                 },
                             ]);
                         }
-                        if (usePlayerStore.getState().playerRole === 'A'){
+                        if (usePlayerStore.getState().playerRole === 'A' &&
+                            useDPSProgressStore.getState().dpsTab === 'messaging'){
                                 useDPSProgressStore.getState().pushLines([
                                     {
                                         content: 'component.messaging.alice.arrived',
@@ -928,7 +929,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 case PLAYER_LEFT_EVENT:
                     if (gameType === 'dps') {
                         const myRole = usePlayerStore.getState().playerRole;
-                        
+
                         if (myRole) {
                             toast.warning(localize('component.game.playerLeft'), {
                                 description: localize('component.game.playerLeft.desc'),
