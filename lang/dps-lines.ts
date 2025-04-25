@@ -64,7 +64,7 @@ export const dpsLines: LanguageItem[] = [
         'component.messaging.bob.reveal': 'Your Alice was ',
         'component.aliceInference.timesArrived': 'The photon detection times at Bob\'s are here!',
         'component.aliceInference.arrivalTime': 'Detection times',
-        'component.aliceInference.correspondence': 'Interferencia del tren de impulsos',
+        'component.aliceInference.correspondence': 'Pulse train interference',
         'component.aliceInference.phaseDifference': 'Phase difference',
         'component.aliceInference.success': 'Correct inference!',
         'component.aliceInference.error': 'Incorrect inference!',

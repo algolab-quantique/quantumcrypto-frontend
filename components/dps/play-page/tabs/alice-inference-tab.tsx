@@ -126,14 +126,6 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg border-secondary">
                         <TableHead className="text-center">
-                            <p>{localize('component.dps.phase')}</p>
-                            <div className="flex justify-between">
-                                <span>c</span>
-                                <span>b</span>
-                                <span>a</span>
-                            </div>
-                        </TableHead>
-                        <TableHead className="text-center">
                             <p>{localize('component.aliceInference.arrivalTime')}</p>
                         </TableHead>
                         <TableHead className="text-center">
@@ -147,13 +139,6 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                 <TableBody className="h-full overflow-y-auto">
                     {validEntries.map(({phase, time, photon}, index) => (
                         <TableRow key={index} className="text-center border-secondary">
-                            <TableCell>
-                            <div className="flex justify-between">
-                                <span>{phase[0]}</span>
-                                <span>{phase[1]}</span>
-                                <span>{phase[2]}</span>
-                            </div>
-                            </TableCell>
                             <TableCell>{time}</TableCell>
                             <TableCell>
                                 <Table>
@@ -168,8 +153,7 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                                     </TableHeader>
                                     <TableBody className="overflow-y-auto">
                                         <TableRow>
-                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"><span>D</span></TableCell>
-                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"> </TableCell>
+                                            <TableCell className="d-flex justify-content-center align-items-center"> </TableCell>
                                             {Array.isArray(photon) ? (
                                                 photon.map((p, i) => (
                                                     <TableCell key={`row1-${i}`} className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3">
@@ -190,7 +174,7 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                                                     </TableCell>
                                                 ))
                                             ) : (
-                                                <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3">{photon}</TableCell>
+                                                <TableCell className="d-flex justify-content-center align-items-center">{photon}</TableCell>
                                             )}
                                                 <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3"> </TableCell>
                                         </TableRow>
