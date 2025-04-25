@@ -616,7 +616,25 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                         if (usePlayerStore.getState().playerRole === 'A') {
                             useE91RoomStore.getState().setBobBases(message.bases);
                         }
-                    }       
+                    } else if (gameType === 'dps') {
+
+                        //This code must be in the 'PLAYER_LEFT_EVENT' box.
+                        const myRole = usePlayerStore.getState().playerRole;
+                        
+                        if (myRole) {
+                            toast.warning(localize('component.game.playerLeft'), {
+                                description: localize('component.game.playerLeft.desc'),
+                            });
+                        }
+                        setIsPlayRoomConnected(false);
+                        setPlayRoomConnecting(false);
+                        router.replace('/');
+                        localStorage.setItem('dpsPlayerData', JSON.stringify({}));
+                        localStorage.setItem('dpsGameData', JSON.stringify({}));    
+                        localStorage.clear();     
+                        clearDPSLocalStorage();
+                        
+                    }      
                     break;
 
                 case A_BASES_EVENT:
@@ -907,6 +925,25 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                     }
                     restartWithoutEve();
                     break;
+                case PLAYER_LEFT_EVENT:
+                    if (gameType === 'dps') {
+                        const myRole = usePlayerStore.getState().playerRole;
+                        
+                        if (myRole) {
+                            toast.warning(localize('component.game.playerLeft'), {
+                                description: localize('component.game.playerLeft.desc'),
+                            });
+                        }
+                        setIsPlayRoomConnected(false);
+                        setPlayRoomConnecting(false);
+                        router.replace('/');
+                        localStorage.setItem('dpsPlayerData', JSON.stringify({}));
+                        localStorage.setItem('dpsGameData', JSON.stringify({}));    
+                        localStorage.clear();     
+                        clearDPSLocalStorage();
+                        
+                    }
+                    break;
                 
                 case SWAP_ROLES_AND_RESTART_EVENT:
                     if (gameType === 'dps') {                        
@@ -951,28 +988,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                     }
                     break; 
                 
-                case PLAYER_LEFT_EVENT:
-                    console.log(" in lefting paaaaarrrt");
-                    if (gameType === 'dps') {
-                        const myRole = usePlayerStore.getState().playerRole;
-                       
-                        console.log('myRole: ', myRole);
-
-                        if (myRole) {
-                            toast.warning(localize('component.game.playerLeft'), {
-                                description: localize('component.game.playerLeft.desc'),
-                            });
-                        }
-                        setIsPlayRoomConnected(false);
-                        setPlayRoomConnecting(false);
-                        router.replace('/');
-                        localStorage.setItem('dpsPlayerData', JSON.stringify({}));
-                        localStorage.setItem('dpsGameData', JSON.stringify({}));    
-                        localStorage.clear();     
-                        clearDPSLocalStorage();
-                        
-                    }
-                    break;
+                
                 default:
                     console.log('Event: ' + event);
             }
@@ -1161,7 +1177,7 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
     };
 
     const leftGame = () => {
-        sendEvent(PLAYER_LEFT_EVENT);
+        sendEvent(B_BASES_EVENT);
     };
 
     const shareIndices = (validationIndices: number[]) => {
