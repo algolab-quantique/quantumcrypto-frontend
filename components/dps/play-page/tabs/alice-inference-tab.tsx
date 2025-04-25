@@ -156,39 +156,43 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                             </TableCell>
                             <TableCell>{time}</TableCell>
                             <TableCell>
-                                <Table className="w-full">
+                                <Table>
                                     <TableHeader className="bg-card top-0 sticky">
                                         <TableRow>
-                                            <TableHead className="text-xs font-bold"><span>T3</span></TableHead>
-                                            <TableHead className="text-xs font-bold"><span>T2</span></TableHead>
-                                            <TableHead className="text-xs font-bold"><span>T1</span></TableHead>
-                                            <TableHead className="text-xs font-bold"><span>T0</span></TableHead>
+                                            <TableHead className="text-xs font-bold p-1 text-center"><span></span></TableHead>
+                                            <TableHead className="text-xs font-bold p-1 text-center"><span>T3</span></TableHead>
+                                            <TableHead className="text-xs font-bold p-1 text-center"><span>T2</span></TableHead>
+                                            <TableHead className="text-xs font-bold p-1 text-center"><span>T1</span></TableHead>
+                                            <TableHead className="text-xs font-bold p-1 text-center"><span>T0</span></TableHead>
                                         </TableRow>
                                     </TableHeader>
-                                    <TableBody className="h-full overflow-y-auto">
+                                    <TableBody className="overflow-y-auto">
                                         <TableRow>
-                                            <TableCell className="text-center"> </TableCell>
+                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"><span>D</span></TableCell>
+                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"> </TableCell>
                                             {Array.isArray(photon) ? (
                                                 photon.map((p, i) => (
-                                                    <TableCell key={`row1-${i}`} className="d-flex justify-content-center align-items-center">
+                                                    <TableCell key={`row1-${i}`} className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3">
                                                         {p === '1' ? polarIcons[1] : p === '2' ? polarIcons[2] : polarIcons[0]}
                                                     </TableCell>
                                                 ))
                                             ) : (
-                                                    <TableCell className="d-flex justify-content-center align-items-center">{photon}</TableCell>
+                                                    <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3">{photon}</TableCell>
                                             )}
                                         </TableRow>
+                                        
                                         <TableRow>
+                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3"><span>E</span></TableCell>
                                             {Array.isArray(photon) ? (
                                                 photon.map((p, i) => (
-                                                    <TableCell key={`row2-${i}`} className="d-flex justify-content-center align-items-center">
+                                                    <TableCell key={`row2-${i}`} className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3">
                                                         {p === '1' ? polarIcons[1] : p === '2' ? polarIcons[2] : polarIcons[0]}
                                                     </TableCell>
                                                 ))
                                             ) : (
-                                                <TableCell className="d-flexjustify-content-center align-items-center">{photon}</TableCell>
+                                                <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3">{photon}</TableCell>
                                             )}
-                                                <TableCell className="d-flex justify-content-center align-items-center"> </TableCell>
+                                                <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3"> </TableCell>
                                         </TableRow>
                                     </TableBody>
                                 </Table>
