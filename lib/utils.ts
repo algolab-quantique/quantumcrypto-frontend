@@ -31,12 +31,12 @@ export function generateUniqueRandomList(min: number, max: number,
 }
 
 
-export const getLanguageCode = (language: Language): 'en' | 'fr' | 'eb' => {
+export const getLanguageCode = (language: Language): 'en' | 'fr' | 'es' => {
   switch (language) {
     case Language.FRENCH:
       return 'fr';
     case Language.SPANISH:
-      return 'eb';
+      return 'es';
     case Language.ENGLISH:
         return 'en';
     default:
