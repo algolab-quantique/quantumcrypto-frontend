@@ -112,6 +112,11 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         };
     
         setPhaseInputs(newPolarList);
+
+        validatePulse({
+            phaseList: newPolarList,
+            pulseInputs: pulseInputs,
+        }, false, rowIndex);
     };
 
     const onModulatedClick = (rowIndex: number, buttonIndex: number) => {
