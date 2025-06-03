@@ -65,7 +65,7 @@ export default function DPS() {
             <section ref={aboutRef} className="w-full h-fit mt-20 px-5 md:px-20">
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
-                        <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.dps.aboutTitle')}</h1>
+                        <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.header.about.dps')}</h1>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part1.0')}
                             <a href="#ref1" className="text-blue-500 hover:underline">[1]</a>
@@ -85,6 +85,10 @@ export default function DPS() {
                     <CardContent>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part3')}
+                            <span className='italic font-bold'>A,</span>
+                            <span className='italic font-bold'> B</span>
+                            {localize('component.dps.about.and')}
+                            <span className='italic font-bold'> C</span>
                         </p>
                         <div className='flex justify-center mb-4 mt-4'>
                             <LocalizedImage name="alice" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
@@ -205,7 +209,7 @@ export default function DPS() {
                         <MathJax>
                             {`\\[
                                 \\left| \\psi_{\\text{photon}} \\right\\rangle = \\frac{1}{\\sqrt{3}} 
-                                \\left( (-1)^{b_0} \\left| 0 \\right\\rangle + (-1)^{b_1} \\left| 1 \\right\\rangle + (-1)^{b_2} \\left| 2 \\right\\rangle \\right)
+                                \\left( (-1)^{b_0} \\left| 0 \\right\\rangle + (-1)^{b_1} \\left| 1 \\right\\rangle + (-1)^{b_2} \\left| 2 \\right\\rangle \\right).
                             \\]`}
                         </MathJax>
                     </CardContent>
@@ -318,12 +322,12 @@ export default function DPS() {
                         </div>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part25')}
-                            <span className='italic font-bold'>U<sub>msr</sub></span>
+                            <span className='italic font-bold'>U<sub>bs</sub></span>
                             {localize('component.dps.about.part26')}
                         </p>
                         <MathJax className="text-lg mb-4">
                         {`\\[
-                            U_{\\text{msr}} \\left| \\psi_{\\text{in}} \\right\\rangle = \\left| \\psi_{\\text{out}} \\right\\rangle
+                            U_{\\text{bs}} \\left| \\psi_{\\text{in}} \\right\\rangle = \\left| \\psi_{\\text{out}} \\right\\rangle
                         \\]`}
                         </MathJax>
 
@@ -438,7 +442,7 @@ export default function DPS() {
                             <span className='italic font-bold'>T3</span>
                             <span>, </span>
                             {localize('component.dps.about.part33')}
-                            <span className="bg-green-300 font-bold px-1 rounded ml-2">{localize('component.dps.about.part34')}</span> 
+                            {localize('component.dps.about.part34')} 
                             {localize('component.dps.about.part35')}
                         </p>
 
@@ -447,7 +451,7 @@ export default function DPS() {
                                 \\left( \\frac{(-1)^{b_0}}{\\sqrt{2}} \\right)^2 = 
                                 \\left( \\frac{-(-1)^{b_0}}{\\sqrt{2}} \\right)^2 = 
                                 \\left( \\frac{(-1)^{b_2}}{\\sqrt{2}} \\right)^2 = 
-                                \\left( \\frac{-(-1)^{b_2}}{\\sqrt{2}} \\right)^2 = \\frac{1}{2}
+                                \\left( \\frac{-(-1)^{b_2}}{\\sqrt{2}} \\right)^2 = \\frac{1}{2}.
                             \\]`}
                         </MathJax>
                         <p className="text-lg mb-4">
@@ -652,7 +656,7 @@ export default function DPS() {
             </section>
             <section className="w-full h-fit mt-20 px-5 md:px-20">
                 <p id="ref1" className="text-lg mt-20 font-bold">
-                    [1] Cette référence explique les bases du protocole DPS.
+                    [1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." PRL 89.3 (2002): 037902.
                 </p>
             </section>
             <Footer />
