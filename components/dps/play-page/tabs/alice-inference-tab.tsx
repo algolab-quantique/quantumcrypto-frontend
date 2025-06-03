@@ -153,7 +153,8 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                                     </TableHeader>
                                     <TableBody className="overflow-y-auto">
                                         <TableRow>
-                                            <TableCell className="d-flex justify-content-center align-items-center"> </TableCell>
+                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"><span>D</span></TableCell>
+                                            <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3"> </TableCell>
                                             {Array.isArray(photon) ? (
                                                 photon.map((p, i) => (
                                                     <TableCell key={`row1-${i}`} className="p-0.5 w-6 h-6 d-flex items-center justify-center pb-3">
@@ -174,7 +175,7 @@ const AliceInferenceTab = ({polarIcons}: {polarIcons: any[]}) => {
                                                     </TableCell>
                                                 ))
                                             ) : (
-                                                <TableCell className="d-flex justify-content-center align-items-center">{photon}</TableCell>
+                                                <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3">{photon}</TableCell>
                                             )}
                                                 <TableCell className="p-0.5 w-6 h-6 d-flex items-center justify-center pt-3"> </TableCell>
                                         </TableRow>
