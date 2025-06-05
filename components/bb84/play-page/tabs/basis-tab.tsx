@@ -193,17 +193,30 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                             content: 'component.messaging.bob.start',
                         },
                     ]);
-                    setTimeout(() => {
-                        pushLines([
-                            {
-                                content: 'component.messaging.bob.arrived',
-                            },
-                            {
-                                content: 'component.messaging.bob.decrypt',
-                            },
-                        ]);
-                        setAliceCipher(aliceMockCrypto);
-                    }, 2000);
+                    if (playingSolo) {
+                        setTimeout(() => {
+                            pushLines([
+                                {
+                                    content: 'component.messaging.bob.arrived',
+                                },
+                                {
+                                    content: 'component.messaging.bob.decrypt',
+                                },
+                            ]);
+                            setAliceCipher(aliceMockCrypto);
+                        }, 2000);
+                    } else {
+                        if (aliceCipher.length > 0) {
+                            pushLines([
+                                {
+                                    content: 'component.messaging.bob.arrived',
+                                },
+                                {
+                                    content: 'component.messaging.bob.decrypt',
+                                },
+                            ]);                        
+                        }
+                    }
             } else {
                 pushLines([
                     {

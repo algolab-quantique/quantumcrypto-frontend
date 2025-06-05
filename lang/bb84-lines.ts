@@ -200,7 +200,7 @@ export const bb84Lines: LanguageItem[] = [
         'component.game.tabValidation': 'Validation',
         'component.validationTab.yourKey': 'Vos bits',
         'component.validationTab.bobsKey': 'Les bits de Bob',
-        'component.validationTab.alicesKey': 'La clé d\'Alice',
+        'component.validationTab.alicesKey': 'Les bits d\'Alice',
         'component.validationTab.valid': 'Valide',
         'component.validationTab.invalid': 'Invalide',
         'component.gameRestart.restart': 'Redémarrer',
