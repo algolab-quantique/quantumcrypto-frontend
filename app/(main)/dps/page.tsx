@@ -39,7 +39,15 @@ export default function DPS() {
         
         return <img src={src} alt={name} {...props} />;
     };
-   
+
+    const warningMessage = () => {
+        const { language } = useLanguage();
+        const msg = (language === 1)  // French
+            ? ''
+            : localize('component.dps.about.translationToCome');  // English or Spanish
+
+        return msg
+    };
 
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
@@ -66,6 +74,7 @@ export default function DPS() {
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
                         <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.header.about.dps')}</h1>
+                        <h2 className="text-2xl font-bold mb-4 text-highlight">{warningMessage()}</h2>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part1.0')}
                             <a href="#ref1" className="text-blue-500 hover:underline">[1]</a>
