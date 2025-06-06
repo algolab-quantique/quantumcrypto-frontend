@@ -40,7 +40,7 @@ export default function DPS() {
         return <img src={src} alt={name} {...props} />;
     };
 
-    const warningMessage = () => {
+    const WarningMessage = () => {
         const { language } = useLanguage();
         const msg = (language === 1)  // French
             ? ''
@@ -74,7 +74,7 @@ export default function DPS() {
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
                         <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.header.about.dps')}</h1>
-                        <h2 className="text-2xl font-bold mb-4 text-highlight">{warningMessage()}</h2>
+                        <h2 className="text-2xl font-bold mb-4 text-highlight">{WarningMessage()}</h2>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part1.0')}
                             <a href="#ref1" className="text-blue-500 hover:underline">[1]</a>
@@ -665,7 +665,7 @@ export default function DPS() {
             </section>
             <section className="w-full h-fit mt-20 px-5 md:px-20">
                 <p id="ref1" className="text-lg mt-20 font-bold">
-                    [1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." PRL 89.3 (2002): 037902.
+                    [1] Inoue K, Waks E, Yamamoto Y. &ldquo;Differential phase shift quantum key distribution.&rdquo; PRL 89.3 (2002): 037902.
                 </p>
             </section>
             <Footer />

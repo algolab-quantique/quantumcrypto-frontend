@@ -96,7 +96,7 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
 
     [
         // eslint-disable-next-line react/jsx-key
-        <Minus key="minus"/>, <Bell key="bell"/>, <Trash key="trash"/>, <Key key="key"/>
+        <Minus/>, <Bell/>, <Trash/>, <Key/>
     ];
     
 
@@ -213,11 +213,11 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const onValidate = () => {
         if (validateForm) { 
             const validBitIndices = categoryList
-                .map((field, index) => (field.value === '3' ? index : -1))
+                .map((field, index) => (field.value === '3' ? index : null))
                 .filter(index => index !== null) as number[];
 
             const invalidBitIndices = categoryList
-                .map((field, index) => (field.value === '1' ? index : -1))
+                .map((field, index) => (field.value === '1' ? index : null))
                 .filter(index => index !== null) as number[];
 
 
@@ -259,11 +259,11 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
 
     const onMoveToMessaging = () => {
         const validBitIndices = categoryList
-                .map((field, index) => (field.value === '3' ? index : -1))
-                .filter(index => index !== null) as number[]; 
+                .map((field, index) => (field.value === '3' ? index : null))
+                .filter(index => index !== null) as number[];
 
             const invalidBitIndices = categoryList
-                .map((field, index) => (field.value === '1' ? index : -1))
+                .map((field, index) => (field.value === '1' ? index : null))
                 .filter(index => index !== null) as number[];
 
 
