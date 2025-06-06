@@ -90,11 +90,12 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const bits = playerRole === 'A' ? aliceBits : bobBits;
     const bases = playerRole === 'A' ? aliceBases : bobBases;
     const bothBasesSet = aliceBases.length > 0 && bobBases.length > 0;
-    
+
 
     const CategoryIcons = 
 
     [
+        // eslint-disable-next-line react/jsx-key
         <Minus key="minus"/>, <Bell key="bell"/>, <Trash key="trash"/>, <Key key="key"/>
     ];
     
@@ -213,13 +214,13 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
         if (validateForm) { 
             const validBitIndices = categoryList
                 .map((field, index) => (field.value === '3' ? index : -1))
-                .filter(index => index !== -1); 
-    
+                .filter(index => index !== null) as number[];
+
             const invalidBitIndices = categoryList
                 .map((field, index) => (field.value === '1' ? index : -1))
-                .filter(index => index !== -1); 
-    
-            
+                .filter(index => index !== null) as number[];
+
+
             setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
             setBobValidBits(validBitIndices.map(i => bobBits[i]));
             setAliceInvalidBits(invalidBitIndices.map(i => aliceBits[i]));
@@ -259,13 +260,13 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const onMoveToMessaging = () => {
         const validBitIndices = categoryList
                 .map((field, index) => (field.value === '3' ? index : -1))
-                .filter(index => index !== -1); 
-    
+                .filter(index => index !== null) as number[]; 
+
             const invalidBitIndices = categoryList
                 .map((field, index) => (field.value === '1' ? index : -1))
-                .filter(index => index !== -1); 
-    
-            
+                .filter(index => index !== null) as number[];
+
+
         setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
         setBobValidBits(validBitIndices.map(i => bobBits[i]));
         moveToExchangeTab();

@@ -22,9 +22,9 @@ const PhotonCategories = () => {
     };
 
     const polarIcons: Record<string, JSX.Element> = {
-        '1': <span style={{ fontSize: "24px" }}>a</span>,    
-        '2': <span style={{ fontSize: "24px" }}>b</span>, 
-        '3': <span style={{ fontSize: "24px" }}>a&apos;</span>, 
+        '1': <span style={{ fontSize: "24px" }}>a</span>,
+        '2': <span style={{ fontSize: "24px" }}>b</span>,
+        '3': <span style={{ fontSize: "24px" }}>a&apos;</span>,
         '4': <span style={{ fontSize: "24px" }}>b&apos;</span>,
     };
 

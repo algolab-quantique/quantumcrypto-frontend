@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { useLanguage } from '@/components/providers/language-provider';
 
 const GraphPopup = ({ onClose, isVisible, sValues, photonNumber}: {onClose: any, isVisible: boolean, sValues: number[], photonNumber: number}) => {
   
-  const {localize} = useLanguage();
-
-  
-
   useEffect(() => {
 
     if (!isVisible) return;
