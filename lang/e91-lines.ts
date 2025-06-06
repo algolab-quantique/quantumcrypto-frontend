@@ -167,7 +167,7 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basisDesc': ' (a, b, a\', b\')',
         'component.e91.button.secure': 'Sécuritaire',
         'component.e91.button.unsecure': 'Non sécuritaire',
-        'component.e91.button.showGraph': 'Monter le graphique',
+        'component.e91.button.showGraph': 'Montrer le graphique',
         'component.e91.graph.title': 'CHSH',
         'component.e91.text.seeResults': 'Voir les résultats',
         'component.tooltip.bobBase': 'Base de Bob',

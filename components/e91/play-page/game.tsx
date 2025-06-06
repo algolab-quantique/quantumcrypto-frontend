@@ -25,12 +25,16 @@ const Game = () => {
 
     const polarIcons =
 
-        [
-            <Minus key="minus"/>, 
-            <span key="a" style={{ fontSize: "24px" }}>a</span>,
-            <span key="b" style={{ fontSize: "24px" }}>b</span>, 
-            <span key="a-prime" style={{ fontSize: "24px" }}>a&apos;</span>,
-            <span key="b-prime" style={{ fontSize: "24px" }}>b&apos;</span>           
+        [   // eslint-disable-next-line react/jsx-key
+            <Minus/>, 
+            // eslint-disable-next-line react/jsx-key
+            <span style={{ fontSize: "24px" }}>a</span>,
+            // eslint-disable-next-line react/jsx-key
+            <span style={{ fontSize: "24px" }}>b</span>, 
+            // eslint-disable-next-line react/jsx-key
+            <span style={{ fontSize: "24px" }}>a&apos;</span>,
+            // eslint-disable-next-line react/jsx-key
+            <span style={{ fontSize: "24px" }}>b&apos;</span>
         ];
 
     const {localize} = useLanguage();
