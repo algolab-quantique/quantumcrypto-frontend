@@ -11,7 +11,7 @@ contributors: ["Jean-Fred", "ibra"]
 # Glossaire des définitions
 
 ## Clé de chiffrement
-Une clé de chiffrement est une information secrète, généralement une suite de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte clair) en un message chiffré (illisible pour les autres), puis de le déchiffrer. Contrairement à un mot de passe, la clé n’est pas destinée à être mémorisée par un humain, mais à être utilisée par un programme informatique. L’objectif des protocoles comme E91 ou BB84 est de générer et partager cette clé de façon parfaitement sécurisée, afin que seuls Alice et Bob puissent protéger leurs communications.
+Une clé de chiffrement est une information secrète, généralement une suite de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte clair) en un message chiffré (illisible pour les autres), puis de le déchiffrer. Contrairement à un mot de passe, la clé n’est pas destinée à être mémorisée par un humain, mais à être utilisée par un programme informatique. L’objectif des protocoles comme E91 ou BB84 est de générer et partager cette clé de façon parfaitement sécurisée, afin que seuls Alice et Bob puissent l’utiliser pour protéger leurs communications.
 
 ## Canal public (et privé)
 Un canal public est un moyen de communication (comme Internet, une fibre optique ou une ligne téléphonique) où toute personne peut potentiellement intercepter ou écouter les messages échangés, un peu comme parler à voix haute dans une pièce pleine de monde. À l’inverse, un canal privé garantit que seuls les interlocuteurs concernés peuvent accéder à la communication, comme une conversation à voix basse à l’écart. Dans la pratique, il est difficile d’assurer la confidentialité d’un canal : c’est pourquoi la cryptographie est utilisée pour rendre les messages incompréhensibles sur un canal public. Dans les protocoles de cryptographie quantique (BB84, E91, DPS…), la sécurité repose sur la physique quantique, et non sur la confidentialité du canal.
@@ -21,7 +21,7 @@ On dit souvent que tout dans l’univers est composé de particules, même la lu
 
 
 ## Polarisations
-La polarisation décrit l'orientation dans laquelle une onde lumineuse (comme un photon) oscille. Imaginez une corde qui vibre : elle peut le faire verticalement (↔), horizontalement (↔) ou en diagonale (⤢). Pour un photon, la polarisation est une propriété quantique fondamentale qui est mesurée pour obtenir les résultats +1 ou -1.
+La polarisation décrit l'orientation dans laquelle une onde lumineuse (comme un photon) oscille. Imaginez une corde qui vibre : elle peut le faire verticalement (↕), horizontalement (↔) ou en diagonale (⤢). Pour un photon, la polarisation est une propriété quantique fondamentale qui est mesurée pour obtenir les résultats +1 ou -1.
 
 ## Maximalement intriquées
 Deux particules (ou qubits) sont dites "intriquées" lorsqu’elles partagent un état quantique commun : leurs résultats de mesure sont corrélés de façon telle qu’il est impossible de les décrire séparément, même à distance. On parle d’ "intrication maximale" lorsque la corrélation entre les résultats de mesure est la plus forte possible, c’est-à-dire que les résultats sont parfaitement corrélés ou anticorrélés selon la base choisie (si l’on mesure l’une, on connaît immédiatement le résultat de la mesure de l’autre).
