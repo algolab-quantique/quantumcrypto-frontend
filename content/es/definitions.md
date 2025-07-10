@@ -37,6 +37,7 @@ Una base de medición es un conjunto de orientaciones de referencia utilizadas p
 ## Mediciones en la Misma Base
 Se dice que las mediciones se realizan en la misma base cuando, para un par de partículas, Alicia y Bob han elegido aleatoriamente la misma orientación para sus dispositivos de medición (por ejemplo, ambos usaron la base $b$). Solo en este caso sus resultados están perfectamente correlacionados (o anti-correlacionados según el estado) y pueden usarse para construir la clave secreta de cifrado.
 
+
 ## Correlación E(a, b)
 La correlación $E(a, b)$ mide el vínculo estadístico entre los resultados de medición de dos qubits entrelazados, cada uno medido en una base diferente (orientación): $a$ para el primero, $b$ para el segundo. Se calcula como el promedio de los productos de los resultados obtenidos (por ejemplo, $+1$ o $-1$), sobre un gran número de pares. Una correlación de $+1$ significa que los resultados son siempre idénticos, $-1$ significa que siempre son opuestos, y $0$ significa que no hay vínculo.
 
