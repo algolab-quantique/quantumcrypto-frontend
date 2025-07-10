@@ -8,7 +8,7 @@ last_updated: "2025-07-10"
 contributors: ["Jean-Fred", "ibra"]
 ---
 
-# Definitions
+# Glossaire des définitions
 
 ## Clé de chiffrement
 Une clé de chiffrement est une information secrète, généralement une suite de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte clair) en un message chiffré (illisible pour les autres), puis de le déchiffrer. Contrairement à un mot de passe, la clé n’est pas destinée à être mémorisée par un humain, mais à être utilisée par un programme informatique. L’objectif des protocoles comme E91 ou BB84 est de générer et partager cette clé de façon parfaitement sécurisée, afin que seuls Alice et Bob puissent protéger leurs communications.
