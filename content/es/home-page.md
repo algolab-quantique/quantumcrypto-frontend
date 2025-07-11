@@ -1,4 +1,4 @@
-# Common Content
+# MainHomePage Content
 
 ## Key: component.homePage.aboutSection
 QuantumCrypto es una plataforma
