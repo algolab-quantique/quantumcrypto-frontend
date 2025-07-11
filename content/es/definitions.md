@@ -67,3 +67,26 @@ En el protocolo E91, el valor $S$ calculado a partir de las mediciones debe supe
 #### Importancia del Número de Muestras
 Los resultados del protocolo (como el valor S) se basan en probabilidades y promedios. Para obtener un valor fiable que refleje la realidad, se requiere un número muy grande de mediciones (muestras). Con pocas mediciones, el azar puede distorsionar el resultado y llevar a una conclusión incorrecta sobre la seguridad de la clave.
 
+
+<!-- 
+Todo: Need review and verify the definitions provided below. Please check whether these definitions are general to quantum cryptography or specifically related to the BB84 protocol.
+-->
+
+## Codificación de un bit en un fotón
+La codificación de un bit en un fotón se refiere a cómo se utiliza la polarización de los fotones para representar bits (0 o 1). La polarización es una propiedad de los fotones que describe la dirección en la que oscila su campo eléctrico. En el protocolo BB84, esta polarización se usa para codificar bits eligiendo entre dos bases: la base + y la base x. En la base +, un fotón polarizado horizontalmente (↔) representa el bit 0, mientras que un fotón polarizado verticalmente (↕) representa el bit 1. En la base x, un fotón polarizado diagonalmente (⤢) representa el bit 0, y un fotón polarizado en la dirección diagonal opuesta (⤡) representa el bit 1. Alice codifica cada bit de esta manera antes de enviarlo a Bob.
+
+<!-- TODO err: there is an error in the website for that it writen orthogonal (en) -->
+## Base ortogonal
+En un plano cartesiano bidimensional, una base es un conjunto de dos vectores, v0 y v1​, que pueden representar cualquier vector en el plano como una combinación lineal de v0​ y v1​. Cuando v0​ y v1​ forman un ángulo de 90°, son ortogonales y crean una base ortogonal. Una base natural consiste en un vector alineado con el eje x y otro alineado con el eje y, conocida como la base + en el protocolo BB84. Al rotar los vectores de la base + a 45°, se obtiene la base x. Asociando los bits 0 y 1 con los vectores ortogonales de una base, Bob siempre mide el valor codificado por Alice cuando usan la misma base. Esto es una consecuencia del uso de una base ortogonal y de la regla de Born, que establece que la probabilidad de un resultado de medición corresponde al cuadrado de la componente del vector de polarización en esa base. Si las bases de Alice y Bob no coinciden, el vector de polarización del fotón enviado por Alice se expresa como una combinación lineal de los vectores de la base de medición de Bob. El resultado de la medición será entonces aleatorio.
+
+
+## Canal clásico vs canal cuántico
+Un canal clásico está diseñado para transmitir información clásica, como mensajes binarios o textuales. Transmitir información cuántica a través de un canal clásico presenta grandes desafíos de rendimiento debido al ruido introducido por la información clásica. En cambio, un canal cuántico está diseñado para transmitir información cuántica, como el estado de un fotón. Este canal conserva las propiedades cuánticas de la información, asegurando una alta probabilidad de que la información correcta se reciba intacta al otro lado.
+
+
+## Detección de la presencia de Eve
+Consideremos solo los fotones para los que Alice y Bob usaron la misma base, ya que estos fotones se utilizan para establecer la clave. Para obtener información sobre la clave, Eve debe elegir una base para medir los fotones que intercepta. Para un fotón dado, supongamos que Alice y Bob usan la base +. Si Eve, por casualidad, también elige la base +, medirá el valor correcto y retransmitirá el bit en un fotón con la misma polarización. En este caso, la presencia de Eve no se puede detectar. Sin embargo, si Eve mide en la base x, lo cual tiene un 50% de probabilidad de ocurrir, Eve transmitirá a Bob un fotón polarizado en una superposición de estados con respecto a la base +. El resultado de la medición de Bob será entonces probabilístico, introduciendo errores que Alice y Bob pueden usar para detectar la presencia de Eve.
+
+
+## Perturbación del estado por la medición
+A menudo se dice que un sistema cuántico puede estar "en dos estados a la vez", es decir, en una superposición de estados. Esto significa que al medir el sistema, no se puede predecir cuál será el resultado, pero se conoce la probabilidad de cada posible resultado. Una vez que se realiza una medición, la superposición se destruye y el sistema colapsa al estado medido. Una nueva medición dará el mismo resultado.
