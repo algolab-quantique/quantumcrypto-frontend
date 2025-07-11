@@ -66,3 +66,24 @@ In the E91 protocol, the value $S$ calculated from the measurements must exceed 
 #### Importance of the Number of Samples
 The results of the protocol (such as the S value) are based on probabilities and averages. To obtain a reliable value that reflects reality, a very large number of measurements (samples) is required. With few measurements, chance can distort the result and lead to an incorrect conclusion about the security of the key.
 
+<!-- 
+Todo: Need review and verify the definitions provided below. Please check whether these definitions are general to quantum cryptography or specifically related to the BB84 protocol.
+-->
+
+## Encoding a Bit in a Photon
+Encoding a bit in a photon refers to using the polarization of photons to represent bits (0 or 1). Polarization is a property of photons that describes the direction in which their electric field oscillates. In the BB84 protocol, this polarization is used to encode bits by choosing between two bases: the + basis and the × basis. In the + basis, a horizontally polarized photon (↔) represents bit 0, while a vertically polarized photon (↕) represents bit 1. In the × basis, a diagonally polarized photon (⤢) represents bit 0, and a photon polarized in the opposite diagonal direction (⤡) represents bit 1. Alice encodes each bit in this manner before sending it to Bob.
+
+## Orthogonal Basis
+In a two-dimensional Cartesian plane, a basis is a set of two vectors, v0 ​and v1​, that can represent any vector in the plane as a linear combination of v0​ and v1​. When v0​ and v1​ form a 90° angle, they are orthogonal and create an orthogonal basis. A natural basis consists of one vector aligned with the x-axis and another aligned with the y-axis, known as the + basis in the BB84 protocol. By rotating the + basis vectors by 45°, the x basis is obtained. By associating bits 0 and 1 with the orthogonal vectors of a basis, Bob always measures the value encoded by Alice when they use the same basis. This is a consequence of using an orthogonal basis and Born's rule, which states that the probability of a measurement outcome corresponds to the square of the polarization vector's component in that basis. If Alice's and Bob's bases do not match, the polarization vector of the photon sent by Alice is expressed as a linear combination of the measurement basis vectors chosen by Bob. The measurement result is then random.
+
+
+## Classical vs. Quantum Channels
+A classical channel is designed to transmit classical information, such as binary or textual messages. Transmitting quantum information through a classical channel presents significant performance challenges due to the noise introduced by classical information. On the other hand, a quantum channel is designed to transmit quantum information, such as the state of a photon. This channel preserves the quantum properties of the information, ensuring a high likelihood that the correct information is received intact on the other end.
+
+
+## Detecting Eve's Presence
+Consider only the photons for which Alice and Bob used the same basis, as these photons are used to establish the key. To obtain information about the key, Eve must choose a basis to measure the photons she intercepts. For a given photon, suppose Alice and Bob use the + basis. If Eve, by chance, also chooses the + basis, she will measure the correct value and retransmit the bit in a photon with the same polarization. In this case, Eve's presence cannot be detected. However, if Eve measures in the x basis, which has a 50% chance of occurring, she will transmit to Bob a photon polarized in a superposition of states relative to the + basis. Bob's measurement result will then be probabilistic, introducing errors that Alice and Bob can use to detect Eve's presence.
+
+
+## State Disturbance by Measurement
+It is often said that a quantum system can be "in two states at once," meaning it is in a superposition of states. This implies that upon measurement, the system's outcome cannot be predicted, but the probability of each result is known. Once a measurement is made, the superposition state is destroyed, and the system collapses into the measured state. Any subsequent measurement will yield the same result.
