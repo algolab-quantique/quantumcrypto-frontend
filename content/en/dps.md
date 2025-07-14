@@ -8,6 +8,12 @@ last_updated: "2025-07-11"
 contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 ---
 
+<!-- 
+NOTE: Image paths use ../../public/images/ for GitHub/VS Code compatibility.
+When integrating with Next.js, these should be changed back to /images/ 
+as Next.js serves files from the public directory automatically.
+-->
+
 # DPS Protocol Content
 
 ## About the Protocol
@@ -17,7 +23,11 @@ Unlike the BB84 and E91 protocols which encode information in the polarization o
 
 The protocol begins with Alice sending single photons into a device comprising three paths: A, B and C
 
-insert image here.
+<picture>
+  <source srcset="../../public/images/alice_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/alice_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/alice_bb_fr.png" alt="Alice's device diagram for DPS protocol">
+</picture>
 
 In this setup, there is the same length difference between paths A and B as between paths B and C. Thus, a pulse passing through B (C) acquires a delay T compared to a pulse passing through A (B).
 
@@ -31,12 +41,54 @@ $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
 with $|0\rangle$ corresponding to the 1st pulse, $|1\rangle$ to the second pulse, and $|2\rangle$ to the last pulse of the train. For each photon sent, Alice randomly chooses 3 bits. If the bit is 1, she applies a π phase shift to the corresponding pulse and does nothing if the bit is 0. For the three pulses there are 8 possible situations, let's see four examples
 
-| bit 2 | bit 1 | bit 0 | pulse 2 | pulse 1 | pulse 0 |
-|-------|-------|-------|---------|---------|---------|
-| 0     | 0     | 0     | ![pulse]    | ![pulse]    | ![pulse]    |
-| 0     | 1     | 0     | ![pulse]    | ![inverted] | ![pulse]    |
-| 1     | 1     | 0     | ![inverted] | ![inverted] | ![pulse]    |
-| 1     | 1     | 1     | ![inverted] | ![inverted] | ![inverted] |
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">bit 2</th>
+      <th style="text-align: center;">bit 1</th>
+      <th style="text-align: center;">bit 0</th>
+      <th style="text-align: center;">pulse 2</th>
+      <th style="text-align: center;">pulse 1</th>
+      <th style="text-align: center;">pulse 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse" style="transform: rotate(180deg);" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Todo: images in table are only white, need to combine black and white inside svg info file, and the image will handle the preference directly -->
 
 We note that $(-1)^0 = 1$ and $(-1)^1 = -1$, so we can write the photon state using bits $b_0$, $b_1$ and $b_2$ as follows
 
@@ -44,7 +96,13 @@ $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^
 
 The pulse train is then sent to Bob whose device (an interferometer) is as follows
 
-insert image here.
+<picture>
+  <source srcset="../../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/bob_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/bob_bb_fr.png" alt="Bob's device diagram for DPS protocol">
+</picture>
+
+
 
 Here again, the length difference between paths D and E is such that the pulse train passing through path E is delayed by time T compared to the train passing through D. We can therefore represent the states of the pulse trains at the input of the last semi-reflecting mirror by the states
 
@@ -54,16 +112,43 @@ $$|\psi_E\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|1\rangle + (-1)^{b_1}|2\rangle
 
 Let's take an example with bits b0 = 0, b1 = 0 and b2 = 1. We will then have the following states
 
-|         | pulse 3 | pulse 2 | pulse 1 | pulse 0 |
-|---------|:-------:|:-------:|:-------:|:-------:|
-| Path D  |         | ∪ (π-shift) | ∩ (normal)  | ∩ (normal)  |
-| Path E  | ∪ (π-shift) | ∩ (normal)  | ∩ (normal)  |             |
-
-insert image in table.
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;"></th>
+      <th style="text-align: center;">pulse 3</th>
+      <th style="text-align: center;">pulse 2</th>
+      <th style="text-align: center;">pulse 1</th>
+      <th style="text-align: center;">pulse 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">Path D</td>
+      <td style="text-align: center;"></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Path E</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Inverted pulse (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Normal pulse" /></td>
+      <td style="text-align: center;"></td>
+    </tr>
+  </tbody>
+</table>
 
 For two incident rays A and B as illustrated in the following figure,
 
-insert image here.
+
+<picture>
+  <source srcset="../../public/images/beamsplitter_wb.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/beamsplitter_bb.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/beamsplitter_bb.png" alt="Bob's device diagram for DPS protocol">
+</picture>
+
 
 we can describe the Ubs operator associated with the semi-reflecting mirror by the transformation
 
@@ -75,7 +160,9 @@ where $a$, $b$, $c$ and $d$ represent the amplitudes of states $|A\rangle$, $|B\
 
 Applying this transformation, we get: $c = \frac{a + b}{\sqrt{2}}$ and $d = \frac{a - b}{\sqrt{2}}$.
 
-By applying this transformation to states $|\psi_D\rangle$ and $|\psi_E\rangle$, we obtain the following table:
+<!-- Todo: err: in the webpage there is c = a+b and c=a-b; here I put c and d ?? -->
+
+By taking the states $|\psi_D\rangle$ and $|\psi_E\rangle$ described previously, we can therefore calculate the states that result from the interference of pulses for each time, we obtain the following table:
 
 | Time | D | E | DET0 | DET1 |
 |:----:|:-:|:-:|:----:|:----:|
@@ -85,7 +172,7 @@ By applying this transformation to states $|\psi_D\rangle$ and $|\psi_E\rangle$,
 | T2 | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ | $\frac{1}{\sqrt{2}}(-1)^{b_1}$ | $\frac{1}{2}((-1)^{b_1} + (-1)^{b_2})$ | $\frac{1}{2}((-1)^{b_1} - (-1)^{b_2})$ |
 | T3 | 0 | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ |
 
-At times T0 or T3, the detection probabilities in each detector are all equal:
+We note therefore that if a photon is measured at times T0 or T3, it can be detected by detector 0 or detector 1 with a probability of 50% since:
 
 $$\left(\frac{(-1)^{b_0}}{\sqrt{2}}\right)^2 = \left(\frac{-(-1)^{b_0}}{\sqrt{2}}\right)^2 = \left(\frac{(-1)^{b_2}}{\sqrt{2}}\right)^2 = \left(\frac{-(-1)^{b_2}}{\sqrt{2}}\right)^2 = \frac{1}{2}$$
 

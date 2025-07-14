@@ -8,6 +8,12 @@ last_updated: "2025-07-11"
 contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 ---
 
+<!-- 
+NOTE: Image paths use ../../public/images/ for GitHub/VS Code compatibility.
+When integrating with Next.js, these should be changed back to /images/ 
+as Next.js serves files from the public directory automatically.
+-->
+
 # Contenido del Protocolo DPS
 
 ## Acerca del protocolo
@@ -17,7 +23,11 @@ A diferencia de los protocolos BB84 y E91 que codifican la información en la po
 
 El protocolo comienza con Alice enviando fotones individuales a un dispositivo que comprende tres caminos: A, B y C.
 
-insert image ici.
+<picture>
+  <source srcset="../../public/images/alice_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/alice_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/alice_bb_fr.png" alt="Esquema del dispositivo de Alice para el protocolo DPS">
+</picture>
 
 En esta configuración, existe la misma diferencia de longitud entre los caminos A y B que entre los caminos B y C. Así, un pulso que pasa por B (C) adquiere un retraso T en comparación con un pulso que pasa por A (B).
 
@@ -31,12 +41,54 @@ $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
 con $|0\rangle$ correspondiente al 1er pulso, $|1\rangle$ al segundo pulso, y $|2\rangle$ al último pulso del tren. Para cada fotón enviado, Alice elige 3 bits de forma aleatoria. Si el bit es 1, aplica un desplazamiento de fase de π al pulso correspondiente y no hace nada si el bit es 0. Para los tres pulsos hay 8 situaciones posibles, veamos cuatro ejemplos:
 
-| bit 2 | bit 1 | bit 0 | pulso 2     | pulso 1     | pulso 0     |
-|-------|-------|-------|-------------|-------------|-------------|
-| 0     | 0     | 0     | ![pulse]    | ![pulse]    | ![pulse]    |
-| 0     | 1     | 0     | ![pulse]    | ![inverted] | ![pulse]    |
-| 1     | 1     | 0     | ![inverted] | ![inverted] | ![pulse]    |
-| 1     | 1     | 1     | ![inverted] | ![inverted] | ![inverted] |
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">bit 2</th>
+      <th style="text-align: center;">bit 1</th>
+      <th style="text-align: center;">bit 0</th>
+      <th style="text-align: center;">pulso 2</th>
+      <th style="text-align: center;">pulso 1</th>
+      <th style="text-align: center;">pulso 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido" style="transform: rotate(180deg);" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Todo: las imágenes en la tabla son solo blancas, necesitan combinar blanco y negro dentro del archivo svg, y la imagen manejará la preferencia directamente -->
 
 Notamos que $(-1)^0 = 1$ y $(-1)^1 = -1$, por lo que podemos escribir el estado del fotón usando los bits $b_0$, $b_1$ y $b_2$ de la siguiente manera:
 
@@ -44,7 +96,13 @@ $$|\psi_{\text{fotón}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^
 
 El tren de pulsos se envía entonces a Bob, cuyo dispositivo (un interferómetro) es el siguiente:
 
-inserta image here.
+<picture>
+  <source srcset="../../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/bob_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/bob_bb_fr.png" alt="Esquema del dispositivo de Bob para el protocolo DPS">
+</picture>
+
+
 
 Aquí nuevamente, la diferencia de longitud entre los caminos D y E es tal que el tren de pulsos que pasa por el camino E se retrasa un tiempo T en comparación con el tren que pasa por D. Por lo tanto, podemos representar los estados de los trenes de pulsos en la entrada del último espejo semirreflectante por los estados:
 
@@ -54,16 +112,43 @@ $$|\psi_E\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|1\rangle + (-1)^{b_1}|2\rangle
 
 Tomemos un ejemplo con los bits b0 = 0, b1 = 0 y b2 = 1. Tendremos entonces los siguientes estados:
 
-|         | pulso 3     | pulso 2     | pulso 1     | pulso 0     |
-|---------|:-----------:|:-----------:|:-----------:|:-----------:|
-| Camino D|             | ∪ (desfase π) | ∩ (normal)  | ∩ (normal)  |
-| Camino E| ∪ (desfase π) | ∩ (normal)  | ∩ (normal)  |             |
-
-insert image in table.
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;"></th>
+      <th style="text-align: center;">pulso 3</th>
+      <th style="text-align: center;">pulso 2</th>
+      <th style="text-align: center;">pulso 1</th>
+      <th style="text-align: center;">pulso 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">Camino D</td>
+      <td style="text-align: center;"></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido (desfase π)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Camino E</td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso invertido (desfase π)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"><img src="../../public/images/pi_wb.svg" alt="Pulso normal" /></td>
+      <td style="text-align: center;"></td>
+    </tr>
+  </tbody>
+</table>
 
 Para dos rayos incidentes A y B como se ilustra en la siguiente figura,
 
-inserta image here.
+
+<picture>
+  <source srcset="../../public/images/beamsplitter_wb.png" media="(prefers-color-scheme: light)">
+  <source srcset="../../public/images/beamsplitter_bb.png" media="(prefers-color-scheme: dark)">
+  <img src="../../public/images/beamsplitter_bb.png" alt="Esquema del dispositivo de Bob para el protocolo DPS">
+</picture>
+
 
 podemos describir el operador $U_{bs}$ asociado con el espejo semirreflectante por la transformación
 
