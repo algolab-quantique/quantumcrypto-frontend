@@ -19,7 +19,7 @@ as Next.js serves files from the public directory automatically.
 ## About the Protocol
 The Differential Phase Shift (DPS) protocol [[1]](#reference-1) is a quantum protocol for establishing encryption keys.
 
-Unlike the BB84 and E91 protocols which encode information in the polarization of photons, the DPS protocol encodes information in the phases of a pulse train.
+Unlike the [BB84](bb84.md) and [E91](e91.md) protocols which encode information in the [polarization](definitions.md#polarizations) of [photons](definitions.md#photon), the DPS protocol encodes information in the [phase](definitions.md#phase) of a [pulse train](definitions.md#pulse-train).
 
 The protocol begins with Alice sending single photons into a device comprising three paths: A, B and C
 
@@ -29,9 +29,9 @@ The protocol begins with Alice sending single photons into a device comprising t
   <img src="../../public/images/alice_bb_fr.png" alt="Alice's device diagram for DPS protocol">
 </picture>
 
-In this setup, there is the same length difference between paths A and B as between paths B and C. Thus, a pulse passing through B (C) acquires a delay T compared to a pulse passing through A (B).
+In this setup, there is the same length difference between paths A and B as between paths B and C. Thus, a [pulse](definitions.md#pulse) passing through B (or C) is delayed by T compared to a pulse passing through A (or B).
 
-Semi-reflecting mirrors ensure that the photon has the same probability of passing through each of the three paths. Once the three paths are recombined, the photon is in a superposition state
+[Beamsplitters](definitions.md#beamsplitter) ensure that the photon has the same probability to take any of the three paths. Once the three paths are recombined, the photon is in a [quantum superposition](definitions.md#quantum-superposition)
 
 $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} (|\psi_A\rangle + |\psi_B\rangle + |\psi_C\rangle),$$
 
@@ -39,7 +39,7 @@ or, equivalently
 
 $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
-with $|0\rangle$ corresponding to the 1st pulse, $|1\rangle$ to the second pulse, and $|2\rangle$ to the last pulse of the train. For each photon sent, Alice randomly chooses 3 bits. If the bit is 1, she applies a π phase shift to the corresponding pulse and does nothing if the bit is 0. For the three pulses there are 8 possible situations, let's see four examples
+with $|0\rangle$ corresponding to the 1st pulse, $|1\rangle$ to the second pulse, and $|2\rangle$ to the last pulse of the train. For each photon sent, Alice randomly chooses 3 bits. If the bit is 1, she applies a [phase shift](definitions.md#phase-shift) of π to the corresponding pulse, and does nothing if the bit is 0. For the three pulses there are 8 possible situations, let's see four examples
 
 <table>
   <thead>
@@ -94,7 +94,7 @@ We note that $(-1)^0 = 1$ and $(-1)^1 = -1$, so we can write the photon state us
 
 $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^{b_1}|1\rangle + (-1)^{b_2}|2\rangle).$$
 
-The pulse train is then sent to Bob whose device (an interferometer) is as follows
+The pulse train is then sent to Bob, whose device (an [interferometer](definitions.md#interferometer)) is as follows
 
 <picture>
   <source srcset="../../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
@@ -150,7 +150,7 @@ For two incident rays A and B as illustrated in the following figure,
 </picture>
 
 
-we can describe the Ubs operator associated with the semi-reflecting mirror by the transformation
+we can describe the [unitary operator $U_{bs}$](definitions.md#unitary-operator) associated with the beamsplitter by the transformation
 
 $$U_{bs} |\psi_{in}\rangle = |\psi_{out}\rangle$$
 
@@ -162,7 +162,7 @@ Applying this transformation, we get: $c = \frac{a + b}{\sqrt{2}}$ and $d = \fra
 
 <!-- Todo: err: in the webpage there is c = a+b and c=a-b; here I put c and d ?? -->
 
-By taking the states $|\psi_D\rangle$ and $|\psi_E\rangle$ described previously, we can therefore calculate the states that result from the interference of pulses for each time, we obtain the following table:
+Taking the states $|\psi_D\rangle$ and $|\psi_E\rangle$ described previously, we can calculate the states that result from the interference of the pulses for each time. We obtain the following table:
 
 | Time | D | E | DET0 | DET1 |
 |:----:|:-:|:-:|:----:|:----:|

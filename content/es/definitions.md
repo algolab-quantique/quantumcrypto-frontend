@@ -88,5 +88,48 @@ Un canal clásico está diseñado para transmitir información clásica, como me
 Consideremos solo los fotones para los que Alice y Bob usaron la misma base, ya que estos fotones se utilizan para establecer la clave. Para obtener información sobre la clave, Eve debe elegir una base para medir los fotones que intercepta. Para un fotón dado, supongamos que Alice y Bob usan la base +. Si Eve, por casualidad, también elige la base +, medirá el valor correcto y retransmitirá el bit en un fotón con la misma polarización. En este caso, la presencia de Eve no se puede detectar. Sin embargo, si Eve mide en la base x, lo cual tiene un 50% de probabilidad de ocurrir, Eve transmitirá a Bob un fotón polarizado en una superposición de estados con respecto a la base +. El resultado de la medición de Bob será entonces probabilístico, introduciendo errores que Alice y Bob pueden usar para detectar la presencia de Eve.
 
 
-## Perturbación del estado por la medición
-A menudo se dice que un sistema cuántico puede estar "en dos estados a la vez", es decir, en una superposición de estados. Esto significa que al medir el sistema, no se puede predecir cuál será el resultado, pero se conoce la probabilidad de cada posible resultado. Una vez que se realiza una medición, la superposición se destruye y el sistema colapsa al estado medido. Una nueva medición dará el mismo resultado.
+## Perturbación del estado por la medida
+A menudo se dice que un sistema cuántico puede estar "en dos estados al mismo tiempo", es decir, en superposición de estados. En realidad, esto significa que el sistema se describe mediante una combinación matemática de varios estados posibles (ver la definición de [superposición cuántica](#estado-de-superposicion) más abajo). Al medir el sistema, no se puede predecir de antemano cuál será el resultado, pero se conoce la probabilidad de cada resultado. Una vez realizada la medida, la superposición se destruye y el sistema queda en el estado correspondiente al resultado medido. Cualquier medida posterior dará el mismo resultado.
+
+---
+
+## Estado de superposición
+La superposición cuántica es un principio fundamental de la mecánica cuántica según el cual un sistema puede describirse mediante una combinación lineal de varios estados propios. Matemáticamente, si $|\psi_1\rangle$ y $|\psi_2\rangle$ son soluciones de la ecuación de Schrödinger (es decir, estados posibles descritos por la ley fundamental de la mecánica cuántica), entonces $|\Psi\rangle = c_1|\psi_1\rangle + c_2|\psi_2\rangle$ (con $c_1$, $c_2$ complejos) también es una solución. Esto significa que el sistema no está en varios estados a la vez, sino en un estado único que es una combinación matemática de los estados posibles. Al medir, el sistema adopta uno de los estados propios con una probabilidad dada por el cuadrado del módulo de la amplitud correspondiente.
+
+## Fase
+La **fase** de una onda cuántica o clásica es una magnitud que describe la posición relativa de un punto en el ciclo de una oscilación periódica. Matemáticamente, para una onda compleja $\psi = A e^{i\phi}$, la fase $\phi$ es el argumento del exponente. Las diferencias de fase entre dos ondas o impulsos determinan los fenómenos de interferencia. En los protocolos de criptografía cuántica, la información puede codificarse en la diferencia de fase entre impulsos sucesivos.
+
+---
+
+## Desfase
+Un **desfase** es una modificación de la fase de una onda o impulso. En óptica cuántica, un desfase de $\pi$ (180°) corresponde a una inversión del signo de la amplitud. En el protocolo DPS, el desfase se utiliza para codificar información en la fase relativa de los impulsos.
+
+---
+
+## Impulso
+Un **impulso** es una emisión breve de energía, a menudo luminosa, caracterizada por su duración, amplitud y fase. En óptica cuántica, un impulso corresponde a un paquete de onda de luz, utilizado para transmitir información o interactuar con dispositivos ópticos. En los protocolos de distribución cuántica de claves, los impulsos sirven de soporte para la codificación de bits.
+
+---
+
+## Tren de impulsos
+Un **tren de impulsos** es una secuencia de impulsos luminosos (u otras señales) emitidos a intervalos de tiempo regulares. En criptografía cuántica, un fotón puede prepararse en un estado de superposición de varios impulsos temporales, formando así un tren donde la información se codifica en la fase relativa entre los impulsos.
+
+---
+
+## Espejo semirreflectante
+Un **espejo semirreflectante** (o divisor de haz) es un componente óptico que divide un haz de luz en dos: una parte se refleja y la otra se transmite. Para un solo fotón, el espejo crea una superposición cuántica de los dos caminos posibles, lo que es esencial para los experimentos de interferencia.
+
+---
+
+## Interferómetro
+Un **interferómetro** es un dispositivo óptico que separa un haz de luz en varios caminos y luego los recombina para producir interferencias. La diferencia de fase acumulada entre los caminos permite medir magnitudes físicas con gran precisión. El interferómetro de Mach-Zehnder es un ejemplo clásico utilizado en criptografía cuántica.
+
+---
+
+## Amplitud de probabilidad
+En mecánica cuántica, la **amplitud de probabilidad** es un número complejo asociado a la probabilidad de encontrar un sistema en un estado dado. La probabilidad real se obtiene tomando el cuadrado del módulo de la amplitud. Las amplitudes pueden sumarse o anularse, lo que da lugar a fenómenos de interferencia cuántica.
+
+---
+
+## Operador unitario
+Un **operador unitario** es una transformación lineal que conserva la norma de los vectores de estado en el espacio de Hilbert. En mecánica cuántica, la evolución de un sistema cerrado se describe mediante un operador unitario, lo que garantiza la conservación de la probabilidad total.

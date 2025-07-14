@@ -85,5 +85,50 @@ A classical channel is designed to transmit classical information, such as binar
 Consider only the photons for which Alice and Bob used the same basis, as these photons are used to establish the key. To obtain information about the key, Eve must choose a basis to measure the photons she intercepts. For a given photon, suppose Alice and Bob use the + basis. If Eve, by chance, also chooses the + basis, she will measure the correct value and retransmit the bit in a photon with the same polarization. In this case, Eve's presence cannot be detected. However, if Eve measures in the x basis, which has a 50% chance of occurring, she will transmit to Bob a photon polarized in a superposition of states relative to the + basis. Bob's measurement result will then be probabilistic, introducing errors that Alice and Bob can use to detect Eve's presence.
 
 
-## State Disturbance by Measurement
-It is often said that a quantum system can be "in two states at once," meaning it is in a superposition of states. This implies that upon measurement, the system's outcome cannot be predicted, but the probability of each result is known. Once a measurement is made, the superposition state is destroyed, and the system collapses into the measured state. Any subsequent measurement will yield the same result.
+---
+
+## Disturbance of the State by Measurement
+It is often said that a quantum system can be "in two states at once," that is, in a superposition of states. In reality, this means the system is described by a mathematical combination of several possible states (see the definition of [quantum superposition](#quantum-superposition) below). When the system is measured, the outcome cannot be predicted in advance, but the probability of each result is known. Once the measurement is made, the superposition is destroyed and the system ends up in the state corresponding to the measured result. Any subsequent measurement will yield the same result.
+
+---
+
+## Quantum Superposition
+Quantum superposition is a fundamental principle of quantum mechanics stating that a system can be described by a linear combination of several eigenstates. Mathematically, if $|\psi_1\rangle$ and $|\psi_2\rangle$ are solutions of the Schrödinger equation (i.e., possible states described by the fundamental law of quantum mechanics), then $|\Psi\rangle = c_1|\psi_1\rangle + c_2|\psi_2\rangle$ (with $c_1$, $c_2$ complex numbers) is also a solution. This means the system is not in several states at once, but in a unique state that is a mathematical combination of possible states. Upon measurement, the system adopts one of the eigenstates with a probability given by the squared modulus of the corresponding amplitude.
+
+## Phase
+The **phase** of a quantum or classical wave is a quantity that describes the relative position of a point in the cycle of a periodic oscillation. Mathematically, for a complex wave $\psi = A e^{i\phi}$, the phase $\phi$ is the argument of the exponential. Differences in phase between two waves or pulses determine interference phenomena. In quantum cryptography protocols, information can be encoded in the phase difference between successive pulses.
+
+---
+
+## Phase Shift
+A **phase shift** is a modification of the phase of a wave or pulse. In quantum optics, a phase shift of $\pi$ (180°) corresponds to an inversion of the sign of the amplitude. In the DPS protocol, the phase shift is used to encode information in the relative phase of the pulses.
+
+---
+
+## Pulse
+A **pulse** is a brief emission of energy, often light, characterized by its duration, amplitude, and phase. In quantum optics, a pulse corresponds to a wave packet of light, used to transmit information or interact with optical devices. In quantum key distribution protocols, pulses serve as the support for encoding bits.
+
+---
+
+## Pulse Train
+A **pulse train** is a sequence of light pulses (or other signals) emitted at regular time intervals. In quantum cryptography, a photon can be prepared in a superposition state of several temporal pulses, thus forming a train where information is encoded in the relative phase between pulses.
+
+---
+
+## Beamsplitter
+A **beamsplitter** (or semi-reflective mirror) is an optical component that divides a light beam into two: one part is reflected, the other transmitted. For a single photon, the beamsplitter creates a quantum superposition of the two possible paths, which is essential for interference experiments.
+
+---
+
+## Interferometer
+An **interferometer** is an optical device that splits a light beam into several paths, then recombines them to produce interference. The phase difference accumulated between the paths allows very precise measurements of physical quantities. The Mach-Zehnder interferometer is a classic example used in quantum cryptography.
+
+---
+
+## Probability Amplitude
+In quantum mechanics, the **probability amplitude** is a complex number associated with the probability of finding a system in a given state. The actual probability is obtained by taking the square of the modulus of the amplitude. Amplitudes can add or cancel, giving rise to quantum interference phenomena.
+
+---
+
+## Unitary Operator
+A **unitary operator** is a linear transformation that preserves the norm of state vectors in Hilbert space. In quantum mechanics, the evolution of a closed system is described by a unitary operator, ensuring the conservation of total probability.

@@ -17,9 +17,9 @@ as Next.js serves files from the public directory automatically.
 # Contenu du protocole DPS
 
 ## À propos du protocole
-Le protocole à déphasage différentiel [[1]](#reference-1), ou DPS pour Differential phase shift, est un protocole quantique permettant l'établissement de clés de chiffrement.
+Le protocole à déphasage différentiel [[1]](#reference-1), ou DPS pour Differential phase shift, est un protocole quantique permettant l'établissement de [clés de chiffrement](definitions.md#clé-de-chiffrement).
 
-Contrairement aux protocoles BB84 et E91 qui encodent l'information dans la polarisation des photons, le protocole DPS encode l'information dans les phases d'un train d'impulsions.
+Contrairement aux protocoles [BB84](bb84.md) et [E91](e91.md) qui encodent l'information dans la [polarisation](definitions.md#polarisations) des [photons](definitions.md#photon), le protocole DPS encode l'information dans les [phases](definitions.md#phase) d'un [train d'impulsions](definitions.md#train-dimpulsions).
 
 Le protocole débute avec Alice qui envoie des photons uniques dans un dispositif comprenant trois trajets: A, B et C
 
@@ -29,9 +29,9 @@ Le protocole débute avec Alice qui envoie des photons uniques dans un dispositi
   <img src="../../public/images/alice_bb_fr.png" alt="Schéma du dispositif d'Alice pour le protocole DPS">
 </picture>
 
-Dans ce montage, il y a la même différence de longueur entre les trajets A et B qu'entre les trajets B et C. Ainsi, une impulsion passant par B ( C ) acquiert un retard T par rapport à une impulsion passant par A ( B ).
+Dans ce montage, il y a la même différence de longueur entre les trajets A et B qu'entre les trajets B et C. Ainsi, une [impulsion](definitions.md#impulsion) passant par B ( C ) acquiert un retard T par rapport à une impulsion passant par A ( B ).
 
-Des miroirs semi-réfléchissants font en sorte que le photon a la même probabilité de passer par chacun des trois trajets. Une fois les trois trajets recombinés, le photon est dans un état de superposition
+Des [miroirs semi-réfléchissants](definitions.md#miroir-semi-réfléchissant) font en sorte que le photon a la même probabilité de passer par chacun des trois trajets. Une fois les trois trajets recombinés, le photon est dans un [état de superposition](definitions.md#état-de-superposition)
 
 $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} (|\psi_A\rangle + |\psi_B\rangle + |\psi_C\rangle),$$
 
@@ -39,7 +39,7 @@ ou, de façon équivalente
 
 $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
-avec $|0\rangle$ qui correspond à la 1ere impulsion, $|1\rangle$ à la seconde impulsion, et $|2\rangle$ à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un déphasage de π à l'impulsion correspondante et elle ne fait rien si le bit est 0. Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples
+avec $|0\rangle$ qui correspond à la 1ere impulsion, $|1\rangle$ à la seconde impulsion, et $|2\rangle$ à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un [déphasage](definitions.md#déphasage) de π à l'impulsion correspondante et elle ne fait rien si le bit est 0. Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples
 
 <table>
   <thead>
@@ -94,7 +94,7 @@ On remarque que $(-1)^0 = 1$ et $(-1)^1 = -1$, on peut donc écrire l'état du p
 
 $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^{b_1}|1\rangle + (-1)^{b_2}|2\rangle).$$
 
-Le train d'impulsions est ensuite envoyé à Bob dont le dispositif (un interféromètre) est le suivant
+Le train d'impulsions est ensuite envoyé à Bob dont le dispositif (un [interféromètre](definitions.md#interféromètre)) est le suivant
 
 <picture>
   <source srcset="../../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
@@ -150,7 +150,7 @@ Pour deux rayons incidents A et B comme illustré sur la figure suivante,
 </picture>
 
 
-on peut décrire l'opérateur $U_{bs}$ associé au miroir semi-réfléchissant par la transformation
+on peut décrire l'[opérateur $U_{bs}$](definitions.md#opérateur-unitaire) associé au miroir semi-réfléchissant par la transformation
 
 $$U_{bs} |\psi_{in}\rangle = |\psi_{out}\rangle$$
 

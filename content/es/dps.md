@@ -19,7 +19,7 @@ as Next.js serves files from the public directory automatically.
 ## Acerca del protocolo
 El protocolo de desplazamiento de fase diferencial (DPS) [[1]](#reference-1) es un protocolo cuántico para establecer claves de cifrado.
 
-A diferencia de los protocolos BB84 y E91 que codifican la información en la polarización de los fotones, el protocolo DPS codifica la información en las fases de un tren de pulsos.
+A diferencia de los protocolos [BB84](bb84.md) y [E91](e91.md) que codifican la información en la [polarización](definitions.md#polarizaciones) de los [fotones](definitions.md#fotón), el protocolo DPS codifica la información en la [fase](definitions.md#fase) de un [tren de impulsos](definitions.md#tren-de-impulsos).
 
 El protocolo comienza con Alice enviando fotones individuales a un dispositivo que comprende tres caminos: A, B y C.
 
@@ -29,9 +29,9 @@ El protocolo comienza con Alice enviando fotones individuales a un dispositivo q
   <img src="../../public/images/alice_bb_fr.png" alt="Esquema del dispositivo de Alice para el protocolo DPS">
 </picture>
 
-En esta configuración, existe la misma diferencia de longitud entre los caminos A y B que entre los caminos B y C. Así, un pulso que pasa por B (C) adquiere un retraso T en comparación con un pulso que pasa por A (B).
+En esta configuración, existe la misma diferencia de longitud entre los caminos A y B que entre los caminos B y C. Así, un [impulso](definitions.md#impulso) que pasa por B (o C) adquiere un retraso T respecto a un impulso que pasa por A (o B).
 
-Los espejos semirreflectantes aseguran que el fotón tenga la misma probabilidad de pasar por cada uno de los tres caminos. Una vez que los tres caminos se recombinan, el fotón está en un estado de superposición
+Los [espejos semirreflectantes](definitions.md#espejo-semirreflectante) aseguran que el fotón tenga la misma probabilidad de tomar cualquiera de los tres caminos. Una vez que los tres caminos se recombinan, el fotón está en un [estado de superposición](definitions.md#estado-de-superposicion)
 
 $$|\psi_{\text{fotón}}\rangle = \frac{1}{\sqrt{3}} (|\psi_A\rangle + |\psi_B\rangle + |\psi_C\rangle),$$
 
@@ -39,7 +39,7 @@ o, equivalentemente
 
 $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
-con $|0\rangle$ correspondiente al 1er pulso, $|1\rangle$ al segundo pulso, y $|2\rangle$ al último pulso del tren. Para cada fotón enviado, Alice elige 3 bits de forma aleatoria. Si el bit es 1, aplica un desplazamiento de fase de π al pulso correspondiente y no hace nada si el bit es 0. Para los tres pulsos hay 8 situaciones posibles, veamos cuatro ejemplos:
+con $|0\rangle$ correspondiente al 1er pulso, $|1\rangle$ al segundo pulso, y $|2\rangle$ al último pulso del tren. Para cada fotón enviado, Alice elige 3 bits de forma aleatoria. Si el bit es 1, aplica un [desfase](definitions.md#desfase) de π al impulso correspondiente y no hace nada si el bit es 0. Para los tres pulsos hay 8 situaciones posibles, veamos cuatro ejemplos:
 
 <table>
   <thead>
@@ -94,7 +94,7 @@ Notamos que $(-1)^0 = 1$ y $(-1)^1 = -1$, por lo que podemos escribir el estado 
 
 $$|\psi_{\text{fotón}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^{b_1}|1\rangle + (-1)^{b_2}|2\rangle).$$
 
-El tren de pulsos se envía entonces a Bob, cuyo dispositivo (un interferómetro) es el siguiente:
+El tren de pulsos se envía a Bob, cuyo dispositivo (un [interferómetro](definitions.md#interferometro)) es el siguiente:
 
 <picture>
   <source srcset="../../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
@@ -150,7 +150,7 @@ Para dos rayos incidentes A y B como se ilustra en la siguiente figura,
 </picture>
 
 
-podemos describir el operador $U_{bs}$ asociado con el espejo semirreflectante por la transformación
+podemos describir el [operador unitario $U_{bs}$](definitions.md#operador-unitario) asociado al espejo semirreflectante mediante la transformación
 
 $$U_{bs} |\psi_{in}\rangle = |\psi_{out}\rangle$$
 
@@ -162,7 +162,7 @@ Aplicando esta transformación, obtenemos: $c = \frac{a + b}{\sqrt{2}}$ y $d = \
 
 <!-- Todo: err: en la página web hay c = a+b y c=a-b; yo aquí he puesto c y d ?? -->
 
-Tomando los estados $|\psi_D\rangle$ y $|\psi_E\rangle$ descritos anteriormente, podemos calcular los estados que resultan de la interferencia de los pulsos para cada tiempo. Obtenemos la siguiente tabla:
+Tomando los estados $|\psi_D\rangle$ y $|\psi_E\rangle$ descritos anteriormente, podemos calcular los estados que resultan de la interferencia de los pulsos para cada tiempo. Obtenemos la siguiente tabla de amplitudes de probabilidad:
 
 | Tiempo | D | E | DET0 | DET1 |
 |:-----:|:-:|:-:|:----:|:----:|

@@ -67,21 +67,72 @@ Dans le protocole E91, la valeur $S$ calculée à partir des mesures doit dépas
 #### Importance du nombre d’échantillons
 Les résultats du protocole (comme la valeur de S) sont basés sur des probabilités et des moyennes. Pour obtenir une valeur fiable qui reflète la réalité, il faut un très grand nombre de mesures (d’échantillons). Avec peu de mesures, le hasard peut fausser le résultat et mener à une conclusion erronée sur la sécurité de la clé.
 
-<!-- 
-Todo: Need review and verify the definitions provided below. Please check whether these definitions are general to quantum cryptography or specifically related to the BB84 protocol.
--->
+---
 
 ## Encodage d'un bit dans un photon
 L'encodage d'un bit dans un photon fait référence à la façon dont on utilise la polarisation des photons pour représenter des bits (0 ou 1). La polarisation est une propriété des photons qui décrit la direction dans laquelle leur champ électrique oscille. Dans le protocole BB84, cette polarisation est utilisée pour encoder des bits en choisissant entre deux bases : la base + et la base x. Dans la base +, un photon polarisé horizontalement (↔) représente le bit 0, tandis qu'un photon polarisé verticalement (↕) représente le bit 1. Dans la base x, un photon polarisé en diagonale (⤢) représente le bit 0, et un photon polarisé en diagonale opposée (⤡) représente le bit 1. Alice encode alors chaque bit de cette manière avant de l'envoyer à Bob.
 
+---
+
 ## Base orthogonale
 Si on considère le plan cartésien à 2 dimensions, une base est un ensemble de deux vecteurs, v0 et v1, qui permet de représenter n'importe quel vecteur du plan par une combinaison linéaire de v0 et v1. Lorsque v0 et v1 forment un angle de 90o, ils sont orthogonaux et ils forment une base orthogonale. Une base naturelle consiste à prendre un vecteur aligné avec l'axe des x et un autre aligné avec l'axe des y, ce qu'on appelle la base + dans le protocole BB84. En effectuant une rotation de 45o des deux vecteurs de la base +, on obtient la base x. En associant les bits 0 et 1 aux vecteurs orthogonaux d'une base, on s'assure que Bob mesure toujours la valeur qui avait été encodée par Alice lorsque la même base est utilisée. Il s'agit d'une conséquence de l'utilisation d'une base orthogonale et de la règle de Born, qui stipule que la probabilité d'un résultat de mesure correspond au carré de la composante du vecteur de polarisation, exprimé dans cette base. Si les bases d'Alice et de Bob ne concordent pas, le vecteur de polarisation du photon envoyé par Alice s'exprime alors comme une combinaison linéaire des vecteurs de la base de mesure de Bob. Le résultat de la mesure est alors aléatoire.
+
+---
 
 ## Canal classique vs quantique
 Un canal classique est un moyen de communication conçu pour transmettre de l'information classique, comme des messages binaires ou textuels. L'envoie d'information quantique à travers un canal classique pose de grands défis de performance étant donné le bruit induit par l'information classique qui y circule. En revanche, un canal quantique est conçu pour transmettre de l'information quantique, comme l'état d'un photon. Ce canal permet de conserver les propriétés quantiques de l'information, garantissant ainsi une grande probabilité que la bonne information soit reçue de l'autre côté, intacte.
 
+---
+
 ## Détection de la présence d'Ève
 Considérons seulement les photons pour lesquels Alice et Bob ont utilisé la même base puisque ce sont ces photons qui servent à établir la clé. Pour détenir de l'information sur la clé, Ève doit choisir dans quelle base elle mesure les photons qu'elle intercepte. Pour un de ces photons, supposons qu'Alice et Bob utilisent la base +. Si, par chance, Ève choisit également la base +, elle mesurera à coup sûr la bonne valeur puis pourra retransmettre le bit dans un nouveau photon de même polarisation. La présence d'Eve ne peut pas être détectée dans ce cas-ci. Si elle fait plutôt sa mesure dans la base x, ce qui a une chance sur deux de se produire, Ève transmettra à Bob un nouveau photon dont la polarisation est en superposition d'états par rapport à la base +. Le résultat de la mesure de Bob est donc probabiliste et la présence d'Ève peut être détectée.
 
+---
+
 ## Perturbation de l'état par la mesure
-On entend souvent qu'un système quantique peut être « dans deux états en même temps », c'est-à-dire en superposition d'états. Cela signifie que si on mesure le système, on ne peut pas prédire quel sera le résultat de la mesure, mais on connaît avec quelle probabilité chacun des résultats peut être observé. Une fois la mesure effectuée, l'état de superposition est détruit et le système est dans l'état qui a été mesuré. Une nouvelle mesure donnerait le même résultat.
+On entend souvent qu'un système quantique peut être "dans deux états en même temps", c'est-à-dire en superposition d'états. En réalité, cela signifie que le système est décrit par une combinaison mathématique de plusieurs états possibles (voir la définition de la [superposition](#état-de-superposition) quantique plus bas). Si on mesure le système, on ne peut pas prédire à l'avance quel sera le résultat, mais on connaît avec quelle probabilité chacun des résultats peut être observé. Une fois la mesure effectuée, l'état de superposition est détruit et le système se retrouve dans l'état correspondant au résultat mesuré. Toute mesure ultérieure donnera le même résultat.
+
+---
+
+## État de superposition
+La **superposition quantique** est un principe fondamental de la mécanique quantique selon lequel un système peut être décrit par une combinaison linéaire de plusieurs états propres. Mathématiquement, si $|\psi_1\rangle$ et $|\psi_2\rangle$ sont des solutions de l’équation de Schrödinger (c’est-à-dire des états possibles décrits par la loi fondamentale de la mécanique quantique), alors $|\Psi\rangle = c_1|\psi_1\rangle + c_2|\psi_2\rangle$ (avec $c_1$, $c_2$ complexes) est aussi une solution. Cela signifie que le système n’est pas dans plusieurs états à la fois, mais dans un état unique qui est une combinaison mathématique des états possibles. Lors d’une mesure, le système adopte l’un des états propres avec une probabilité donnée par le carré du module de l’amplitude correspondante.
+
+
+## Phase
+La **phase** d’une onde quantique ou classique est une grandeur qui décrit la position relative d’un point dans le cycle d’une oscillation périodique. Mathématiquement, pour une onde complexe $\psi = A e^{i\phi}$, la phase $\phi$ est l’argument de l’exponentielle. Les différences de phase entre deux ondes ou impulsions déterminent les phénomènes d’interférence. Dans les protocoles de cryptographie quantique, l’information peut être encodée dans la différence de phase entre des impulsions successives.
+
+---
+
+## Déphasage
+Un **déphasage** est une modification de la phase d’une onde ou d’une impulsion. En optique quantique, un déphasage de $\pi$ (180°) correspond à une inversion du signe de l’amplitude. Dans le protocole DPS, le déphasage est utilisé pour encoder l’information dans la phase relative des impulsions.
+
+---
+
+## Impulsion
+Une **impulsion** est une brève émission d’énergie, souvent lumineuse, caractérisée par sa durée, son amplitude et sa phase. En optique quantique, une impulsion correspond à un paquet d’onde de lumière, utilisé pour transmettre de l’information ou interagir avec des dispositifs optiques. Dans les protocoles de distribution quantique de clés, les impulsions servent de support à l’encodage des bits.
+
+---
+
+## Train d’impulsions
+Un **train d’impulsions** est une séquence d’impulsions lumineuses (ou d’autres signaux) émises à des intervalles de temps réguliers. En cryptographie quantique, un photon peut être préparé dans un état de superposition de plusieurs impulsions temporelles, formant ainsi un train où l’information est encodée dans la phase relative entre les impulsions.
+
+---
+
+## Miroir semi-réfléchissant
+Un **miroir semi-réfléchissant** (ou séparateur de faisceau) est un composant optique qui divise un faisceau lumineux en deux : une partie est réfléchie, l’autre transmise. Pour un photon unique, le miroir crée une superposition quantique des deux chemins possibles, ce qui est essentiel pour les expériences d’interférence.
+
+
+---
+
+## Interféromètre
+Un **interféromètre** est un dispositif optique qui sépare un faisceau lumineux en plusieurs chemins, puis les recombine pour produire des interférences. La différence de phase accumulée entre les chemins permet de mesurer des grandeurs physiques avec une grande précision. L’interféromètre de Mach-Zehnder est un exemple classique utilisé en cryptographie quantique.
+
+---
+
+## Amplitude de probabilité
+En mécanique quantique, l’**amplitude de probabilité** est un nombre complexe associé à la probabilité de trouver un système dans un état donné. La probabilité réelle est obtenue en prenant le carré du module de l’amplitude. Les amplitudes peuvent s’additionner ou s’annuler, ce qui donne lieu à des phénomènes d’interférence.
+
+---
+
+## Opérateur unitaire
+Un **opérateur unitaire** est une transformation linéaire qui conserve la norme des vecteurs d’état dans l’espace de Hilbert. En mécanique quantique, l’évolution d’un système fermé est décrite par un opérateur unitaire, garantissant la conservation de la probabilité totale.
