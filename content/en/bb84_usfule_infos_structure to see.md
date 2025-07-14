@@ -11,9 +11,9 @@ contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 # BB84 Protocol - Complete Guide
 
 ## About
-The BB84 protocol was proposed in 1984 by Charles Bennett of IBM and Gilles Brassard from the Université de Montréal. It involves two distinct parties, Alice and Bob, who aim to establish an [encryption key](definitions#encryption-key) to communicate securely over a [public channel](definitions#public-channel). 
+The BB84 protocol was proposed in 1984 by Charles Bennett of IBM and Gilles Brassard from the Université de Montréal. It involves two distinct parties, Alice and Bob, who aim to establish an [encryption key](definitions.md#encryption-key) to communicate securely over a [public channel](definitions.md#public-channel). 
 
-The protocol begins with Alice creating a random sequence of bits and [encoding each bit](definitions#bit-encoding) using a [photon](definitions#photon). Specifically, the bit value is encoded in one of two [mutually orthogonal](definitions#orthogonal-states) polarization states of the photon. Additionally, for each photon, the basis used to describe the polarization of light is chosen randomly from two possible bases. Alice then sends these photons to Bob via a public [quantum channel](definitions#quantum-channel).
+The protocol begins with Alice creating a random sequence of bits and [encoding each bit](definitions.md#bit-encoding) using a [photon](definitions.md#photon). Specifically, the bit value is encoded in one of two [mutually orthogonal](definitions.md#orthogonal-states) polarization states of the photon. Additionally, for each photon, the basis used to describe the polarization of light is chosen randomly from two possible bases. Alice then sends these photons to Bob via a public [quantum channel](definitions.md#quantum-channel).
 
 ## Key: component.bb84.about.protocol-security
 The security of the BB84 protocol relies on the fundamental principles of quantum mechanics, particularly the no-cloning theorem and the measurement disturbance principle. When an eavesdropper (Eve) attempts to intercept and measure the quantum states, she inevitably disturbs the system, leaving detectable traces of her presence.
