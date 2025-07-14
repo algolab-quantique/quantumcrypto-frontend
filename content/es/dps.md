@@ -11,7 +11,7 @@ contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 # Contenido del Protocolo DPS
 
 ## Acerca del protocolo
-El protocolo de desplazamiento de fase diferencial [1], o DPS por *Differential Phase Shift*, es un protocolo cuántico que permite el establecimiento de claves de cifrado.
+El protocolo de desplazamiento de fase diferencial (DPS) [[1]](#reference-1) es un protocolo cuántico para establecer claves de cifrado.
 
 A diferencia de los protocolos BB84 y E91 que codifican la información en la polarización de los fotones, el protocolo DPS codifica la información en las fases de un tren de pulsos.
 
@@ -131,9 +131,9 @@ Los fotones 1 y 5 (en gris) simplemente se descartan porque fueron detectados en
 
 ## Referencia
 
-[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." PRL 89.3 (2002): 037902.
+<a id="reference-1"></a>[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." [*PRL* 89.3 (2002): 037902](https://doi.org/10.1103/PhysRevLett.89.037902).
 
-## Cómo jugar a DPS
+## Cómo Jugar a DPS
 
 ...
 

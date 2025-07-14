@@ -11,13 +11,21 @@ contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 # Contenu du protocole DPS
 
 ## À propos du protocole
-Le protocole à déphasage différentiel [1], ou DPS pour Differential phase shift, est un protocole quantique permettant l'établissement de clés de chiffrement.
+Le protocole à déphasage différentiel [[1]](#reference-1), ou DPS pour Differential phase shift, est un protocole quantique permettant l'établissement de clés de chiffrement.
 
 Contrairement aux protocoles BB84 et E91 qui encodent l'information dans la polarisation des photons, le protocole DPS encode l'information dans les phases d'un train d'impulsions.
 
 Le protocole débute avec Alice qui envoie des photons uniques dans un dispositif comprenant trois trajets: A, B et C
 
 insert image ici.
+image black: public/images/alice_bb_fr.png 
+image white: public/images/alice_wb_fr.png 
+
+<picture>
+  <source srcset="/images/alice_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="/images/alice_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="images/alice_bb_fr.png" alt="Schéma du dispositif d'Alice pour le protocole DPS">
+</picture>
 
 Dans ce montage, il y a la même différence de longueur entre les trajets A et B qu'entre les trajets B et C. Ainsi, une impulsion passant par B ( C ) acquiert un retard T par rapport à une impulsion passant par A ( B ).
 
@@ -31,13 +39,54 @@ $$|\psi\rangle = \frac{1}{\sqrt{3}} (|0\rangle + |1\rangle + |2\rangle),$$
 
 avec $|0\rangle$ qui correspond à la 1ere impulsion, $|1\rangle$ à la seconde impulsion, et $|2\rangle$ à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un déphasage de π à l'impulsion correspondante et elle ne fait rien si le bit est 0. Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples
 
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">bit 2</th>
+      <th style="text-align: center;">bit 1</th>
+      <th style="text-align: center;">bit 0</th>
+      <th style="text-align: center;">impulsion 2</th>
+      <th style="text-align: center;">impulsion 1</th>
+      <th style="text-align: center;">impulsion 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">0</td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;">1</td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+    </tr>
+  </tbody>
+</table>
 
-| bit 2 | bit 1 | bit 0 | impulsion 2 | impulsion 1 | impulsion 0 |
-|-------|-------|-------|-------------|-------------|-------------|
-| 0     | 0     | 0     | ![pulse]    | ![pulse]    | ![pulse]    |
-| 0     | 1     | 0     | ![pulse]    | ![inverted] | ![pulse]    |
-| 1     | 1     | 0     | ![inverted] | ![inverted] | ![pulse]    |
-| 1     | 1     | 1     | ![inverted] | ![inverted] | ![inverted] |
+<!-- Todo: image in table are only white , need combine black and white inside svg info file, and the image will handle the prefrence directly -->
 
 On remarque que $(-1)^0 = 1$ et $(-1)^1 = -1$, on peut donc écrire l'état du photon à l'aide des bits $b_0$, $b_1$ et $b_2$ de la manière suivante
 
@@ -45,7 +94,13 @@ $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^
 
 Le train d'impulsions est ensuite envoyé à Bob dont le dispositif (un interféromètre) est le suivant
 
-inserta image here.
+<picture>
+  <source srcset="/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="/images/bob_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="images/bob_bb_fr.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
+</picture>
+
+
 
 Ici encore, la différence de longueur entre les trajets D et E est telle que le train d'impulsions passant par le trajet E est retardé d'un temps T par rapport au train passant par D. On peut donc représenter les états des trains d'impulsions en entrée du dernier miroir semi-réfléchissant par les états
 
@@ -55,16 +110,43 @@ $$|\psi_E\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|1\rangle + (-1)^{b_1}|2\rangle
 
 Prenons un exemple avec les bits b0 = 0, b1 = 0 et b2 = 1. On aura alors les états suivants
 
-|         | impulsion 3 | impulsion 2 | impulsion 1 | impulsion 0 |
-|---------|:-----------:|:-----------:|:-----------:|:-----------:|
-| Trajet D|             | ∪ (π-shift) | ∩ (normal)  | ∩ (normal)  |
-| Trajet E| ∪ (π-shift) | ∩ (normal)  | ∩ (normal)  |             |
-
-insert image in table.
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;"></th>
+      <th style="text-align: center;">impulsion 3</th>
+      <th style="text-align: center;">impulsion 2</th>
+      <th style="text-align: center;">impulsion 1</th>
+      <th style="text-align: center;">impulsion 0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">Trajet D</td>
+      <td style="text-align: center;"></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Trajet E</td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"></td>
+    </tr>
+  </tbody>
+</table>
 
 Pour deux rayons incidents A et B comme illustré sur la figure suivante,
 
-inserta image here.
+
+<picture>
+  <source srcset="/images/beamspliter_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="/images/beamspliter_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="images/beamspliter_bb_fr.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
+</picture>
+
 
 on peut décrire l'opérateur $U_{bs}$ associé au miroir semi-réfléchissant par la transformation
 
@@ -132,7 +214,7 @@ Les photons 1 et 5 (en gris) sont simplement rejetés car ils ont été détect�
 
 ## Référence
 
-[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." PRL 89.3 (2002): 037902.
+<a id="reference-1"></a>[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." [*PRL* 89.3 (2002): 037902](https://doi.org/10.1103/PhysRevLett.89.037902).
 
 ## Comment jouer à DPS
 

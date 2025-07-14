@@ -11,7 +11,7 @@ contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 # DPS Protocol Content
 
 ## About the Protocol
-The differential phase shift protocol [1], or DPS for Differential phase shift, is a quantum protocol for establishing encryption keys.
+The Differential Phase Shift (DPS) protocol [[1]](#reference-1) is a quantum protocol for establishing encryption keys.
 
 Unlike the BB84 and E91 protocols which encode information in the polarization of photons, the DPS protocol encodes information in the phases of a pulse train.
 
@@ -129,9 +129,9 @@ Photons 1 and 5 (in gray) are simply discarded because they were detected at tim
 
 ## Reference
 
-[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." PRL 89.3 (2002): 037902.
+<a id="reference-1"></a>[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." [*PRL* 89.3 (2002): 037902](https://doi.org/10.1103/PhysRevLett.89.037902).
 
-## How to play DPS
+## How to Play DPS
 
 ...
 
