@@ -8,6 +8,12 @@ last_updated: "2025-07-11"
 contributors: ["Jean-Fred", "Zubir", "ibra", "..."]
 ---
 
+<!-- 
+NOTE: Image paths use ../public/images/ for GitHub/VS Code compatibility.
+When integrating with Next.js, these should be changed back to /images/ 
+as Next.js serves files from the public directory automatically.
+-->
+
 # Contenu du protocole DPS
 
 ## À propos du protocole
@@ -22,9 +28,9 @@ image black: public/images/alice_bb_fr.png
 image white: public/images/alice_wb_fr.png 
 
 <picture>
-  <source srcset="/images/alice_wb_fr.png" media="(prefers-color-scheme: light)">
-  <source srcset="/images/alice_bb_fr.png" media="(prefers-color-scheme: dark)">
-  <img src="images/alice_bb_fr.png" alt="Schéma du dispositif d'Alice pour le protocole DPS">
+  <source srcset="../public/images/alice_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../public/images/alice_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../public/images/alice_bb_fr.png" alt="Schéma du dispositif d'Alice pour le protocole DPS">
 </picture>
 
 Dans ce montage, il y a la même différence de longueur entre les trajets A et B qu'entre les trajets B et C. Ainsi, une impulsion passant par B ( C ) acquiert un retard T par rapport à une impulsion passant par A ( B ).
@@ -55,33 +61,33 @@ avec $|0\rangle$ qui correspond à la 1ere impulsion, $|1\rangle$ à la seconde 
       <td style="text-align: center;">0</td>
       <td style="text-align: center;">0</td>
       <td style="text-align: center;">0</td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
     </tr>
     <tr>
       <td style="text-align: center;">0</td>
       <td style="text-align: center;">1</td>
       <td style="text-align: center;">0</td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
     </tr>
     <tr>
       <td style="text-align: center;">1</td>
       <td style="text-align: center;">1</td>
       <td style="text-align: center;">0</td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
     </tr>
     <tr>
       <td style="text-align: center;">1</td>
       <td style="text-align: center;">1</td>
       <td style="text-align: center;">1</td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée" style="transform: rotate(180deg);" /></td>
     </tr>
   </tbody>
 </table>
@@ -95,9 +101,9 @@ $$|\psi_{\text{photon}}\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^
 Le train d'impulsions est ensuite envoyé à Bob dont le dispositif (un interféromètre) est le suivant
 
 <picture>
-  <source srcset="/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
-  <source srcset="/images/bob_bb_fr.png" media="(prefers-color-scheme: dark)">
-  <img src="images/bob_bb_fr.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
+  <source srcset="../public/images/bob_wb_fr.png" media="(prefers-color-scheme: light)">
+  <source srcset="../public/images/bob_bb_fr.png" media="(prefers-color-scheme: dark)">
+  <img src="../public/images/bob_bb_fr.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
 </picture>
 
 
@@ -124,15 +130,15 @@ Prenons un exemple avec les bits b0 = 0, b1 = 0 et b2 = 1. On aura alors les ét
     <tr>
       <td style="text-align: center;">Trajet D</td>
       <td style="text-align: center;"></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
     </tr>
     <tr>
       <td style="text-align: center;">Trajet E</td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
-      <td style="text-align: center;"><img src="/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion inversée (π-shift)" style="transform: rotate(180deg);" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
+      <td style="text-align: center;"><img src="../public/images/pi_wb.svg" alt="Impulsion normale" /></td>
       <td style="text-align: center;"></td>
     </tr>
   </tbody>
@@ -142,9 +148,9 @@ Pour deux rayons incidents A et B comme illustré sur la figure suivante,
 
 
 <picture>
-  <source srcset="/images/beamspliter_wb_fr.png" media="(prefers-color-scheme: light)">
-  <source srcset="/images/beamspliter_bb_fr.png" media="(prefers-color-scheme: dark)">
-  <img src="images/beamspliter_bb_fr.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
+  <source srcset="../public/images/beamsplitter_wb.png" media="(prefers-color-scheme: light)">
+  <source srcset="../public/images/beamsplitter_bb.png" media="(prefers-color-scheme: dark)">
+  <img src="../public/images/beamsplitter_bb.png" alt="Schéma du dispositif de Bob pour le protocole DPS">
 </picture>
 
 
