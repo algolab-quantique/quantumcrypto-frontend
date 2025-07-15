@@ -281,7 +281,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.phases.title': 'Phase',
         'component.dps.about.phases.part1': 'The phase of a quantum or classical wave is a quantity that describes the relative position of a point in the cycle of a periodic oscillation. Mathematically, for a complex wave',
         'component.dps.about.phases.equation': '$$\\psi = A e^{i\\phi}$$',
-        'component.dps.about.phases.part2': 'the phase φ is the argument of the exponential. Phase differences between two waves or pulses determine interference phenomena.',
+        'component.dps.about.phases.part2': 'the phase φ is the argument of the exponential. Differences in phase between two waves or pulses determine interference phenomena. In quantum cryptography protocols, information can be encoded in the phase difference between successive pulses.',
 
         'component.dps.about.train-impulsions.title': 'Pulse Train',
         'component.dps.about.train-impulsions': 'A pulse train is a sequence of light pulses (or other signals) emitted at regular time intervals. In quantum cryptography, a photon can be prepared in a superposition state of several temporal pulses, forming a train where information is encoded in the relative phase between pulses.',
@@ -722,7 +722,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.phases.title': 'Phase',
         'component.dps.about.phases.part1': 'La phase d\'une onde quantique ou classique est une grandeur qui décrit la position relative d\'un point dans le cycle d\'une oscillation périodique. Mathématiquement, pour une onde complexe',
         'component.dps.about.phases.equation': '$$\\psi = A e^{i\\phi}$$',
-        'component.dps.about.phases.part2': 'la phase φ est l\'argument de l\'exponentielle. Les différences de phase entre deux ondes ou impulsions déterminent les phénomènes d\'interférence.',
+        'component.dps.about.phases.part2': 'la phase φ est l\'argument de l\'exponentielle. Les différences de phase entre deux ondes ou impulsions déterminent les phénomènes d\'interférence. Dans les protocoles de cryptographie quantique, l\'information peut être encodée dans la différence de phase entre des impulsions successives.',
 
         'component.dps.about.train-impulsions.title': 'Train d\'impulsions',
         'component.dps.about.train-impulsions': 'Un train d\'impulsions est une séquence d\'impulsions lumineuses (ou d\'autres signaux) émises à des intervalles de temps réguliers. En cryptographie quantique, un photon peut être préparé dans un état de superposition de plusieurs impulsions temporelles, formant ainsi un train où l\'information est encodée dans la phase relative entre les impulsions.',
@@ -1115,9 +1115,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.photons': 'A menudo se dice que todo en el universo está hecho de partículas, incluso la luz. Las partículas que componen la luz se llaman fotones: son los "granos" fundamentales de energía luminosa. En los protocolos de criptografía cuántica (como BB84, E91, etc.), los fotones se utilizan para transportar información entre dos partes.',
 
         'component.dps.about.phases.title': 'Fase',
-        'component.dps.about.phases.part1': 'La fase de una onda cuántica o clásica es una cantidad que describe la posición relativa de un punto en el ciclo de una oscilación periódica. Matemáticamente, para una onda compleja',
+        'component.dps.about.phases.part1': 'La fase de una onda cuántica o clásica es una magnitud que describe la posición relativa de un punto en el ciclo de una oscilación periódica. Matemáticamente, para una onda compleja',
         'component.dps.about.phases.equation': '$$\\psi = A e^{i\\phi}$$',
-        'component.dps.about.phases.part2': 'la fase φ es el argumento del exponencial. Las diferencias de fase entre dos ondas o pulsos determinan los fenómenos de interferencia.',
+        'component.dps.about.phases.part2': 'la fase φ es el argumento del exponente. Las diferencias de fase entre dos ondas o impulsos determinan los fenómenos de interferencia. En los protocolos de criptografía cuántica, la información puede codificarse en la diferencia de fase entre impulsos sucesivos.',
 
         'component.dps.about.train-impulsions.title': 'Tren de pulsos',
         'component.dps.about.train-impulsions': 'Un tren de pulsos es una secuencia de pulsos de luz (u otras señales) emitidos a intervalos de tiempo regulares. En criptografía cuántica, un fotón puede prepararse en un estado de superposición de varios pulsos temporales, formando así un tren donde la información se codifica en la fase relativa entre pulsos.',
