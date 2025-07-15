@@ -154,7 +154,19 @@ export default function DPS() {
         {
             id: 'phases',
             title: localize('component.dps.about.phases.title'),
-            content: localize('component.dps.about.phases'),
+            content: (
+                <div className="space-y-4">
+                    <p>{localize('component.dps.about.phases.part1')}</p>
+                    
+                    {isClient && (
+                        <div className="text-center my-4">
+                            <MathJax>{localize('component.dps.about.phases.equation')}</MathJax>
+                        </div>
+                    )}
+                    
+                    <p>{localize('component.dps.about.phases.part2')}</p>
+                </div>
+            ),
         },
         {
             id: 'train-impulsions',
