@@ -267,6 +267,41 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.chshInequality.title': 'CHSH Inequality',
         'component.e91.about.chshInequality': 'The CHSH inequality (Clauser, Horne, Shimony, Holt) is a specific and experimentally testable version of the Bell inequalities. It applies to measurements on two entangled qubits, each measured in two different bases. According to classical physics, the value of the parameter S calculated from the measured correlations cannot exceed 2. However, quantum mechanics allows a maximum value of 2√2, thus proving the presence of entanglement and the absence of local hidden variables. In the E91 protocol, verifying this inequality ensures the security of the generated key.',
         'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
+
+        // DPS definitions
+        'component.dps.about.cles-chiffrement.title': 'Encryption Key',
+        'component.dps.about.cles-chiffrement': 'An encryption key is a secret piece of information, usually a sequence of bits (0s and 1s), shared only between two parties (such as Alice and Bob). It allows, through a cryptographic algorithm, to transform a readable message (plaintext) into an encrypted message (unreadable to others), and then to decrypt it. Unlike a password, the key is not meant to be memorized by a human, but to be used by a computer program. The goal of protocols like E91 or BB84 is to generate and share this key in a perfectly secure way, so that only Alice and Bob can use it to protect their communications.',
+
+        'component.dps.about.polarisation.title': 'Polarizations',
+        'component.dps.about.polarisation': 'Polarization describes the orientation in which a light wave (such as a photon) oscillates. Imagine a vibrating string: it can vibrate vertically (↕), horizontally (↔), or diagonally (⤢). For a photon, polarization is a fundamental quantum property that is measured to obtain results of +1 or -1.',
+
+        'component.dps.about.photons.title': 'Photon',
+        'component.dps.about.photons': 'It is often said that everything in the universe is made of particles, even light. The particles that make up light are called photons: they are the fundamental "grains" of light energy. In quantum cryptography protocols (such as BB84, E91, etc.), photons are used to carry information between two parties.',
+
+        'component.dps.about.phases.title': 'Phase',
+        'component.dps.about.phases': 'The phase of a quantum or classical wave is a quantity that describes the relative position of a point in the cycle of a periodic oscillation. Mathematically, for a complex wave ψ = A e^(iφ), the phase φ is the argument of the exponential. Phase differences between two waves or pulses determine interference phenomena.',
+
+        'component.dps.about.train-impulsions.title': 'Pulse Train',
+        'component.dps.about.train-impulsions': 'A pulse train is a sequence of light pulses (or other signals) emitted at regular time intervals. In quantum cryptography, a photon can be prepared in a superposition state of several temporal pulses, forming a train where information is encoded in the relative phase between pulses.',
+
+        'component.dps.about.impulsion_word': 'Pulse',
+        'component.dps.about.impulsion_definition.title': 'Pulse',
+        'component.dps.about.impulsion_definition.content': 'A pulse is a brief emission of energy, often light, characterized by its duration, amplitude, and phase. In quantum optics, a pulse corresponds to a light wave packet, used to transmit information or interact with optical devices.',
+
+        'component.dps.about.miroirs-semi-reflechissants.title': 'Semi-reflecting Mirror',
+        'component.dps.about.miroirs-semi-reflechissants': 'A semi-reflecting mirror (or beam splitter) is an optical component that divides a light beam in two: part is reflected, the other transmitted. For a single photon, the mirror creates a quantum superposition of the two possible paths, which is essential for interference experiments.',
+
+        'component.dps.about.etat-superposition.title': 'Superposition State',
+        'component.dps.about.etat-superposition': 'Quantum superposition is a fundamental principle of quantum mechanics whereby a system can be described by a linear combination of several eigenstates. This means the system is not in several states at once, but in a unique state that is a mathematical combination of possible states.',
+
+        'component.dps.about.dephasage.title': 'Phase Shift',
+        'component.dps.about.dephasage': 'A phase shift is a modification of the phase of a wave or pulse. In quantum optics, a phase shift of π (180°) corresponds to a sign inversion of the amplitude. In the DPS protocol, phase shift is used to encode information in the relative phase of pulses.',
+
+        'component.dps.about.interferometre.title': 'Interferometer',
+        'component.dps.about.interferometre': 'An interferometer is an optical device that separates a light beam into several paths, then recombines them to produce interference. The phase difference accumulated between the paths allows measuring physical quantities with high precision.',
+
+        'component.dps.about.operateur-unitaire.title': 'Unitary Operator',
+        'component.dps.about.operateur-unitaire': 'A unitary operator is a linear transformation that preserves the norm of state vectors in Hilbert space. In quantum mechanics, the evolution of a closed system is described by a unitary operator, guaranteeing conservation of total probability.',
         'component.homePage.protocolsSection.dps.description': 'The DPS protocol uses the principles' +
             ' of superposition and interference to establish an encryption key shared by Alice and Bob.',
         'component.validation.gameRestarted' : 'The game has been restarted.',
@@ -294,7 +329,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part11' : ' à la seconde impulsion, et ',
         'component.dps.about.part12' : ' à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un déphasage de π à l\'impulsion correspondante et elle ne fait rien si le bit est 0.'+
                                 ' Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples  ',
-        'component.dps.about.impulsion' : 'impulsion',
         'component.dps.about.part13' : 'On remarque que ',
         'component.dps.about.part14' : ' on peut donc écrire l\'état du photon à l\'aide des bits ',
         'component.dps.about.part15' : ' de la manière suivante ',
@@ -672,6 +706,41 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.chshInequality.title': 'L\'inégalité de CHSH',
         'component.e91.about.chshInequality': 'L\'inégalité de CHSH (Clauser, Horne, Shimony, Holt) est une version particulière et testable expérimentalement des inégalités de Bell. Elle s\'applique à des mesures sur deux qubits intriqués, chacun mesuré selon deux bases différentes. Selon la physique classique, la valeur du paramètre S calculé à partir des corrélations mesurées ne peut pas dépasser 2. Or, la mécanique quantique permet d\'atteindre une valeur maximale de 2√2, prouvant ainsi la présence d\'intrication et l\'absence de variables cachées locales. Dans le protocole E91, la vérification de cette inégalité garantit la sécurité de la clé générée.',
         'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
+
+        // DPS definitions FR
+        'component.dps.about.cles-chiffrement.title': 'Clé de chiffrement',
+        'component.dps.about.cles-chiffrement': 'Une clé de chiffrement est une information secrète, généralement une suite de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte clair) en un message chiffré (illisible pour les autres), puis de le déchiffrer.',
+
+        'component.dps.about.polarisation.title': 'Polarisations',
+        'component.dps.about.polarisation': 'La polarisation décrit l\'orientation dans laquelle une onde lumineuse (comme un photon) oscille. Imaginez une corde qui vibre : elle peut le faire verticalement (↕), horizontalement (↔) ou en diagonale (⤢). Pour un photon, la polarisation est une propriété quantique fondamentale qui est mesurée pour obtenir les résultats +1 ou -1.',
+
+        'component.dps.about.photons.title': 'Photon',
+        'component.dps.about.photons': 'On dit souvent que tout dans l\'univers est composé de particules, même la lumière. Les particules qui composent la lumière sont appelées photons : ce sont les "grains" fondamentaux de l\'énergie lumineuse. Dans les protocoles de cryptographie quantique (comme BB84, E91…), les photons servent à transporter l\'information entre deux parties.',
+
+        'component.dps.about.phases.title': 'Phase',
+        'component.dps.about.phases': 'La phase d\'une onde quantique ou classique est une grandeur qui décrit la position relative d\'un point dans le cycle d\'une oscillation périodique. Mathématiquement, pour une onde complexe ψ = A e^(iφ), la phase φ est l\'argument de l\'exponentielle. Les différences de phase entre deux ondes ou impulsions déterminent les phénomènes d\'interférence.',
+
+        'component.dps.about.train-impulsions.title': 'Train d\'impulsions',
+        'component.dps.about.train-impulsions': 'Un train d\'impulsions est une séquence d\'impulsions lumineuses (ou d\'autres signaux) émises à des intervalles de temps réguliers. En cryptographie quantique, un photon peut être préparé dans un état de superposition de plusieurs impulsions temporelles, formant ainsi un train où l\'information est encodée dans la phase relative entre les impulsions.',
+
+        'component.dps.about.impulsion_word': 'Impulsion',
+        'component.dps.about.impulsion_definition.title': 'Impulsion',
+        'component.dps.about.impulsion_definition.content': 'Une impulsion est une brève émission d\'énergie, souvent lumineuse, caractérisée par sa durée, son amplitude et sa phase. En optique quantique, une impulsion correspond à un paquet d\'onde de lumière, utilisé pour transmettre de l\'information ou interagir avec des dispositifs optiques.',
+
+        'component.dps.about.miroirs-semi-reflechissants.title': 'Miroir semi-réfléchissant',
+        'component.dps.about.miroirs-semi-reflechissants': 'Un miroir semi-réfléchissant (ou séparateur de faisceau) est un composant optique qui divise un faisceau lumineux en deux : une partie est réfléchie, l\'autre transmise. Pour un photon unique, le miroir crée une superposition quantique des deux chemins possibles, ce qui est essentiel pour les expériences d\'interférence.',
+
+        'component.dps.about.etat-superposition.title': 'État de superposition',
+        'component.dps.about.etat-superposition': 'La superposition quantique est un principe fondamental de la mécanique quantique selon lequel un système peut être décrit par une combinaison linéaire de plusieurs états propres. Cela signifie que le système n\'est pas dans plusieurs états à la fois, mais dans un état unique qui est une combinaison mathématique des états possibles.',
+
+        'component.dps.about.dephasage.title': 'Déphasage',
+        'component.dps.about.dephasage': 'Un déphasage est une modification de la phase d\'une onde ou d\'une impulsion. En optique quantique, un déphasage de π (180°) correspond à une inversion du signe de l\'amplitude. Dans le protocole DPS, le déphasage est utilisé pour encoder l\'information dans la phase relative des impulsions.',
+
+        'component.dps.about.interferometre.title': 'Interféromètre',
+        'component.dps.about.interferometre': 'Un interféromètre est un dispositif optique qui sépare un faisceau lumineux en plusieurs chemins, puis les recombine pour produire des interférences. La différence de phase accumulée entre les chemins permet de mesurer des grandeurs physiques avec une grande précision.',
+
+        'component.dps.about.operateur-unitaire.title': 'Opérateur unitaire',
+        'component.dps.about.operateur-unitaire': 'Un opérateur unitaire est une transformation linéaire qui conserve la norme des vecteurs d\'état dans l\'espace de Hilbert. En mécanique quantique, l\'évolution d\'un système fermé est décrite par un opérateur unitaire, garantissant la conservation de la probabilité totale.',
         'component.validation.gameRestarted' : 'La partie a été redémarrée.',
         'component.game.playerLeft': 'Vous aviez quitter le jeux!',
         'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',
@@ -682,8 +751,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
         'component.dps.about.part1.1' : 'ou DPS pour ',
         'component.dps.about.part1.2' : 'Differential phase shift',
-        'component.dps.about.part1.3' : 'est un protocole quantique permettant l\'établissement de clés de chiffrement.',
-        'component.dps.about.part2' : 'Contrairement aux protocoles BB84 et E91 qui encodent l\'information dans la polarisation des photons, le protocole DPS encode l\'information dans les phases d\'un train d\'impulsions. ',
+        'component.dps.about.part1.3' : 'est un protocole quantique permettant l\'établissement de <link1>clés de chiffrement</link1>.',
+        'component.dps.about.part2' : 'Contrairement aux protocoles BB84 et E91 qui encodent l\'information dans la <link2>polarisation</link2> des <link3>photons</link3>, le protocole DPS encode l\'information dans les <link4>phases</link4> d\'un <link5>train d\'impulsions</link5>.',
         'component.dps.about.part3' : 'Le protocole débute avec Alice qui envoie des photons uniques dans un dispositif comprenant trois trajets: ',
         'component.dps.about.part4' : 'Dans ce montage, il y a la même différence de longueur entre les trajets ',
         'component.dps.about.and' : ' et ',
@@ -697,7 +766,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part11' : ' à la seconde impulsion, et ',
         'component.dps.about.part12' : ' à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un déphasage de π à l\'impulsion correspondante et elle ne fait rien si le bit est 0.'+
                                 ' Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples  ',
-        'component.dps.about.impulsion' : 'impulsion',
         'component.dps.about.part13' : 'On remarque que ',
         'component.dps.about.part14' : ' on peut donc écrire l\'état du photon à l\'aide des bits ',
         'component.dps.about.part15' : ' de la manière suivante ',
@@ -1031,5 +1099,40 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.e91.about.chshInequality.title': 'La Desigualdad CHSH',
         'component.e91.about.chshInequality': 'La desigualdad CHSH (Clauser, Horne, Shimony, Holt) es una versión específica y experimentalmente comprobable de las desigualdades de Bell. Se aplica a mediciones sobre dos qubits entrelazados, cada uno medido en dos bases diferentes. Según la física clásica, el valor del parámetro S calculado a partir de las correlaciones medidas no puede superar 2. Sin embargo, la mecánica cuántica permite un valor máximo de 2√2, demostrando así la presencia de entrelazamiento y la ausencia de variables ocultas locales. En el protocolo E91, verificar esta desigualdad garantiza la seguridad de la clave generada.',
+
+        // DPS definitions ES
+        'component.dps.about.cles-chiffrement.title': 'Clave de cifrado',
+        'component.dps.about.cles-chiffrement': 'Una clave de cifrado es una información secreta, normalmente una secuencia de bits (0 y 1), compartida solo entre dos partes (como Alicia y Bob). Permite, mediante un algoritmo criptográfico, transformar un mensaje legible (texto plano) en un mensaje cifrado (ilegible para otros), y luego descifrarlo.',
+
+        'component.dps.about.polarisation.title': 'Polarizaciones',
+        'component.dps.about.polarisation': 'La polarización describe la orientación en la que oscila una onda de luz (como un fotón). Imaginen una cuerda que vibra: puede vibrar verticalmente (↕), horizontalmente (↔), o diagonalmente (⤢). Para un fotón, la polarización es una propiedad cuántica fundamental que se mide para obtener resultados de +1 o -1.',
+
+        'component.dps.about.photons.title': 'Fotón',
+        'component.dps.about.photons': 'A menudo se dice que todo en el universo está hecho de partículas, incluso la luz. Las partículas que componen la luz se llaman fotones: son los "granos" fundamentales de energía luminosa. En los protocolos de criptografía cuántica (como BB84, E91, etc.), los fotones se utilizan para transportar información entre dos partes.',
+
+        'component.dps.about.phases.title': 'Fase',
+        'component.dps.about.phases': 'La fase de una onda cuántica o clásica es una cantidad que describe la posición relativa de un punto en el ciclo de una oscilación periódica. Matemáticamente, para una onda compleja ψ = A e^(iφ), la fase φ es el argumento del exponencial. Las diferencias de fase entre dos ondas o pulsos determinan los fenómenos de interferencia.',
+
+        'component.dps.about.train-impulsions.title': 'Tren de pulsos',
+        'component.dps.about.train-impulsions': 'Un tren de pulsos es una secuencia de pulsos de luz (u otras señales) emitidos a intervalos de tiempo regulares. En criptografía cuántica, un fotón puede prepararse en un estado de superposición de varios pulsos temporales, formando así un tren donde la información se codifica en la fase relativa entre pulsos.',
+
+        'component.dps.about.impulsion_word': 'Pulso',
+        'component.dps.about.impulsion_definition.title': 'Pulso',
+        'component.dps.about.impulsion_definition.content': 'Un pulso es una breve emisión de energía, a menudo lumínica, caracterizada por su duración, amplitud y fase. En óptica cuántica, un pulso corresponde a un paquete de ondas de luz, utilizado para transmitir información o interactuar con dispositivos ópticos.',
+
+        'component.dps.about.miroirs-semi-reflechissants.title': 'Espejo semi-reflectante',
+        'component.dps.about.miroirs-semi-reflechissants': 'Un espejo semi-reflectante (o divisor de haz) es un componente óptico que divide un haz de luz en dos: una parte se refleja, la otra se transmite. Para un fotón único, el espejo crea una superposición cuántica de los dos caminos posibles, lo cual es esencial para experimentos de interferencia.',
+
+        'component.dps.about.etat-superposition.title': 'Estado de superposición',
+        'component.dps.about.etat-superposition': 'La superposición cuántica es un principio fundamental de la mecánica cuántica por el cual un sistema puede describirse mediante una combinación lineal de varios estados propios. Esto significa que el sistema no está en varios estados a la vez, sino en un estado único que es una combinación matemática de los estados posibles.',
+
+        'component.dps.about.dephasage.title': 'Desfase',
+        'component.dps.about.dephasage': 'Un desfase es una modificación de la fase de una onda o pulso. En óptica cuántica, un desfase de π (180°) corresponde a una inversión del signo de la amplitud. En el protocolo DPS, el desfase se utiliza para codificar información en la fase relativa de los pulsos.',
+
+        'component.dps.about.interferometre.title': 'Interferómetro',
+        'component.dps.about.interferometre': 'Un interferómetro es un dispositivo óptico que separa un haz de luz en varios caminos, luego los recombina para producir interferencia. La diferencia de fase acumulada entre los caminos permite medir cantidades físicas con alta precisión.',
+
+        'component.dps.about.operateur-unitaire.title': 'Operador unitario',
+        'component.dps.about.operateur-unitaire': 'Un operador unitario es una transformación lineal que conserva la norma de los vectores de estado en el espacio de Hilbert. En mecánica cuántica, la evolución de un sistema cerrado se describe mediante un operador unitario, garantizando la conservación de la probabilidad total.',
     },
 ];
