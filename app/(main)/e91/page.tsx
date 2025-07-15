@@ -175,7 +175,8 @@ export default function E91() {
                         
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part1')}</p>
                         
-                        {/* Base combinations table */}                        <div className="mb-4 flex justify-center">
+                        {/* Base combinations table */}
+                        <div className="mb-4 flex justify-center">
                             <table className="table-auto border-collapse border border-gray-300">
                                 <thead className="">
                                     <tr>
@@ -272,10 +273,7 @@ export default function E91() {
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part4')}</p>
                         
                         {/* Mathematical equations */}
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg mb-6">
-                            <h3 className="font-semibold text-lg mb-4 text-blue-800 dark:text-blue-200">
-                                Correlation Calculations
-                            </h3>
+                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
                             <div className="space-y-4">
                                 <MathJax>
                                     {`
@@ -298,23 +296,25 @@ export default function E91() {
                                     \\]
                                     `}
                                 </MathJax>
-                                <MathJax>
-                                    {`
-                                    \\[
-                                    E_{a,b'} = 0 \\text{ (no measurements in this example)}
-                                    \\]
-                                    `}
-                                </MathJax>
+                                <div className="flex items-center justify-center space-x-2">
+                                    <MathJax>
+                                        {`
+                                        \\[
+                                        E_{a,b'} = 0
+                                        \\]
+                                        `}
+                                    </MathJax>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400 italic">
+                                        ({localize('component.e91.about.figures.noMeasurements')})
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part5')}</p>
                         
-                        {/* CHSH inequality section */}
-                        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg mb-6">
-                            <h3 className="font-semibold text-lg mb-4 text-red-800 dark:text-red-200">
-                                CHSH Inequality Test
-                            </h3>
+                        {/* CHSH inequality equation */}
+                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
                             <div className="mb-4">
                                 <MathJax>
                                     {`
@@ -324,16 +324,10 @@ export default function E91() {
                                     `}
                                 </MathJax>
                             </div>
-                            <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
-                                <p>
-                                    <strong>Classical limit:</strong> S ≤ 2 (Bell's inequality)
-                                </p>
-                                <p>
-                                    <strong>Quantum maximum:</strong> S = 2√2 ≈ 2.83 (Tsirelson's bound)
-                                </p>
-                                <p>
-                                    <strong>Our example:</strong> S = |0.33 + 0 + 1 - 0| = 1.33 ≤ 2 ✓
-                                </p>
+                            <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                <p>{localize('component.e91.about.figures.chsh.classical')}</p>
+                                <p>{localize('component.e91.about.figures.chsh.quantum')}</p>
+                                <p>{localize('component.e91.about.figures.chsh.example')}</p>
                             </div>
                         </div>
                         
