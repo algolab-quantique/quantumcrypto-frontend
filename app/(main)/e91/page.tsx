@@ -96,7 +96,7 @@ export default function E91() {
             .replace('<link8>', `<a href="#bell-inequalities" class="text-blue-500 hover:underline">`)
             .replace('</link8>', `</a>`)
             .replace('<link9>', `<a href="#chsh-inequality" class="text-blue-500 hover:underline">`)
-            .replace('</link9>', `</a>`)
+            .replace('</link9>', `</a>`);
 
         return processedText;
     };
@@ -201,10 +201,15 @@ export default function E91() {
                     </h1>
                     <p
                         className="mb-4 text-lg text-gray-400"
-                        dangerouslySetInnerHTML={{
-                            __html: parseLocalizedText(localize('component.e91.about') ?? ''),
-                        }}
-                    />
+                    >
+                        {localize('component.e91.about.part1.0')}
+                        <a href="#reference-1" className="text-blue-500 hover:underline ml-1">[1]</a>
+                        <span
+                            dangerouslySetInnerHTML={{
+                                __html: parseLocalizedText(localize('component.e91.about.part1.1') ?? ''),
+                            }}
+                        />
+                    </p>
                 </Card>
                 
                 {/* Main content card with detailed explanation, figures, and tables */}
@@ -403,7 +408,7 @@ export default function E91() {
                         </p>
                         
                         {/* Reference section */}
-                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+                        <div id="reference-1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
                             <h3 className="font-semibold text-lg mb-2">Reference</h3>
                             <p className="text-sm">
                                 <strong>[1]</strong> Ekert, A. K. (1991). "Quantum cryptography based on Bell's theorem." 
