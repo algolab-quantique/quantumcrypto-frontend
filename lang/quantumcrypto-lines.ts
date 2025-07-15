@@ -242,10 +242,20 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.polarization': 'Polarization describes the orientation in which a light wave (such as a photon) oscillates. Imagine a vibrating string: it can vibrate vertically (↕), horizontally (↔), or diagonally (⤢). For a photon, polarization is a fundamental quantum property that is measured to obtain results of +1 or -1.',
 
         'component.e91.about.maximallyEntangled.title': 'Maximally Entangled',
-        'component.e91.about.maximallyEntangled': 'Two particles (or qubits) are said to be "entangled" when they share a common quantum state: their measurement results are correlated in such a way that it is impossible to describe them separately, even at a distance. "Maximal entanglement" refers to the strongest possible correlation between measurement results, meaning the results are perfectly correlated or anti-correlated depending on the chosen basis (measuring one immediately reveals the result of the other). Maximal entanglement is essential to guarantee the security of quantum protocols: any attempt at interception alters these perfect correlations and can be detected.',
+        'component.e91.about.maximallyEntangled.part1': 'Two particles (or qubits) are said to be "entangled" when they share a common quantum state: their measurement results are correlated in such a way that it is impossible to describe them separately, even at a distance. "Maximal entanglement" refers to the strongest possible correlation between measurement results, meaning the results are perfectly correlated or anti-correlated depending on the chosen basis (measuring one immediately reveals the result of the other).',
+        'component.e91.about.maximallyEntangled.part2': 'Mathematically, a maximally entangled state is written as a superposition where each possible outcome has the same probability: for example, for two qubits, the state',
+        'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.maximallyEntangled.part3': 'means the two particles are always identical (00 or 11), each with a probability of 1/2. The "amplitude" 1/√2 ensures this equal probability.',
+        'component.e91.about.maximallyEntangled.part4': 'There are also non-maximally entangled states, where the amplitudes are not equal (for example, α|00⟩ + β|11⟩ with |α|² ≠ |β|²). In this case, the correlations are weaker and the state is less useful for quantum cryptography.',
+        'component.e91.about.maximallyEntangled.part5': 'Maximal entanglement is essential to guarantee the security of quantum protocols: any attempt at interception alters these perfect correlations and can be detected.',
 
         'component.e91.about.bellPairs.title': 'Bell Pairs',
-        'component.e91.about.bellPairs': 'Bell pairs are pairs of qubits (quantum particles, such as photons) prepared in one of the four states of maximal quantum entanglement, called Bell states. These states exhibit perfect correlations, impossible to reproduce with classical physics, and are fundamental to many quantum cryptography protocols. They are named after physicist John Stewart Bell. In protocols like E91, these pairs ensure security through maximal entanglement: any attempt at interception alters the correlations and can be detected.',
+        'component.e91.about.bellPairs.part1': 'Bell pairs are pairs of qubits (quantum particles, such as photons) prepared in one of the four states of maximal quantum entanglement, called Bell states. These states exhibit perfect correlations, impossible to reproduce with classical physics, and are fundamental to many quantum cryptography protocols. The four Bell states are:',
+        'component.e91.about.bellPairs.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation2': '$$\\left|\\Phi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle - |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation3': '$$\\left|\\Psi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle + |10\\rangle)$$',
+        'component.e91.about.bellPairs.equation4': '$$\\left|\\Psi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle - |10\\rangle)$$',
+        'component.e91.about.bellPairs.part2': 'They are named after physicist John Stewart Bell. In protocols like E91, these pairs ensure security through maximal entanglement: any attempt at interception alters the correlations and can be detected.',
 
         'component.e91.about.measurementBasis.title': 'Measurement Basis',
         'component.e91.about.measurementBasis': 'A measurement basis is a set of reference orientations used to measure a quantum property, such as the polarization of a photon or the state of a qubit. It is like choosing the angle of your "polarizing filter." The measurement result (for example, +1 or -1, or 0 or 1) depends on the chosen basis. In protocols like BB84 or E91, Alice and Bob randomly choose their bases (denoted a, b, a′, b′, etc.).',
@@ -447,15 +457,13 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' Le protocole commence avec Alice qui crée une séquence aléatoire de bits et qui' +
             ' <link5>encode chaque bit</link5> à l\'aide d\'un <link1>photon</link1>. Plus' +
             ' précisément, la valeur du bit est encodée dans un des deux <link6>états mutuellement' +
-            ' orthogonaux</link6> de la polarisation du photon. Aussi, à chaque photon, la base pour' +
-            ' décrire la polarisation de la lumière est choisie au hasard entre deux bases. Alice' +
-            ' envoie ensuite ces photons à Bob via un <link4>canal quantique</link4> public. Lorsque' +
+            ' orthogonaux</link6> de la polarisation du photon. ' +
+            'De plus, pour chaque photon, la base utilisée pour décrire la polarisation de la lumière est choisie au hasard parmi deux bases possibles. Alice envoie ensuite ces photons à Bob via un <link4>canal quantique</link4> public. Lorsque' +
             ' Bob reçoit les photons, il les mesure en utilisant une des deux bases également choisies' +
             ' au hasard. Ensuite, Alice et Bob annoncent publiquement les bases qu\'ils ont utilisées' +
             ' pour encoder et mesurer chaque photon. Une clé est formée en conservant seulement les bits' +
-            ' pour lesquels les bases utilisées par Alice et Bob correspondent. Enfin, en comparant un' +
-            ' sous-ensemble des bits de leur clé, Alice et Bob peuvent détecter la <link8>présence d\'un' +
-            ' espion</link8>, généralement appelé Ève, et s\'assurent ainsi de la sécurité de leur canal' +
+            ' pour lesquels les bases utilisées par Alice et Bob correspondent. ' +
+            'Enfin, en comparant un sous-ensemble des bits de leur clé, Alice et Bob peuvent détecter la <link8>présence d\'un espion</link8>, généralement appelé Ève, et s\'assurer ainsi de la sécurité de leur canal' +
             ' de communication quantique. En effet, en raison des principes fondamentaux de la mécanique' +
             ' quantique, toute tentative par Ève d\'intercepter et de mesurer ces photons' +
             ' <link7>perturbera leur état</link7>, introduisant ainsi des incohérences qu\'Alice et Bob' +
@@ -504,7 +512,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.about.disturbance.title': 'Perturbation de l\'état par la mesure',
         'component.bb84.about.disturbance': 'On entend souvent qu\'un système quantique peut être « dans deux états en même temps », c\'est-à-dire en superposition d\'états. Cela signifie que si on mesure le système, on ne peut pas prédire quel sera le résultat de la mesure, mais on connaît avec quelle probabilité chacun des résultats peut être observé. Une fois la mesure effectuée, l\'état de superposition est détruit et le système est dans l\'état qui a été mesuré. Une nouvelle mesure donnerait le même résultat. ',
         'component.bb84.about.eve.title': 'Détection de la présence d\'Ève',
-        'component.bb84.about.eve': 'Considérons seulement les photons pour lesquels Alice et Bob ont utilisé la même base puisque ce sont ces photons qui servent à établir la clé. Pour détenir de l\'information sur la clé, Ève doit choisir dans quelle base elle mesure les photons qu\'elle intercepte. Pour un de ces photons, supposons qu\'Alice et Bob utilisent la base +. Si, par chance, Ève choisit également la base +, elle mesurera à coup sûr la bonne valeur puis pourra retransmettre le bit dans un nouveau photon de même polarisation. La présence d\'Eve ne peut pas être détectée dans ce cas-ci. Si elle fait plutôt sa mesure dans la base x, ce qui a une chance sur deux de se produire, Ève transmettra à Bob un nouveau photon dont la polarisation est en superposition d\'états par rapport à la base +. Le résultat de la mesure de Bob est donc probabiliste et la présence d\'Ève peut être détectée.',
+        'component.bb84.about.eve': 'Considérons seulement les photons pour lesquels Alice et Bob ont utilisé la même base puisque ce sont ces photons qui servent à établir la clé. Pour détenir de l\'information sur la clé, Ève doit choisir dans quelle base elle mesure les photons qu\'elle intercepte. Pour un de ces photons, supposons qu\'Alice et Bob utilisent la base +. Si, par chance, Ève choisit également la base +, elle mesurera à coup sûr la bonne valeur puis pourra retransmettre le bit dans un nouveau photon de même polarisation. La présence d\'Eve ne peut pas être détectée dans ce cas-ci. Si elle fait plutôt sa mesure dans la base x, ce qui a une chance sur deux de se produire, Ève transmettra à Bob un photon polarisé en superposition d\'états par rapport à la base +. Le résultat de la mesure de Bob est alors probabiliste et la présence d\'Ève peut être détectée.',
         'component.homePage.userFriendlyTitle': 'Convivial',    
         'component.homePage.multiplayerTitle': 'Expérience multijoueur',
         'component.homePage.extensibleTitle': 'Hautement extensible',
@@ -537,7 +545,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.highlights.highlight1Alice': 'Créez une chaîne de bits' +
             ' aléatoire',
         'component.bb84.highlights.highlight2Alice': 'Sélectionnez' +
-            ' aléatoirement',
+            ' aléatoirement un ensemble de bases',
         'component.bb84.highlights.highlight3Alice': 'Encodez vos bits',
         'component.bb84.highlights.highlight4Alice': 'Partagez vos photons',
         'component.bb84.highlights.highlight5Alice': 'Comparez vos bases' +
@@ -592,8 +600,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.time': 'Temps',
         'component.e91.results.score': 'Points',
         'component.e91.highlights.highlight1': 'Choisissez de façon aléatoire une base de mesure ',
-        'component.e91.steps.step1': ' pour les photons incidents, les résultats de mesure' + 
-            ' seront utilisés pour établir votre clé de chiffrement et détecter la présence d\'Ève.',
+        'component.e91.steps.step1': ' pour les photons incidents, les résultats de la mesure seront' + 
+            ' utilisés pour établir votre clé de chiffrement et détecter la présence d\'Ève.',
         'component.e91.highlights.highlight2': 'Partagez vos bases de mesure',
         'component.e91.steps.step2Alice': ' avec Bob.',
         'component.e91.steps.step2Bob': ' avec Alice.',
@@ -629,7 +637,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.photon': 'On dit souvent que tout dans l\'univers est fait de particules, même la lumière. Les particules qui composent la lumière s\'appellent des photons : ce sont les « grains » fondamentaux de l\'énergie lumineuse. Dans les protocoles de cryptographie quantique (comme BB84, E91, etc.), les photons sont utilisés pour transporter de l\'information entre deux parties. Leur propriété de polarisation permet d\'encoder des bits (0 ou 1), tandis que leur nature quantique garantit la sécurité de la transmission : toute tentative d\'interception altère l\'état du photon et peut être détectée.',
 
         'component.e91.about.encryptionKey.title': 'Clé de chiffrement',
-        'component.e91.about.encryptionKey': 'Une clé de chiffrement est une information secrète, généralement une séquence de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte en clair) en message chiffré (illisible pour les autres), puis de le déchiffrer. Contrairement à un mot de passe, la clé n\'est pas destinée à être mémorisée par un humain, mais à être utilisée par un programme informatique. L\'objectif des protocoles comme E91 ou BB84 est de générer et partager cette clé de façon parfaitement sécurisée, afin que seuls Alice et Bob puissent l\'utiliser pour protéger leurs communications.',
+        'component.e91.about.encryptionKey': 'Une clé de chiffrement est une information secrète, généralement une séquence de bits (0 et 1), partagée uniquement entre deux parties (comme Alice et Bob). Elle permet, grâce à un algorithme cryptographique, de transformer un message lisible (texte en clair) en un message chiffré (illisible pour les autres), puis de le déchiffrer. Contrairement à un mot de passe, la clé n\'est pas destinée à être memorizée par un humain, mais à être utilisée par un programme informatique. L\'objectif des protocoles comme E91 ou BB84 est de générer et partager cette clé de façon parfaitement sécurisée, afin que seuls Alice et Bob puissent l\'utiliser pour protéger leurs communications.',
 
         'component.e91.about.publicPrivate.title': 'Canal public (et privé)',
         'component.e91.about.publicPrivate': 'Un canal public est un moyen de communication (comme Internet, une fibre optique, ou une ligne téléphonique) où n\'importe qui peut potentiellement intercepter ou écouter les messages échangés — comme parler à voix haute dans une pièce bondée. À l\'inverse, un canal privé garantit que seules les parties concernées peuvent accéder à la communication, comme une conversation à voix basse à l\'écart. En pratique, il est difficile de garantir la confidentialité d\'un canal : c\'est pourquoi on utilise la cryptographie pour rendre les messages incompréhensibles sur un canal public. Dans les protocoles de cryptographie quantique (BB84, E91, DPS, etc.), la sécurité repose sur la physique quantique, et non sur la confidentialité du canal.',
@@ -638,10 +646,20 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.polarization': 'La polarisation décrit l\'orientation dans laquelle une onde lumineuse (comme un photon) oscille. Imaginez une corde qui vibre : elle peut vibrer verticalement (↕), horizontalement (↔), ou en diagonale (⤢). Pour un photon, la polarisation est une propriété quantique fondamentale qui est mesurée pour obtenir des résultats de +1 ou -1.',
 
         'component.e91.about.maximallyEntangled.title': 'Maximalement intriquées',
-        'component.e91.about.maximallyEntangled': 'Deux particules (ou qubits) sont dites « intriquées » lorsqu\'elles partagent un état quantique commun : leurs résultats de mesure sont corrélés de telle sorte qu\'il est impossible de les décrire séparément, même à distance. L\'« intrication maximale » fait référence à la corrélation la plus forte possible entre les résultats de mesure, ce qui signifie que les résultats sont parfaitement corrélés ou anti-corrélés selon la base choisie (mesurer l\'une révèle immédiatement le résultat de l\'autre). L\'intrication maximale est essentielle pour garantir la sécurité des protocoles quantiques : toute tentative d\'interception altère ces corrélations parfaites et peut être détectée.',
+        'component.e91.about.maximallyEntangled.part1': 'Deux particules (ou qubits) sont dites « intriquées » lorsqu\'elles partagent un état quantique commun : leurs résultats de mesure sont corrélés de façon telle qu\'il est impossible de les décrire séparément, même à distance. On parle d\'« intrication maximale » lorsque la corrélation entre les résultats de mesure est la plus forte possible, c\'est-à-dire que les résultats sont parfaitement corrélés ou anticorrélés selon la base choisie (si l\'on mesure l\'une, on connaît immédiatement le résultat de la mesure de l\'autre).',
+        'component.e91.about.maximallyEntangled.part2': 'Mathématiquement, un état d\'intrication maximale s\'écrit sous la forme d\'une superposition où chaque résultat possible a la même probabilité : par exemple, pour deux qubits, l\'état',
+        'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.maximallyEntangled.part3': 'signifie que les deux particules sont toujours identiques (00 ou 11), chacune avec une probabilité de 1/2. L\'« amplitude » 1/√2 assure cette probabilité égale.',
+        'component.e91.about.maximallyEntangled.part4': 'Il existe aussi des états intriqués non maximaux, où les amplitudes ne sont pas égales (par exemple, α|00⟩ + β|11⟩ avec |α|² ≠ |β|²). Dans ce cas, les corrélations sont plus faibles et l\'état n\'est pas aussi utile pour la cryptographie quantique.',
+        'component.e91.about.maximallyEntangled.part5': 'L\'intrication maximale est essentielle pour garantir la sécurité des protocoles quantiques : toute tentative d\'interception modifie ces corrélations parfaites et peut être détectée.',
 
         'component.e91.about.bellPairs.title': 'Paires de Bell',
-        'component.e91.about.bellPairs': 'Les paires de Bell sont des paires de qubits (particules quantiques, comme des photons) préparées dans l\'un des quatre états d\'intrication quantique maximale, appelés états de Bell. Ces états présentent des corrélations parfaites, impossibles à reproduire avec la physique classique, et sont fondamentaux pour de nombreux protocoles de cryptographie quantique. Ils portent le nom du physicien John Stewart Bell. Dans les protocoles comme E91, ces paires assurent la sécurité grâce à l\'intrication maximale : toute tentative d\'interception altère les corrélations et peut être détectée.',
+        'component.e91.about.bellPairs.part1': 'Les paires de Bell sont des paires de qubits (particules quantiques, comme des photons) préparées dans l\'un des quatre états d\'intrication quantique maximale, appelés états de Bell. Ces états présentent des corrélations parfaites, impossibles à reproduire avec la physique classique, et sont fondamentaux pour de nombreux protocoles de cryptographie quantique. Les quatre états de Bell sont :',
+        'component.e91.about.bellPairs.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation2': '$$\\left|\\Phi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle - |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation3': '$$\\left|\\Psi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle + |10\\rangle)$$',
+        'component.e91.about.bellPairs.equation4': '$$\\left|\\Psi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle - |10\\rangle)$$',
+        'component.e91.about.bellPairs.part2': 'Ils portent le nom du physicien John Stewart Bell. Dans les protocoles comme E91, ces paires assurent la sécurité grâce à l\'intrication maximale : toute tentative d\'interception altère les corrélations et peut être détectée.',
 
         'component.e91.about.measurementBasis.title': 'Base de mesure',
         'component.e91.about.measurementBasis': 'Une base de mesure est un ensemble d\'orientations de référence utilisées pour mesurer une propriété quantique, comme la polarisation d\'un photon ou l\'état d\'un qubit. C\'est comme choisir l\'angle de votre « filtre polarisant ». Le résultat de la mesure (par exemple, +1 ou -1, ou 0 ou 1) dépend de la base choisie. Dans les protocoles comme BB84 ou E91, Alice et Bob choisissent aléatoirement leurs bases (notées a, b, a′, b′, etc.).',
@@ -658,6 +676,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.header.about.dps': 'À propos du protocole DPS',
         'component.dps.howToPlayTitle': 'Comment jouer à DPS',
         'component.dps.howToPlayDescription': 'À venir!',
+        'component.dps.about.translationToCome' : 'Traduction en cours...',
         'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
         'component.dps.about.part1.1' : 'ou DPS pour ',
         'component.dps.about.part1.2' : 'Differential phase shift',
@@ -773,7 +792,7 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' terminado el juego',
         'component.waitingRoom.atLeastOnePlayer': 'Necesitas al menos un' +
             ' jugador',
-        'component.createGame.keyLength': 'Número de fotones',
+        'component.createGame.keyLength': 'Número de photons',
         'component.createGame.eve': '¿Está presente Eve?',
         'component.createGame.keyError': 'Solo se permiten números entre 10' +
             ' y 30',
@@ -835,24 +854,31 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.openSource': 'Todo nuestro código está' +
             ' disponible en GitHub. Puedes encontrar los enlaces al final' +
             ' de la página.',
-        'component.bb84.about': 'El protocolo BB84 fue propuesto en 1984 por Charles Bennett de IBM y Gilles Brassard de la Universidad de Montreal. Implica a dos partes distintas, Alice y Bob, que buscan establecer una <link2>clave de cifrado</link2> para comunicarse de manera segura a través de un <link3>canal público</link3>. El protocolo comienza con Alice creando una secuencia aleatoria de bits y <link5>codificando cada bit</link5> usando un <link1>fotón</link1>. Específicamente, el valor del bit se codifica en uno de los dos <link6>estados de polarización mutuamente ortogonales</link6> del fotón. Además, para cada fotón, la base utilizada para describir la polarización de la luz se elige aleatoriamente entre dos posibles bases. Alice luego envía estos fotones a Bob a través de un <link4>canal cuántico público</link4> . Cuando Bob recibe los fotones, los mide utilizando una de las dos bases, también elegida al azar. Posteriormente, Alice y Bob anuncian públicamente las bases que usaron para codificar y medir cada fotón. Se forma una clave conservando solo los bits para los cuales las bases de Alice y Bob coinciden. Finalmente, comparando un subconjunto de los bits de su clave, Alice y Bob pueden detectar la <link8>presencia de un espía</link8>, generalmente llamado Eve, y así garantizar la seguridad de su canal de comunicación cuántica. Esto se debe a que, según los principios fundamentales de la mecánica cuántica, cualquier intento de Eve por interceptar y medir estos fotones <link7>alterará su estado</link7>, introduciendo inconsistencias que Alice y Bob pueden detectar. Si concluyen que el canal cuántico no ha sido comprometido, pueden usar la clave generada para enviar un mensaje de manera segura. De lo contrario, deben repetir el procedimiento.',
+        'component.bb84.about': 'El protocolo BB84 fue propuesto en 1984 por Charles Bennett de IBM y Gilles Brassard de la Universidad de Montreal. Implica a dos partes distintas, Alice y Bob, que buscan establecer una <link2>clave de cifrado</link2> para comunicarse de manera segura a través de un <link3>canal público</link3>. El protocolo comienza con Alice creando una secuencia aleatoria de bits y <link5>codificando cada bit</link5> usando un <link1>fotón</link1>. ' +
+            'Específicamente, el valor del bit se codifica en uno de los dos <link6>estados de polarización mutuamente ortogonales</link6> del fotón. ' +
+            'Además, para cada fotón, la base utilizada para describir la polarización de la luz se elige aleatoriamente entre dos bases posibles. Alice luego envía estos fotones a Bob a través de un <link4>canal cuántico público</link4> . ' +
+            'Cuando Bob recibe los fotones, los mide utilizando una de las dos bases, también elegida al azar. Posteriormente, Alice y Bob anuncian públicamente las bases que usaron para codificar y medir cada fotón. ' +
+            'Una clave se forma al conservar solo los bits para los cuales las bases de Alice y Bob coinciden. ' +
+            'Finalmente, al comparar un subconjunto de los bits de su clave, Alice y Bob pueden detectar la <link8>presencia de un espía</link8>, típicamente referido como Eve, y así garantizar la seguridad de su canal de comunicación cuántica. ' +
+            'Esto se debe a que, según los principios fundamentales de la mecánica cuántica, cualquier intento de Eve por interceptar y medir estos fotones <link7>perturbará su estado</link7>, introduciendo inconsistencias que Alice y Bob pueden detectar. ' +
+            'Si concluyen que el canal cuántico no ha sido comprometido, pueden usar la clave generada para enviar un mensaje de manera segura. De lo contrario, deben repetir el procedimiento.',
         'component.bb84.about.encryptionKey.title': 'Clave de cifrado ',
         'component.bb84.about.encryptionKey.part1': 'Una clave de cifrado es un código secreto (en bits) que protege la información transformándola a un formato ilegible. Solo las personas que poseen la clave de descifrado pueden restaurar el mensaje original. La clave de descifrado puede ser la misma (claves simétricas) o diferente (claves asimétricas). Por ejemplo, en un escenario de cifrado con clave simétrica, Alice y Bob comparten la clave de cifrado: 010010. Si Alice quiere enviar un mensaje confidencial a Bob, realiza una operación XOR bit a bit entre la clave y su mensaje. Así funciona la operación XOR para diferentes valores de bits: ',
         'component.bb84.about.encryptionKey.part2': 'Supongamos que el mensaje que Alice quiere enviar es 111000. La operación de cifrado genera la secuencia 101010, como se muestra en la siguiente tabla: ',
         'component.bb84.about.encryptionKey.part3': 'Esta secuencia se envía a Bob, quien, como la única otra persona que posee la clave, puede descifrar el mensaje realizando una operación XOR bit a bit entre el mensaje cifrado y la clave. ',
         'component.bb84.about.encryptionKey.message': 'Mensaje',
         'component.bb84.about.encryptionKey.key': 'Clave',
-        'component.bb84.about.encryptionKey.cypher': 'Message cifrado',
+        'component.bb84.about.encryptionKey.cypher': 'Mensaje cifrado',
         'component.bb84.about.photon.title': 'Fotón ',
         'component.bb84.about.photon': 'A menudo se dice que todo en el universo está compuesto de partículas, incluida la luz. De hecho, las partículas que componen la luz se llaman fotones, y son responsables de transportar la energía luminosa. El protocolo BB84 utiliza la polarización de los fotones para transmitir información en forma de bits (0 o 1). Esta propiedad cuántica esencial de las partículas de luz nos aporta un protocolo seguro. ',
         'component.bb84.about.publicPrivate.title': 'Canal público vs. Canal privado ',
-        'component.bb84.about.publicPrivate': 'Un canal público es un medio de comunicación en el que cualquiera puede potencialmente escuchar los mensajes intercambiados, como si hablaras en voz alta en una habitación llena de gente. Un canal privado, en cambio, garantiza que la comunicación se realice solo entre las partes interesadas sin posibilidad de interceptación, como una conversación en voz baja entre dos interlocutores donde nadie más puede escuchar. Como puede ser difícil garantizar la privacidad de un canal de comunicación, se utiliza la criptografía para hacer que los mensajes sean incomprensibles en un canal público, protegiendo así la confidencialidad de los datos.',
+        'component.bb84.about.publicPrivate': 'Un canal público es un medio de comunicación en el que cualquiera puede potencialmente escuchar los mensajes intercambiados, como si hablaras en voz alta en una habitación llena de gente. Un canal privado, en cambio, garantiza que la comunicación se realice solo entre las partes interesadas sin posibilidad de interceptación, como una conversación en voz baja entre dos interlocutores donde nadie más puede escuchar. Como garantizar la privacidad de un canal de comunicación puede ser un desafío, se utiliza la criptografía para hacer que los mensajes sean incomprensibles en un canal público, protegiendo así la confidencialidad de los datos. ',
         'component.bb84.about.classicalQuantum.title': 'Canal clásico vs canal cuántico ',
-        'component.bb84.about.classicalQuantum': 'Un canal clásico está diseñado para transmitir información clásica, como mensajes binarios o textuales. Transmitir información cuántica a través de un canal clásico presenta grandes desafíos de rendimiento debido al ruido introducido por la información clásica. En cambio, un canal cuántico está diseñado para transmitir información cuántica, como el estado de un fotón. Este canal conserva las propiedades cuánticas de la información, asegurando una alta probabilidad de que la información correcta se reciba intacta al otro lado. ',
+        'component.bb84.about.classicalQuantum': 'Un canal clásico está diseñado para transmitir información clásica, como mensajes binarios o textuales. Transmitir información cuántica a través de un canal clásico presenta grandes desafíos de rendimiento debido al ruido introducido por la información clásica. Por otro lado, un canal cuántico está diseñado para transmitir información cuántica, como el estado de un fotón. Este canal preserva las propiedades cuánticas de la información, asegurando una alta probabilidad de que la información correcta se reciba intacta al otro lado. ',
         'component.bb84.about.encoding.title': 'Codificación de un bit en un fotón',
         'component.bb84.about.encoding': 'La codificación de un bit en un fotón se refiere a cómo se utiliza la polarización de los fotones para representar bits (0 o 1). La polarización es una propiedad de los fotones que describe la dirección en la que oscila su campo eléctrico. En el protocolo BB84, esta polarización se usa para codificar bits eligiendo entre dos bases: la base + y la base x. En la base +, un fotón polarizado horizontalmente (↔) representa el bit 0, mientras que un fotón polarizado verticalmente (↕) representa el bit 1. En la base x, un fotón polarizado diagonalmente (⤢) representa el bit 0, y un fotón polarizado en la dirección diagonal opuesta (⤡) representa el bit 1. Alice codifica cada bit de esta manera antes de enviarlo a Bob. ',
-        'component.bb84.about.orthogonal.title': 'Base orthogonal ',
-        'component.bb84.about.orthogonal': 'En un plano cartesiano bidimensional, una base es un conjunto de dos vectores, v0 y v1​, que pueden representar cualquier vector en el plano como una combinación lineal de v0​ y v1​. Cuando v0​ y v1​ forman un ángulo de 90°, son ortogonales y crean una base ortogonal. Una base natural consiste en un vector alineado con el eje x y otro alineado con el eje y, conocida como la base + en el protocolo BB84. Al rotar los vectores de la base + a 45°, se obtiene la base x. Asociando los bits 0 y 1 con los vectores ortogonales de una base, Bob siempre mide el valor codificado por Alice cuando usan la misma base. Esto es una consecuencia del uso de una base ortogonal y de la regla de Born, que establece que la probabilidad de un resultado de medición corresponde al cuadrado de la componente del vector de polarización en esa base. Si las bases de Alice y Bob no coinciden, el vector de polarización del fotón enviado por Alice se expresa como una combinación lineal de los vectores de la base de medición de Bob. El resultado de la medición será entonces aleatorio. ',
+        'component.bb84.about.orthogonal.title': 'Base ortogonal ',
+        'component.bb84.about.orthogonal': 'En un plano cartesiano bidimensional, una base es un conjunto de dos vectores, v0 ​y v1​, que pueden representar cualquier vector en el plano como una combinación lineal de v0​ y v1​. Cuando v0​ y v1​ forman un ángulo de 90°, son ortogonales y crean una base ortogonal. Una base natural consiste en un vector alineado con el eje x y otro alineado con el eje y, conocida como la base + en el protocolo BB84. Al rotar los vectores de la base + a 45°, se obtiene la base x. Asociando los bits 0 y 1 con los vectores ortogonales de una base, Bob siempre mide el valor codificado por Alice cuando usan la misma base. Esto es una consecuencia del uso de una base ortogonal y de la regla de Born, que establece que la probabilidad de un resultado de medición corresponde al cuadrado de la componente del vector de polarización en esa base. Si las bases de Alice y Bob no coinciden, el vector de polarización del fotón enviado por Alice se expresa como una combinación lineal de los vectores de la base de medición de Bob. El resultado de la medición será entonces aleatorio.',
         'component.bb84.about.disturbance.title': 'Perturbación del estado por la medición',
         'component.bb84.about.disturbance': 'A menudo se dice que un sistema cuántico puede estar "en dos estados a la vez", es decir, en una superposición de estados. Esto significa que al medir el sistema, no se puede predecir cuál será el resultado, pero se conoce la probabilidad de cada posible resultado. Una vez que se realiza una medición, la superposición se destruye y el sistema colapsa al estado medido. Una nueva medición dará el mismo resultado. ',
         'component.bb84.about.eve.title': 'Detección de la presencia de Eve ',
@@ -865,7 +891,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.howToPlayTitle': 'Cómo jugar BB84',
         'component.bb84.howToPlayDescription': 'El protocolo BB84 tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +
-            ' diferentes. Aquí puedes explorar el conjunto de pasos que' +
+            ' diferentes. Aquí puedes explorar el set de pasos que' +
             ' cada uno de ellos debe seguir para completar el protocolo con éxito.',
         'component.bb84.steps.step1Alice': ' de 0s y 1s. Esta cadena se' +
             ' utilizará para construir la clave de cifrado.',
@@ -897,13 +923,13 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' juegos BB84 tienen un espía. Este próximo paso solo se aplica' +
             ' si hay uno en tu juego. ¡Lo descubrirás al final!',
         'component.bb84.rawKeyInfo': 'En este punto, usted posee la "clave' +
-            ' bruta", que se utilizará para detectar la presencia de un espía.',
+            ' bruta", que se utilizará para detectar la presencia de un' +
+            ' espía.',
         'component.bb84.steps.step1Bob': ' para medir cada uno de los' +
             ' fotones de Alice. Puedes elegir entre las bases + y x.',
         'component.bb84.steps.step2Bob': ' y toma nota de sus resultados.',
         'component.bb84.steps.step3Bob': ' con Alice.',
-        'component.bb84.steps.step4Bob': ' y descarte los bits donde las' +
-            ' bases no coincidan.',
+        'component.bb84.steps.step4Bob': ' y descartar los bits donde las bases no coincidan.',
         'component.bb84.steps.step5Bob': ' verificando que los bits' +
             ' seleccionados aleatoriamente de su clave sin procesar' +
             ' coincidan con los de Bob. Si coinciden, puede suponer que la' +
@@ -926,7 +952,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.howToPlayTitle': 'Cómo jugar E91',
         'component.e91.howToPlayDescription': 'El protocolo E91 tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +
-            ' diferentes. Aquí puedes explorar el conjunto de pasos que' +
+            ' diferentes. Aquí puedes explorar el set de pasos que' +
             ' cada uno de ellos debe seguir para completar el protocolo con éxito.',
         'component.e91.results.room': 'Sala',
         'component.e91.results.evePresent': 'Eve presente',
@@ -942,17 +968,17 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.highlights.highlight3': 'Extrae tu clave de cifrado',
         'component.e91.steps.step3': ' a partir de los resultados de medición obtenidos para pares de bases idénticas.',
         'component.e91.highlights.highlight4': 'Valida tu clave',
-        'component.e91.steps.step4': ' probando la desigualdad CHSH con las mediciones tomadas con' +
-            ' las otras combinaciones de bases.',
+        'component.e91.steps.step4': ' probando la desigualdad CHSH con las mediciones tomadas con las otras' +
+            ' combinaciones de bases.',
         'component.e91.highlights.highlight5Alice': 'Cifra y envía tu mensaje',
         'component.e91.steps.step5Alice': ' a Bob.',
         'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
         'component.e91.steps.step5Bob': ' usando tu clave.',  
-        'component.e91.about': 'El protocolo fue propuesto en 1991 por Artur Ekert. Implica a dos personas, Alice y Bob, que buscan establecer <link2>una clave de cifrado</link2> para comunicarse de manera segura a través de <link3>un canal público</link3>. En este protocolo, Alice y Bob reciben cada uno <link1>un fotón</link1> de una fuente que emite pares de fotones con <link4>polarizaciones</link4> <link5>máximamente entrelazadas</link5>: estos fotones forman lo que se conoce como <link6>pares de Bell</link6>. Para cada par, Alice mide la polarización de un fotón y Bob mide la del otro. Alice realiza cada medición eligiendo aleatoriamente <link7>una base</link7> del conjunto de tres bases {a, b, a′}. Bob hace lo mismo eligiendo entre las bases {b, a′, b′}. Entre estas bases, Alice y Bob comparten dos en común: b y a′.',
+        'component.e91.about': 'El protocolo fue propuesto en 1991 por Artur Ekert. Implica a dos personas, Alice y Bob, que buscan establecer <link2>una clave de cifrado</link2> para comunicarse de manera segura a través de <link3>un canal público</link3>. En este protocolo, Alice y Bob reciben cada uno <link1>un fotón</link1> de una fuente que emite pares de fotones con <link4>polarizaciones</link4> <link5>máximamente entrelazadas</link5>: estos fotones forman lo que se conoce como <link6>pares de Bell</link6>. Para cada par, la polarización de un fotón es medida por Alice y la del otro por Bob. Alice realiza cada medición eligiendo al azar <link7>una base</link7> del conjunto de tres bases {a, b, a′}. Bob hace lo mismo eligiendo entre las bases {b, a′, b′}. Entre estas bases, Alice y Bob comparten dos en común, b y a′.',
         'component.e91.about.part2': 'Bob hace lo mismo eligiendo entre las bases',
         'component.e91.about.part3': '. Entre estas bases, Alice y Bob comparten dos en común: ', 
-        'component.e91.about.figures.title': 'Figura de las Bases ',
-        'component.e91.about.figures.part1': 'Para cada medición, Alice y Bob registran el resultado: +1 o -1. Una vez completada la transmisión de los pares de fotones y realizadas las mediciones, Alice y Bob publican las bases de medición que utilizaron para cada fotón. Los resultados de las mediciones realizadas en la misma base se conservan para formar la clave de cifrado. Esto ocurre, en promedio, 2 de cada 9 veces: cuando Alice y Bob miden ambos en la base b o en la base a\'. Los resultados de las mediciones realizadas en bases diferentes se revelan y se usan para validar la seguridad de la fuente y del canal cuántico. Para esto, el protocolo E91 se basa en uno de los experimentos más destacados de la mecánica cuántica: la prueba de las desigualdades de Bell. Existen varias formulaciones de estas desigualdades, y el protocolo E91 utiliza específicamente la desigualdad CHSH. Alice y Bob trabajan únicamente con los resultados de las mediciones realizadas en las siguientes bases:',
+        'component.e91.about.figures.title': 'Figura de las Bases',
+        'component.e91.about.figures.part1': 'Para cada medición, Alice y Bob registran el resultado: +1 o -1. Una vez completada la transmisión de los pares de fotones y realizadas las mediciones, Alice y Bob divulgan las bases de medición que utilizaron para cada fotón. Los resultados de las mediciones realizadas en la misma base se conservan para formar la clave de cifrado. Esto ocurre, en promedio, 2 de cada 9 veces: cuando Alice y Bob ambos miden en la base b o en la base a\'. Los resultados de las mediciones realizadas en bases diferentes se revelan y se usan para validar la seguridad de la fuente y del canal cuántico. Para esto, el protocolo E91 se basa en uno de los experimentos más destacados de la mecánica cuántica: la prueba de las desigualdades de Bell. Existen varias formulaciones de estas desigualdades, y el protocolo E91 utiliza específicamente la desigualdad CHSH. Alice y Bob trabajan únicamente con los resultados de las mediciones realizadas en las siguientes bases:',
         'component.e91.about.figures.part2': 'En promedio, 4 de cada 9 pares de fotones se utilizan para verificar la desigualdad de CHSH. Para cada par de resultados derivados de las combinaciones de bases en la tabla anterior, Alice y Bob calculan el producto mA × mB, donde mA y mB son los resultados de la medición obtenidos por Alice y Bob, respectivamente. Luego, se calcula el promedio de los productos para cada combinación de bases. ',
         'component.e91.about.figures.part3': 'Como ejemplo, supongamos que Alice y Bob han realizado las siguientes mediciones: ',
         'component.e91.about.figures.part4': 'Los promedios se calculan como sigue: ',
@@ -963,7 +989,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.figures.noMeasurements': 'sin mediciones en este ejemplo',
         'component.e91.about.figures.part6': 'Cuando S se calcula a partir de fotones entrelazados, esta desigualdad no se cumple. De hecho, se puede demostrar que 𝑆 = 2√2 ≈ 2.83 para fotones máximamente entrelazados. Por lo tanto, si el emisor de pares de fotones es confiable y el canal de comunicación no produce ruido ni es espiado, Alice y Bob deberían observar que el valor de S tiende hacia 2√2 a medida que aumentan el número de pares de fotones considerados en sus cálculos. Luego podrán usar la clave obtenida para cifrar sus mensajes. Por el contrario, si este valor permanece por debajo de 2, no pueden confiar en la clave y deberían abstenerse de usarla. Tenga en cuenta que los valores promedio son cantidades estadísticas que requieren una gran muestra para ser significativos. Con un número limitado de muestras, pueden ocurrir anomalías estadísticas que dificulten sacar conclusiones confiables. ',
         'component.e91.about.figures.part7.1': 'Finalmente, observe que hay tres combinaciones de bases de medición que no se utilizan en el protocolo E91: ',
-        'component.e91.about.figures.part7.2': 'Las mediciones realizadas con estas combinaciones de bases simplemente se descartan. ',    
+        'component.e91.about.figures.part7.2': 'Las mediciones realizadas con estas combinaciones de bases simplemente se descartan. ',   
 
         // E91 definitions ES
         'component.e91.about.photon.title': 'Fotón',
@@ -979,10 +1005,20 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.polarization': 'La polarización describe la orientación en la que oscila una onda de luz (como un fotón). Imaginen una cuerda que vibra: puede vibrar verticalmente (↕), horizontalmente (↔), o diagonalmente (⤢). Para un fotón, la polarización es una propiedad cuántica fundamental que se mide para obtener resultados de +1 o -1.',
 
         'component.e91.about.maximallyEntangled.title': 'Máximamente entrelazadas',
-        'component.e91.about.maximallyEntangled': 'Dos partículas (o qubits) se dice que están "entrelazadas" cuando comparten un estado cuántico común: sus resultados de medición están correlacionados de tal manera que es imposible describirlas por separado, incluso a distancia. El "entrelazamiento máximo" se refiere a la correlación más fuerte posible entre los resultados de medición, lo que significa que los resultados están perfectamente correlacionados o anti-correlacionados dependiendo de la base elegida (medir una revela inmediatamente el resultado de la otra). El entrelazamiento máximo es esencial para garantizar la seguridad de los protocolos cuánticos: cualquier intento de intercepción altera estas correlaciones perfectas y puede ser detectado.',
+        'component.e91.about.maximallyEntangled.part1': 'Se dice que dos partículas (o qubits) están "entrelazadas" cuando comparten un estado cuántico común: los resultados de sus mediciones están correlacionados de tal manera que es imposible describirlas por separado, incluso a distancia. El "entrelazamiento máximo" se refiere a la correlación más fuerte posible entre los resultados de las mediciones, lo que significa que los resultados están perfectamente correlacionados o anti-correlacionados según la base elegida (medir una revela inmediatamente el resultado de la otra).',
+        'component.e91.about.maximallyEntangled.part2': 'Matemáticamente, un estado entrelazado máximo se escribe como una superposición donde cada resultado posible tiene la misma probabilidad: por ejemplo, para dos qubits, el estado',
+        'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.maximallyEntangled.part3': 'significa que las dos partículas son siempre idénticas (00 o 11), cada una con una probabilidad de 1/2. La "amplitud" 1/√2 asegura esta probabilidad igual.',
+        'component.e91.about.maximallyEntangled.part4': 'También existen estados entrelazados no máximos, donde las amplitudes no son iguales (por ejemplo, α|00⟩ + β|11⟩ con |α|² ≠ |β|²). En este caso, las correlaciones son más débiles y el estado es menos útil para la criptografía cuántica.',
+        'component.e91.about.maximallyEntangled.part5': 'El entrelazamiento máximo es esencial para garantizar la seguridad de los protocolos cuánticos: cualquier intento de interceptación altera estas correlaciones perfectas y puede ser detectado.',
 
         'component.e91.about.bellPairs.title': 'Pares de Bell',
-        'component.e91.about.bellPairs': 'Los pares de Bell son pares de qubits (partículas cuánticas, como fotones) preparados en uno de los cuatro estados de entrelazamiento cuántico máximo, llamados estados de Bell. Estos estados exhiben correlaciones perfectas, imposibles de reproducir con la física clásica, y son fundamentales para muchos protocolos de criptografía cuántica. Llevan el nombre del físico John Stewart Bell. En protocolos como E91, estos pares aseguran la seguridad a través del entrelazamiento máximo: cualquier intento de intercepción altera las correlaciones y puede ser detectado.',
+        'component.e91.about.bellPairs.part1': 'Los pares de Bell son pares de qubits (partículas cuánticas, como fotones) preparados en uno de los cuatro estados de entrelazamiento cuántico máximo, llamados estados de Bell. Estos estados muestran correlaciones perfectas, imposibles de reproducir con la física clásica, y son fundamentales para muchos protocolos de criptografía cuántica. Los cuatro estados de Bell son:',
+        'component.e91.about.bellPairs.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation2': '$$\\left|\\Phi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle - |11\\rangle)$$',
+        'component.e91.about.bellPairs.equation3': '$$\\left|\\Psi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle + |10\\rangle)$$',
+        'component.e91.about.bellPairs.equation4': '$$\\left|\\Psi^-\\right\\rangle = \\frac{1}{\\sqrt{2}} (|01\\rangle - |10\\rangle)$$',
+        'component.e91.about.bellPairs.part2': 'Llevan el nombre del físico John Stewart Bell. En protocolos como E91, estos pares aseguran la seguridad mediante el entrelazamiento máximo: cualquier intento de interceptación altera las correlaciones y puede ser detectado.',
 
         'component.e91.about.measurementBasis.title': 'Base de medición',
         'component.e91.about.measurementBasis': 'Una base de medición es un conjunto de orientaciones de referencia utilizadas para medir una propiedad cuántica, como la polarización de un fotón o el estado de un qubit. Es como elegir el ángulo de su "filtro polarizador". El resultado de la medición (por ejemplo, +1 o -1, o 0 o 1) depende de la base elegida. En protocolos como BB84 o E91, Alice y Bob eligen aleatoriamente sus bases (denotadas a, b, a′, b′, etc.).',
@@ -992,93 +1028,5 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.e91.about.chshInequality.title': 'Desigualdad CHSH',
         'component.e91.about.chshInequality': 'La desigualdad CHSH (Clauser, Horne, Shimony, Holt) es una versión específica y experimentalmente comprobable de las desigualdades de Bell. Se aplica a mediciones en dos qubits entrelazados, cada uno medido en dos bases diferentes. Según la física clásica, el valor del parámetro S calculado a partir de las correlaciones medidas no puede exceder 2. Sin embargo, la mecánica cuántica permite un valor máximo de 2√2, demostrando así la presencia de entrelazamiento y la ausencia de variables ocultas locales. En el protocolo E91, verificar esta desigualdad asegura la seguridad de la clave generada.',
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando' +
-            ' Eve está presente, y 10 en caso contrario.',
-        'component.homePage.protocolsSection.dps.description': 'El protocolo DPS utiliza' +
-            ' los principios de superposición e interferencia para establecer una clave de' +
-            ' cifrado compartida por Alice y Bob.',
-        'component.validation.gameRestarted' : 'El juego ha sido reiniciado.',
-        'component.game.playerLeft': '¡Habías dejado los juegos!',
-        'component.game.playerLeft.desc' : 'Serás redirigido a la página de inicio.',
-        'component.header.about.dps': 'Acerca de DPS',
-        'component.dps.howToPlayTitle': 'Cómo jugar DPS',
-        'component.dps.howToPlayDescription': 'Muy pronto.',
-        'component.dps.about.translationToCome' : 'Traducción al español en curso...',
-        'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
-        'component.dps.about.part1.1' : 'ou DPS pour ',
-        'component.dps.about.part1.2' : 'Differential phase shift',
-        'component.dps.about.part1.3' : 'est un protocole quantique permettant l\'établissement de clés de chiffrement.',
-        'component.dps.about.part2' : 'Contrairement aux protocoles BB84 et E91 qui encodent l\'information dans la polarisation des photons, le protocole DPS encode l\'information dans les phases d\'un train d\'impulsions. ',
-        'component.dps.about.part3' : 'Le protocole débute avec Alice qui envoie des photons uniques dans un dispositif comprenant trois trajets: ',
-        'component.dps.about.part4' : 'Dans ce montage, il y a la même différence de longueur entre les trajets ',
-        'component.dps.about.and' : ' et ',
-        'component.dps.about.part5' : ' qu\'entre les trajets ',
-        'component.dps.about.part6' : ' Ainsi, une impulsion passant par ',
-        'component.dps.about.part7' : ' acquiert un retard T par rapport à une impulsion passant par ',
-        'component.dps.about.part8' : 'Des miroirs semi-réfléchissants font en sorte que le photon a la même probabilité de passer par chacun des trois trajets. Une fois les trois trajets recombinés, le photon est dans un état de superposition ',
-        'component.dps.about.part9' : ' ou, de façon équivalente ',
-        'component.dps.about.with' : 'avec ',
-        'component.dps.about.part10' : ' qui correspond à la 1ere impulsion, ',
-        'component.dps.about.part11' : ' à la seconde impulsion, et ',
-        'component.dps.about.part12' : ' à la dernière impulsion du train. Pour chaque photon envoyé, Alice choisit 3 bits de façon aléatoire. Si le bit est 1, elle applique un déphasage de π à l\'impulsion correspondante et elle ne fait rien si le bit est 0.'+
-                                ' Pour les trois impulsions il y a 8 situations possibles, voyons quatre exemples  ',
-        'component.dps.about.impulsion' : 'impulsion',
-        'component.dps.about.part13' : 'On remarque que ',
-        'component.dps.about.part14' : ' on peut donc écrire l\'état du photon à l\'aide des bits ',
-        'component.dps.about.part15' : ' de la manière suivante ',
-        'component.dps.about.part16' : 'Le train d\'impulsions est ensuite envoyé à Bob dont le dispositif (un interféromètre) est le suivant  ',
-        'component.dps.about.part17' : 'Ici encore, la différence de longueur entre les trajets ',
-        'component.dps.about.part18' : ' est telle que le train d\'impulsions passant par le trajet ',
-        'component.dps.about.part19' : ' est retardé d\'un temps T par rapport au train passant par  ',
-        'component.dps.about.part20' : 'On peut donc représenter les états des trains d\'impulsions en entrée du dernier miroir semi-réfléchissant par les états ',
-        'component.dps.about.part21' : 'Prenons un exemple avec les bits ',
-        'component.dps.about.part22' : 'On aura alors les états suivants',
-        'component.dps.about.route' : 'Trajet',
-        'component.dps.about.part23' : 'Pour deux rayons incidents ',
-        'component.dps.about.part24' : ' comme illustré sur la figure suivante,',
-        'component.dps.about.part25' : 'on peut décrire l\'opérateur ',
-        'component.dps.about.part26' : ' associé au miroir semi-réfléchissant par la transformation',
-        'component.dps.about.where' : 'où ',
-        'component.dps.about.part27' : ' sont les amplitudes de probabilité associées aux états ',
-        'component.dps.about.part28' : ' respectivement.',
-        'component.dps.about.part29' : ' On obtient donc ',
-        'component.dps.about.part30' : 'En prenant les états ',
-        'component.dps.about.part31' : ' décrits précédemment, on peut donc calculer les états ' + 
-                        'qui résultent de l\'interférence des impulsions pour chaque temps ',
-        'component.dps.about.part32' : 'On remarque donc que si un photon est mesuré aux temps ',
-        'component.dps.about.or' : ' ou ',
-        'component.dps.about.part33' : 'il peut être détecté par le détecteur 0 ou le détecteur 1 avec ',
-        'component.dps.about.part34' : 'une probabilité de 50%',
-        'component.dps.about.part35' : ' puisque',
-        'component.dps.about.part36' : ' Si le photon est mesuré aux temps ',
-        'component.dps.about.part37' : ' les valeurs de ',
-        'component.dps.about.part38' : ' déterminent le détecteur qui sera activé. Dans le protocole DPS, seuls les photons mesurés aux temps ',
-        'component.dps.about.part39' : ' sont utilisés pour établir la clé, les photons mesurés aux temps',
-        'component.dps.about.part40' : ' sont rejetés',
-        'component.dps.about.part41' : 'Reprenons notre exemple où ',
-        'component.dps.about.part42' : ' On a alors les amplitudes de probabilité suivantes ',
-        'component.dps.about.part43' : 'De façon générale si ',
-        'component.dps.about.part44' : '(différence de phase de 0) et que le photon est détecté au temps ',
-        'component.dps.about.part45' : 'le détecteur 0 est activé et Bob enregistre le bit 0 pour sa clé. À l\'inverse, si ',
-        'component.dps.about.part46' : '(différence de phase de ',
-        'component.dps.about.part47' : ') et que le photon est détecté au temps ',
-        'component.dps.about.part48' : 'le détecteur 1 est activé et Bob enregistre le bit 1 pour sa clé.',
-        'component.dps.about.part49' : 'Si le photon est plutôt détecté au temps ',
-        'component.dps.about.part50' : 'alors Bob enregistre le bit 0 si ',
-        'component.dps.about.part51' : ' et le bit 1 dans le cas contraire.',
-        'component.dps.about.part52' : 'Maintenant qu\'on sait comment Bob peut établir la clé de chiffrement, il lui reste à communiquer à Alice de l\'information qui permettra à cette dernière d\'obtenir la même clé, sans toutefois que l\'information révélée permette à une personne externe de déduire cette clé.',
-        'component.dps.about.part53' : 'Tout ce que Bob a à faire, c\'est de transmettre à Alice les temps de détection de chacun des photons. Comme on vient de le voir, en connaissant le temps de détection et la valeur des bits ',
-        'component.dps.about.part54' : ' (Alice connait ces valeurs puisque c\'est elle qui les a générées), Alice peut savoir quel détecteur a mesuré le photon et donc, la clé de Bob!',
-        'component.dps.about.part55' : 'Voyons un exemple dans lequel Alice a reçu les temps de détection de 6 photons :',
-        'component.dps.about.photon' : 'Photon',
-        'component.dps.about.detectionTime' : 'Temps de détection',
-        'component.dps.about.keyBit' : 'Bit de la clé',
-        'component.dps.about.part56' : 'Les photons 1 et 5 (en gris) sont simplement rejetés car ils ont été détectés aux temps ',
-        'component.dps.about.part57' : 'respectivement. Le photon 2 a été détecté au temps ',
-        'component.dps.about.part58' : 'ce sont donc les impulsions modulées par les bits',
-        'component.dps.about.part59' :  ' qui ont interférées. Puisque la différence de phase est de π entre ces 2 impulsions, Alice enregistre le bit 1 pour sa clé. Pour le photon 3, Bob a annoncé le temps ',
-        'component.dps.about.part60' : 'ce sont donc les impulsions modulées par les bits ',
-        'component.dps.about.part61' : ' qui ont interférées. Puisqu\'aucun déphasage a été appliqué à ces impulsions, Alice enregistre le bit 0 pour sa clé. Vous pouvez faire l\'exercice avec les photons 4 et 6.',
     },
-    
 ];

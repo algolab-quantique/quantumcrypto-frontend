@@ -17,11 +17,17 @@ export default function E91() {
     const {localize} = useLanguage();
 
     const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
 
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
         tex: { packages: { '[+]': ['color'] } },
       };
+
+    // Ensure MathJax only renders on client side to avoid hydration errors
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const headerLinks = [
         {
@@ -119,12 +125,51 @@ export default function E91() {
         {
             id: '#maximally-entangled',
             title: localize('component.e91.about.maximallyEntangled.title'),
-            content: localize('component.e91.about.maximallyEntangled'),
+            content: (
+                <div className="space-y-4">
+                    <p>{localize('component.e91.about.maximallyEntangled.part1')}</p>
+                    
+                    <p>{localize('component.e91.about.maximallyEntangled.part2')}</p>
+                    
+                    {isClient && (
+                        <div className="text-center my-4">
+                            <MathJax>{localize('component.e91.about.maximallyEntangled.equation1')}</MathJax>
+                        </div>
+                    )}
+                    
+                    <p>{localize('component.e91.about.maximallyEntangled.part3')}</p>
+                    <p>{localize('component.e91.about.maximallyEntangled.part4')}</p>
+                    <p>{localize('component.e91.about.maximallyEntangled.part5')}</p>
+                </div>
+            ),
         },
         {
             id: '#bell-pairs',
             title: localize('component.e91.about.bellPairs.title'),
-            content: localize('component.e91.about.bellPairs'),
+            content: (
+                <div className="space-y-4">
+                    <p>{localize('component.e91.about.bellPairs.part1')}</p>
+                    
+                    {isClient && (
+                        <div className="space-y-2 my-4">
+                            <div className="text-center">
+                                <MathJax>{localize('component.e91.about.bellPairs.equation1')}</MathJax>
+                            </div>
+                            <div className="text-center">
+                                <MathJax>{localize('component.e91.about.bellPairs.equation2')}</MathJax>
+                            </div>
+                            <div className="text-center">
+                                <MathJax>{localize('component.e91.about.bellPairs.equation3')}</MathJax>
+                            </div>
+                            <div className="text-center">
+                                <MathJax>{localize('component.e91.about.bellPairs.equation4')}</MathJax>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <p>{localize('component.e91.about.bellPairs.part2')}</p>
+                </div>
+            ),
         },
         {
             id: '#measurement-basis',
@@ -273,63 +318,67 @@ export default function E91() {
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part4')}</p>
                         
                         {/* Mathematical equations */}
-                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
-                            <div className="space-y-4">
-                                <MathJax>
-                                    {`
-                                    \\[
-                                    E_{a,b} = \\frac{1 - 1 + 1}{3} = \\frac{1}{3} \\approx 0.33
-                                    \\]
-                                    `}
-                                </MathJax>
-                                <MathJax>
-                                    {`
-                                    \\[
-                                    E_{a',b} = \\frac{1 - 1}{2} = 0
-                                    \\]
-                                    `}
-                                </MathJax>
-                                <MathJax>
-                                    {`
-                                    \\[
-                                    E_{a',b'} = \\frac{1}{1} = 1
-                                    \\]
-                                    `}
-                                </MathJax>
-                                <div className="flex items-center justify-center space-x-2">
+                        {isClient && (
+                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
+                                <div className="space-y-4">
                                     <MathJax>
                                         {`
                                         \\[
-                                        E_{a,b'} = 0
+                                        E_{a,b} = \\frac{1 - 1 + 1}{3} = \\frac{1}{3} \\approx 0.33
                                         \\]
                                         `}
                                     </MathJax>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400 italic">
-                                        ({localize('component.e91.about.figures.noMeasurements')})
-                                    </span>
+                                    <MathJax>
+                                        {`
+                                        \\[
+                                        E_{a',b} = \\frac{1 - 1}{2} = 0
+                                        \\]
+                                        `}
+                                    </MathJax>
+                                    <MathJax>
+                                        {`
+                                        \\[
+                                        E_{a',b'} = \\frac{1}{1} = 1
+                                        \\]
+                                        `}
+                                    </MathJax>
+                                    <div className="flex items-center justify-center space-x-2">
+                                        <MathJax>
+                                            {`
+                                            \\[
+                                            E_{a,b'} = 0
+                                            \\]
+                                            `}
+                                        </MathJax>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400 italic">
+                                            ({localize('component.e91.about.figures.noMeasurements')})
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                         
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part5')}</p>
                         
                         {/* CHSH inequality equation */}
-                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
-                            <div className="mb-4">
-                                <MathJax>
-                                    {`
-                                    \\[
-                                    S = \\lvert E_{a,b} + E_{a',b} + E_{a',b'} - E_{a,b'} \\rvert \\leq 2
-                                    \\]
-                                    `}
-                                </MathJax>
+                        {isClient && (
+                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
+                                <div className="mb-4">
+                                    <MathJax>
+                                        {`
+                                        \\[
+                                        S = \\lvert E_{a,b} + E_{a',b} + E_{a',b'} - E_{a,b'} \\rvert \\leq 2
+                                        \\]
+                                        `}
+                                    </MathJax>
+                                </div>
+                                <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                    <p>{localize('component.e91.about.figures.chsh.classical')}</p>
+                                    <p>{localize('component.e91.about.figures.chsh.quantum')}</p>
+                                    <p>{localize('component.e91.about.figures.chsh.example')}</p>
+                                </div>
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                                <p>{localize('component.e91.about.figures.chsh.classical')}</p>
-                                <p>{localize('component.e91.about.figures.chsh.quantum')}</p>
-                                <p>{localize('component.e91.about.figures.chsh.example')}</p>
-                            </div>
-                        </div>
+                        )}
                         
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part6')}</p>
                         
@@ -383,7 +432,9 @@ export default function E91() {
                         >
                             <CardContent className="h-full flex flex-col overflow-y-auto">
                                 <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                                <p className="text-gray-400">{content}</p>
+                                <div className="text-gray-400">
+                                    {typeof content === 'string' ? <p>{content}</p> : content}
+                                </div>
                             </CardContent>
                         </Card>
                     ))}
