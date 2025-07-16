@@ -100,49 +100,41 @@ export default function DPS() {
     const parseLocalizedText = (text: string | undefined): string => {
         if (!text) return '';
 
-        let processedText = text
-            .replace('<link1>', `<a href="#cles-chiffrement" class="text-blue-500 hover:underline">`)
+        const processedText = text
+            .replace('<link1>', `<a href="#encryption-keys" class="text-blue-500 hover:underline">`)
             .replace('</link1>', `</a>`)
-            .replace('<link2>', `<a href="#polarisation" class="text-blue-500 hover:underline">`)
+            .replace('<link2>', `<a href="#polarization" class="text-blue-500 hover:underline">`)
             .replace('</link2>', `</a>`)
             .replace('<link3>', `<a href="#photons" class="text-blue-500 hover:underline">`)
             .replace('</link3>', `</a>`)
-            .replace('<link4>', `<a href="#phases" class="text-blue-500 hover:underline">`)
+            .replace('<link4>', `<a href="#phase" class="text-blue-500 hover:underline">`)
             .replace('</link4>', `</a>`)
-            .replace('<link5>', `<a href="#train-impulsions" class="text-blue-500 hover:underline">`)
+            .replace('<link5>', `<a href="#pulse-train" class="text-blue-500 hover:underline">`)
             .replace('</link5>', `</a>`)
-            .replace('<link6>', `<a href="#impulsion" class="text-blue-500 hover:underline">`)
+            .replace('<link6>', `<a href="#pulse" class="text-blue-500 hover:underline">`)
             .replace('</link6>', `</a>`)
-            .replace('<link7>', `<a href="#miroirs-semi-reflechissants" class="text-blue-500 hover:underline">`)
+            .replace('<link7>', `<a href="#beamsplitter" class="text-blue-500 hover:underline">`)
             .replace('</link7>', `</a>`)
-            .replace('<link8>', `<a href="#etat-superposition" class="text-blue-500 hover:underline">`)
+            .replace('<link8>', `<a href="#quantum-superposition" class="text-blue-500 hover:underline">`)
             .replace('</link8>', `</a>`)
-            .replace('<link9>', `<a href="#dephasage" class="text-blue-500 hover:underline">`)
+            .replace('<link9>', `<a href="#phase-shift" class="text-blue-500 hover:underline">`)
             .replace('</link9>', `</a>`)
-            .replace('<link10>', `<a href="#interferometre" class="text-blue-500 hover:underline">`)
+            .replace('<link10>', `<a href="#interferometer" class="text-blue-500 hover:underline">`)
             .replace('</link10>', `</a>`)
-            .replace('<link11>', `<a href="#operateur-unitaire" class="text-blue-500 hover:underline">`)
+            .replace('<link11>', `<a href="#unitary-operator" class="text-blue-500 hover:underline">`)
             .replace('</link11>', `</a>`);
-
-        // Add additional links for commonly mentioned terms that don't have link tags
-        processedText = processedText
-            .replace(/\bmiroirs semi-réfléchissants\b/g, `<a href="#miroirs-semi-reflechissants" class="text-blue-500 hover:underline">miroirs semi-réfléchissants</a>`)
-            .replace(/\bétat de superposition\b/g, `<a href="#etat-superposition" class="text-blue-500 hover:underline">état de superposition</a>`)
-            .replace(/\binterféromètre\b/g, `<a href="#interferometre" class="text-blue-500 hover:underline">interféromètre</a>`)
-            .replace(/\bdéphasage\b/g, `<a href="#dephasage" class="text-blue-500 hover:underline">déphasage</a>`)
-            .replace(/\btrain d'impulsions\b/g, `<a href="#train-impulsions" class="text-blue-500 hover:underline">train d'impulsions</a>`);
 
         return processedText;
     };
 
     const sections = [
         {
-            id: 'cles-chiffrement',
+            id: 'encryption-keys',
             title: localize('component.dps.about.cles-chiffrement.title'),
             content: localize('component.dps.about.cles-chiffrement'),
         },
         {
-            id: 'polarisation',
+            id: 'polarization',
             title: localize('component.dps.about.polarisation.title'),
             content: localize('component.dps.about.polarisation'),
         },
@@ -152,7 +144,7 @@ export default function DPS() {
             content: localize('component.dps.about.photons'),
         },
         {
-            id: 'phases',
+            id: 'phase',
             title: localize('component.dps.about.phases.title'),
             content: isClient ? (
                 <div className="space-y-4">
@@ -167,37 +159,37 @@ export default function DPS() {
             ) : null,
         },
         {
-            id: 'train-impulsions',
+            id: 'pulse-train',
             title: localize('component.dps.about.train-impulsions.title'),
             content: localize('component.dps.about.train-impulsions'),
         },
         {
-            id: 'impulsion',
+            id: 'pulse',
             title: localize('component.dps.about.impulsion_definition.title'),
             content: localize('component.dps.about.impulsion_definition.content'),
         },
         {
-            id: 'miroirs-semi-reflechissants',
+            id: 'beamsplitter',
             title: localize('component.dps.about.miroirs-semi-reflechissants.title'),
             content: localize('component.dps.about.miroirs-semi-reflechissants'),
         },
         {
-            id: 'etat-superposition',
+            id: 'quantum-superposition',
             title: localize('component.dps.about.etat-superposition.title'),
             content: localize('component.dps.about.etat-superposition'),
         },
         {
-            id: 'dephasage',
+            id: 'phase-shift',
             title: localize('component.dps.about.dephasage.title'),
             content: localize('component.dps.about.dephasage'),
         },
         {
-            id: 'interferometre',
+            id: 'interferometer',
             title: localize('component.dps.about.interferometre.title'),
             content: localize('component.dps.about.interferometre'),
         },
         {
-            id: 'operateur-unitaire',
+            id: 'unitary-operator',
             title: localize('component.dps.about.operateur-unitaire.title'),
             content: localize('component.dps.about.operateur-unitaire'),
         },
@@ -305,7 +297,7 @@ export default function DPS() {
                             {localize('component.dps.about.part11')}
             
                             <MathJax inline>{`\\( \\left| 2 \\right\\rangle \\)`}</MathJax>
-                            {localize('component.dps.about.part12')}
+                            <span dangerouslySetInnerHTML={{ __html: parseLocalizedText(localize('component.dps.about.part12')) }} />
                         </p>
                         <div className="mb-4 flex justify-center">
                             <table className="table-auto border-collapse border border-gray-300 text-center">
@@ -382,7 +374,7 @@ export default function DPS() {
                 </Card>
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
-                        <p className="text-lg mb-4">{localize('component.dps.about.part16')}</p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{ __html: parseLocalizedText(localize('component.dps.about.part16')) }} />
                         <div className='flex justify-center mb-4 mt-4'>
                             <LocalizedImage name="bob" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
                         </div>
@@ -486,11 +478,13 @@ export default function DPS() {
                                 alt="beamsplitter"
                             />
                         </div>
-                        <p className="text-lg mb-4">
-                            {localize('component.dps.about.part25')}
-                            <span className='italic font-bold'>U<sub>bs</sub></span>
-                            {localize('component.dps.about.part26')}
-                        </p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(
+                                localize('component.dps.about.part25') +
+                                '<span class="italic font-bold">U<sub>bs</sub></span>' +
+                                localize('component.dps.about.part26')
+                            )
+                        }} />
                         <MathJax className="text-lg mb-4">
                         {`\\[
                             U_{\\text{bs}} \\left| \\psi_{\\text{in}} \\right\\rangle = \\left| \\psi_{\\text{out}} \\right\\rangle
