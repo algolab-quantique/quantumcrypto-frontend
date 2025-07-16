@@ -103,7 +103,7 @@ Le train d'impulsions est ensuite envoyé à Bob dont le dispositif (un [interf�
 </picture>
 
 
-
+<!-- Todo: paragrph suivant me semble no claire-->
 Ici encore, la différence de longueur entre les trajets D et E est telle que le train d'impulsions passant par le trajet E est retardé d'un temps T par rapport au train passant par D. On peut donc représenter les états des trains d'impulsions en entrée du dernier miroir semi-réfléchissant par les états
 
 $$|\psi_D\rangle = \frac{1}{\sqrt{3}} ((-1)^{b_0}|0\rangle + (-1)^{b_1}|1\rangle + (-1)^{b_2}|2\rangle)$$
@@ -173,7 +173,7 @@ En prenant les états $|\psi_D\rangle$ et $|\psi_E\rangle$ décrits précédemme
 | T3 | 0 | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ | $\frac{1}{\sqrt{2}}(-1)^{b_2}$ |
 
 On remarque donc que si un photon est mesuré aux temps T0 ou T3, il peut être détecté par le détecteur 0 ou le détecteur 1 avec une probabilité de 50% puisque:
-
+<!-- math equation is not responsive in webpage -->
 $$\left(\frac{(-1)^{b_0}}{\sqrt{2}}\right)^2 = \left(\frac{-(-1)^{b_0}}{\sqrt{2}}\right)^2 = \left(\frac{(-1)^{b_2}}{\sqrt{2}}\right)^2 = \left(\frac{-(-1)^{b_2}}{\sqrt{2}}\right)^2 = \frac{1}{2}$$
 
 Si le photon est mesuré aux temps T1 ou T2 , les valeurs de $b_0$, $b_1$ et $b_2$ déterminent le détecteur qui sera activé. Dans le protocole DPS, seuls les photons mesurés aux temps T1 et T2 sont utilisés pour établir la clé, les photons mesurés aux temps T0 et T3 sont rejetés.
@@ -220,10 +220,54 @@ Les photons 1 et 5 (en gris) sont simplement rejetés car ils ont été détect�
 
 ## Comment jouer à DPS
 
-...
+Le protocole DPS implique deux acteurs principaux : Alice et Bob, qui jouent des rôles différents. Vous pouvez ici explorer l'ensemble des étapes que chacun d'eux doit suivre pour mener à bien le protocole.
 
 ### Alice
-...
+
+fini. regard bob aprs.
+### Bob
+
+1. **Configurez votre interféromètre** avec les deux détecteurs (DET0 et DET1) pour mesurer les interférences entre les impulsions des trains reçus.
+
+2. **Mesurez chaque photon** reçu et notez le temps de détection (T0, T1, T2, ou T3) ainsi que quel détecteur a été activé.
+
+3. **Communiquez publiquement** à Alice les temps de détection pour chaque photon (mais gardez secrets les résultats des détecteurs).
+
+4. **Rejetez les mesures** effectuées aux temps T0 et T3 car elles ne fournissent pas d'information exploitable pour la clé.
+
+5. **Construisez votre clé de chiffrement** en utilisant les mesures des temps T1 et T2 :
+   - DET0 activé = bit 0
+   - DET1 activé = bit 1
+
+6. **Déchiffrez le message d'Alice** en utilisant votre clé.
+
+---
+
+
+### Alice
+
+1. **Pour chaque photon à envoyer, générez une séquence aléatoire de 3 bits** (b₀, b₁, b₂). Ces bits serviront à encoder l’information sous forme de phase dans le train d’impulsions associé à ce photon.
+
+2. **Préparez le train d'impulsions** : appliquez un déphasage de π aux impulsions dont le bit est 1, et laissez inchangées celles dont le bit est 0.
+   
+3. **Envoyez le photon** à Bob via votre dispositif à trois trajets, qui crée automatiquement le train d'impulsions en superposition quantique préparé à l’étape 2.
+   
+4. **Attendez la réponse de Bob** : il vous communique le temps de détection pour chaque photon (T0, T1, T2 ou T3).
+   
+5. **Construisez votre clé** :
+   - Ignorez les photons détectés à T0 et T3.
+   - Pour T1 : si b₀ = b₁, le bit de clé est 0 ; sinon, le bit est 1.
+   - Pour T2 : si b₁ = b₂, le bit de clé est 0 ; sinon, le bit est 1.
+
+6. **Chiffrez et envoyez votre message** à Bob en utilisant la clé obtenue.
+---
 
 ### Bob
-...
+
+1. **Recevez chaque photon** et mesurez-le avec votre interféromètre.
+2. **Notez le temps de détection** (T0, T1, T2 ou T3) et quel détecteur (DET0 ou DET1) a été activé.
+3. **Communiquez à Alice** uniquement le temps de détection pour chaque photon.
+4. **Construisez votre clé** :
+   - Ignorez les photons détectés à T0 et T3.
+   - Pour T1 et T2 : DET0 activé = bit 0, DET1 activé = bit 1.
+
