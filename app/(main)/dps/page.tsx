@@ -525,7 +525,7 @@ export default function DPS() {
                             </span>                     
                             {localize('component.dps.about.and')}
                             <span className="text-3xl">
-                                <MathJax inline>{`\\( c = \\frac{a - b}{\\sqrt{2}} \\)`}</MathJax>.
+                                <MathJax inline>{`\\( d = \\frac{a - b}{\\sqrt{2}} \\)`}</MathJax>.
                             </span>
                         </p>
 
