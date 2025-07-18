@@ -218,13 +218,43 @@ Photons 1 and 5 (in gray) are simply discarded because they were detected at tim
 
 <a id="reference-1"></a>[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." [*PRL* 89.3 (2002): 037902](https://doi.org/10.1103/PhysRevLett.89.037902).
 
-## How to Play DPS
+Here are the English and Spanish translations in markdown:
 
-...
+---
+
+## How to play DPS
+
+The DPS protocol involves two main actors: Alice and Bob, who play different roles. Here you can explore the steps each must follow to successfully carry out the protocol.
 
 ### Alice
-...
+
+1. **For each photon to be sent, generate a random sequence of 3 bits** (b₀, b₁, b₂). These bits will be used to encode information as a phase in the pulse train associated with that photon.
+
+2. **Prepare the pulse train**: apply a phase shift of π to pulses where the bit is 1, and leave unchanged those where the bit is 0.
+
+3. **Send the photon** to Bob via your three-path device, which automatically creates the quantum superposition pulse train prepared in step 2.
+
+4. **Wait for Bob’s response**: he will communicate the detection time for each photon (T0, T1, T2, or T3).
+
+5. **Build your key**:
+   - Ignore photons detected at T0 and T3.
+   - For T1: if b₀ = b₁, the key bit is 0; otherwise, the bit is 1.
+   - For T2: if b₁ = b₂, the key bit is 0; otherwise, the bit is 1.
+
+6. **Encrypt and send your message** to Bob using the obtained key.
+
+---
 
 ### Bob
-...
 
+1. **Receive each photon** and measure it with your interferometer.
+
+2. **Note the detection time** (T0, T1, T2, or T3) and which detector (DET0 or DET1) was activated.
+
+3. **Publicly communicate** to Alice the detection times for each photon (but keep the detector results secret).
+
+4. **Build your encryption key using only the measurements at times T1 and T2**:
+   - DET0 activated = bit 0
+   - DET1 activated = bit 1
+
+5. **Decrypt Alice’s message** using your key.

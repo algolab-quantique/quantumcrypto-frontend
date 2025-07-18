@@ -218,13 +218,42 @@ Los fotones 1 y 5 (en gris) simplemente se descartan porque fueron detectados en
 
 <a id="reference-1"></a>[1] Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." [*PRL* 89.3 (2002): 037902](https://doi.org/10.1103/PhysRevLett.89.037902).
 
-## Cómo Jugar a DPS
 
-...
+## Cómo jugar a DPS
+
+El protocolo DPS implica dos actores principales: Alice y Bob, que desempeñan roles diferentes. Aquí puedes explorar los pasos que cada uno debe seguir para llevar a cabo el protocolo correctamente.
 
 ### Alice
-...
+
+1. **Para cada fotón que vas a enviar, genera una secuencia aleatoria de 3 bits** (b₀, b₁, b₂). Estos bits se usarán para codificar la información como una fase en el tren de pulsos asociado a ese fotón.
+
+2. **Prepara el tren de pulsos**: aplica un desfase de π a los pulsos cuyo bit sea 1, y deja sin cambios aquellos cuyo bit sea 0.
+
+3. **Envía el fotón** a Bob mediante tu dispositivo de tres trayectorias, que crea automáticamente el tren de pulsos en superposición cuántica preparado en el paso 2.
+
+4. **Espera la respuesta de Bob**: él te comunicará el tiempo de detección de cada fotón (T0, T1, T2 o T3).
+
+5. **Construye tu clave**:
+   - Ignora los fotones detectados en T0 y T3.
+   - Para T1: si b₀ = b₁, el bit de la clave es 0; si no, el bit es 1.
+   - Para T2: si b₁ = b₂, el bit de la clave es 0; si no, el bit es 1.
+
+6. **Cifra y envía tu mensaje** a Bob usando la clave obtenida.
+
+---
 
 ### Bob
-...
 
+1. **Recibe cada fotón** y mídelo con tu interferómetro.
+
+2. **Anota el tiempo de detección** (T0, T1, T2 o T3) y qué detector (DET0 o DET1) fue activado.
+
+3. **Comunica públicamente** a Alice los tiempos de detección de cada fotón (pero mantén en secreto los resultados de los detectores).
+
+4. **Construye tu clave de cifrado usando únicamente las mediciones en los tiempos T1 y T2**:
+   - DET0 activado = bit 0
+   - DET1 activado = bit 1
+
+5. **Descifra el mensaje de Alice** usando tu clave.
+
+---
