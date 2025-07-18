@@ -6,7 +6,7 @@
 import {LanguageItem} from '@/types';
 
 export const quantumcryptoLines: LanguageItem[] = [
-    {
+    {   // ... (English translations)
               'component.e91.about': 'The protocol was proposed in 1991 by Artur Ekert. It involves two distinct parties, Alice and Bob, who aim to establish <link2>an encryption key</link2> to securely communicate over <link3>a public channel</link3>. In this protocol, Alice and Bob each receive <link1>a photon</link1> from a source that emits pairs of photons with <link4>maximally entangled</link4> <link4>polarizations</link4>: these photons form what is known as <link6>Bell pairs</link6>. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing <link7>a basis</link7> from the set of three bases {a, b, a′}. Bob does the same, choosing from the bases {b, a′, b′}. Among these bases, Alice and Bob share two common bases, b and a′.', 'component.main.name': 'John',
         'component.header.howToPlay': 'How to play',
         'component.header.about': 'About QuantumCrypto',
@@ -311,10 +311,34 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.game.playerLeft': 'You\'ve quit the games!',
         'component.game.playerLeft.desc' : 'You will be redirected to the home page.',
         'component.header.about.dps': 'About DPS',
-        'component.dps.howToPlayTitle': 'How to play DPS',
-        'component.dps.howToPlayDescription': 'Coming soon!',
         'component.dps.about.translationToCome' : 'English translation in progress ibra hihihi...',
         
+        // DPS How to play En --------------------
+        'component.dps.howToPlayTitle': 'How to play DPS',
+        'component.dps.howToPlayDescription': 'The DPS protocol involves two main actors: Alice and Bob, who play different roles. Here you can explore the steps each must follow to successfully carry out the protocol.',
+        'component.dps.howToPlay.Alice.step1.part0': 'For each photon to be sent, generate a random sequence of 3 bits',
+        'component.dps.howToPlay.Alice.step1.part1': ' (b₀, b₁, b₂). These bits will be used to encode information as a phase in the pulse train associated with that photon.',
+        'component.dps.howToPlay.Alice.step2.part0': 'Prepare the pulse train',
+        'component.dps.howToPlay.Alice.step2.part1': ': apply a phase shift of π to pulses where the bit is 1, and leave unchanged those where the bit is 0.',
+        'component.dps.howToPlay.Alice.step3.part0': 'Send the photon',
+        'component.dps.howToPlay.Alice.step3.part1': ' to Bob via your three-path device, which automatically creates the quantum superposition pulse train prepared in step 2.',
+        'component.dps.howToPlay.Alice.step4.part0': 'Wait for Bob\'s response',
+        'component.dps.howToPlay.Alice.step4.part1': ': he will communicate the detection time for each photon (T0, T1, T2, or T3).',
+        'component.dps.howToPlay.Alice.step5.part0': 'Build your key',
+        'component.dps.howToPlay.Alice.step5.part1': ': Ignore photons detected at T0 and T3. For T1: if b₀ = b₁, the key bit is 0; otherwise, the bit is 1. For T2: if b₁ = b₂, the key bit is 0; otherwise, the bit is 1.',
+        'component.dps.howToPlay.Alice.step6.part0': 'Encrypt and send your message',
+        'component.dps.howToPlay.Alice.step6.part1': ' to Bob using the obtained key.',
+        'component.dps.howToPlay.Bob.step1.part0': 'Receive each photon',
+        'component.dps.howToPlay.Bob.step1.part1': ' and measure it with your interferometer.',
+        'component.dps.howToPlay.Bob.step2.part0': 'Note the detection time',
+        'component.dps.howToPlay.Bob.step2.part1': ' (T0, T1, T2, or T3) and which detector (DET0 or DET1) was activated.',
+        'component.dps.howToPlay.Bob.step3.part0': 'Publicly communicate',
+        'component.dps.howToPlay.Bob.step3.part1': ' to Alice the detection times for each photon (but keep the detector results secret).',
+        'component.dps.howToPlay.Bob.step4.part0': 'Build your encryption key using only the measurements at times T1 and T2',
+        'component.dps.howToPlay.Bob.step4.part1': ': DET0 activated = bit 0, DET1 activated = bit 1.',
+        'component.dps.howToPlay.Bob.step5.part0': 'Decrypt Alice\'s message',
+        'component.dps.howToPlay.Bob.step5.part1': ' using your key.',
+
         // DPS about (content) in EN
         'component.dps.about.part1.0' : 'The Differential <link9>Phase Shift</link9> (DPS) protocol',
         'component.dps.about.part1.1' : ' is a quantum protocol for establishing ',
@@ -747,16 +771,46 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.dps.about.operateur-unitaire.title': 'Opérateur unitaire',
         'component.dps.about.operateur-unitaire': 'Un opérateur unitaire est une transformation linéaire qui conserve la norme des vecteurs d\'état dans l\'espace de Hilbert. En mécanique quantique, l\'évolution d\'un système fermé est décrite par un opérateur unitaire, garantissant la conservation de la probabilité totale.',
-        
+        // DPS definitions FR end -------------------
+
         'component.validation.gameRestarted' : 'La partie a été redémarrée.',
         'component.game.playerLeft': 'Vous aviez quitter le jeux!',
         'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',
         'component.header.about.dps': 'À propos du protocole DPS',
-        'component.dps.howToPlayTitle': 'Comment jouer à DPS',
-        'component.dps.howToPlayDescription': 'À venir!',
         
+        // remove the next key + wher it is used in page.tsx
         'component.dps.about.translationToCome' : 'Traduction en cours...',
         
+        // DPS How to play fr --------------------
+        'component.dps.howToPlayTitle': 'Comment jouer à DPS',
+        'component.dps.howToPlayDescription': 'Le protocole DPS implique' +
+            ' deux acteurs principaux : Alice et Bob, qui jouent des rôles' +
+            ' différents. Vous pouvez ici explorer l\'ensemble des étapes' +
+            ' que chacun d\'eux doit suivre pour mener à bien le protocole.',
+        'component.dps.howToPlay.Alice.step1.part0': 'Pour chaque photon à envoyer, générez une séquence aléatoire de 3 bits',
+        'component.dps.howToPlay.Alice.step1.part1': ' (b₀, b₁, b₂). Ces bits serviront à encoder l\'information sous forme de phase dans le train d\'impulsions associé à ce photon.',
+        'component.dps.howToPlay.Alice.step2.part0': 'Préparez le train d\'impulsions',
+        'component.dps.howToPlay.Alice.step2.part1': ' : appliquez un déphasage de π aux impulsions dont le bit est 1, et laissez inchangées celles dont le bit est 0.',
+        'component.dps.howToPlay.Alice.step3.part0': 'Envoyez le photon',
+        'component.dps.howToPlay.Alice.step3.part1': ' à Bob via votre dispositif à trois trajets, qui crée automatiquement le train d\'impulsions en superposition quantique préparé à l\'étape 2.',
+        'component.dps.howToPlay.Alice.step4.part0': 'Attendez la réponse de Bob',
+        'component.dps.howToPlay.Alice.step4.part1': ' : il vous communique le temps de détection pour chaque photon (T0, T1, T2 ou T3).',
+        'component.dps.howToPlay.Alice.step5.part0': 'Construisez votre clé',
+        'component.dps.howToPlay.Alice.step5.part1': ' : Ignorez les photons détectés à T0 et T3. Pour T1 : si b₀ = b₁, le bit de clé est 0 ; sinon, le bit est 1. Pour T2 : si b₁ = b₂, le bit de clé est 0 ; sinon, le bit est 1.',
+        'component.dps.howToPlay.Alice.step6.part0': 'Chiffrez et envoyez votre message',
+        'component.dps.howToPlay.Alice.step6.part1': ' à Bob en utilisant la clé obtenue.',
+        'component.dps.howToPlay.Bob.step1.part0': 'Recevez chaque photon',
+        'component.dps.howToPlay.Bob.step1.part1': ' et mesurez-le avec votre interféromètre.',
+        'component.dps.howToPlay.Bob.step2.part0': 'Notez le temps de détection',
+        'component.dps.howToPlay.Bob.step2.part1': ' (T0, T1, T2 ou T3) et quel détecteur (DET0 ou DET1) a été activé.',
+        'component.dps.howToPlay.Bob.step3.part0': 'Communiquez publiquement',
+        'component.dps.howToPlay.Bob.step3.part1': ' à Alice les temps de détection pour chaque photon (mais gardez secrets les résultats des détecteurs).',
+        'component.dps.howToPlay.Bob.step4.part0': 'Construisez votre clé de chiffrement en utilisant uniquement les mesures des temps T1 et T2',
+        'component.dps.howToPlay.Bob.step4.part1': ' : DET0 activé = bit 0, DET1 activé = bit 1.',
+        'component.dps.howToPlay.Bob.step5.part0': 'Déchiffrez le message d\'Alice',
+        'component.dps.howToPlay.Bob.step5.part1': ' en utilisant votre clé.',
+
+        // DPS about FR --------------------
         'component.dps.about.part1.0' : 'Le protocole à déphasage différentiel ',
         'component.dps.about.part1.1' : 'ou DPS pour ',
         'component.dps.about.part1.2' : 'Differential phase shift',
@@ -1113,8 +1167,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         
         // DPS UI translations ES
         'component.header.about.dps': 'Acerca del protocolo DPS',
-        'component.dps.howToPlayTitle': 'Cómo jugar DPS',
-        'component.dps.howToPlayDescription': '¡Próximamente!',
         'component.dps.about.translationToCome' : 'Traducción en progreso...',
 
         // DPS definitions ES (cards reference for technical terms)
@@ -1153,6 +1205,32 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.dps.about.operateur-unitaire.title': 'Operador unitario',
         'component.dps.about.operateur-unitaire': 'Un operador unitario es una transformación lineal que conserva la norma de los vectores de estado en el espacio de Hilbert. En mecánica cuántica, la evolución de un sistema cerrado se describe mediante un operador unitario, garantizando la conservación de la probabilidad total.',
+
+        // DPS How to play Es --------------------
+        'component.dps.howToPlayTitle': 'Cómo jugar a DPS',
+        'component.dps.howToPlayDescription': 'El protocolo DPS implica dos actores principales: Alice y Bob, que desempeñan roles diferentes. Aquí puedes explorar los pasos que cada uno debe seguir para llevar a cabo el protocolo correctamente.',
+        'component.dps.howToPlay.Alice.step1.part0': 'Para cada fotón que vas a enviar, genera una secuencia aleatoria de 3 bits',
+        'component.dps.howToPlay.Alice.step1.part1': ' (b₀, b₁, b₂). Estos bits se usarán para codificar la información como una fase en el tren de pulsos asociado a ese fotón.',
+        'component.dps.howToPlay.Alice.step2.part0': 'Prepara el tren de pulsos',
+        'component.dps.howToPlay.Alice.step2.part1': ': aplica un desfase de π a los pulsos cuyo bit sea 1, y deja sin cambios aquellos cuyo bit sea 0.',
+        'component.dps.howToPlay.Alice.step3.part0': 'Envía el fotón',
+        'component.dps.howToPlay.Alice.step3.part1': ' a Bob mediante tu dispositivo de tres trayectorias, que crea automáticamente el tren de pulsos en superposición cuántica preparado en el paso 2.',
+        'component.dps.howToPlay.Alice.step4.part0': 'Espera la respuesta de Bob',
+        'component.dps.howToPlay.Alice.step4.part1': ': él te comunicará el tiempo de detección de cada fotón (T0, T1, T2 o T3).',
+        'component.dps.howToPlay.Alice.step5.part0': 'Construye tu clave',
+        'component.dps.howToPlay.Alice.step5.part1': ': Ignora los fotones detectados en T0 y T3. Para T1: si b₀ = b₁, el bit de la clave es 0; si no, el bit es 1. Para T2: si b₁ = b₂, el bit de la clave es 0; si no, el bit es 1.',
+        'component.dps.howToPlay.Alice.step6.part0': 'Cifra y envía tu mensaje',
+        'component.dps.howToPlay.Alice.step6.part1': ' a Bob usando la clave obtenida.',
+        'component.dps.howToPlay.Bob.step1.part0': 'Recibe cada fotón',
+        'component.dps.howToPlay.Bob.step1.part1': ' y mídelo con tu interferómetro.',
+        'component.dps.howToPlay.Bob.step2.part0': 'Anota el tiempo de detección',
+        'component.dps.howToPlay.Bob.step2.part1': ' (T0, T1, T2 o T3) y qué detector (DET0 o DET1) fue activado.',
+        'component.dps.howToPlay.Bob.step3.part0': 'Comunica públicamente',
+        'component.dps.howToPlay.Bob.step3.part1': ' a Alice los tiempos de detección de cada fotón (pero mantén en secreto los resultados de los detectores).',
+        'component.dps.howToPlay.Bob.step4.part0': 'Construye tu clave de cifrado usando únicamente las mediciones en los tiempos T1 y T2',
+        'component.dps.howToPlay.Bob.step4.part1': ': DET0 activado = bit 0, DET1 activado = bit 1.',
+        'component.dps.howToPlay.Bob.step5.part0': 'Descifra el mensaje de Alice',
+        'component.dps.howToPlay.Bob.step5.part1': ' usando tu clave.',
 
         // DPS about (content) in ES
         'component.dps.about.part1.0' : 'El protocolo de desplazamiento de fase diferencial ',
