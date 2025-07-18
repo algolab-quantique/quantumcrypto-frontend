@@ -311,7 +311,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.game.playerLeft': 'You\'ve quit the games!',
         'component.game.playerLeft.desc' : 'You will be redirected to the home page.',
         'component.header.about.dps': 'About DPS',
-        'component.dps.about.translationToCome' : 'English translation in progress ibra hihihi...',
         
         // DPS How to play En --------------------
         'component.dps.howToPlayTitle': 'How to play DPS',
@@ -778,9 +777,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.game.playerLeft.desc' : 'Vous allez être redirigé vers l\'accueil.',
         'component.header.about.dps': 'À propos du protocole DPS',
         
-        // remove the next key + wher it is used in page.tsx
-        'component.dps.about.translationToCome' : 'Traduction en cours...',
-        
         // DPS How to play fr --------------------
         'component.dps.howToPlayTitle': 'Comment jouer à DPS',
         'component.dps.howToPlayDescription': 'Le protocole DPS implique' +
@@ -1167,7 +1163,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         
         // DPS UI translations ES
         'component.header.about.dps': 'Acerca del protocolo DPS',
-        'component.dps.about.translationToCome' : 'Traducción en progreso...',
 
         // DPS definitions ES (cards reference for technical terms)
         'component.dps.about.cles-chiffrement.title': 'Clave de cifrado',
