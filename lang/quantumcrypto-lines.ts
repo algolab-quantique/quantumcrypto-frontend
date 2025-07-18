@@ -212,7 +212,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.highlights.highlight5Bob': 'Decrypt Alice\'s message',
         'component.e91.steps.step5Bob': ' using your key.',
         'component.e91.about.part1.0': 'The protocol was proposed in 1991 by Artur Ekert',
-        'component.e91.about.part1.1': '. It involves two distinct parties, Alice and Bob, who aim to establish an encryption key to securely communicate over a public channel. In this protocol, Alice and Bob each receive a photon from a source that emits pairs of photons with maximally entangled polarizations: these photons form what is known as Bell pairs. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing a basis from the set of three bases', 
+        'component.e91.about.part1.1': '. It involves two distinct parties, Alice and Bob, who aim to establish <link2>an encryption key</link2> to securely communicate over <link3>a public channel</link3>. In this protocol, Alice and Bob each receive <link1>a photon</link1> from a source that emits pairs of photons with <link4>maximally entangled</link4> <link4>polarizations</link4>: these photons form what is known as <link6>Bell pairs</link6>. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing <link7>a basis</link7> from the set of three bases', 
         'component.e91.about.part2': 'Bob does the same, choosing from the bases',
         'component.e91.about.part3': '. Among these bases, Alice and Bob share two common bases, ',
         'component.e91.about.figures.title': 'Figure of the Bases',
