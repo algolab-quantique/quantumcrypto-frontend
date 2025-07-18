@@ -224,28 +224,6 @@ Le protocole DPS implique deux acteurs principaux : Alice et Bob, qui jouent des
 
 ### Alice
 
-fini. regard bob aprs.
-### Bob
-
-1. **Configurez votre interféromètre** avec les deux détecteurs (DET0 et DET1) pour mesurer les interférences entre les impulsions des trains reçus.
-
-2. **Mesurez chaque photon** reçu et notez le temps de détection (T0, T1, T2, ou T3) ainsi que quel détecteur a été activé.
-
-3. **Communiquez publiquement** à Alice les temps de détection pour chaque photon (mais gardez secrets les résultats des détecteurs).
-
-4. **Rejetez les mesures** effectuées aux temps T0 et T3 car elles ne fournissent pas d'information exploitable pour la clé.
-
-5. **Construisez votre clé de chiffrement** en utilisant les mesures des temps T1 et T2 :
-   - DET0 activé = bit 0
-   - DET1 activé = bit 1
-
-6. **Déchiffrez le message d'Alice** en utilisant votre clé.
-
----
-
-
-### Alice
-
 1. **Pour chaque photon à envoyer, générez une séquence aléatoire de 3 bits** (b₀, b₁, b₂). Ces bits serviront à encoder l’information sous forme de phase dans le train d’impulsions associé à ce photon.
 
 2. **Préparez le train d'impulsions** : appliquez un déphasage de π aux impulsions dont le bit est 1, et laissez inchangées celles dont le bit est 0.
@@ -265,9 +243,13 @@ fini. regard bob aprs.
 ### Bob
 
 1. **Recevez chaque photon** et mesurez-le avec votre interféromètre.
-2. **Notez le temps de détection** (T0, T1, T2 ou T3) et quel détecteur (DET0 ou DET1) a été activé.
-3. **Communiquez à Alice** uniquement le temps de détection pour chaque photon.
-4. **Construisez votre clé** :
-   - Ignorez les photons détectés à T0 et T3.
-   - Pour T1 et T2 : DET0 activé = bit 0, DET1 activé = bit 1.
 
+2. **Notez le temps de détection** (T0, T1, T2 ou T3) et quel détecteur (DET0 ou DET1) a été activé.
+
+3. **Communiquez publiquement** à Alice les temps de détection pour chaque photon (mais gardez secrets les résultats des détecteurs).
+   
+4. **Construisez votre clé de chiffrement en utilisant uniquement les mesures des temps T1 et T2** :
+   - DET0 activé = bit 0
+   - DET1 activé = bit 1
+
+5. **Déchiffrez le message d'Alice** en utilisant votre clé.
