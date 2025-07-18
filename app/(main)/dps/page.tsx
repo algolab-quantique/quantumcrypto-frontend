@@ -472,6 +472,7 @@ export default function DPS() {
                             {localize('component.dps.about.part24')}
                         </p>
                         <div className='flex justify-center mb-4 mt-4'>
+                            {/* TODO: Black image background is white, similar to white image, so theme switching is barely noticeable - need to change maybe */}
                             <img
                                 key="beamsplitter"
                                 src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
