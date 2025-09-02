@@ -960,6 +960,7 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' criptográficas entre dos partes a través de un canal de' +
             ' comunicación inseguro.',
         'component.homePage.protocolsSection.e91.description': 'El protocolo E91 utiliza el entrelazamiento cuántico para garantizar la seguridad de las comunicaciones al permitir que las partes intercambien claves criptográficas inviolables.',
+        'component.homePage.protocolsSection.dps.description': 'El protocolo DPS utiliza los principios de superposición e interferencia para establecer una clave de cifrado compartida entre Alice y Bob.',
         'component.homePage.title.description': 'Aprende y practica' +
             ' protocolos de criptografía cuántica',
         'component.homePage.aboutSection': 'QuantumCrypto es una plataforma' +
