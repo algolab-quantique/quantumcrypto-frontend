@@ -219,11 +219,19 @@ export default function E91() {
                 <Card className='pt-4 pb-2 border-none mx-auto shadow-md mt-6'>
                     <CardContent>
                         <div className='flex justify-center mb-4 mt-4'>
-                            <img 
-                                src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
-                                alt="E91 Polarization measurement bases for Alice and Bob" 
-                                className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
-                            />
+                            {isClient ? (
+                                <img 
+                                    src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
+                                    alt="E91 Polarization measurement bases for Alice and Bob" 
+                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                />
+                            ) : (
+                                <img 
+                                    src="/images/e91_bases_white.png"
+                                    alt="E91 Polarization measurement bases for Alice and Bob" 
+                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                />
+                            )}
                         </div>
                         
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part1')}</p>

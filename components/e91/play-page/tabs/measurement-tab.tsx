@@ -31,6 +31,7 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
     const {measurePhotons, shareBases, shareBits} = useSocket();
     const { theme } = useTheme();
     const isDark = theme === "dark";
+    const [isClient, setIsClient] = useState(false);
     const {pushLines, setStep, setE91Tab} = useE91ProgressStore();
     const {
         evePresent,
@@ -52,6 +53,9 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [tooltipOpen, setTooltipOpen] = useState(false);
     
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
 
     const [basisInputs, setBasisInputs] = useState(() => {
@@ -193,11 +197,19 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                                     false)}
                                                 side='bottom'
                                                 className="border-secondary p-0">
-                                                <img 
-                                                    src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
-                                                    alt="Polarization bases" 
-                                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
-                                                />
+                                                {isClient ? (
+                                                    <img 
+                                                        src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
+                                                        alt="Polarization bases" 
+                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                                    />
+                                                ) : (
+                                                    <img 
+                                                        src="/images/e91_bases_white.png"
+                                                        alt="Polarization bases" 
+                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                                    />
+                                                )}
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>

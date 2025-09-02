@@ -74,7 +74,7 @@ export default function DPS() {
     const LocalizedImage = ({ name, localized = false, ...props }: LocalizedImageProps) => {
         const { language } = useLanguage();
         const lang = getLanguageCode(language);
-        const themeSuffix = !isDark ? 'wb' : 'bb';
+        const themeSuffix = isClient ? (isDark ? 'bb' : 'wb') : 'wb';
         
         const src = localized
             ? `/images/${name}_${themeSuffix}_${lang}.png`
@@ -463,11 +463,19 @@ export default function DPS() {
                         </p>
                         <div className='flex justify-center mb-4 mt-4'>
                             {/* TODO: Black image background is white, similar to white image, so theme switching is barely noticeable - need to change maybe */}
-                            <img
-                                key="beamsplitter"
-                                src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
-                                alt="beamsplitter"
-                            />
+                            {isClient ? (
+                                <img
+                                    key="beamsplitter"
+                                    src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
+                                    alt="beamsplitter"
+                                />
+                            ) : (
+                                <img
+                                    key="beamsplitter-fallback"
+                                    src="/images/beamsplitter_wb.png"
+                                    alt="beamsplitter"
+                                />
+                            )}
                         </div>
                         <div className="text-lg mb-4" dangerouslySetInnerHTML={{
                             __html: parseLocalizedText(

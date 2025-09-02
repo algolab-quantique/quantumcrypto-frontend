@@ -3,7 +3,7 @@
 import Header from '@/components/shared/header';
 import E91Main from '@/components/e91/home-page/e91-game-form';
 import Footer from '@/components/shared/footer';
-import {useRef} from 'react';
+import {useRef, useState, useEffect} from 'react';
 import HowToPlaySection from '@/components/e91/home-page/how-to-play-section';
 import {useLanguage} from '@/components/providers/language-provider';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
@@ -17,6 +17,11 @@ export default function E91() {
     const {localize} = useLanguage();
     const { theme } = useTheme();
     const isDark = theme === "dark";
+    const [isClient, setIsClient] = useState(false);
+    
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
@@ -71,11 +76,19 @@ export default function E91() {
                 <Card className='pt-4 pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
                         <div className='flex justify-center mb-4 mt-4'>
-                            <img 
-                                src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
-                                alt="Polarization bases" 
-                                className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
-                            />
+                            {isClient ? (
+                                <img 
+                                    src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
+                                    alt="Polarization bases" 
+                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                />
+                            ) : (
+                                <img 
+                                    src="/images/e91_bases_white.png"
+                                    alt="Polarization bases" 
+                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                />
+                            )}
                         </div>
                         <p className="text-lg mb-4">{localize('component.e91.about.figures.part1')}</p>
                         <div className="mb-4 flex justify-center">
