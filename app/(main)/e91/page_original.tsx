@@ -8,12 +8,15 @@ import HowToPlaySection from '@/components/e91/home-page/how-to-play-section';
 import {useLanguage} from '@/components/providers/language-provider';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTheme } from "next-themes";
 
 export default function E91() {
 
     const howToPlayRef = useRef(null);
     const aboutRef = useRef(null);
     const {localize} = useLanguage();
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
 
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
@@ -69,7 +72,7 @@ export default function E91() {
                     <CardContent>
                         <div className='flex justify-center mb-4 mt-4'>
                             <img 
-                                src="/images/e91-bases.png" 
+                                src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
                                 alt="Polarization bases" 
                                 className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
                             />
