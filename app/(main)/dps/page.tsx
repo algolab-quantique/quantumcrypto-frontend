@@ -210,10 +210,8 @@ export default function DPS() {
                             __html: parseLocalizedText(
                                 localize('component.dps.about.part1.0') +
                                 '<a href="#ref1" class="text-blue-500 hover:underline">[1]</a>' +
-                                ', ' +
                                 localize('component.dps.about.part1.1') +
-                                '<span class="italic font-bold">' + localize('component.dps.about.part1.2') + '</span>' +                            
-                                ', ' +
+                                localize('component.dps.about.part1.2') +
                                 localize('component.dps.about.part1.3')
                             )
                         }} />
