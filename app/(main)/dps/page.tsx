@@ -508,6 +508,7 @@ export default function DPS() {
                             <span>, </span>
                             <span className='italic font-bold'> c</span>
                             {localize('component.dps.about.and')}
+                            <span className='italic font-bold'> d</span>
                             {localize('component.dps.about.part27')}
                             <MathJax inline>{`\\( \\left| A \\right\\rangle \\)`}</MathJax>
                             <span>, </span>

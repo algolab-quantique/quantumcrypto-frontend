@@ -290,7 +290,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.impulsion_definition.content': 'A pulse is a brief emission of energy, often light, characterized by its duration, amplitude, and phase. In quantum optics, a pulse corresponds to a light wave packet, used to transmit information or interact with optical devices.',
 
         'component.dps.about.miroirs-semi-reflechissants.title': 'Semi-reflecting Mirror',
-        'component.dps.about.miroirs-semi-reflechissants': 'A semi-reflecting mirror (or beam splitter) is an optical component that divides a light beam in two: part is reflected, the other transmitted. For a single photon, the mirror creates a quantum superposition of the two possible paths, which is essential for interference experiments.',
+        'component.dps.about.miroirs-semi-reflechissants': 'A semi-reflecting mirror (or beam splitter) is an optical component that divides a light beam in two: one part is reflected, the other transmitted. For a single photon, the mirror creates a quantum superposition of the two possible paths, which is essential for interference experiments.',
 
         'component.dps.about.etat-superposition.title': 'Superposition State',
         'component.dps.about.etat-superposition': 'Quantum superposition is a fundamental principle of quantum mechanics whereby a system can be described by a linear combination of several eigenstates. This means the system is not in several states at once, but in a unique state that is a mathematical combination of possible states.',
