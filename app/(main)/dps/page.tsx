@@ -831,7 +831,7 @@ export default function DPS() {
                 <div id="ref1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
                     <h3 className="font-semibold text-lg mb-2">Référence</h3>
                     <p className="text-sm">
-                        <strong>[1]</strong> Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." 
+                        <strong>[1]</strong> Inoue K, Waks E, Yamamoto Y. &quot;Differential phase shift quantum key distribution.&quot; 
                         <em> PRL</em> 89.3 (2002): 037902.
                         <a 
                             href="https://doi.org/10.1103/PhysRevLett.89.037902" 
