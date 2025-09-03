@@ -141,7 +141,9 @@ export default function E91() {
                     )}
                     
                     <p>{localize('component.e91.about.maximallyEntangled.part3')}</p>
-                    <p>{localize('component.e91.about.maximallyEntangled.part4')}</p>
+                    <p>
+                        <MathJax dynamic>{localize('component.e91.about.maximallyEntangled.part4')}</MathJax>
+                    </p>
                     <p>{localize('component.e91.about.maximallyEntangled.part5')}</p>
                 </div>
             ),

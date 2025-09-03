@@ -246,7 +246,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.maximallyEntangled.part2': 'Mathematically, a maximally entangled state is written as a superposition where each possible outcome has the same probability: for example, for two qubits, the state',
         'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
         'component.e91.about.maximallyEntangled.part3': 'means the two particles are always identical (00 or 11), each with a probability of 1/2. The "amplitude" 1/√2 ensures this equal probability.',
-        'component.e91.about.maximallyEntangled.part4': 'There are also non-maximally entangled states, where the amplitudes are not equal (for example, α|00⟩ + β|11⟩ with |α|² ≠ |β|²). In this case, the correlations are weaker and the state is less useful for quantum cryptography.',
+    'component.e91.about.maximallyEntangled.part4': 'There are also non-maximally entangled states, where the amplitudes are not equal (for example, \\(\\alpha \\lvert 00 \\rangle + \\beta \\lvert 11 \\rangle\\) with \\(\\lvert\\alpha\\rvert^{2} \\neq \\lvert\\beta\\rvert^{2}\\)). In this case, the correlations are weaker and the state is less useful for quantum cryptography.',
         'component.e91.about.maximallyEntangled.part5': 'Maximal entanglement is essential to guarantee the security of quantum protocols: any attempt at interception alters these perfect correlations and can be detected.',
 
         'component.e91.about.bellPairs.title': 'Bell Pairs',
@@ -711,7 +711,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.maximallyEntangled.part2': 'Mathématiquement, un état d\'intrication maximale s\'écrit sous la forme d\'une superposition où chaque résultat possible a la même probabilité : par exemple, pour deux qubits, l\'état',
         'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
         'component.e91.about.maximallyEntangled.part3': 'signifie que les deux particules sont toujours identiques (00 ou 11), chacune avec une probabilité de 1/2. L\'« amplitude » 1/√2 assure cette probabilité égale.',
-        'component.e91.about.maximallyEntangled.part4': 'Il existe aussi des états intriqués non maximaux, où les amplitudes ne sont pas égales (par exemple, α|00⟩ + β|11⟩ avec |α|² ≠ |β|²). Dans ce cas, les corrélations sont plus faibles et l\'état n\'est pas aussi utile pour la cryptographie quantique.',
+    'component.e91.about.maximallyEntangled.part4': 'Il existe aussi des états intriqués non maximaux, où les amplitudes ne sont pas égales (par exemple, \\(\\alpha \\lvert 00 \\rangle + \\beta \\lvert 11 \\rangle\\) avec \\(\\lvert\\alpha\\rvert^{2} \\neq \\lvert\\beta\\rvert^{2}\\)). Dans ce cas, les corrélations sont plus faibles et l\'état n\'est pas aussi utile pour la cryptographie quantique.',
         'component.e91.about.maximallyEntangled.part5': 'L\'intrication maximale est essentielle pour garantir la sécurité des protocoles quantiques : toute tentative d\'interception modifie ces corrélations parfaites et peut être détectée.',
 
         'component.e91.about.bellPairs.title': 'Paires de Bell',
@@ -1137,7 +1137,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.about.maximallyEntangled.part2': 'Matemáticamente, un estado entrelazado máximo se escribe como una superposición donde cada resultado posible tiene la misma probabilidad: por ejemplo, para dos qubits, el estado',
         'component.e91.about.maximallyEntangled.equation1': '$$\\left|\\Phi^+\\right\\rangle = \\frac{1}{\\sqrt{2}} (|00\\rangle + |11\\rangle)$$',
         'component.e91.about.maximallyEntangled.part3': 'significa que las dos partículas son siempre idénticas (00 o 11), cada una con una probabilidad de 1/2. La "amplitud" 1/√2 asegura esta probabilidad igual.',
-        'component.e91.about.maximallyEntangled.part4': 'También existen estados entrelazados no máximos, donde las amplitudes no son iguales (por ejemplo, α|00⟩ + β|11⟩ con |α|² ≠ |β|²). En este caso, las correlaciones son más débiles y el estado es menos útil para la criptografía cuántica.',
+    'component.e91.about.maximallyEntangled.part4': 'También existen estados entrelazados no máximos, donde las amplitudes no son iguales (por ejemplo, \\(\\alpha \\lvert 00 \\rangle + \\beta \\lvert 11 \\rangle\\) con \\(\\lvert\\alpha\\rvert^{2} \\neq \\lvert\\beta\\rvert^{2}\\)). En este caso, las correlaciones son más débiles y el estado es menos útil para la criptografía cuántica.',
         'component.e91.about.maximallyEntangled.part5': 'El entrelazamiento máximo es esencial para garantizar la seguridad de los protocolos cuánticos: cualquier intento de interceptación altera estas correlaciones perfectas y puede ser detectado.',
 
         'component.e91.about.bellPairs.title': 'Pares de Bell',
