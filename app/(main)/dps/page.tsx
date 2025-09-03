@@ -225,12 +225,6 @@ export default function DPS() {
                         <div className="text-lg mb-4" dangerouslySetInnerHTML={{
                             __html: parseLocalizedText(localize('component.dps.about.part3'))
                         }} />
-                        <div className="text-lg mb-4">
-                            <span className='italic font-bold'>A,</span>
-                            <span className='italic font-bold'> B</span>
-                            {localize('component.dps.about.and')}
-                            <span className='italic font-bold'> C</span>
-                        </div>
                         <div className='flex justify-center mb-4 mt-4'>
                             <LocalizedImage name="alice" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
                         </div>
