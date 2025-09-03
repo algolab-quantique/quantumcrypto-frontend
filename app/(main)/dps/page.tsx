@@ -122,7 +122,7 @@ export default function DPS() {
         {
             id: 'encryption-keys',
             title: localize('component.dps.about.cles-chiffrement.title'),
-            content: localize('component.dps.about.cles-chiffrement'),
+            content: localize('component.e91.about.encryptionKey'),
         },
         {
             id: 'polarization',
