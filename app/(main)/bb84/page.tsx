@@ -92,7 +92,7 @@ export default function BB84() {
         {
             id: '#photon',
             title: localize('component.bb84.about.photon.title'),
-            content: localize('component.bb84.about.photon'),
+            content: localize('component.e91.about.photon'),
         },
         {
             id: '#encryption-key',
@@ -142,12 +142,13 @@ export default function BB84() {
                     <h1 className="font-bold text-3xl md:text-5xl mb-4">
                         {localize('component.bb84.aboutTitle')}
                     </h1>
-                    <p
-                        className="mb-4 text-lg text-gray-400"
-                        dangerouslySetInnerHTML={{
-                            __html: parseLocalizedText(localize('component.bb84.about') ?? ''),
-                        }}
-                    />
+                    <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                        __html: parseLocalizedText(
+                            localize('component.bb84.about.part1') +
+                            ' <a href="#ref1" class="text-blue-500 hover:underline">[1]</a>' +
+                            localize('component.bb84.about.part2')
+                        )
+                    }} />
                 </Card>
                 <div className="pt-8 grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {sections.map(({id, title, content}) => (
@@ -244,6 +245,15 @@ export default function BB84() {
                             </CardContent>
                         </Card>
                     ))}
+                </div>
+            </section>
+            {/* Reference section (mirroring DPS style) */}
+            <section className="w-full h-fit mt-20 px-5 md:px-20" id="references">
+                <div id="ref1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+                    <h3 className="font-semibold text-lg mb-2">Référence</h3>
+                    <p className="text-sm">
+                        <strong>[1]</strong> Bennett C H, Brassard G. "Quantum cryptography: Public key distribution and coin tossing." In <em>Proceedings of the IEEE International Conference on Computers, Systems and Signal Processing</em>, Bangalore, India, 1984, pp. 175-179.
+                    </p>
                 </div>
             </section>
             <Footer/>

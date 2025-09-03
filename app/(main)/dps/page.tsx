@@ -9,7 +9,7 @@ import HowToPlaySection from '@/components/dps/home-page/how-to-play-section';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from "next-themes";
-import { getLanguageCode } from '@/lib/utils';
+import { cn, getLanguageCode } from '@/lib/utils';
 
 
 
@@ -21,7 +21,50 @@ export default function DPS() {
     const { theme } = useTheme();
     const isDark = theme === "dark";
 
-    
+    const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    // Ensure MathJax only renders on client side to avoid hydration errors
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const scrollToSection = (id: string) => {
+        const elementId = id.startsWith('#') ? id.substring(1) : id;
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.scrollIntoView({behavior: 'smooth', block: 'start'});
+            setActiveSection(elementId); // Trigger glow effect
+        }
+    };
+
+    useEffect(() => {
+        const handleLinkClick = (event: MouseEvent) => {
+            const target = (event.target as HTMLElement).closest('a[href]');
+            if (target) {
+                const sectionId = target.getAttribute('href');
+                if (sectionId && sectionId.startsWith('#')) {
+                    event.preventDefault();
+                    scrollToSection(sectionId);
+                }
+            }
+        };
+
+        // Attach event listener to the document
+        document.addEventListener('click', handleLinkClick);
+
+        return () => {
+            document.removeEventListener('click', handleLinkClick);
+        };
+    }, []);
+
+    // Remove highlight after 2 seconds
+    useEffect(() => {
+        if (activeSection) {
+            const timer = setTimeout(() => setActiveSection(null), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [activeSection]);
 
     interface LocalizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
     name: string;
@@ -31,7 +74,7 @@ export default function DPS() {
     const LocalizedImage = ({ name, localized = false, ...props }: LocalizedImageProps) => {
         const { language } = useLanguage();
         const lang = getLanguageCode(language);
-        const themeSuffix = !isDark ? 'wb' : 'bb';
+        const themeSuffix = isClient ? (isDark ? 'bb' : 'wb') : 'wb';
         
         const src = localized
             ? `/images/${name}_${themeSuffix}_${lang}.png`
@@ -40,19 +83,108 @@ export default function DPS() {
         return <img src={src} alt={name} {...props} />;
     };
 
-    const WarningMessage = () => {
-        const { language } = useLanguage();
-        const msg = (language === 1)  // French
-            ? ''
-            : localize('component.dps.about.translationToCome');  // English or Spanish
-
-        return msg
-    };
-
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
         tex: { packages: { '[+]': ['color'] } },
     };
+
+    const parseLocalizedText = (text: string | undefined): string => {
+        if (!text) return '';
+
+        const processedText = text
+            .replace('<link1>', `<a href="#encryption-keys" class="text-blue-500 hover:underline">`)
+            .replace('</link1>', `</a>`)
+            .replace('<link2>', `<a href="#polarization" class="text-blue-500 hover:underline">`)
+            .replace('</link2>', `</a>`)
+            .replace('<link3>', `<a href="#photons" class="text-blue-500 hover:underline">`)
+            .replace('</link3>', `</a>`)
+            .replace('<link4>', `<a href="#phase" class="text-blue-500 hover:underline">`)
+            .replace('</link4>', `</a>`)
+            .replace('<link5>', `<a href="#pulse-train" class="text-blue-500 hover:underline">`)
+            .replace('</link5>', `</a>`)
+            .replace('<link6>', `<a href="#pulse" class="text-blue-500 hover:underline">`)
+            .replace('</link6>', `</a>`)
+            .replace('<link7>', `<a href="#beamsplitter" class="text-blue-500 hover:underline">`)
+            .replace('</link7>', `</a>`)
+            .replace('<link8>', `<a href="#quantum-superposition" class="text-blue-500 hover:underline">`)
+            .replace('</link8>', `</a>`)
+            .replace('<link9>', `<a href="#phase-shift" class="text-blue-500 hover:underline">`)
+            .replace('</link9>', `</a>`)
+            .replace('<link10>', `<a href="#interferometer" class="text-blue-500 hover:underline">`)
+            .replace('</link10>', `</a>`)
+            .replace('<link11>', `<a href="#unitary-operator" class="text-blue-500 hover:underline">`)
+            .replace('</link11>', `</a>`);
+
+        return processedText;
+    };
+
+    const sections = [
+        {
+            id: 'encryption-keys',
+            title: localize('component.dps.about.cles-chiffrement.title'),
+            content: localize('component.e91.about.encryptionKey'),
+        },
+        {
+            id: 'polarization',
+            title: localize('component.dps.about.polarisation.title'),
+            content: localize('component.dps.about.polarisation'),
+        },
+        {
+            id: 'photons',
+            title: localize('component.dps.about.photons.title'),
+            content: localize('component.e91.about.photon'),
+        },
+        {
+            id: 'phase',
+            title: localize('component.dps.about.phases.title'),
+            content: isClient ? (
+                <div className="space-y-4">
+                    <p>{localize('component.dps.about.phases.part1')}</p>
+                    
+                    <div className="text-center my-4">
+                        <MathJax>{localize('component.dps.about.phases.equation')}</MathJax>
+                    </div>
+                    
+                    <p>{localize('component.dps.about.phases.part2')}</p>
+                </div>
+            ) : null,
+        },
+        {
+            id: 'pulse-train',
+            title: localize('component.dps.about.train-impulsions.title'),
+            content: localize('component.dps.about.train-impulsions'),
+        },
+        {
+            id: 'pulse',
+            title: localize('component.dps.about.impulsion_definition.title'),
+            content: localize('component.dps.about.impulsion_definition.content'),
+        },
+        {
+            id: 'beamsplitter',
+            title: localize('component.dps.about.miroirs-semi-reflechissants.title'),
+            content: localize('component.dps.about.miroirs-semi-reflechissants'),
+        },
+        {
+            id: 'quantum-superposition',
+            title: localize('component.dps.about.etat-superposition.title'),
+            content: localize('component.dps.about.etat-superposition'),
+        },
+        {
+            id: 'phase-shift',
+            title: localize('component.dps.about.dephasage.title'),
+            content: localize('component.dps.about.dephasage'),
+        },
+        {
+            id: 'interferometer',
+            title: localize('component.dps.about.interferometre.title'),
+            content: localize('component.dps.about.interferometre'),
+        },
+        {
+            id: 'unitary-operator',
+            title: localize('component.dps.about.operateur-unitaire.title'),
+            content: localize('component.dps.about.operateur-unitaire'),
+        },
+    ];
 
     const headerLinks = [
         {
@@ -74,58 +206,57 @@ export default function DPS() {
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
                         <h1 className="font-bold text-3xl md:text-5xl mb-4">{localize('component.header.about.dps')}</h1>
-                        <h2 className="text-2xl font-bold mb-4 text-highlight">{WarningMessage()}</h2>
-                        <p className="text-lg mb-4">
-                            {localize('component.dps.about.part1.0')}
-                            <a href="#ref1" className="text-blue-500 hover:underline">[1]</a>
-                            <span>, </span>
-                            {localize('component.dps.about.part1.1')}
-                            <span className='italic font-bold'>{localize('component.dps.about.part1.2')}</span>                            
-                            <span>, </span>
-                            {localize('component.dps.about.part1.3')}
-
-                        </p>
-                        <p className="text-lg mb-4">
-                            {localize('component.dps.about.part2')}
-                        </p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(
+                                localize('component.dps.about.part1.0') +
+                                '<a href="#ref1" class="text-blue-500 hover:underline">[1]</a>' +
+                                localize('component.dps.about.part1.1') +
+                                localize('component.dps.about.part1.2') +
+                                localize('component.dps.about.part1.3')
+                            )
+                        }} />
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(localize('component.dps.about.part2'))
+                        }} />
                     </CardContent>   
                 </Card>
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
-                        <p className="text-lg mb-4">
-                            {localize('component.dps.about.part3')}
-                            <span className='italic font-bold'>A,</span>
-                            <span className='italic font-bold'> B</span>
-                            {localize('component.dps.about.and')}
-                            <span className='italic font-bold'> C</span>
-                        </p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(localize('component.dps.about.part3'))
+                        }} />
                         <div className='flex justify-center mb-4 mt-4'>
                             <LocalizedImage name="alice" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
                         </div>
-                        <p className="text-lg mb-4">{localize('component.dps.about.part4')}
-                            <span className='italic font-bold'>A</span>
-                            {localize('component.dps.about.and')}
-                            <span className='italic font-bold'> B</span>
-                            {localize('component.dps.about.part5')}
-                            <span className='italic font-bold'>B</span>
-                            {localize('component.dps.about.and')}
-                            <span className='italic font-bold'> C. </span> 
-                            {localize('component.dps.about.part6')}
-                            <span className='italic font-bold'> B </span>
-                            <span> &#40; </span>
-                            <span className='italic font-bold'> C </span> 
-                            <span> &#41; </span> 
-                            {localize('component.dps.about.part7')}
-                            <span className='italic font-bold'> A</span>
-                            <span> &#40; </span>
-                            <span className='italic font-bold'> B </span> 
-                            <span> &#41;. </span> 
-                        </p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(
+                                localize('component.dps.about.part4') +
+                                '<span class="italic font-bold">A</span>' +
+                                localize('component.dps.about.and') +
+                                '<span class="italic font-bold"> B</span>' +
+                                localize('component.dps.about.part5') +
+                                '<span class="italic font-bold">B</span>' +
+                                localize('component.dps.about.and') +
+                                '<span class="italic font-bold"> C. </span>' +
+                                localize('component.dps.about.part6') +
+                                '<span class="italic font-bold"> B </span>' +
+                                '<span> &#40; </span>' +
+                                '<span class="italic font-bold"> C </span>' +
+                                '<span> &#41; </span>' +
+                                localize('component.dps.about.part7') +
+                                '<span class="italic font-bold"> A</span>' +
+                                '<span> &#40; </span>' +
+                                '<span class="italic font-bold"> B </span>' +
+                                '<span> &#41;. </span>'
+                            )
+                        }} />
                     </CardContent>
                 </Card>
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
-                        <p className="text-lg mb-4">{localize('component.dps.about.part8')}</p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(localize('component.dps.about.part8'))
+                        }} />
 
                         <MathJax className="text-lg mb-4">
                             {`\\[
@@ -148,7 +279,7 @@ export default function DPS() {
                             {localize('component.dps.about.part11')}
             
                             <MathJax inline>{`\\( \\left| 2 \\right\\rangle \\)`}</MathJax>
-                            {localize('component.dps.about.part12')}
+                            <span dangerouslySetInnerHTML={{ __html: parseLocalizedText(localize('component.dps.about.part12')) }} />
                         </p>
                         <div className="mb-4 flex justify-center">
                             <table className="table-auto border-collapse border border-gray-300 text-center">
@@ -157,9 +288,9 @@ export default function DPS() {
                                     <th className="border px-2 py-1">bit 2</th>
                                     <th className="border px-2 py-1">bit 1</th>
                                     <th className="border px-2 py-1">bit 0</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 2</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 1</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 0</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 2</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 1</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 0</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -225,7 +356,7 @@ export default function DPS() {
                 </Card>
                 <Card className='pb-2 border-none mx-auto shadow-md'>
                     <CardContent>
-                        <p className="text-lg mb-4">{localize('component.dps.about.part16')}</p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{ __html: parseLocalizedText(localize('component.dps.about.part16')) }} />
                         <div className='flex justify-center mb-4 mt-4'>
                             <LocalizedImage name="bob" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
                         </div>
@@ -267,10 +398,10 @@ export default function DPS() {
                                 <thead>
                                 <tr>
                                     <th className="border px-2 py-1"></th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 3</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 2</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 1</th>
-                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion')} 0</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 3</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 2</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 1</th>
+                                    <th className="border px-2 py-1">{localize('component.dps.about.impulsion_word')} 0</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -323,17 +454,28 @@ export default function DPS() {
                             {localize('component.dps.about.part24')}
                         </p>
                         <div className='flex justify-center mb-4 mt-4'>
-                            <img
-                                key="beamsplitter"
-                                src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
-                                alt="beamsplitter"
-                            />
+                            {/* TODO: Black image background is white, similar to white image, so theme switching is barely noticeable - need to change maybe */}
+                            {isClient ? (
+                                <img
+                                    key="beamsplitter"
+                                    src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
+                                    alt="beamsplitter"
+                                />
+                            ) : (
+                                <img
+                                    key="beamsplitter-fallback"
+                                    src="/images/beamsplitter_wb.png"
+                                    alt="beamsplitter"
+                                />
+                            )}
                         </div>
-                        <p className="text-lg mb-4">
-                            {localize('component.dps.about.part25')}
-                            <span className='italic font-bold'>U<sub>bs</sub></span>
-                            {localize('component.dps.about.part26')}
-                        </p>
+                        <div className="text-lg mb-4" dangerouslySetInnerHTML={{
+                            __html: parseLocalizedText(
+                                localize('component.dps.about.part25') +
+                                '<span class="italic font-bold">U<sub>bs</sub></span>' +
+                                localize('component.dps.about.part26')
+                            )
+                        }} />
                         <MathJax className="text-lg mb-4">
                         {`\\[
                             U_{\\text{bs}} \\left| \\psi_{\\text{in}} \\right\\rangle = \\left| \\psi_{\\text{out}} \\right\\rangle
@@ -366,6 +508,7 @@ export default function DPS() {
                             <span>, </span>
                             <span className='italic font-bold'> c</span>
                             {localize('component.dps.about.and')}
+                            <span className='italic font-bold'> d</span>
                             {localize('component.dps.about.part27')}
                             <MathJax inline>{`\\( \\left| A \\right\\rangle \\)`}</MathJax>
                             <span>, </span>
@@ -383,7 +526,7 @@ export default function DPS() {
                             </span>                     
                             {localize('component.dps.about.and')}
                             <span className="text-3xl">
-                                <MathJax inline>{`\\( c = \\frac{a - b}{\\sqrt{2}} \\)`}</MathJax>.
+                                <MathJax inline>{`\\( d = \\frac{a - b}{\\sqrt{2}} \\)`}</MathJax>.
                             </span>
                         </p>
 
@@ -662,11 +805,44 @@ export default function DPS() {
                         </p>
                     </CardContent>
                 </Card>
+                
+                {/* Definitions grid section - like E91 */}
+                <div className="pt-8 grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {sections.map(({id, title, content}) => (
+                        <Card
+                            key={id}
+                            id={id}
+                            className={cn(
+                                'pt-4 pb-2 border-none mx-auto shadow-md h-[400px]',
+                                activeSection === id && 'ring-4 ring-blue-400'
+                            )}
+                        >
+                            <CardContent className="h-full flex flex-col overflow-y-auto">
+                                <h2 className="text-2xl font-bold mb-4">{title}</h2>
+                                <div className="text-gray-400">
+                                    {typeof content === 'string' ? <p>{content}</p> : content}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </section>
-            <section className="w-full h-fit mt-20 px-5 md:px-20">
-                <p id="ref1" className="text-lg mt-20 font-bold">
-                    [1] Inoue K, Waks E, Yamamoto Y. &ldquo;Differential phase shift quantum key distribution.&rdquo; PRL 89.3 (2002): 037902.
-                </p>
+            <section className="w-full h-fit mt-20 px-5 md:px-20" id="references">
+                <div id="ref1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+                    <h3 className="font-semibold text-lg mb-2">Référence</h3>
+                    <p className="text-sm">
+                        <strong>[1]</strong> Inoue K, Waks E, Yamamoto Y. "Differential phase shift quantum key distribution." 
+                        <em> PRL</em> 89.3 (2002): 037902.
+                        <a 
+                            href="https://doi.org/10.1103/PhysRevLett.89.037902" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                        >
+                            https://doi.org/10.1103/PhysRevLett.89.037902
+                        </a>
+                    </p>
+                </div>
             </section>
             <Footer />
     </MathJaxContext>
