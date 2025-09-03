@@ -92,7 +92,7 @@ export default function BB84() {
         {
             id: '#photon',
             title: localize('component.bb84.about.photon.title'),
-            content: localize('component.bb84.about.photon'),
+            content: localize('component.e91.about.photon'),
         },
         {
             id: '#encryption-key',

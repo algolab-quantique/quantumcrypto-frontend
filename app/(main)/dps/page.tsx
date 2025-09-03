@@ -132,7 +132,7 @@ export default function DPS() {
         {
             id: 'photons',
             title: localize('component.dps.about.photons.title'),
-            content: localize('component.dps.about.photons'),
+            content: localize('component.e91.about.photon'),
         },
         {
             id: 'phase',
