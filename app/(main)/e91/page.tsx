@@ -424,7 +424,7 @@ export default function E91() {
                         <div id="reference-1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
                             <h3 className="font-semibold text-lg mb-2">Reference</h3>
                             <p className="text-sm">
-                                <strong>[1]</strong> Ekert, A. K. (1991). "Quantum cryptography based on Bell's theorem." 
+                                <strong>[1]</strong> Ekert, A. K. (1991). &quot;Quantum cryptography based on Bell&apos;s theorem.&quot; 
                                 <em> Physical Review Letters</em>, 67(6), 661. 
                                 <a 
                                     href="https://doi.org/10.1103/PhysRevLett.67.661" 

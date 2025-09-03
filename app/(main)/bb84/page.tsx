@@ -252,7 +252,7 @@ export default function BB84() {
                 <div id="ref1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
                     <h3 className="font-semibold text-lg mb-2">Référence</h3>
                     <p className="text-sm">
-                        <strong>[1]</strong> Bennett C H, Brassard G. "Quantum cryptography: Public key distribution and coin tossing." In <em>Proceedings of the IEEE International Conference on Computers, Systems and Signal Processing</em>, Bangalore, India, 1984, pp. 175-179.
+                        <strong>[1]</strong> Bennett C H, Brassard G. &quot;Quantum cryptography: Public key distribution and coin tossing.&quot; In <em>Proceedings of the IEEE International Conference on Computers, Systems and Signal Processing</em>, Bangalore, India, 1984, pp. 175-179.
                     </p>
                 </div>
             </section>
