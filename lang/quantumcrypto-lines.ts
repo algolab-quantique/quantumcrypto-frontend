@@ -93,8 +93,8 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' contributors to extend our app with new features, including new protocols.',
         'component.homePage.openSource': 'All our code is available on' +
             ' GitHub. You can find the links at the bottom of the page.',
-        'component.bb84.about': 'The BB84 protocol was proposed in 1984 by Charles Bennett of IBM and Gilles Brassard from the Université de Montréal. ' +
-            'It involves two distinct parties, Alice and Bob, who aim to establish an <link2>encryption key</link2> to communicate securely over a <link3>public channel</link3>. ' +
+        'component.bb84.about.part1': 'The BB84 protocol was proposed in 1984 by Charles Bennett of IBM and Gilles Brassard from the Université de Montréal',
+        'component.bb84.about.part2': '. It involves two distinct parties, Alice and Bob, who aim to establish an <link2>encryption key</link2> to communicate securely over a <link3>public channel</link3>. ' +
             'The protocol begins with Alice creating a random sequence of bits and <link5>encoding each bit</link5> using a <link1>photon</link1>. ' +
             'Specifically, the bit value is encoded in one of two <link6>mutually orthogonal</link6> polarization states of the photon. ' +
             'Additionally, for each photon, the basis used to describe the polarization of light is chosen randomly from two possible bases. Alice then sends these photons to Bob via a public <link4>quantum channel</link4>. ' +
@@ -511,8 +511,9 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' nouvelles fonctionnalités, y compris de nouveaux protocoles.',
         'component.homePage.openSource': 'Tout notre code est disponible' +
             ' sur GitHub. Vous trouverez les liens au bas de la page.',
-        'component.bb84.about': 'Le protocole BB84 a été proposé en 1984 par Charles Bennett' +
-            ' d\'IBM et Gilles Brassard de l\'Université de Montréal. Il implique deux parties' +
+        'component.bb84.about.part1': 'Le protocole BB84 a été proposé en 1984 par Charles Bennett' +
+            ' d\'IBM et Gilles Brassard de l\'Université de Montréal',
+        'component.bb84.about.part2': '. Il implique deux parties' +
             ' distinctes, Alice et Bob, qui souhaitent établir une <link2>clé de chiffrement</link2>' +
             ' afin de communiquer de manière sécurisée via un <link3>canal public</link3>.' +
             ' Le protocole commence avec Alice qui crée une séquence aléatoire de bits et qui' +
@@ -982,7 +983,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.openSource': 'Todo nuestro código está' +
             ' disponible en GitHub. Puedes encontrar los enlaces al final' +
             ' de la página.',
-        'component.bb84.about': 'El protocolo BB84 fue propuesto en 1984 por Charles Bennett de IBM y Gilles Brassard de la Universidad de Montreal. Implica a dos partes distintas, Alice y Bob, que buscan establecer una <link2>clave de cifrado</link2> para comunicarse de manera segura a través de un <link3>canal público</link3>. El protocolo comienza con Alice creando una secuencia aleatoria de bits y <link5>codificando cada bit</link5> usando un <link1>fotón</link1>. ' +
+        'component.bb84.about.part1': 'El protocolo BB84 fue propuesto en 1984 por Charles Bennett de IBM y Gilles Brassard de la Universidad de Montreal',
+        'component.bb84.about.part2': '. Implica a dos partes distintas, Alice y Bob, que buscan establecer una <link2>clave de cifrado</link2> para comunicarse de manera segura a través de un <link3>canal público</link3>. El protocolo comienza con Alice creando una secuencia aleatoria de bits y <link5>codificando cada bit</link5> usando un <link1>fotón</link1>. ' +
             'Específicamente, el valor del bit se codifica en uno de los dos <link6>estados de polarización mutuamente ortogonales</link6> del fotón. ' +
             'Además, para cada fotón, la base utilizada para describir la polarización de la luz se elige aleatoriamente entre dos bases posibles. Alice luego envía estos fotones a Bob a través de un <link4>canal cuántico público</link4> . ' +
             'Cuando Bob recibe los fotones, los mide utilizando una de las dos bases, también elegida al azar. Posteriormente, Alice y Bob anuncian públicamente las bases que usaron para codificar y medir cada fotón. ' +
