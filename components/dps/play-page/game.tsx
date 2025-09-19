@@ -18,6 +18,7 @@ import BobMessagingTab from '@/components/dps/play-page/tabs/bob-messaging-tab';
 import AliceMessagingTab from '@/components/dps/play-page/tabs/alice-messaging-tab';
 import AliceInferenceTab from '@/components/dps/play-page/tabs/alice-inference-tab';
 import isConnected from '@/components/hoc/is-connected';
+import Image from 'next/image';
 // import ValidationTab from '@/components/dps/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
@@ -34,21 +35,21 @@ const Game = () => {
 
     [
         <Minus key="minus"/>,
-        <img
+        <Image
             key="zero"
             src={isDark ? "/images/zero_bb.svg" : "/images/zero_wb.svg"}
             alt="Zero"
             width={50}
             height={50}
         />,
-        <img
+        <Image
             key="pi"
             src={isDark ? "/images/pi_bb.svg" : "/images/pi_wb.svg"}
             alt="Pi"
             width={50}
             height={50}
         />,
-        <img
+        <Image
             key="dual"
             src={isDark ? "/images/dual_bb.svg" : "/images/dual_wb.svg"}
             alt="Dual"

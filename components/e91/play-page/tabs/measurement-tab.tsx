@@ -20,6 +20,7 @@ import useE91RoomStore from '@/store/e91/e91-room-store';
 import { E91GameStep, inputField } from '@/types';
 import { CheckCircle2, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
     photonNumber: number,
@@ -198,15 +199,19 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                                 side='bottom'
                                                 className="border-secondary p-0">
                                                 {isClient ? (
-                                                    <img 
+                                                    <Image 
                                                         src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
                                                         alt="Polarization bases" 
+                                                        width={400}
+                                                        height={300}
                                                         className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
                                                     />
                                                 ) : (
-                                                    <img 
+                                                    <Image 
                                                         src="/images/e91_bases_white.png"
                                                         alt="Polarization bases" 
+                                                        width={400}
+                                                        height={300}
                                                         className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
                                                     />
                                                 )}
