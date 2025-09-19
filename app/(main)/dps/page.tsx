@@ -10,6 +10,7 @@ import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from "next-themes";
 import { cn, getLanguageCode } from '@/lib/utils';
+import Image from 'next/image';
 
 
 
@@ -66,12 +67,15 @@ export default function DPS() {
         }
     }, [activeSection]);
 
-    interface LocalizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+    interface LocalizedImageProps {
     name: string;
     localized?: boolean;
+    width?: number;
+    height?: number;
+    className?: string;
     }
       
-    const LocalizedImage = ({ name, localized = false, ...props }: LocalizedImageProps) => {
+    const LocalizedImage = ({ name, localized = false, width = 500, height = 500, className }: LocalizedImageProps) => {
         const { language } = useLanguage();
         const lang = getLanguageCode(language);
         const themeSuffix = isClient ? (isDark ? 'bb' : 'wb') : 'wb';
@@ -79,8 +83,8 @@ export default function DPS() {
         const src = localized
             ? `/images/${name}_${themeSuffix}_${lang}.png`
             : `/images/${name}_${themeSuffix}.svg`;
-        
-        return <img src={src} alt={name} {...props} />;
+
+        return <Image src={src} alt={name} width={width} height={height} className={`${className} object-contain`} />;
     };
 
     const mathJaxConfig = {
@@ -226,7 +230,13 @@ export default function DPS() {
                             __html: parseLocalizedText(localize('component.dps.about.part3'))
                         }} />
                         <div className='flex justify-center mb-4 mt-4'>
-                            <LocalizedImage name="alice" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
+                            <LocalizedImage
+                                name="alice"
+                                localized
+                                width={650}
+                                height={450}
+                                className="w-90 h-90 xl:w-85 xl:h-85 rounded"
+                            />
                         </div>
                         <div className="text-lg mb-4" dangerouslySetInnerHTML={{
                             __html: parseLocalizedText(
@@ -358,7 +368,13 @@ export default function DPS() {
                     <CardContent>
                         <div className="text-lg mb-4" dangerouslySetInnerHTML={{ __html: parseLocalizedText(localize('component.dps.about.part16')) }} />
                         <div className='flex justify-center mb-4 mt-4'>
-                            <LocalizedImage name="bob" localized className="w-90 h-90 xl:w-85 xl:h-85 rounded" />
+                            <LocalizedImage
+                                name="bob"
+                                localized
+                                width={650}
+                                height={450}
+                                className="w-90 h-90 xl:w-85 xl:h-85 rounded"
+                            />
                         </div>
                         <p className="text-lg mb-4">
                             {localize('component.dps.about.part17')}
@@ -456,16 +472,20 @@ export default function DPS() {
                         <div className='flex justify-center mb-4 mt-4'>
                             {/* TODO: Black image background is white, similar to white image, so theme switching is barely noticeable - need to change maybe */}
                             {isClient ? (
-                                <img
+                                <Image
                                     key="beamsplitter"
                                     src={isDark ? "/images/beamsplitter_bb.png" : "/images/beamsplitter_wb.png"}
                                     alt="beamsplitter"
+                                    width={300}
+                                    height={200}
                                 />
                             ) : (
-                                <img
+                                <Image
                                     key="beamsplitter-fallback"
                                     src="/images/beamsplitter_wb.png"
                                     alt="beamsplitter"
+                                    width={300}
+                                    height={200}
                                 />
                             )}
                         </div>
