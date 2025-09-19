@@ -27,12 +27,18 @@ To run the QuantumCrypto frontend locally, follow these steps:
    npm install
    ```
 
-4. Start the development server:
+4. Check for build errors (recommended):
+   ```
+   npm run build
+   ```
+   This ensures your code has no syntax errors, linting issues, or build problems before development.
+
+5. Start the development server:
    ```
    npm run dev
    ```
 
-5. Open your browser and visit `http://localhost:3000` to view the
+6. Open your browser and visit `http://localhost:3000` to view the
    QuantumCrypto frontend.
 
 **Note:** Make sure to also run the backend server locally for full
