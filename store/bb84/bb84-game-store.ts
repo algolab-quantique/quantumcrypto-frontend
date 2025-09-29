@@ -1,6 +1,9 @@
 import {create} from 'zustand';
 import {Player} from '@/types';
 
+// Holds the BB84 lobby/setup form state in memory (game code, players, options).
+// No persistence layer—values reset on refresh because they’re cheap to re-enter.
+
 interface BB84GameStore {
     gameCode: string;
     photonNumber: number;
