@@ -1,3 +1,17 @@
+/**
+ * BB84 progress UI store.
+ *
+ * This Zustand store tracks how far a player has progressed through the
+ * walkthrough (active step/tab and which narrative lines were shown). It sits
+ * alongside the gameplay stores but stays focused on presentation concerns so
+ * the actual protocol state (`bb84-room-store`) and the lobby configuration
+ * (`bb84-game-store`) remain cleanly separated.
+ *
+ * We synchronise key fields with `localStorage` whenever they change so a page
+ * refresh keeps the player on the same tab with the same transcript. Only the
+ * setters touch `localStorage`, which keeps the store compatible with Next.js
+ * server rendering—the reads happen in client components via helper hooks.
+ */
 import {BB84GameStep, Line} from '@/types';
 import {create} from 'zustand';
 
