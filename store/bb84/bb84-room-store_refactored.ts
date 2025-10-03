@@ -1,3 +1,6 @@
+
+// not used yet... (to be concidered for future refactoring)
+
 import {create} from 'zustand';
 
 // Stores the live BB84 protocol state (bases, bits, results, etc.).

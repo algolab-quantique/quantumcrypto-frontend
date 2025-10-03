@@ -1,3 +1,6 @@
+
+// not used yet... (to be concidered for future refactoring)
+
 /**
  * BB84 progress UI store (refactored version).
  *
