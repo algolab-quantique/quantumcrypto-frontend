@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     title: 'QuantumCrypto',
     description: 'An interactive game based on the BB84 quantum key' +
         ' distribution protocol',
+    charset: 'UTF-8',
 };
 
 export default function RootLayout({children}: { children: React.ReactNode }) {

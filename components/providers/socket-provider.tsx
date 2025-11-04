@@ -205,7 +205,8 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
 
         // Socket instance initialization
         const socketInstance = new W3CWebSocket(
-            `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/?player_name=${playerName}?admin=${admin}`);
+            `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/?player_name=${encodeURIComponent(playerName)}&admin=${admin}`
+        );
 
         (socketInstance as any).onerror = (error: any) => {
             console.log(error);
