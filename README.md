@@ -41,9 +41,18 @@ To run the QuantumCrypto frontend locally, follow these steps:
 6. Open your browser and visit `http://localhost:3000` to view the
    QuantumCrypto frontend.
 
-**Note:** Make sure to also run the backend server locally for full
-functionality. You can find the backend
-repository [here](https://github.com/algolab-quantique/quantumcrypto-backend).
+**Note:**
+- Make sure to also run the backend server locally for full
+functionality. You can find the backend repository [here](https://github.com/algolab-quantique/quantumcrypto-backend).
+
+- Confirm that .env.local is present and contains the right values whenever you set up the project; otherwise the frontend will fail to reach the API or WebSocket server.
+
+To connect the frontend to the backend, create a `.env.local` file in the project root (or update it if it already exists):
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000
+```
 
 ## Contributing
 
