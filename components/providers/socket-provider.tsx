@@ -204,6 +204,16 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
         setWaitingRoomConnecting(true);
 
         // Socket instance initialization
+        // old code have 2 problems
+        // 1) playerName is not encoded, so if it contains special characters, the URL will be invalid
+        // 2) not using the standard ?key_1=value_1&key_2=value_2
+        //const socketInstance = new W3CWebSocket(
+        //    `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/?player_name=${playerName}?admin=${admin}`
+        //);
+        //---------------------------------------
+        // new code fixing the above issues
+        // very important that the backend can parse it correctly.
+        // so the fix must also be made on the backend side
         const socketInstance = new W3CWebSocket(
             `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/?player_name=${encodeURIComponent(playerName)}&admin=${admin}`
         );
