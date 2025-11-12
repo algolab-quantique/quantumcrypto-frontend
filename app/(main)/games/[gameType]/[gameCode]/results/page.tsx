@@ -119,7 +119,6 @@ const GameResultsPage = ({params}: GameResultsPageProps) => {
             ) : (
                 <ResultsTable gameType={gameType} rooms={rooms} players={players} />
             )}
-            <ResultsTable gameType={gameType} rooms={rooms} players={players}/>
         </div>
     );
 
