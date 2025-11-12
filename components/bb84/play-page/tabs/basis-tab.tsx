@@ -155,30 +155,8 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                         content: 'component.validationTab.waiting',
                     },
                 ]);
-                if ((playerRole === 'B' && validationIndices.length > 0) ||
-                    (playerRole === 'A' && partnerBits.length > 0)) {
-                    pushLines([
-                        {
-                            content: 'component.validationTab.arrived',
-                        },
-                    ]);
-                    if (playerRole === 'B') {
-                        pushLines([
-                            {
-                                content: 'component.validation.indices',
-                                extra: validationIndices.reduce(
-                                    (result: string,
-                                     current: number) => result +
-                                        current.toString() + ' ', ''),
-                            },
-                        ]);
-                    }
-                    pushLines([
-                        {
-                            content: 'component.validationTab.select',
-                        },
-                    ]);
-                }
+                // Socket handlers (A_KEY_EVENT and B_KEY_EVENT) will add the rest of the messages
+                // based on who clicked first vs second (symmetric logic)
                 return;
             }
             if (playerRole === 'B') {

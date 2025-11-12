@@ -674,68 +674,188 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                     
                     break;
 
-                case A_KEY_EVENT:
+                case A_KEY_EVENT: {
                     const {validation_indices: validationIndices} = message;
-                    if (usePlayerStore.getState().playerRole === 'B') {
-                        useBB84RoomStore.getState()
-                            .setPartnerBits(message.key);
-                        if (useBB84RoomStore.getState().evePresent &&
-                            useBB84ProgressStore.getState().step > 1) {
-                            useBB84ProgressStore.getState().pushLines([
-                                {
-                                    content: 'component.validationTab.arrived',
-                                },
-                                {
-                                    content: 'component.validationTab.start',
-                                },
-                                {
-                                    content: 'component.validation.indices',
-                                    extra: validationIndices.reduce(
-                                        (result: string,
-                                         current: number) => result +
-                                            current.toString() + ' ', ''),
-                                },
-                                {
-                                    content: 'component.validationTab.select',
-                                },
-                            ]);
+                    const isAlice = usePlayerStore.getState().playerRole === 'A';
+                    // Check if partner already sent their key (stored in partnerBits)
+                    // If yes, this player clicked SECOND. If no, this player clicked FIRST.
+                    const partnerAlreadyClicked = useBB84RoomStore.getState().partnerBits.length > 0;
+                    
+                    console.log('A_KEY_EVENT:', {
+                        isAlice,
+                        partnerAlreadyClicked,
+                        gameHasEve: useBB84GameStore.getState().gameHasEve,
+                        evePresent: useBB84RoomStore.getState().evePresent,
+                        validationIndices
+                    });
+                    
+                    if (isAlice) {
+                        // Alice receives her own A_KEY_EVENT (Alice clicked first or second)
+                        if (!partnerAlreadyClicked) {
+                            // Alice clicked FIRST - show indices only (waiting already shown by basis-tab)
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validation.indices',
+                                        extra: validationIndices.reduce(
+                                            (result: string,
+                                             current: number) => result +
+                                                current.toString() + ' ', ''),
+                                    },
+                                ]);
+                            }
+                        } else {
+                            // Alice clicked SECOND - show indices + arrived + select (ALL at once)
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validation.indices',
+                                        extra: validationIndices.reduce(
+                                            (result: string,
+                                             current: number) => result +
+                                                current.toString() + ' ', ''),
+                                    },
+                                    {
+                                        content: 'component.validationTab.arrived',
+                                    },
+                                    {
+                                        content: 'component.validationTab.select',
+                                    },
+                                ]);
+                            }
                         }
                     } else {
-                        if (useBB84RoomStore.getState().evePresent) {
-                            useBB84ProgressStore.getState().pushLines([
-                                {
-                                    content: 'component.validation.indices',
-                                    extra: validationIndices.reduce(
-                                        (result: string,
-                                         current: number) => result +
-                                            current.toString() + ' ', ''),
-                                },
-                            ]);
+                        // Bob receives Alice's A_KEY_EVENT (Bob is partner)
+                        // Check Bob's current step to know if he already clicked
+                        const bobAlreadyClicked = useBB84ProgressStore.getState().step === BB84GameStep.VALIDATION;
+                        
+                        console.log('A_KEY_EVENT - Bob receives Alice key:', {
+                            bobAlreadyClicked,
+                            gameHasEve: useBB84GameStore.getState().gameHasEve,
+                            validationIndices
+                        });
+                        
+                        useBB84RoomStore.getState().setPartnerBits(message.key);
+                        
+                        if (!bobAlreadyClicked) {
+                            // Bob hasn't clicked yet - Alice clicked FIRST
+                            // Show nothing for Bob (he's still on previous step)
+                            console.log('Bob hasnt clicked yet - showing nothing');
+                        } else {
+                            // Bob already clicked - Alice clicked SECOND
+                            // Show arrived + select for Bob
+                            console.log('Bob already clicked - showing arrived + select');
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validationTab.arrived',
+                                    },
+                                    {
+                                        content: 'component.validationTab.select',
+                                    },
+                                ]);
+                                console.log('Messages pushed to Bob');
+                            } else {
+                                console.log('Condition failed:', {
+                                    gameHasEve: useBB84GameStore.getState().gameHasEve,
+                                    validationIndices
+                                });
+                            }
                         }
                     }
-                    useBB84RoomStore.getState()
-                        .setValidationIndices(validationIndices);
-                    break;
-
-                case B_KEY_EVENT:
-                    if (usePlayerStore.getState().playerRole === 'A') {
+                    
+                    // Store validation indices for both players (symmetric)
+                    if (validationIndices) {
                         useBB84RoomStore.getState()
-                            .setPartnerBits(message.key);
-                        if (useBB84ProgressStore.getState().step > 1) {
-                            useBB84ProgressStore.getState().pushLines([
-                                {
-                                    content: 'component.validationTab.arrived',
-                                },
-                                {
-                                    content: 'component.validationTab.start',
-                                },
-                                {
-                                    content: 'component.validationTab.select',
-                                },
-                            ]);
-                        }
+                            .setValidationIndices(validationIndices);
                     }
                     break;
+                }
+
+                case B_KEY_EVENT: {
+                    // Backend now returns validation_indices for B_KEY_EVENT too (singleton pattern)
+                    const {validation_indices: validationIndices} = message;
+                    const isBob = usePlayerStore.getState().playerRole === 'B';
+                    // Check if partner already sent their key (stored in partnerBits)
+                    // If yes, this player clicked SECOND. If no, this player clicked FIRST.
+                    const partnerAlreadyClicked = useBB84RoomStore.getState().partnerBits.length > 0;
+                    
+                    console.log('B_KEY_EVENT:', {
+                        isBob,
+                        partnerAlreadyClicked,
+                        gameHasEve: useBB84GameStore.getState().gameHasEve,
+                        evePresent: useBB84RoomStore.getState().evePresent,
+                        validationIndices
+                    });
+                    
+                    if (isBob) {
+                        // Bob receives his own B_KEY_EVENT (Bob clicked first or second)
+                        if (!partnerAlreadyClicked) {
+                            // Bob clicked FIRST - show indices only (waiting already shown by basis-tab)
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validation.indices',
+                                        extra: validationIndices.reduce(
+                                            (result: string,
+                                             current: number) => result +
+                                                current.toString() + ' ', ''),
+                                    },
+                                ]);
+                            }
+                        } else {
+                            // Bob clicked SECOND - show indices + arrived + select (ALL at once)
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validation.indices',
+                                        extra: validationIndices.reduce(
+                                            (result: string,
+                                             current: number) => result +
+                                                current.toString() + ' ', ''),
+                                    },
+                                    {
+                                        content: 'component.validationTab.arrived',
+                                    },
+                                    {
+                                        content: 'component.validationTab.select',
+                                    },
+                                ]);
+                            }
+                        }
+                    } else {
+                        // Alice receives Bob's B_KEY_EVENT (Alice is partner)
+                        // Check Alice's current step to know if she already clicked
+                        const aliceAlreadyClicked = useBB84ProgressStore.getState().step === BB84GameStep.VALIDATION;
+                        
+                        useBB84RoomStore.getState().setPartnerBits(message.key);
+                        
+                        if (!aliceAlreadyClicked) {
+                            // Alice hasn't clicked yet - Bob clicked FIRST
+                            // Show nothing for Alice (she's still on previous step)
+                        } else {
+                            // Alice already clicked - Bob clicked SECOND
+                            // Show arrived + select for Alice
+                            if (useBB84GameStore.getState().gameHasEve && validationIndices) {
+                                useBB84ProgressStore.getState().pushLines([
+                                    {
+                                        content: 'component.validationTab.arrived',
+                                    },
+                                    {
+                                        content: 'component.validationTab.select',
+                                    },
+                                ]);
+                            }
+                        }
+                    }
+                    
+                    // Store validation indices for both players (symmetric)
+                    if (validationIndices) {
+                        useBB84RoomStore.getState()
+                            .setValidationIndices(validationIndices);
+                    }
+                    break;
+                }
 
                 case A_VALIDATED_EVENT:
                     if (usePlayerStore.getState().playerRole === 'B') {
@@ -1164,13 +1284,11 @@ export const SocketProvider = ({children}: { children: React.ReactNode }) => {
                 B_KEY_EVENT,
             message: {
                 key,
+                // Both players send these params - backend singleton ensures same indices for both
+                key_length: key.length,
+                validation_bits_length: useBB84GameStore.getState().validationBitsLength,
             },
         };
-        if (playerRole === 'A') {
-            payload.message.key_length = key.length;
-            payload.message.validation_bits_length =
-                useBB84GameStore.getState().validationBitsLength;
-        }
         (playRoomSocket as any).send(JSON.stringify(payload));
     };
 
