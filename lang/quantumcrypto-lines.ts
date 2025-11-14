@@ -7,7 +7,7 @@ import {LanguageItem} from '@/types';
 
 export const quantumcryptoLines: LanguageItem[] = [
     {   // ... (English translations)
-              'component.e91.about': 'The protocol was proposed in 1991 by Artur Ekert. It involves two distinct parties, Alice and Bob, who aim to establish <link2>an encryption key</link2> to securely communicate over <link3>a public channel</link3>. In this protocol, Alice and Bob each receive <link1>a photon</link1> from a source that emits pairs of photons with <link4>maximally entangled</link4> <link4>polarizations</link4>: these photons form what is known as <link6>Bell pairs</link6>. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing <link7>a basis</link7> from the set of three bases {a, b, a′}. Bob does the same, choosing from the bases {b, a′, b′}. Among these bases, Alice and Bob share two common bases, b and a′.', 'component.main.name': 'John',
+        'component.main.name': 'John',
         'component.header.howToPlay': 'How to play',
         'component.header.about': 'About QuantumCrypto',
         'component.header.about.bb84': 'About BB84',
@@ -211,7 +211,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.highlights.highlight5Bob': 'Decrypt Alice\'s message',
         'component.e91.steps.step5Bob': ' using your key.',
         'component.e91.about.part1.0': 'The protocol was proposed in 1991 by Artur Ekert',
-        'component.e91.about.part1.1': '. It involves two distinct parties, Alice and Bob, who aim to establish <link2>an encryption key</link2> to securely communicate over <link3>a public channel</link3>. In this protocol, Alice and Bob each receive <link1>a photon</link1> from a source that emits pairs of photons with <link4>maximally entangled</link4> <link4>polarizations</link4>: these photons form what is known as <link6>Bell pairs</link6>. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing <link7>a basis</link7> from the set of three bases', 
+        'component.e91.about.part1.1': '. It involves two distinct parties, Alice and Bob, who aim to establish <link2>an encryption key</link2> to securely communicate over <link3>a public channel</link3>. In this protocol, Alice and Bob each receive <link1>a photon</link1> from a source that emits pairs of photons whose <link4>polarizations</link4> are <link5>maximally entangled</link5>: these photons form what is known as <link6>Bell pairs</link6>. For each pair, the polarization of one photon is measured by Alice and the other by Bob. Alice performs each measurement by randomly choosing <link7>a basis</link7> from the set of three bases {a, b, a′}. Bob does the same, choosing from the bases {b, a′, b′}. Among these bases, Alice and Bob share two common bases, b and a′.', 
         'component.e91.about.part2': 'Bob does the same, choosing from the bases',
         'component.e91.about.part3': '. Among these bases, Alice and Bob share two common bases, ',
         'component.e91.about.figures.title': 'Figure of the Bases',
@@ -1102,7 +1102,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.highlights.highlight5Alice': 'Cifra y envía tu mensaje',
         'component.e91.steps.step5Alice': ' a Bob.',
         'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
-        'component.e91.steps.step5Bob': ' usando tu clave.',  
+        'component.e91.steps.step5Bob': ' usando tu clave.',
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente y 10 en caso contrario.',
         'component.e91.about.part1.0': 'El protocolo fue propuesto en 1991 por Artur Ekert',
         'component.e91.about.part1.1': '. Implica a dos personas, Alice y Bob, que buscan establecer <link2>una clave de cifrado</link2> para comunicarse de manera segura a través de <link3>un canal público</link3>. En este protocolo, Alice y Bob reciben cada uno <link1>un fotón</link1> de una fuente que emite pares de fotones con <link4>polarizaciones</link4> <link5>máximamente entrelazadas</link5>: estos fotones forman lo que se conoce como <link6>pares de Bell</link6>. Para cada par, la polarización de un fotón es medida por Alice y la del otro por Bob. Alice realiza cada medición eligiendo al azar <link7>una base</link7> del conjunto de tres bases {a, b, a′}. Bob hace lo mismo eligiendo entre las bases {b, a′, b′}. Entre estas bases, Alice y Bob comparten dos en común, b y a′.',
         'component.e91.about.part2': 'Bob hace lo mismo eligiendo entre las bases',
