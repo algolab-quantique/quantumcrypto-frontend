@@ -21,19 +21,46 @@ const ResultsTable = ({
                           players,
                           ...props
                       }: ResultsTableProps) => {
+    
+    // 🔍 DEBUG: Log filtering logic
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎨 RESULTS TABLE FILTERING:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('Game Type:', gameType);
+    console.log('Rooms Before Filter:', rooms.length);
+    console.log('Players Available:', players.length);
+    
     switch (gameType) {
         case 'bb84':
-            return <Bb84ResultsTable rooms={rooms.filter(room => {
-                return room.iterations.some(
+            const filteredBB84Rooms = rooms.filter(room => {
+                const hasFinishedIteration = room.iterations.some(
                     (iter: any) => iter.elapsed_time > 0);
-            })}
+                console.log(`Room [${room.player1}-${room.player2}]:`, 
+                    hasFinishedIteration ? '✅ FINISHED' : '❌ NOT FINISHED',
+                    `(${room.iterations.length} iterations)`);
+                return hasFinishedIteration;
+            });
+            
+            console.log('Rooms After Filter:', filteredBB84Rooms.length);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            
+            return <Bb84ResultsTable rooms={filteredBB84Rooms}
                                      players={players} {...props} />;
             break;
         case 'e91':
-            return <E91ResultsTable rooms={rooms.filter(room => {
-                return room.iterations.some(
+            const filteredE91Rooms = rooms.filter(room => {
+                const hasFinishedIteration = room.iterations.some(
                     (iter: any) => iter.elapsed_time > 0);
-            })}
+                console.log(`Room [${room.player1}-${room.player2}]:`, 
+                    hasFinishedIteration ? '✅ FINISHED' : '❌ NOT FINISHED',
+                    `(${room.iterations.length} iterations)`);
+                return hasFinishedIteration;
+            });
+            
+            console.log('Rooms After Filter:', filteredE91Rooms.length);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            
+            return <E91ResultsTable rooms={filteredE91Rooms}
                                      players={players} {...props} />;
             break;
         default:
@@ -69,6 +96,16 @@ const GameResultsPage = ({params}: GameResultsPageProps) => {
             onMessage: async (event) => {
                 const data = await JSON.parse(
                     (await JSON.parse(event.data)).payload.message);
+                
+                // 🔍 DEBUG: Log WebSocket data
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('📊 WEBSOCKET RESULTS RECEIVED:');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('Game Type:', data.game_type);
+                console.log('Total Rooms Received:', data.rooms?.length || 0);
+                console.log('Rooms Data:', data.rooms);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+                
                 setRooms(data.rooms);
                 setGameType(data.game_type);
                 setError(false);
@@ -83,6 +120,15 @@ const GameResultsPage = ({params}: GameResultsPageProps) => {
                         game_code: params.gameCode,
                     },
                 });
+                
+                // 🔍 DEBUG: Log players data
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('👥 PLAYERS API RESPONSE:');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('Total Players Received:', data.length);
+                console.log('Players List:', data);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+                
                 setPlayers(data);
             } catch (e) {
                 setError(true);
