@@ -74,9 +74,9 @@ const CreateGameModal = ({
             }),
     }).refine(schema =>
             (schema.eve &&
-                (schema.photonNumber >= 16 && schema.photonNumber <= 30)) ||
+                (schema.photonNumber >= 4 && schema.photonNumber <= 30)) ||  // 🧪 TEST: Changed from 16 to 4
             (!schema.eve &&
-                (schema.photonNumber >= 10 && schema.photonNumber <= 30)),
+                (schema.photonNumber >= 4 && schema.photonNumber <= 30)),  // 🧪 TEST: Changed from 10 to 4
         {
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
@@ -91,7 +91,7 @@ const CreateGameModal = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: 10,
+            photonNumber: 4,  // 🧪 TEST: Changed from 10 to 4 for quick testing
             eve: false,
             validationBits: 0,
             evePercentage: 0.5,
