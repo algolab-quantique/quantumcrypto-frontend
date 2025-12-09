@@ -1,8 +1,18 @@
 'use client';
 
+/**
+ * Solo Basis Tab
+ * 
+ * This is a copy of basis-tab.tsx adapted for solo mode.
+ * The only differences are:
+ * 1. No useSocket() - no WebSocket calls
+ * 2. onValidate() directly navigates to next tab
+ * 
+ * UI is IDENTICAL to multiplayer basis-tab.tsx
+ */
+
 import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
-import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -17,22 +27,35 @@ import useE91GameStore from '@/store/e91/e91-game-store';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import { E91GameStep, inputField } from '@/types';
-import { Bell, CheckCircle2, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, Info, Key, Minus, Trash } from 'lucide-react';
+import { Bell, CheckCircle2, Info, Key, Minus, Trash } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { moveToExchangeTab } from './validation-tab';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PhotonCategories from '@/components/e91/play-page/photon-types';
 
-const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number, playerRole: string, polarIcons: any[]}) => {
+// Helper function to move to messaging tab (same as CHSH-tab.tsx)
+const moveToExchangeTab = (playerRole: string, pushLines: (lines: any[]) => void, setE91Tab: (tab: string) => void, setStep: (step: E91GameStep) => void, stepNumber: string = '3') => {
+    if (playerRole === 'B') {
+        pushLines([{ 
+            title: `component.game.step${stepNumber}`,
+            content: 'component.messaging.bob.start' 
+        }]);
+    } else {
+        pushLines([{ 
+            title: `component.game.step${stepNumber}`, 
+            content: 'component.messaging.alice.last' 
+        }]);
+    }
+    setE91Tab('messaging');
+    setStep(E91GameStep.MESSAGING);
+};
+
+const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number, playerRole: string, polarIcons: any[]}) => {
 
     const [restartModalOpen, setRestartModalOpen] = useState(false);
     const [tooltipOpen, setTooltipOpen] = useState(false);
 
-    const diceIcons = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
-
     const {localize} = useLanguage();
-    const {sharePreference, shareDiceValue, shareIndices} = useSocket();
+    // NO useSocket() - solo mode
 
     const {
         setStep,
@@ -43,16 +66,6 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
 
     const {
         resetRoom, 
-        setCompared, 
-        setAlicePreference, 
-        setBobPreference, 
-        setAliceDiceRoll, 
-        setBobDiceRoll, 
-        setAliceBases, 
-        setBobBases,
-        setAliceBits,
-        setBobBits,
-        setStep2,
         setAliceValidBits,
         setBobValidBits,
         setAliceInvalidBits,
@@ -60,45 +73,28 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
         setAliceInvalidBases,
         setBobInvalidBases,
         setTypes,
-        setReroll,
+        setStep2,
         setEveReadCount,
     } = useE91RoomStore();
     const {
-        validationIndices,
         step2,
         aliceBases,
         bobBases,
         aliceBits,
         bobBits,
         types,
-        keyBits,
-        compared,
-        utilizeValidBits,
-        diceRollWinner,
-        alicePreference,
-        bobPreference,
-        aliceDiceRoll,
-        bobDiceRoll,
-        reroll,
         evePresent,
-        conflict
     } = useE91RoomStore();
-
-    const { setValidationBitsLength } = useE91GameStore();
 
     const {gameHasEve} = useE91GameStore();
     const bits = playerRole === 'A' ? aliceBits : bobBits;
     const bases = playerRole === 'A' ? aliceBases : bobBases;
     const bothBasesSet = aliceBases.length > 0 && bobBases.length > 0;
 
-
-    const CategoryIcons = 
-
-    [
+    const CategoryIcons = [
         // eslint-disable-next-line react/jsx-key
         <Minus/>, <Bell/>, <Trash/>, <Key/>
     ];
-    
 
     const [validatedBits, setValidatedBits] = useState(() => {
         return [...bits].map(value => ({
@@ -107,7 +103,6 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
         }));
     });
 
-
     const restartGame = () => {
         resetRoom();
         resetProgress();
@@ -115,44 +110,17 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     };
 
     useEffect(() => {
-        if (!bothBasesSet) {
-            if (playerRole === 'A'){
-                pushLines([
-                    {
-                        content: 'component.e91.basis.waitingOn.bob'
-                    }
-                ])
-            } else {
-                pushLines([
-                    {
-                        content: 'component.e91.basis.waitingOn.alice'
-                    }
-                ])
-            }
-            
-        } else if (!step2) {
-            if (playerRole === 'A'){
-                pushLines([
-                    {
-                        content: 'component.e91.basis.arrivedFrom.bob'
-                    }
-                ])
-            } else {
-                pushLines([
-                    {
-                        content: 'component.e91.basis.arrivedFrom.alice'
-                    }
-                ])
-            }
+        // In solo mode, both bases are always set since we generate them locally
+        if (bothBasesSet && !step2) {
             pushLines([
                 {
                     title: 'component.game.step2',
                     content: 'component.e91.classifyBases'
                 }
-            ])  
+            ]);
             setStep2(true);
         }
-    }, [bothBasesSet]);
+    }, [bothBasesSet, step2]);
 
     const [categoryList, setCategoryList] = useState(() => {
         const categories: inputField[] = [];
@@ -173,21 +141,20 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
         newCategory.value = (nextIndex ? nextIndex : nextIndex + 1).toString();
         newCategory.touched = true;
         newCategoryList[index] = newCategory;
-        validateCategory( newCategoryList, false, index);
+        validateCategory(newCategoryList, false, index);
     };
 
     const validateCategory = (categoryList: inputField[], list: boolean, index?: number) => {
-        const isValid = (bobBase: string, aliceBase: string,
-                         category: string) => ((
-                            (bobBase === '2' && aliceBase === '2' && category === '3') || 
-                            (bobBase === '3' && aliceBase === '3' && category === '3') ||
-                            (bobBase === '3' && aliceBase !== '3' && category === '2') ||
-                            (bobBase !== '2' && aliceBase === '2' && category === '2') ||
-                            (bobBase === '2' && aliceBase === '1' && category === '1') ||
-                            (bobBase === '2' && aliceBase === '3' && category === '1') ||
-                            (bobBase === '4' && aliceBase === '3' && category === '1') ||
-                            (bobBase === '4' && aliceBase === '1' && category === '1') 
-                         ));
+        const isValid = (bobBase: string, aliceBase: string, category: string) => ((
+            (bobBase === '2' && aliceBase === '2' && category === '3') || 
+            (bobBase === '3' && aliceBase === '3' && category === '3') ||
+            (bobBase === '3' && aliceBase !== '3' && category === '2') ||
+            (bobBase !== '2' && aliceBase === '2' && category === '2') ||
+            (bobBase === '2' && aliceBase === '1' && category === '1') ||
+            (bobBase === '2' && aliceBase === '3' && category === '1') ||
+            (bobBase === '4' && aliceBase === '3' && category === '1') ||
+            (bobBase === '4' && aliceBase === '1' && category === '1') 
+        ));
         let newCategoryList = categoryList ?? [...categoryList];
         if (list) {
             newCategoryList = newCategoryList.map((category, index) => {
@@ -210,6 +177,9 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     const validateForm = !categoryList.some(
         ({value, error}) => value === '0' || error);
 
+    /**
+     * SOLO MODE: Direct navigation instead of socket calls
+     */
     const onValidate = () => {
         if (validateForm) { 
             const validBitIndices = categoryList
@@ -220,7 +190,6 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                 .map((field, index) => (field.value === '1' ? index : null))
                 .filter(index => index !== null) as number[];
 
-
             setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
             setBobValidBits(validBitIndices.map(i => bobBits[i]));
             setAliceInvalidBits(invalidBitIndices.map(i => aliceBits[i]));
@@ -228,7 +197,7 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
             setBobInvalidBits(invalidBitIndices.map(i => bobBits[i]));
             setBobInvalidBases(invalidBitIndices.map(i => bobBases[i]));
 
-            let typeList: string[] = []           
+            let typeList: string[] = [];           
             categoryList.map((field) => (typeList.push(field.value)));
             setTypes(typeList);
             
@@ -251,35 +220,35 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                     title: 'component.game.step3',
                     content: 'component.e91.validation.invalid.start'
                 }
-            ])
+            ]);
             setStep(E91GameStep.VALIDATION);
             setE91Tab('validation');  
         }      
     };
 
+    /**
+     * SOLO MODE: Skip directly to messaging (when Eve check not enabled)
+     */
     const onMoveToMessaging = () => {
         const validBitIndices = categoryList
-                .map((field, index) => (field.value === '3' ? index : null))
-                .filter(index => index !== null) as number[];
-
-            const invalidBitIndices = categoryList
-                .map((field, index) => (field.value === '1' ? index : null))
-                .filter(index => index !== null) as number[];
-
+            .map((field, index) => (field.value === '3' ? index : null))
+            .filter(index => index !== null) as number[];
 
         setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
         setBobValidBits(validBitIndices.map(i => bobBits[i]));
-        moveToExchangeTab();
-    }
-    
+        
+        moveToExchangeTab(playerRole, pushLines, setE91Tab, setStep);
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // RENDER - Identical to multiplayer basis-tab.tsx
+    // ═══════════════════════════════════════════════════════════════════════
 
     return (
         <>
             <GameRestartDialog restartModalOpen={restartModalOpen}
-                               title={localize(
-                                   'component.e91.basisTab.alertTitle')}
-                               description={localize(
-                                   'component.e91.basisTab.alertDescription')}
+                               title={localize('component.e91.basisTab.alertTitle')}
+                               description={localize('component.e91.basisTab.alertDescription')}
                                onConfirm={restartGame}/>
             <div className="block border
                     text-card-foreground border-secondary bg-card shadow-lg
@@ -307,17 +276,13 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                                     <TooltipProvider delayDuration={500}>
                                         <Tooltip open={tooltipOpen}>
                                             <TooltipTrigger
-                                                onMouseLeave={() => setTooltipOpen(
-                                                    false)}
-                                                onClick={() => setTooltipOpen(
-                                                    !tooltipOpen)}>
+                                                onMouseLeave={() => setTooltipOpen(false)}
+                                                onClick={() => setTooltipOpen(!tooltipOpen)}>
                                                 <Info/>
                                             </TooltipTrigger>
                                             <TooltipContent
-                                                onMouseEnter={() => setTooltipOpen(
-                                                    true)}
-                                                onMouseLeave={() => setTooltipOpen(
-                                                    false)}
+                                                onMouseEnter={() => setTooltipOpen(true)}
+                                                onMouseLeave={() => setTooltipOpen(false)}
                                                 className="border-secondary p-0 origin-top-right table-head"
                                                 align='end'>
                                                 <PhotonCategories/>
@@ -356,9 +321,9 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                                              ' border-secondary' +
                                              ' w-10 text-lg text-center' +
                                              ' m-auto align-center pt-1.5 ',
-                                             validatedBits[i].error ?
+                                             validatedBits[i]?.error ?
                                                  'border-red' : '')}>
-                                        <p>{validatedBits[i].value}</p>
+                                        <p>{validatedBits[i]?.value}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell>
@@ -367,7 +332,7 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                                                 categoryList[i].error &&
                                                 categoryList[i].touched ?
                                                     'border border-red' : '')}
-                                                disabled={!bothBasesSet || types.length > 0}
+                                            disabled={!bothBasesSet || types.length > 0}
                                             onClick={() => onCategoryClick(i)}
                                             size="icon">
                                         {types.length > 0 ? CategoryIcons[parseInt(types[i])] : CategoryIcons[parseInt(categoryList[i].value)]}
@@ -396,7 +361,6 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
                             </Button>
                         </div>
                     </div>
-                    
                 )}
                 {!gameHasEve && (
                     <div
@@ -414,4 +378,4 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
     );
 };
 
-export default BasisTab;
+export default SoloBasisTab;

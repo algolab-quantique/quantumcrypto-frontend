@@ -29,7 +29,7 @@ const GameRestartDialog = ({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={() => onConfirm()}>{localize(
-                        'component.gameRestart.restart')}</AlertDialogAction>
+                        'component.e91.gameRestart.restart')}</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

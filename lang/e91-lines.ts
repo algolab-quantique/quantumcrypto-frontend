@@ -93,6 +93,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'Waiting for Alice\'s bases.',
         'component.e91.basis.arrivedFrom.bob': 'Bob\'s bases have arrived!',
         'component.e91.basis.arrivedFrom.alice': 'Alice\'s bases have arrived!',
+        'component.e91.basisTab.alertTitle': 'Not enough bits!',
+        'component.e91.basisTab.alertDescription': 'The key is too short to continue. You need to restart the game.',
+        'component.e91.gameRestart.restart': 'Restart',
+        'component.e91.gameProgressionTitle': 'Game Progression',
+        'component.game.gameProgressionTitle': 'Game Progression',
     },
     {
          // ... (French translations)
@@ -186,6 +191,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'En attente des bases d\'Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Les bases de Bob sont arrivées!',
         'component.e91.basis.arrivedFrom.alice': 'Les bases d\'Alice sont arrivées!',
+        'component.e91.basisTab.alertTitle': 'Pas assez de bits !',
+        'component.e91.basisTab.alertDescription': 'La clé est trop courte pour continuer. Vous devez redémarrer le jeu.',
+        'component.e91.gameRestart.restart': 'Redémarrer',
+        'component.e91.gameProgressionTitle': 'Progression du jeu',
+        'component.game.gameProgressionTitle': 'Progression du jeu',
         
     },
     {
@@ -276,6 +286,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'Esperando las bases de Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Las bases de Bob han llegado!',
         'component.e91.basis.arrivedFrom.alice': 'Las bases de Alice han llegado!',
+        'component.e91.basisTab.alertTitle': '¡No hay suficientes bits!',
+        'component.e91.basisTab.alertDescription': 'La clave es demasiado corta para continuar. Debes reiniciar el juego.',
+        'component.e91.gameRestart.restart': 'Reiniciar',
+        'component.e91.gameProgressionTitle': 'Progresión del juego',
+        'component.game.gameProgressionTitle': 'Progresión del juego',
     }
     
 ];

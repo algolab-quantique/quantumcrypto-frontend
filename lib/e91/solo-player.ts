@@ -375,6 +375,19 @@ export const getNonMatchingBasisIndices = (
 /**
  * Simulates a complete E91 exchange for solo play.
  * 
+ * ═══════════════════════════════════════════════════════════════════════════
+ * NOTE: This function is currently NOT USED.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * The solo-game-modal.tsx uses individual functions (generateBases,
+ * generateRandomBits, generateEntangledBits, eveGenerateBits) directly
+ * to pre-generate all data at game start.
+ * 
+ * This function is kept for potential future use if the game flow changes
+ * to on-demand generation (generating partner data as the player progresses).
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
  * This function generates all the data needed for a solo game,
  * simulating both Alice and Bob or simulating the partner based
  * on the player's role.

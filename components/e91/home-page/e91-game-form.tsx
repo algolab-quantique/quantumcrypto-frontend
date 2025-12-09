@@ -1,6 +1,7 @@
 'use client';
 import axios from '@/commons/http';
 import CreateGameModal from '@/components/e91/home-page/create-game-modal';
+import SoloGameModal from '@/components/e91/home-page/solo-game-modal';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import {
@@ -46,7 +47,7 @@ const E91Main: React.FC = () => {
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
-    const {localize} = useLanguage();
+    const { localize } = useLanguage();
     const {
         setGameCode,
         setGameHasEve,
@@ -59,8 +60,8 @@ const E91Main: React.FC = () => {
         setPartner,
         setIsAdmin,
     } = usePlayerStore();
-    const {setE91Tab, setStep, setDisplayedLines} = useE91ProgressStore();
-    const {restoreGame} = useE91RoomStore();
+    const { setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
+    const { restoreGame } = useE91RoomStore();
     const router = useRouter();
 
     useEffect(() => {
@@ -158,9 +159,9 @@ const E91Main: React.FC = () => {
     });
 
     const onJoinGame = async ({
-                                  gamePIN,
-                                  playerName,
-                              }: z.infer<typeof formSchema>) => {
+        gamePIN,
+        playerName,
+    }: z.infer<typeof formSchema>) => {
 
         if (isWaitingRoomConnected) return;
 
@@ -179,7 +180,7 @@ const E91Main: React.FC = () => {
     };
 
     const onCreateGame = async (photonNumber: number, eve: boolean,
-                                evePercentage: number) => {
+        evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
 
@@ -195,7 +196,7 @@ const E91Main: React.FC = () => {
             };
 
             const response = await axios.post('/games/e91/', gameData);
-            const {code: gamePIN} = response.data;
+            const { code: gamePIN } = response.data;
 
             setGameCode(gamePIN);
             setPlayerName('admin');
@@ -261,15 +262,15 @@ const E91Main: React.FC = () => {
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onJoinGame)}
-                                  className="space-y-8">
+                                className="space-y-8">
                                 <FormField
                                     control={form.control}
                                     name="playerName"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel
                                                 className="text-lg">{localize(
-                                                'component.main.nameLabel')}</FormLabel>
+                                                    'component.main.nameLabel')}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder={localize(
@@ -279,40 +280,43 @@ const E91Main: React.FC = () => {
                                                 {localize(
                                                     'component.main.nameDescription')}
                                             </FormDescription>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="gamePIN"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel
                                                 className="text-lg">{localize(
-                                                'component.main.pinLabel')}</FormLabel>
+                                                    'component.main.pinLabel')}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="SR117" {...field}
-                                                    value={field.value.toUpperCase()}/>
+                                                    value={field.value.toUpperCase()} />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <div className="flex gap-x-3 mx-auto w-full">
                                     <Button type="submit"
-                                            disabled={waitingRoomConnecting}
-                                            className="text-md w-full p-2">{creatingGame ?
-                                        <TailSpin className="p-2"/> :
-                                        localize(
-                                            'component.main.join')}</Button>
+                                        disabled={waitingRoomConnecting}
+                                        className="text-md w-full p-2">{creatingGame ?
+                                            <TailSpin className="p-2" /> :
+                                            localize(
+                                                'component.main.join')}</Button>
                                 </div>
                             </form>
                         </Form>
-                        <CreateGameModal connecting={waitingRoomConnecting}
-                                         creatingGame={creatingGame}
-                                         onCreateGame={onCreateGame}/>
+                        <div className="flex flex-row justify-center gap-x-2">
+                            <SoloGameModal />
+                            <CreateGameModal connecting={waitingRoomConnecting}
+                                creatingGame={creatingGame}
+                                onCreateGame={onCreateGame} />
+                        </div>
                     </CardContent>
                 </Card>
             </div>
