@@ -18,11 +18,16 @@ const E91Progression = () => {
     const {sendEvent, restartGameWithoutEve} = useSocket();
     const router = useRouter();
 
-    const {gameCode} = useE91GameStore();
+    const {gameCode, setGameHasEve} = useE91GameStore();
 
-    const {playerRole, partner: partnerName} = usePlayerStore();
+    // playingSolo: true = solo mode (no WebSocket), false = multiplayer mode
+    const {playerRole, partner: partnerName, playingSolo} = usePlayerStore();
 
     const {displayedLines} = useE91ProgressStore();
+
+    // Get reset functions from stores for solo mode restart
+    const {resetRoom, setEvePresent} = useE91RoomStore();
+    const {resetProgress} = useE91ProgressStore();
 
     const {
         gameSuccess,
@@ -30,6 +35,27 @@ const E91Progression = () => {
         validated,
         eveSpotted,
     } = useE91RoomStore();
+
+    /**
+     * Handle restart in SOLO mode (no WebSocket connection).
+     * 
+     * When Eve is detected in solo mode, we restart the game locally:
+     * 1. Reset all room state (measurements, bases, bits, etc.)
+     * 2. Reset progress (step, tab, displayed messages)
+     * 3. Set Eve to false so the new game completes successfully
+     * 
+     * This mirrors the multiplayer behavior where the server restarts
+     * the game without Eve after detection.
+     */
+    const handleSoloRestart = () => {
+        // Reset room state (clears all measurements, bases, bits, etc.)
+        resetRoom();
+        // Reset progress (back to measurement tab, clear messages)
+        resetProgress();
+        // Disable Eve for the restart - guarantees successful completion
+        setEvePresent(false);
+        setGameHasEve(false);
+    };
 
 
     const getFeed = () => displayedLines.map((line: any, index: number) => {
@@ -54,7 +80,14 @@ const E91Progression = () => {
             {getFeed()}
             {evePresent && validated && eveSpotted &&
                 <div className="w-full h-fit mb-1 flex justify-center">
-                    <Button onClick={restartGameWithoutEve}>{localize('component.e91.restart')}</Button>
+                    {/* 
+                      * Restart button: Different behavior for solo vs multiplayer
+                      * - Solo mode: Uses local handleSoloRestart (no WebSocket needed)
+                      * - Multiplayer: Uses restartGameWithoutEve from socket provider
+                      */}
+                    <Button onClick={playingSolo ? handleSoloRestart : restartGameWithoutEve}>
+                        {localize('component.e91.restart')}
+                    </Button>
                 </div>}
             {gameSuccess && <div className="w-full h-fit mb-1">
                 <p className="text-card-foreground text-md md:text-xl">
