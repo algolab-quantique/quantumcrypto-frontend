@@ -11,7 +11,8 @@
  * UI is IDENTICAL to multiplayer CHSH-tab.tsx
  */
 
-import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
+// Use E91-specific dialog with correct translation keys (component.e91.*)
+import GameRestartDialog from '@/components/e91/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,6 +143,22 @@ const SoloCHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons:
         setStep,
     } = useE91ProgressStore();
 
+    /**
+     * Reset local CHSH state when store is reset (after restartGame).
+     * When aliceInvalidBits becomes empty, it means resetRoom() was called.
+     */
+    useEffect(() => {
+        if (aliceInvalidBits.length === 0) {
+            setEspAB([]);
+            setEspApB([]);
+            setEspApBp([]);
+            setEspABp([]);
+            setButtonState({});
+            setSvalueStarted(false);
+            setSValues([]);
+        }
+    }, [aliceInvalidBits.length]);
+
     useEffect(() => {
         if (sValueStarted) {
             const sValue = calculateAverage(espAB) 
@@ -218,11 +235,26 @@ const SoloCHSHTab = ({playerRole, polarIcons}: { playerRole: string, polarIcons:
 
     /**
      * SOLO MODE: Restart game without Eve (no socket call)
+     * Also reset local component state for fresh game
      */
     const restartGameWithoutEve = () => {
         resetRoom();
         resetProgress();
         setRestartModalOpen(false);
+        
+        // Reset local CHSH state for fresh game
+        setEspAB([]);
+        setEspApB([]);
+        setEspApBp([]);
+        setEspABp([]);
+        setButtonState({});
+        setSvalueStarted(false);
+        
+        // Add initial welcome messages (in multiplayer, server sends these)
+        pushLines([
+            { content: 'component.e91.measurement.welcome' },
+            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
+        ]);
     };
 
     const handleDrop = (zone: string, index: number, value: number) => {

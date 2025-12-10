@@ -11,7 +11,8 @@
  * UI is IDENTICAL to multiplayer basis-tab.tsx
  */
 
-import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
+// Use E91-specific dialog with correct translation keys (component.e91.*)
+import GameRestartDialog from '@/components/e91/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -103,10 +104,27 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
         }));
     });
 
+    /**
+     * Update validatedBits when bits change (e.g., after new measurements in restarted game)
+     */
+    useEffect(() => {
+        if (bits.length > 0) {
+            setValidatedBits([...bits].map(value => ({
+                value,
+                error: false,
+            })));
+        }
+    }, [bits.length]);
+
     const restartGame = () => {
         resetRoom();
         resetProgress();
         setRestartModalOpen(false);
+        // Add initial welcome messages (in multiplayer, server sends these)
+        pushLines([
+            { content: 'component.e91.measurement.welcome' },
+            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
+        ]);
     };
 
     useEffect(() => {
@@ -133,6 +151,29 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
         }
         return categories;
     });
+
+    /**
+     * Reset local state when store is reset (after restartGame).
+     * When aliceBases becomes empty, it means resetRoom() was called.
+     * We need to reinitialize categoryList and validatedBits for the new game.
+     */
+    useEffect(() => {
+        if (aliceBases.length === 0) {
+            // Reset categoryList
+            const newCategories: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                newCategories.push({
+                    value: '0',
+                    touched: false,
+                    error: true,
+                });
+            }
+            setCategoryList(newCategories);
+            
+            // Reset validatedBits (will be empty since bits are empty)
+            setValidatedBits([]);
+        }
+    }, [aliceBases.length, photonNumber]);
 
     const onCategoryClick = (index: number) => {
         const newCategoryList = [...categoryList];
@@ -228,11 +269,19 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
 
     /**
      * SOLO MODE: Skip directly to messaging (when Eve check not enabled)
+     * Must also check for "key too short" condition before proceeding.
      */
     const onMoveToMessaging = () => {
         const validBitIndices = categoryList
             .map((field, index) => (field.value === '3' ? index : null))
             .filter(index => index !== null) as number[];
+
+        // Check if key is too short (same check as in onValidate)
+        if (validBitIndices.length < 2) {
+            pushLines([{content: 'component.e91.shortKey.restart'}]);
+            setRestartModalOpen(true);
+            return;
+        }
 
         setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
         setBobValidBits(validBitIndices.map(i => bobBits[i]));

@@ -27,7 +27,7 @@ const E91Progression = () => {
 
     // Get reset functions from stores for solo mode restart
     const {resetRoom, setEvePresent} = useE91RoomStore();
-    const {resetProgress} = useE91ProgressStore();
+    const {resetProgress, pushLines} = useE91ProgressStore();
 
     const {
         gameSuccess,
@@ -55,6 +55,11 @@ const E91Progression = () => {
         // Disable Eve for the restart - guarantees successful completion
         setEvePresent(false);
         setGameHasEve(false);
+        // Add initial welcome messages (in multiplayer, server sends these)
+        pushLines([
+            { content: 'component.e91.measurement.welcome' },
+            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
+        ]);
     };
 
 

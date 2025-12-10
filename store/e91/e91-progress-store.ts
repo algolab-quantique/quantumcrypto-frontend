@@ -33,9 +33,15 @@ export const useE91ProgressStore = create<E91ProgressStore>((set) => ({
             displayedLines: updatedLines,
         };
     }),
-    resetProgress: () => set({
-        e91Tab: 'measurement',
-        step: E91GameStep.MEASUREMENT,
-        displayedLines: [],
-    }),
+    resetProgress: () => {
+        // Clear localStorage to prevent old messages from being restored
+        localStorage.removeItem('e91DisplayedLines');
+        localStorage.removeItem('e91Tab');
+        localStorage.removeItem('e91Step');
+        set({
+            e91Tab: 'measurement',
+            step: E91GameStep.MEASUREMENT,
+            displayedLines: [],
+        });
+    },
 }));
