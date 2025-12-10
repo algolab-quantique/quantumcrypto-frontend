@@ -39,10 +39,11 @@
  * 
  * Step 1: Game Settings
  *   - Player name (required, 2-10 characters)
- *   - Photon number: Without Eve min 10, With Eve min 20 (to match multiplayer)
- *     NOTE: Currently using test values (4/8) - see formSchema for production values
+ *   - Photon number: Controlled by E91_SOLO_PHOTON_* constants in e91-constants.ts
+ *     - TEST MODE (E91_TEST_MODE=true): min 4 without Eve, min 8 with Eve
+ *     - PRODUCTION (E91_TEST_MODE=false): min 10 without Eve, min 20 with Eve
  *   - Eve checkbox (enables eavesdropper simulation)
- *   - Eve probability (0.1-1.0, shown when Eve enabled)
+ *   - Eve probability (E91_EVE_PERCENTAGE_MIN to E91_EVE_PERCENTAGE_MAX)
  *   - On submit:
  *     1. Sets game configuration in stores
  *     2. Navigates to /e91/play
@@ -98,6 +99,15 @@ import { useRouter } from 'next/navigation';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { recordGameStats } from '@/app/(main)/services/api';
+import {
+    E91_SOLO_PHOTON_MAX,
+    E91_SOLO_PHOTON_MIN_WITH_EVE,
+    E91_SOLO_PHOTON_MIN_WITHOUT_EVE,
+    E91_SOLO_PHOTON_DEFAULT,
+    E91_EVE_PERCENTAGE_DEFAULT,
+    E91_EVE_PERCENTAGE_MIN,
+    E91_EVE_PERCENTAGE_MAX,
+} from '@/e91-constants';
 // Note: Simulation functions (generateBases, generateRandomBits, etc.) are NOT imported here
 // because data is generated on-demand in solo-game.tsx following the UI flow
 
@@ -152,24 +162,20 @@ const SoloGameModal = () => {
     // ═══════════════════════════════════════════════════════════════════════
 
     /**
-     * Form validation schema matching multiplayer create-game-modal.tsx
+     * Form validation schema using constants from e91-constants.ts
      * 
-     * PRODUCTION values (to match multiplayer exactly):
-     * - Without Eve: min 10, max 30 (default 10)
-     * - With Eve: min 20, max 30 (default 20) - needs more photons for CHSH test
+     * Photon limits are controlled by E91_TEST_MODE in e91-constants.ts:
+     * - TEST MODE: Lower values for faster testing
+     * - PRODUCTION MODE: Higher values for realistic simulation
      * 
-     * TEST values (currently active for easier testing):
-     * - Without Eve: min 4, max 30 (default 4)
-     * - With Eve: min 8, max 30 (default 8)
-     * 
-     * Eve probability: 0.1 to 1.0 (default 0.5)
+     * @see e91-constants.ts for E91_SOLO_PHOTON_* and E91_EVE_* constants
      */
     const formSchema = z.object({
         photonNumber: z.coerce.number({
             invalid_type_error: localize('component.createGame.keyError'),
         })
             .int()
-            .max(30, {
+            .max(E91_SOLO_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),
             }),
         eve: z.boolean({
@@ -181,10 +187,10 @@ const SoloGameModal = () => {
             .positive({
                 message: localize('component.createGame.evePercentage.positive'),
             })
-            .gte(0.1, {
+            .gte(E91_EVE_PERCENTAGE_MIN, {
                 message: localize('component.createGame.evePercentage.greaterThan'),
             })
-            .lte(1, {
+            .lte(E91_EVE_PERCENTAGE_MAX, {
                 message: localize('component.createGame.evePercentage.lessThan'),
             }),
         playerName: z.string({
@@ -195,22 +201,11 @@ const SoloGameModal = () => {
             message: localize('component.main.nameMax'),
         }),
     }).refine(schema =>
-            // ═══════════════════════════════════════════════════════════════
-            // TEST MODE: Using smaller photon counts for easier testing
-            // ═══════════════════════════════════════════════════════════════
-            // With Eve: min 8 (test) | Without Eve: min 4 (test)
+            // Photon limits controlled by E91_TEST_MODE in e91-constants.ts
             (schema.eve &&
-                (schema.photonNumber >= 8 && schema.photonNumber <= 30)) ||
+                (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)) ||
             (!schema.eve &&
-                (schema.photonNumber >= 4 && schema.photonNumber <= 30)),
-            // ═══════════════════════════════════════════════════════════════
-            // PRODUCTION MODE: Uncomment below to match multiplayer exactly
-            // ═══════════════════════════════════════════════════════════════
-            // With Eve: min 20 (production) | Without Eve: min 10 (production)
-            // (schema.eve &&
-            //     (schema.photonNumber >= 20 && schema.photonNumber <= 30)) ||
-            // (!schema.eve &&
-            //     (schema.photonNumber >= 10 && schema.photonNumber <= 30)),
+                (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)),
         {
             message: localize('component.e91.createGame.keyMin'),
             path: ['photonNumber'],
@@ -219,10 +214,9 @@ const SoloGameModal = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            // TEST MODE: photonNumber: 4 | PRODUCTION: photonNumber: 10
-            photonNumber: 4,
+            photonNumber: E91_SOLO_PHOTON_DEFAULT,
             eve: false,
-            evePercentage: 0.5,
+            evePercentage: E91_EVE_PERCENTAGE_DEFAULT,
             playerName: '',
         },
     });
@@ -230,11 +224,9 @@ const SoloGameModal = () => {
     // Update default photon count when Eve checkbox changes
     useEffect(() => {
         if (eveChecked) {
-            // TEST MODE: 8 | PRODUCTION: 20 (to match multiplayer)
-            form.setValue('photonNumber', 8);
+            form.setValue('photonNumber', E91_SOLO_PHOTON_MIN_WITH_EVE);
         } else {
-            // TEST MODE: 4 | PRODUCTION: 10 (to match multiplayer)
-            form.setValue('photonNumber', 4);
+            form.setValue('photonNumber', E91_SOLO_PHOTON_DEFAULT);
         }
     }, [eveChecked, form]);
 

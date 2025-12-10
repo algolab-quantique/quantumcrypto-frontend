@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { moveToExchangeTab } from './validation-tab';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PhotonCategories from '@/components/e91/play-page/photon-types';
+import { E91_MIN_KEY_LENGTH } from '@/e91-constants';
 
 const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number, playerRole: string, polarIcons: any[]}) => {
 
@@ -232,7 +233,7 @@ const BasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: number
             categoryList.map((field) => (typeList.push(field.value)));
             setTypes(typeList);
             
-            if (validBitIndices.length < 2) {
+            if (validBitIndices.length < E91_MIN_KEY_LENGTH) {
                 pushLines([{content: 'component.e91.shortKey.restart'}]);
                 setRestartModalOpen(true);
                 return;

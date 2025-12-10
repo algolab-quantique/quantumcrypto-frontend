@@ -26,6 +26,15 @@ import {
 } from '@/components/ui/form';
 import {TailSpin} from 'react-loading-icons';
 import {CheckedState} from '@radix-ui/react-checkbox';
+import {
+    E91_MULTIPLAYER_PHOTON_MAX,
+    E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+    E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE,
+    E91_MULTIPLAYER_PHOTON_DEFAULT,
+    E91_EVE_PERCENTAGE_DEFAULT,
+    E91_EVE_PERCENTAGE_MIN,
+    E91_EVE_PERCENTAGE_MAX,
+} from '@/e91-constants';
 
 const CreateGameModal = ({
                              connecting,
@@ -40,12 +49,18 @@ const CreateGameModal = ({
     const {localize} = useLanguage();
     const [eveChecked, setEveChecked] = useState(false);
 
+    /**
+     * Form validation schema using constants from e91-constants.ts
+     * 
+     * ⚠️  WARNING: These values MUST match backend validation!
+     * ⚠️  See e91-constants.ts for E91_MULTIPLAYER_* constants
+     */
     const formSchema = z.object({
         photonNumber: z.coerce.number({
             invalid_type_error: localize('component.createGame.keyError'),
         })
             .int()
-            .max(30, {
+            .max(E91_MULTIPLAYER_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),
             }),
         eve: z.boolean({
@@ -59,19 +74,19 @@ const CreateGameModal = ({
                 message: localize(
                     'component.createGame.evePercentage.positive'),
             })
-            .gte(0.1, {
+            .gte(E91_EVE_PERCENTAGE_MIN, {
                 message: localize(
                     'component.createGame.evePercentage.greaterThan'),
             })
-            .lte(1, {
+            .lte(E91_EVE_PERCENTAGE_MAX, {
                 message: localize(
                     'component.createGame.evePercentage.lessThan'),
             }),
     }).refine(schema =>
             (schema.eve &&
-                (schema.photonNumber >= 20 && schema.photonNumber <= 30)) ||
+                (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)) ||
             (!schema.eve &&
-                (schema.photonNumber >= 10 && schema.photonNumber <= 30)),
+                (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)),
         {
             message: localize('component.e91.createGame.keyMin'),
             path: ['photonNumber'],
@@ -80,9 +95,9 @@ const CreateGameModal = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: 10,
+            photonNumber: E91_MULTIPLAYER_PHOTON_DEFAULT,
             eve: false,
-            evePercentage: 0.5,
+            evePercentage: E91_EVE_PERCENTAGE_DEFAULT,
         },
     });
 
@@ -94,9 +109,9 @@ const CreateGameModal = ({
 
     useEffect(() => {
         if (eveChecked) {
-            form.setValue('photonNumber', 20); 
+            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE); 
         } else {
-            form.setValue('photonNumber', 10); 
+            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_DEFAULT); 
         }
     }, [eveChecked, form]);
 

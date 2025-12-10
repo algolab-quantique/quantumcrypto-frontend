@@ -32,6 +32,7 @@ import { Bell, CheckCircle2, Info, Key, Minus, Trash } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PhotonCategories from '@/components/e91/play-page/photon-types';
+import { E91_MIN_KEY_LENGTH } from '@/e91-constants';
 
 // Helper function to move to messaging tab (same as CHSH-tab.tsx)
 const moveToExchangeTab = (playerRole: string, pushLines: (lines: any[]) => void, setE91Tab: (tab: string) => void, setStep: (step: E91GameStep) => void, stepNumber: string = '3') => {
@@ -242,7 +243,7 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
             categoryList.map((field) => (typeList.push(field.value)));
             setTypes(typeList);
             
-            if (validBitIndices.length < 2) {
+            if (validBitIndices.length < E91_MIN_KEY_LENGTH) {
                 pushLines([{content: 'component.e91.shortKey.restart'}]);
                 setRestartModalOpen(true);
                 return;
@@ -276,8 +277,8 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
             .map((field, index) => (field.value === '3' ? index : null))
             .filter(index => index !== null) as number[];
 
-        // Check if key is too short (same check as in onValidate)
-        if (validBitIndices.length < 2) {
+        // Check if key is too short (uses E91_MIN_KEY_LENGTH constant)
+        if (validBitIndices.length < E91_MIN_KEY_LENGTH) {
             pushLines([{content: 'component.e91.shortKey.restart'}]);
             setRestartModalOpen(true);
             return;
