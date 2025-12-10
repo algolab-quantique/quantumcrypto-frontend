@@ -88,7 +88,9 @@ const CreateGameModal = ({
             (!schema.eve &&
                 (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)),
         {
-            message: localize('component.e91.createGame.keyMin'),
+            message: (localize('component.e91.createGame.keyMin') || '')
+                .replace('{minWithEve}', String(E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE))
+                .replace('{minWithoutEve}', String(E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE)),
             path: ['photonNumber'],
         });
 

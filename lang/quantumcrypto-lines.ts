@@ -268,7 +268,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.e91.about.chshInequality.title': 'CHSH Inequality',
         'component.e91.about.chshInequality': 'The CHSH inequality (Clauser, Horne, Shimony, Holt) is a specific and experimentally testable version of the Bell inequalities. It applies to measurements on two entangled qubits, each measured in two different bases. According to classical physics, the value of the parameter S calculated from the measured correlations cannot exceed 2. However, quantum mechanics allows a maximum value of 2√2, thus proving the presence of entanglement and the absence of local hidden variables. In the E91 protocol, verifying this inequality ensures the security of the generated key.',
-        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is 20 when Eve is present, and 10 otherwise.',
+        'component.e91.createGame.keyMin': 'The minimum number of photon pairs is {minWithEve} when Eve is present, and {minWithoutEve} otherwise.',
 
         // E91 Solo Game Keys
         'component.e91.backToHome': 'Back to Home',
@@ -769,7 +769,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.e91.about.chshInequality.title': 'L\'inégalité de CHSH',
         'component.e91.about.chshInequality': 'L\'inégalité de CHSH (Clauser, Horne, Shimony, Holt) est une version particulière et testable expérimentalement des inégalités de Bell. Elle s\'applique à des mesures sur deux qubits intriqués, chacun mesuré selon deux bases différentes. Selon la physique classique, la valeur du paramètre S calculé à partir des corrélations mesurées ne peut pas dépasser 2. Or, la mécanique quantique permet d\'atteindre une valeur maximale de 2√2, prouvant ainsi la présence d\'intrication et l\'absence de variables cachées locales. Dans le protocole E91, la vérification de cette inégalité garantit la sécurité de la clé générée.',
-        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de 20 lorsqu\'Ève est présente et de 10 dans le cas contraire.',
+        'component.e91.createGame.keyMin': 'Le nombre minimal de paires de photons est de {minWithEve} lorsqu\'Ève est présente et de {minWithoutEve} dans le cas contraire.',
 
         // E91 Solo Game Keys FR
         'component.e91.backToHome': 'Retour à l\'accueil',
@@ -1176,7 +1176,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.steps.step5Alice': ' a Bob.',
         'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
         'component.e91.steps.step5Bob': ' usando tu clave.',
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es 20 cuando Eve está presente y 10 en caso contrario.',
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es {minWithEve} cuando Eve está presente y {minWithoutEve} en caso contrario.',
         'component.e91.about.part1.0': 'El protocolo fue propuesto en 1991 por Artur Ekert',
         'component.e91.about.part1.1': '. Implica a dos personas, Alice y Bob, que buscan establecer <link2>una clave de cifrado</link2> para comunicarse de manera segura a través de <link3>un canal público</link3>. En este protocolo, Alice y Bob reciben cada uno <link1>un fotón</link1> de una fuente que emite pares de fotones con <link4>polarizaciones</link4> <link5>máximamente entrelazadas</link5>: estos fotones forman lo que se conoce como <link6>pares de Bell</link6>. Para cada par, la polarización de un fotón es medida por Alice y la del otro por Bob. Alice realiza cada medición eligiendo al azar <link7>una base</link7> del conjunto de tres bases {a, b, a′}. Bob hace lo mismo eligiendo entre las bases {b, a′, b′}. Entre estas bases, Alice y Bob comparten dos en común, b y a′.',
         'component.e91.about.part2': 'Bob hace lo mismo eligiendo entre las bases',
