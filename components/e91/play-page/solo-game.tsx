@@ -33,9 +33,11 @@ import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
 import { Minus } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const SoloGame = () => {
+    // Track if we've already restored/initialized to prevent duplicate messages
+    const hasInitialized = useRef(false);
 
     const polarIcons = [
         // eslint-disable-next-line react/jsx-key
@@ -52,34 +54,66 @@ const SoloGame = () => {
 
     const {localize} = useLanguage();
     const {step, displayedLines, e91Tab} = useE91ProgressStore();
-    const {pushLines, setE91Tab} = useE91ProgressStore();
+    const {pushLines, setE91Tab, setStep, setDisplayedLines} = useE91ProgressStore();
     const {playerRole, playerName} = usePlayerStore();
-    const {photonNumber, gameHasEve} = useE91GameStore();
-    const {utilizeValidBits} = useE91RoomStore();
+    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve} = useE91GameStore();
+    const {utilizeValidBits, restoreGame} = useE91RoomStore();
 
+    // Restore game state from localStorage on mount (for page refresh)
+    // AND initialize welcome messages if no saved state exists
     useEffect(() => {
-        if (displayedLines.length === 0) {
-            if (playerRole === 'A') {
-                pushLines([
-                    {
-                        title: 'component.e91.measurement.welcome',
-                    },
-                    {
-                        title: 'component.game.step1',
-                        content: 'component.e91.measurement.start',
-                    },
-                ]);
-            } else if (playerRole === 'B') {
-                pushLines([
-                    {
-                        title: 'component.e91.measurement.welcome',
-                    },
-                    {
-                        title: 'component.game.step1',
-                        content: 'component.e91.measurement.start',
-                    },
-                ]);
-            }
+        // Prevent running twice (React StrictMode)
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
+        const getItem = (key: string) => {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        };
+
+        // Restore E91 game data
+        const gameData = getItem('e91GameData');
+        if (gameData) {
+            restoreGame(gameData);
+        }
+
+        // Restore progress (step, tab)
+        const savedStep = getItem('e91Step');
+        if (savedStep !== null) {
+            setStep(savedStep);
+        }
+
+        const savedTab = localStorage.getItem('e91Tab');
+        if (savedTab) {
+            setE91Tab(savedTab);
+        }
+
+        // Restore displayed lines OR show welcome messages
+        const savedLines = getItem('e91DisplayedLines');
+        if (savedLines && savedLines.length > 0) {
+            setDisplayedLines(savedLines);
+        } else {
+            // No saved lines - show welcome messages
+            pushLines([
+                {
+                    title: 'component.e91.measurement.welcome',
+                },
+                {
+                    title: 'component.game.step1',
+                    content: 'component.e91.measurement.start',
+                },
+            ]);
+        }
+
+        // Restore game config
+        const savedPhotonNumber = getItem('e91PhotonNumber');
+        if (savedPhotonNumber) {
+            setPhotonNumber(savedPhotonNumber);
+        }
+
+        const savedGameHasEve = getItem('e91GameHasEve');
+        if (savedGameHasEve !== null) {
+            setGameHasEve(savedGameHasEve);
         }
     }, []);
 

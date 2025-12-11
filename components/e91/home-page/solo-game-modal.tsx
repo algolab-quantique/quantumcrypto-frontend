@@ -290,6 +290,11 @@ const SoloGameModal = () => {
         setEvePresent(isEveActuallyPresent);  // Actual Eve interception state
         setPhotonNumber(photonNumber);
 
+        // Save game config to localStorage for page refresh persistence
+        localStorage.setItem('e91PhotonNumber', JSON.stringify(photonNumber));
+        localStorage.setItem('e91GameHasEve', JSON.stringify(eve));
+        localStorage.setItem('e91GameData', JSON.stringify({evePresent: isEveActuallyPresent}));
+
         // Navigate to play page - simulation data generated on-demand there
         router.replace('/e91/play');
     };

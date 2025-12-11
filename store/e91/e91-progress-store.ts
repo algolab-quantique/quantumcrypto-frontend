@@ -24,7 +24,10 @@ export const useE91ProgressStore = create<E91ProgressStore>((set) => ({
         localStorage.setItem('e91Tab', tab);
         set({e91Tab: tab});
     },
-    setDisplayedLines: (lines) => set({displayedLines: lines}),
+    setDisplayedLines: (lines) => {
+        localStorage.setItem('e91DisplayedLines', JSON.stringify(lines));
+        set({displayedLines: lines});
+    },
     pushLines: (lines) => set((state) => {
         const updatedLines = [...state.displayedLines, ...lines];
         localStorage.setItem('e91DisplayedLines',
