@@ -41,18 +41,18 @@ import {
     eveGenerateBits,
 } from '@/lib/e91/solo-player';
 
-const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
+const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
     photonNumber: number,
     polarIcons: any[],
     playerRole: string
 }) => {
 
-    const {localize} = useLanguage();
+    const { localize } = useLanguage();
     // NO useSocket() - solo mode uses local simulation
     const { theme } = useTheme();
     const isDark = theme === "dark";
     const [isClient, setIsClient] = useState(false);
-    const {pushLines, setStep, setE91Tab} = useE91ProgressStore();
+    const { pushLines, setStep, setE91Tab } = useE91ProgressStore();
     const { gameHasEve } = useE91GameStore();
     const {
         evePresent,
@@ -65,12 +65,12 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
         basesShared,
     } = useE91RoomStore();
     const {
-        setPhotons, 
-        setAliceBases, 
-        setBobBases, 
+        setPhotons,
+        setAliceBases,
+        setBobBases,
         setAliceBits,
         setBobBits,
-        setPhotonsRevealed, 
+        setPhotonsRevealed,
         setBasesShared,
         setEvePresent,
     } = useE91RoomStore();
@@ -83,7 +83,7 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
     const [revealedBits, setRevealedBits] = useState<string[]>(Array(photonNumber).fill('*'));
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [tooltipOpen, setTooltipOpen] = useState(false);
-    
+
     useEffect(() => {
         setIsClient(true);
     }, []);
@@ -124,7 +124,7 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
 
         newPolarList[index] = {
             ...newPolarList[index],
-            value: availableBases[nextIconIndex], 
+            value: availableBases[nextIconIndex],
             error: false,
             touched: true,
         };
@@ -141,6 +141,11 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
      * 3. Apply Eve interception if gameHasEve is true
      */
     const onMeasurement = () => {
+        // Record game start time for results page elapsed time calculation
+        if (!localStorage.getItem('e91GameStartTime')) {
+            localStorage.setItem('e91GameStartTime', Date.now().toString());
+        }
+
         const playerBases = basisInputs.map(({ value }) => value);
         let playerBits: string[];
         let partnerBases: string[];
@@ -191,11 +196,11 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
         setTimeout(() => {
             if (playerRole === 'A') {
                 pushLines([
-                    {content: 'component.e91.shareBases.alice'}
+                    { content: 'component.e91.shareBases.alice' }
                 ]);
             } else if (playerRole === 'B') {
                 pushLines([
-                    {content: 'component.e91.shareBases.bob'}
+                    { content: 'component.e91.shareBases.bob' }
                 ]);
             }
         }, 2000);
@@ -222,15 +227,15 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                 { content: 'component.e91.basis.arrivedFrom.alice' }
             ]);
         }
-        
+
         // No WebSocket calls needed - data is already in store
         setBasesShared(true);
         setStep(E91GameStep.BASIS);
         setE91Tab('basis');
     };
 
-    const validateForm = 
-        !basisInputs.some(({value, error}) => value === '0' || error);
+    const validateForm =
+        !basisInputs.some(({ value, error }) => value === '0' || error);
 
     const randomize = (base: number) => {
         const [list, setList] = [basisInputs, setBasisInputs];
@@ -252,21 +257,21 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
             setTimeout(() => {
                 setRevealedBits(prev => {
                     const newRevealedBits = [...prev];
-                    newRevealedBits[i] = bit; 
+                    newRevealedBits[i] = bit;
                     return newRevealedBits;
                 });
                 setHighlightedIndex(i);
-            }, i * (2000/photonNumber));  
+            }, i * (2000 / photonNumber));
         });
         setTimeout(() => {
             setHighlightedIndex(null);
-            setPhotonsRevealed(true); 
+            setPhotonsRevealed(true);
         }, bitsToReveal.length * (2000 / photonNumber));
     };
-    
+
     useEffect(() => {
         if (photonsMeasured && !photonsRevealed) {
-            revealPhotons(); 
+            revealPhotons();
         }
     }, [photonsMeasured]);
 
@@ -307,7 +312,7 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                                     false)}
                                                 onClick={() => setTooltipOpen(
                                                     !tooltipOpen)}>
-                                                <Info/>
+                                                <Info />
                                             </TooltipTrigger>
                                             <TooltipContent
                                                 onMouseEnter={() => setTooltipOpen(
@@ -317,20 +322,20 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                                 side='bottom'
                                                 className="border-secondary p-0">
                                                 {isClient ? (
-                                                    <Image 
+                                                    <Image
                                                         src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
-                                                        alt="Polarization bases" 
+                                                        alt="Polarization bases"
                                                         width={400}
                                                         height={300}
-                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded"
                                                     />
                                                 ) : (
-                                                    <Image 
+                                                    <Image
                                                         src="/images/e91_bases_white.png"
-                                                        alt="Polarization bases" 
+                                                        alt="Polarization bases"
                                                         width={400}
                                                         height={300}
-                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
+                                                        className="w-52 h-52 xl:w-64 xl:h-64 rounded"
                                                     />
                                                 )}
                                             </TooltipContent>
@@ -338,11 +343,11 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                     </TooltipProvider>
                                 </div>
                                 <Button size="sm"
-                                        disabled={photonsMeasured}
-                                        className="w-fit mx-auto"
-                                        onClick={() => randomize(1)}
-                                        variant="outline">{localize(
-                                    'component.e91.random')}</Button>
+                                    disabled={photonsMeasured}
+                                    className="w-fit mx-auto"
+                                    onClick={() => randomize(1)}
+                                    variant="outline">{localize(
+                                        'component.e91.random')}</Button>
                             </div>
                         </TableHead>
                     </TableRow>
@@ -350,29 +355,29 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                 <TableBody className="h-full overflow-y-auto">
                     {basisInputs.map((_, i) => (
                         <TableRow key={i}
-                                  className="text-center border-secondary">
+                            className="text-center border-secondary">
                             <TableCell>
                                 <Input
                                     disabled={true}
                                     style={{
-                                        borderColor: highlightedIndex === i ? 'rgba(0, 255, 0, 0.6)' : undefined,   
-                                        transition: 'border-color 0.5s easeOut'                             
+                                        borderColor: highlightedIndex === i ? 'rgba(0, 255, 0, 0.6)' : undefined,
+                                        transition: 'border-color 0.5s easeOut'
                                     }}
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
-                                    value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]} 
+                                    value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]}
                                     className={cn('w-10 text-lg text-center' +
                                         ' mx-auto disabled:opacity-100' +
                                         ' disabled:bg-background' +
                                         ' disabled:cursor-default',
-                                        )}/>
+                                    )} />
                             </TableCell>
                             <TableCell>
                                 <Button variant="outline"
-                                        disabled={photonsMeasured}
-                                        className={cn('disabled:opacity-100')}
-                                        onClick={() => onPolarClick(i)}
-                                        size="icon">
+                                    disabled={photonsMeasured}
+                                    className={cn('disabled:opacity-100')}
+                                    onClick={() => onPolarClick(i)}
+                                    size="icon">
                                     {photonsMeasured ?
                                         polarIcons[parseInt(bases[i])] :
                                         polarIcons[parseInt(
@@ -386,17 +391,17 @@ const SoloMeasurementTab = ({photonNumber, polarIcons, playerRole}: {
             {!basesShared && (
                 <div className="md:block fixed right-6 bottom-6 shadow-xl">
                     <Button disabled={!validateForm || photonsMeasured} size="lg"
-                            onClick={onMeasurement}
-                            className="text-lg font-bold">
+                        onClick={onMeasurement}
+                        className="text-lg font-bold">
                         {localize('component.e91.measure')}
                     </Button>
                 </div>
-            )}           
+            )}
             {photonsRevealed && (
                 <div className="md:block fixed right-6 bottom-6 shadow-xl">
                     <Button size="lg" className="text-lg font-bold"
-                            onClick={onShare}
-                            disabled={basesShared}>
+                        onClick={onShare}
+                        disabled={basesShared}>
                         {localize('component.e91.shareBases')}
                     </Button>
                 </div>

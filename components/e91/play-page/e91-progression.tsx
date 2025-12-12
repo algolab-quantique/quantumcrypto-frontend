@@ -3,31 +3,31 @@
 import React from 'react';
 import GameProgression from '@/components/shared/game-progression';
 import usePlayerStore from '@/store/player-store';
-import {useE91ProgressStore} from '@/store/e91/e91-progress-store';
+import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
-import {useLanguage} from '@/components/providers/language-provider';
-import {Button} from '@/components/ui/button';
-import {useSocket} from '@/components/providers/socket-provider';
-import {RESTART_WITHOUT_EVE_EVENT} from '@/bb84-constants';
-import {useRouter} from 'next/navigation';
+import { useLanguage } from '@/components/providers/language-provider';
+import { Button } from '@/components/ui/button';
+import { useSocket } from '@/components/providers/socket-provider';
+import { RESTART_WITHOUT_EVE_EVENT } from '@/bb84-constants';
+import { useRouter } from 'next/navigation';
 import useE91GameStore from '@/store/e91/e91-game-store';
 
 const E91Progression = () => {
 
-    const {localize} = useLanguage();
-    const {sendEvent, restartGameWithoutEve} = useSocket();
+    const { localize } = useLanguage();
+    const { sendEvent, restartGameWithoutEve } = useSocket();
     const router = useRouter();
 
-    const {gameCode, setGameHasEve} = useE91GameStore();
+    const { gameCode, setGameHasEve } = useE91GameStore();
 
     // playingSolo: true = solo mode (no WebSocket), false = multiplayer mode
-    const {playerRole, partner: partnerName, playingSolo} = usePlayerStore();
+    const { playerRole, partner: partnerName, playingSolo } = usePlayerStore();
 
-    const {displayedLines} = useE91ProgressStore();
+    const { displayedLines } = useE91ProgressStore();
 
     // Get reset functions from stores for solo mode restart
-    const {resetRoom, setEvePresent} = useE91RoomStore();
-    const {resetProgress, pushLines} = useE91ProgressStore();
+    const { resetRoom, setEvePresent } = useE91RoomStore();
+    const { resetProgress, pushLines } = useE91ProgressStore();
 
     const {
         gameSuccess,
@@ -69,15 +69,19 @@ const E91Progression = () => {
                 <p className="text-card-foreground text-md md:text-xl">{line.title &&
                     <span className="font-bold text-highlight">{localize(
                         line.title)}</span>}{line.content ?
-                    line.extra ? localize(
-                        line.content, line.extra) : localize(
-                        line.content) : ''}</p>
+                            line.extra ? localize(
+                                line.content, line.extra) : localize(
+                                    line.content) : ''}</p>
             </div>
         );
     });
 
     const goToResultsPage = () => {
-        router.replace(`/games/e91/${gameCode}/results`);
+        if (playingSolo) {
+            router.replace('/e91/solo-results');
+        } else {
+            router.replace(`/games/e91/${gameCode}/results`);
+        }
     };
 
     return (
@@ -107,7 +111,7 @@ const E91Progression = () => {
                 </div>
             </div>}
         </GameProgression>
-        
+
     );
 };
 

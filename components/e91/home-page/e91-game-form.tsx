@@ -59,6 +59,7 @@ const E91Main: React.FC = () => {
         setPlayerRole,
         setPartner,
         setIsAdmin,
+        setPlayingSolo,
     } = usePlayerStore();
     const { setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
     const { restoreGame } = useE91RoomStore();
@@ -165,6 +166,9 @@ const E91Main: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
+        // Reset solo mode flag when joining multiplayer game
+        setPlayingSolo(false);
+
         setGameCode(gamePIN);
         setPlayerName(playerName);
         setIsAdmin(false);
@@ -183,6 +187,9 @@ const E91Main: React.FC = () => {
         evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
+
+        // Reset solo mode flag when creating multiplayer game
+        setPlayingSolo(false);
 
         setCreatingGame(true);
 

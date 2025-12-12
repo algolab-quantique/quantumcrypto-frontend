@@ -201,11 +201,11 @@ const SoloGameModal = () => {
             message: localize('component.main.nameMax'),
         }),
     }).refine(schema =>
-            // Photon limits controlled by E91_TEST_MODE in e91-constants.ts
-            (schema.eve &&
-                (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)) ||
-            (!schema.eve &&
-                (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)),
+        // Photon limits controlled by E91_TEST_MODE in e91-constants.ts
+        (schema.eve &&
+            (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)) ||
+        (!schema.eve &&
+            (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)),
         {
             message: (localize('component.e91.createGame.keyMin') || '')
                 .replace('{minWithEve}', String(E91_SOLO_PHOTON_MIN_WITH_EVE))
@@ -293,7 +293,9 @@ const SoloGameModal = () => {
         // Save game config to localStorage for page refresh persistence
         localStorage.setItem('e91PhotonNumber', JSON.stringify(photonNumber));
         localStorage.setItem('e91GameHasEve', JSON.stringify(eve));
-        localStorage.setItem('e91GameData', JSON.stringify({evePresent: isEveActuallyPresent}));
+        localStorage.setItem('e91OriginalEvePresent', JSON.stringify(isEveActuallyPresent)); // For results page
+        localStorage.setItem('e91EveWasDetected', JSON.stringify(false)); // Reset detection flag
+        localStorage.setItem('e91GameData', JSON.stringify({ evePresent: isEveActuallyPresent }));
 
         // Navigate to play page - simulation data generated on-demand there
         router.replace('/e91/play');

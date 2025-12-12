@@ -288,6 +288,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.chsh.below2': 'The calculated S value is ≤ 2, indicating the presence of an eavesdropper.',
         'component.e91.chsh.above2': 'The calculated S value is > 2, confirming quantum correlations.',
 
+        // Solo Results Page
+        'component.e91.results.title': 'E91 Solo Game Results',
+        'component.e91.results.keyLength': 'Key Length',
+        'component.e91.results.yes': 'Yes',
+        'component.e91.results.no': 'No',
+        'component.e91.results.success': '🎉 Congratulations! Game completed successfully!',
+        'component.e91.results.failure': '❌ Game ended.',
+        'component.e91.results.replay': 'Play Again',
+        'component.e91.results.home': 'Main Menu',
+
         // Messaging Step
         'component.messaging.send': 'Send Message',
         'component.messaging.decrypt': 'Decrypt Message',
@@ -789,6 +799,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.chsh.below2': 'La valeur S calculée est ≤ 2, indiquant la présence d\'un espion.',
         'component.e91.chsh.above2': 'La valeur S calculée est > 2, confirmant les corrélations quantiques.',
 
+        // Solo Results Page FR
+        'component.e91.results.title': 'Résultats E91 Mode Solo',
+        'component.e91.results.keyLength': 'Longueur de Clé',
+        'component.e91.results.yes': 'Oui',
+        'component.e91.results.no': 'Non',
+        'component.e91.results.success': '🎉 Félicitations ! Partie terminée avec succès !',
+        'component.e91.results.failure': '❌ Partie terminée.',
+        'component.e91.results.replay': 'Rejouer',
+        'component.e91.results.home': 'Menu Principal',
+
         // Messaging Step FR
         'component.messaging.send': 'Envoyer le message',
         'component.messaging.decrypt': 'Déchiffrer le message',
@@ -1250,6 +1270,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.chsh.calculate': 'Calcular valor CHSH',
         'component.e91.chsh.below2': 'El valor S calculado es ≤ 2, indicando la presencia de un espía.',
         'component.e91.chsh.above2': 'El valor S calculado es > 2, confirmando las correlaciones cuánticas.',
+
+        // Solo Results Page ES
+        'component.e91.results.title': 'Resultados E91 Modo Solo',
+        'component.e91.results.keyLength': 'Longitud de Clave',
+        'component.e91.results.yes': 'Sí',
+        'component.e91.results.no': 'No',
+        'component.e91.results.success': '🎉 ¡Felicidades! ¡Juego completado con éxito!',
+        'component.e91.results.failure': '❌ Juego terminado.',
+        'component.e91.results.replay': 'Jugar de Nuevo',
+        'component.e91.results.home': 'Menú Principal',
 
         // Messaging Step ES
         'component.messaging.send': 'Enviar mensaje',
