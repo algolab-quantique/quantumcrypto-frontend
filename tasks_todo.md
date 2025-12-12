@@ -148,10 +148,17 @@ For AWS deployment assistance, contact:
 
 ### 2. 🔄 Page Reload Loses Game State (BB84 + E91)
 
-**Status**: 🔴 URGENT - IN PROGRESS  
+**Status**: ✅ RESOLVED (December 12, 2025)  
 **Date Started**: December 11, 2025
 
----
+**Fix Applied**:
+- Added `persist` middleware to `player-store.ts` 
+- Added hydration check to `is-connected.tsx` HOC
+- `playingSolo` now persists in localStorage
+- Added `setPlayingSolo(false)` in `e91-game-form.tsx` for multiplayer
+
+<details>
+<summary>Original Analysis (Click to expand)</summary>
 
 #### 📊 ANALYSIS SUMMARY (December 11, 2025)
 
@@ -165,8 +172,6 @@ For AWS deployment assistance, contact:
 | **`playingSolo` persisted**     | ❌ NO                       | ❌ NO                          | 🔴 **CRITICAL**       |
 | **`isConnected` HOC**           | Checks `playingSolo`       | Checks `playingSolo`          | 🔴 Refresh → redirect |
 
----
-
 #### 🔴 ROOT CAUSE
 
 The `isConnected` HOC (`components/hoc/is-connected.tsx`) redirects to `/` on refresh because:
@@ -179,115 +184,24 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 
 **Key insight**: `player-store.ts` has NO localStorage persistence. On refresh, `playingSolo` resets to `false`.
 
----
-
-#### 📋 STEP-BY-STEP FIX PLAN
-
-| Step    | Task                                       | Status | Files                                     | Risk   | Time   |
-| ------- | ------------------------------------------ | ------ | ----------------------------------------- | ------ | ------ |
-| **2.1** | Add `persist` to `player-store.ts`         | ⬜ TODO | `store/player-store.ts`                   | Low    | 15 min |
-| **2.2** | Test E91 solo refresh                      | ⬜ TODO | -                                         | -      | 10 min |
-| **2.3** | Test BB84 solo refresh                     | ⬜ TODO | -                                         | -      | 10 min |
-| **2.4** | Test E91 multiplayer refresh               | ⬜ TODO | -                                         | -      | 10 min |
-| **2.5** | Test BB84 multiplayer refresh              | ⬜ TODO | -                                         | -      | 10 min |
-| **2.6** | Add auto-restore in play pages (if needed) | ⬜ TODO | `e91/play/page.tsx`, `bb84/play/page.tsx` | Medium | 30 min |
-| **2.7** | Final integration test                     | ⬜ TODO | -                                         | -      | 15 min |
-
-**Total Estimated Time**: ~1.5 hours
-
----
-
-#### 📝 STEP 2.1 DETAILS: Add `persist` to `player-store.ts`
-
-**Current code** (`store/player-store.ts`):
-```typescript
-import {create} from 'zustand';
-
-const usePlayerStore = create<PlayerStore>((set) => ({
-    playerName: '',
-    playerId: null,
-    playerRole: 'A',
-    playingSolo: false,  // ❌ NOT PERSISTED - resets on refresh!
-    isAdmin: false,
-    partner: '',
-    // setters...
-}));
-```
-
-**Fix needed**: Add Zustand `persist` middleware:
-```typescript
-import {create} from 'zustand';
-import {persist} from 'zustand/middleware';
-
-const usePlayerStore = create<PlayerStore>()(
-    persist(
-        (set) => ({
-            playerName: '',
-            playerId: null,
-            playerRole: 'A',
-            playingSolo: false,  // ✅ NOW PERSISTED!
-            isAdmin: false,
-            partner: '',
-            // setters...
-        }),
-        {
-            name: 'player-storage',  // localStorage key
-        }
-    )
-);
-```
-
-**Expected result**: On refresh, `playingSolo=true` is restored → `isConnected` HOC passes → user stays on game page.
-
----
-
-#### 🔗 RELATED: Multiplayer Key Min Check (Issue #6)
-
-During analysis, confirmed that:
-- **Solo mode**: Has `E91_MIN_KEY_LENGTH` check ✅
-- **Multiplayer mode**: Missing this check ❌
-
-Will fix after state persistence is working.
-
----
-
-#### 📚 REFERENCE: localStorage Keys Used
-
-**BB84**:
-- `bb84GameData` - Room store (game state)
-- `bb84PlayerData` - Player info
-- `bb84Step` - Current step
-- `bb84Tab` - Current tab
-- `bb84PhotonNumber` - Config
-- `bb84ValidationBitsLength` - Config
-- `bb84DisplayedLines` - UI state
-
-**E91**:
-- `e91GameData` - Room store (game state)
-- `e91PlayerData` - Player info
-- `e91Step` - Current step
-- `e91Tab` - Current tab
-- `e91PhotonNumber` - Config
-- `e91ValidationBitsLength` - Config
-- `e91DisplayedLines` - UI state
-
-**NEW (to add)**:
-- `player-storage` - Player store (playingSolo, playerRole, etc.)
+</details>
 
 ---
 
 ### 3. 🏁 Results Page Not Working (Solo Mode)
-**Status**: 🔴 URGENT  
-**Issue**: At end of game, clicking "Show Results" briefly shows results URL then redirects to home  
-**Root Cause**: Results page expects server data / multiplayer room data that doesn't exist in solo mode  
-**Files**:
-- `app/(main)/e91/results/page.tsx`
-- `components/e91/results-page/`
 
-**Solution**: 
-- Add solo mode check in results page
-- Display local game data (score, key bits, etc.) instead of fetching from server
-- OR create separate solo results component
+**Status**: ✅ RESOLVED (December 12, 2025)  
+
+**Fix Applied**:
+- Created `/e91/solo-results` page (`app/(main)/e91/solo-results/page.tsx`)
+- Created `solo-results-table.tsx` component
+- Updated `e91-progression.tsx` to navigate to solo results when `playingSolo=true`
+- Added localStorage tracking for Eve detection 
+- Added localization keys (EN/FR/ES)
+
+**Files Created**:
+- `app/(main)/e91/solo-results/page.tsx`
+- `components/e91/results-page/solo-results-table.tsx`
 
 ---
 
@@ -383,6 +297,7 @@ Will fix after state persistence is working.
 
 ## ✅ COMPLETED (This Session)
 
+### December 11, 2025
 - [x] Centralize hardcoded values into `e91-constants.ts`
 - [x] Add `E91_TEST_MODE` toggle for TEST vs PRODUCTION
 - [x] Add `E91_MIN_KEY_LENGTH` constant
@@ -390,22 +305,55 @@ Will fix after state persistence is working.
 - [x] Add `E91_MULTIPLAYER_PHOTON_*` constants (with backend sync warning)
 - [x] Add `E91_EVE_*` constants (shared)
 - [x] Dynamic error messages with constant values (placeholder replacement)
-- [x] **Next.js updated from 14.2.32 → 14.2.33** (Dec 11, 2025)
+- [x] **Next.js updated from 14.2.32 → 14.2.33**
 - [x] Fixed 2 npm vulnerabilities (glob, js-yaml)
 - [x] Created AWS Production Upgrade Plan
 
+### December 12, 2025 - E91 Solo Results & Multiplayer Fixes
+- [x] **#2 - Page Reload Loses Game State** ✅ FIXED
+  - Added `persist` middleware to `player-store.ts`
+  - Added hydration check to `is-connected.tsx` HOC
+  - `playingSolo` now persists in localStorage
+- [x] **#3 - Results Page Not Working (Solo Mode)** ✅ FIXED
+  - Created `/e91/solo-results` page
+  - Created `solo-results-table.tsx` component
+  - Added localStorage tracking for Eve detection (`e91OriginalEvePresent`, `e91EveWasDetected`)
+  - Added localization keys (EN/FR/ES)
+- [x] **Fixed Multiplayer Bug** - Added `setPlayingSolo(false)` to `e91-game-form.tsx` when joining/creating games
+- [x] **Enhanced Multiplayer Results Page**
+  - Added "Rejouer" and "Menu Principal" buttons
+  - Added conditional messages for admin (game monitor) view
+  - Added waiting message when no games finished
+  - Added success message when games completed
+  - Added localization keys (EN/FR/ES)
+
 ---
 
-## 📋 IMPLEMENTATION ORDER
+## 🔴 NEW ISSUES FOUND (December 12, 2025)
 
-1. **#4** - Button size fix (5 min, easy win)
-2. **#5** - Dialog import fix (5 min, easy win)
-3. **#6** - Key length check (10 min)
-4. **#1** - Next.js upgrade (30 min, needs testing)
-5. **#2** - Page reload persistence (1-2 hours)
-6. **#3** - Results page for solo (1-2 hours)
-7. **#7, #8** - State reset and store defaults (30 min)
-8. **#9, #10, #11** - Cleanup (30 min)
+### 12. ⚠️ Eve Detection Not Tracked in Multiplayer Backend
+**Status**: 🔴 BACKEND REQUIRED  
+**Issue**: When Eve is present and detected in multiplayer mode, the results table shows "No" for both columns  
+**Root Cause**: The backend does not track or send Eve presence/detection state  
+**Impact**: Multiplayer results page cannot accurately display Eve statistics  
+
+**Fix Required**:
+- Backend: Track `eve_present` and `eve_detected` for each room/iteration
+- Backend: Send this data via WebSocket to results page
+- Frontend: No changes needed (already displays the data if received)
+
+---
+
+## 📋 IMPLEMENTATION ORDER (Updated)
+
+1. ~~**#2** - Page reload persistence~~ ✅ DONE
+2. ~~**#3** - Results page for solo~~ ✅ DONE
+3. **#4** - Button size fix (5 min, easy win)
+4. **#5** - Dialog import fix (5 min, easy win)
+5. **#6** - Key length check (10 min)
+6. **#7, #8** - State reset and store defaults (30 min)
+7. **#9, #10, #11** - Cleanup (30 min)
+8. **#12** - Eve detection in multiplayer (BACKEND REQUIRED)
 
 ---
 
