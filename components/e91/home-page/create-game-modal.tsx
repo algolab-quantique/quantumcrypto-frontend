@@ -1,6 +1,6 @@
 'use client';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -10,13 +10,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import {Input} from '@/components/ui/input';
-import {useLanguage} from '@/components/providers/language-provider';
-import {Checkbox} from '@/components/ui/checkbox';
-import React, {useEffect, useState} from 'react';
+import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/components/providers/language-provider';
+import { Checkbox } from '@/components/ui/checkbox';
+import React, { useEffect, useState } from 'react';
 import * as z from 'zod';
-import {useForm} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
     Form,
     FormControl,
@@ -24,8 +24,8 @@ import {
     FormItem,
     FormLabel, FormMessage,
 } from '@/components/ui/form';
-import {TailSpin} from 'react-loading-icons';
-import {CheckedState} from '@radix-ui/react-checkbox';
+import { TailSpin } from 'react-loading-icons';
+import { CheckedState } from '@radix-ui/react-checkbox';
 import {
     E91_MULTIPLAYER_PHOTON_MAX,
     E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
@@ -37,16 +37,16 @@ import {
 } from '@/e91-constants';
 
 const CreateGameModal = ({
-                             connecting,
-                             creatingGame,
-                             onCreateGame,
-                         }: {
+    connecting,
+    creatingGame,
+    onCreateGame,
+}: {
     connecting: boolean, creatingGame: boolean, onCreateGame: (photonNumber: number,
-                                                               eve: boolean,
-                                                               evePercentage: number) => void
+        eve: boolean,
+        evePercentage: number) => void
 }) => {
 
-    const {localize} = useLanguage();
+    const { localize } = useLanguage();
     const [eveChecked, setEveChecked] = useState(false);
 
     /**
@@ -83,10 +83,10 @@ const CreateGameModal = ({
                     'component.createGame.evePercentage.lessThan'),
             }),
     }).refine(schema =>
-            (schema.eve &&
-                (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)) ||
-            (!schema.eve &&
-                (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)),
+        (schema.eve &&
+            (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)) ||
+        (!schema.eve &&
+            (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)),
         {
             message: (localize('component.e91.createGame.keyMin') || '')
                 .replace('{minWithEve}', String(E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE))
@@ -104,16 +104,16 @@ const CreateGameModal = ({
     });
 
     const onEveChecked = (onChange: (...event: any[]) => void,
-                          checked: CheckedState) => {
+        checked: CheckedState) => {
         setEveChecked(!eveChecked);
         onChange(checked);
     };
 
     useEffect(() => {
         if (eveChecked) {
-            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE); 
+            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE);
         } else {
-            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_DEFAULT); 
+            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_DEFAULT);
         }
     }, [eveChecked, form]);
 
@@ -121,14 +121,14 @@ const CreateGameModal = ({
         <Dialog>
             <DialogTrigger asChild>
                 <Button
-                    variant={'outline'} type="button"
-                    className="text-md w-full mt-2">{localize(
-                    'component.main.createGame')}</Button>
+                    variant={'secondary'} type="button"
+                    className="text-md w-[50%] mt-2">{localize(
+                        'component.main.createGame')}</Button>
             </DialogTrigger>
             <DialogContent
                 className="w-[325px] md:w-full h-auto border-none">
                 {creatingGame ?
-                    <TailSpin stroke={'#00a85a'} className="m-auto text-primary"/> :
+                    <TailSpin stroke={'#00a85a'} className="m-auto text-primary" /> :
                     <><DialogHeader>
                         <DialogTitle>{localize(
                             'component.main.createGame')}</DialogTitle>
@@ -138,20 +138,20 @@ const CreateGameModal = ({
                     </DialogHeader>
                         <Form {...form}>
                             <form className="flex flex-col gap-y-4"
-                                  onSubmit={form.handleSubmit(
-                                      ({
-                                           photonNumber,
-                                           eve,
-                                           evePercentage,
-                                       }) => onCreateGame(
-                                          photonNumber,
-                                          eve,
-                                          evePercentage))}
+                                onSubmit={form.handleSubmit(
+                                    ({
+                                        photonNumber,
+                                        eve,
+                                        evePercentage,
+                                    }) => onCreateGame(
+                                        photonNumber,
+                                        eve,
+                                        evePercentage))}
                             >
                                 <FormField
                                     control={form.control}
                                     name="photonNumber"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem
                                             className="flex gap-x-5 items-center">
                                             <FormLabel
@@ -165,14 +165,14 @@ const CreateGameModal = ({
                                                     className="text-center w-[50px]"
                                                     {...field} />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="eve"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem
                                             className="space-y-0 flex gap-x-5 items-center">
                                             <FormLabel
@@ -187,14 +187,14 @@ const CreateGameModal = ({
                                                         checkState)}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 {eveChecked && <FormField
                                     control={form.control}
                                     name="evePercentage"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem
                                             className="space-y-0 flex gap-x-5 items-center">
                                             <FormLabel
@@ -209,7 +209,7 @@ const CreateGameModal = ({
                                                     className="text-center w-[50px]"
                                                     {...field} />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />}
@@ -217,9 +217,9 @@ const CreateGameModal = ({
                                     <Button
                                         disabled={connecting || creatingGame}
                                         type="submit">{connecting ?
-                                        <TailSpin className="p-2"/> :
-                                        localize(
-                                            'component.createGame.ready')}</Button>
+                                            <TailSpin className="p-2" /> :
+                                            localize(
+                                                'component.createGame.ready')}</Button>
                                 </DialogFooter>
                             </form>
                         </Form></>}

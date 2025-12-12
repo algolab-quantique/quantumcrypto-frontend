@@ -208,21 +208,13 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 ## 🟡 MEDIUM PRIORITY
 
 ### 4. 🎨 Button Size Inconsistency (E91 Home Page)
-**Status**: 🟡 UI Issue  
-**Issue**: "Play Solo" button and "Create Game" button have different widths  
-**Current**:
-- Solo: `w-[50%]` ✅
-- Create Game: `w-full` ❌ (should be `w-[50%]`)
+**Status**: ✅ RESOLVED (December 12, 2025)  
 
-**Files**:
-- `components/e91/home-page/create-game-modal.tsx` (line 125)
-- `components/e91/home-page/solo-game-modal.tsx` (line 472) ✅
+**Fix Applied**:
+- Changed `w-full` to `w-[50%]` for button width
+- Changed `variant={'outline'}` to `variant={'secondary'}` for consistent styling with BB84
 
-**BB84 Reference** (both use `w-[50%]}`:
-- `components/bb84/home-page/create-game-modal.tsx` (line 112) ✅
-- `components/bb84/home-page/solo-game-modal.tsx` (line 307) ✅
-
-**Fix**: Change E91 create-game-modal button from `w-full` to `w-[50%]`
+**File**: `components/e91/home-page/create-game-modal.tsx`
 
 ---
 
