@@ -298,6 +298,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.replay': 'Play Again',
         'component.e91.results.home': 'Main Menu',
 
+        // Multiplayer Results Page
+        'component.results.title': 'Results for game',
+        'component.results.waiting': '⏳ Waiting for players to finish their games...',
+        'component.results.gamesFinished': 'Some games have finished!',
+
         // Messaging Step
         'component.messaging.send': 'Send Message',
         'component.messaging.decrypt': 'Decrypt Message',
@@ -809,6 +814,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.replay': 'Rejouer',
         'component.e91.results.home': 'Menu Principal',
 
+        // Multiplayer Results Page FR
+        'component.results.title': 'Résultats de la partie',
+        'component.results.waiting': '⏳ En attente que les joueurs terminent leurs parties...',
+        'component.results.gamesFinished': 'Des parties sont terminées !',
+
         // Messaging Step FR
         'component.messaging.send': 'Envoyer le message',
         'component.messaging.decrypt': 'Déchiffrer le message',
@@ -1280,6 +1290,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.failure': '❌ Juego terminado.',
         'component.e91.results.replay': 'Jugar de Nuevo',
         'component.e91.results.home': 'Menú Principal',
+
+        // Multiplayer Results Page ES
+        'component.results.title': 'Resultados del juego',
+        'component.results.waiting': '⏳ Esperando a que los jugadores terminen sus partidas...',
+        'component.results.gamesFinished': '¡Algunas partidas han terminado!',
 
         // Messaging Step ES
         'component.messaging.send': 'Enviar mensaje',

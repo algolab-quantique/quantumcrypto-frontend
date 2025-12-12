@@ -36,4 +36,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-tasks_todo.md
+# tasks_todo.md # we need to track our tasks and what we have done
