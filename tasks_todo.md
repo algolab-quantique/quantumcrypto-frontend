@@ -2640,3 +2640,24 @@ Fixes: Results table showing "No rooms finished" despite completed games
 **Affects versions**: Current production  
 **Fix version**: Next release  
 **Estimated effort**: 2-3 hours (backend fix + testing)
+
+
+### 20. 🔴 Architecture: Proper Offline Restoration for Multiplayer Tabs
+**Status**: 🔴 TODO - HIGH PRIORITY
+**Context**: Currently, refreshing a completed multiplayer game redirects to the *Results Table* (Issue #14 workaround). It should stay on the *Game Page*.
+**Root Cause**: Multiplayer components (`CHSH-tab`, `messaging-tab`) assume "Always Online" WebSocket connection and lack "Offline" restoration logic.
+
+**Implementation Plan**:
+1.  **Main Game Container** ([components/e91/play-page/game.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/game.tsx:0:0-0:0)):
+    *   **Action**: Remove the `useEffect` redirection logic that forces the user to the results page when `gameData.gameSuccess` is true.
+
+2.  **CHSH Tab** ([components/e91/play-page/tabs/CHSH-tab.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/tabs/CHSH-tab.tsx:0:0-0:0)):
+    *   **Action**: Add `useEffect` to restore state from `localStorage` on mount (offline mode).
+    *   **Reference**: Copy logic from [solo-CHSH-tab.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/tabs/solo-CHSH-tab.tsx:0:0-0:0) (lines ~60-100).
+    *   **Requirement**: Manually set component state (`setAliceBits`, `setSValue`, etc.) from the saved `e91GameData`.
+
+3.  **Messaging Tab** ([components/e91/play-page/tabs/messaging-tab.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/tabs/messaging-tab.tsx:0:0-0:0)):
+    *   **Action**: Add `useEffect` to restore chat history.
+    *   **Reference**: Copy logic from [solo-messaging-tab.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/tabs/solo-messaging-tab.tsx:0:0-0:0).
+
+**Goal**: Treat game completion as an "Offline Mode" where the browser's `localStorage` is the source of truth, not the WebSocket.
