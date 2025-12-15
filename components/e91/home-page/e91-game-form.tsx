@@ -60,6 +60,7 @@ const E91Main: React.FC = () => {
         setPartner,
         setIsAdmin,
         setPlayingSolo,
+        setPlayingMultiplayer,
     } = usePlayerStore();
     const { setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
     const { restoreGame } = useE91RoomStore();
@@ -72,7 +73,7 @@ const E91Main: React.FC = () => {
         }
         const previousGame = localStorage.getItem('e91PlayerData');
         if (previousGame) {
-            //setRejoinDialogOpen(true);
+            setRejoinDialogOpen(true);
         }
     }, [isPlayRoomConnected]);
 
@@ -166,6 +167,10 @@ const E91Main: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
+        // Clear old game data before starting new game
+        clearE91LocalStorage();
+        setPlayingMultiplayer(false);
+
         // Reset solo mode flag when joining multiplayer game
         setPlayingSolo(false);
 
@@ -187,6 +192,10 @@ const E91Main: React.FC = () => {
         evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
+
+        // Clear old game data before starting new game
+        clearE91LocalStorage();
+        setPlayingMultiplayer(false);
 
         // Reset solo mode flag when creating multiplayer game
         setPlayingSolo(false);

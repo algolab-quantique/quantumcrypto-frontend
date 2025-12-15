@@ -218,6 +218,42 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 
 ---
 
+### 13. 🔄 Multiplayer Page Reload Loses Game State
+**Status**: 🔴 URGENT - TODO  
+**Date Added**: December 12, 2025
+
+**Issue**: When a player refreshes the page during a multiplayer game, they lose their game state and cannot rejoin.
+
+**Analysis Completed**:
+
+| Data | Solo Mode | Multiplayer Mode | Status |
+|------|-----------|------------------|--------|
+| **Game Data** (bits/bases) | ✅ `solo-game.tsx` restores | ❌ `game.tsx` has NO restore | 🔴 Missing |
+| **Progress Step** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
+| **Current Tab** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
+| **Displayed Lines** | ✅ Full restoration | ⚠️ Only checks `length === 0` | 🟡 Partial |
+| **WebSocket** | N/A | ❌ Needs reconnection | 🔴 Critical |
+| **Tabs with Restore** | ✅ Solo tabs have `useEffect` | ❌ Multiplayer tabs have NONE | 🔴 Missing |
+
+**Root Causes**:
+1. **Line 75 in `e91-game-form.tsx`** - Rejoin dialog is commented out: `//setRejoinDialogOpen(true);`
+2. **`game.tsx`** - Has NO state restoration logic unlike `solo-game.tsx`
+3. **Multiplayer tabs** - No `restoreGame()` or `localStorage` reads found
+
+**Files to Modify**:
+- `components/e91/home-page/e91-game-form.tsx` - Uncomment rejoin dialog
+- `components/e91/play-page/game.tsx` - Add state restoration `useEffect`
+
+**Fix Plan**:
+1. [ ] **Step 1**: Uncomment rejoin dialog in `e91-game-form.tsx` line 75
+2. [ ] **Step 2**: Test WebSocket reconnection with `getGameProgress()` 
+3. [ ] **Step 3**: Add state restoration `useEffect` to `game.tsx` (similar to `solo-game.tsx`)
+4. [ ] **Step 4**: Test all edge cases (4 game steps with/without Eve)
+
+**Estimated Time**: ~1 hour
+
+---
+
 ### 5. 🔀 Wrong Dialog Import in Multiplayer Tabs
 **Status**: 🟡 Bug  
 **Issue**: Multiplayer tabs import `GameRestartDialog` from BB84 folder instead of E91  
@@ -333,6 +369,70 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 - Backend: Track `eve_present` and `eve_detected` for each room/iteration
 - Backend: Send this data via WebSocket to results page
 - Frontend: No changes needed (already displays the data if received)
+
+---
+
+## 🔴 NEW ISSUES FOUND (December 15, 2025)
+
+### 14. ⚠️ Multiplayer: Refresh After Game Ends Goes to Main Page
+**Status**: ✅ FIXED (December 15, 2025)  
+**Issue**: When a multiplayer game ends and shows "Félicitations, votre partenaire était...", refreshing the page redirects to the main page instead of the results table.  
+**Expected Behavior**: Refreshing should redirect to `/games/e91/{gameCode}/results`  
+
+**Root Cause**: `clearE91LocalStorage()` was called immediately after `setGameSuccess(true)`, which deleted `e91GameData` and `e91PlayerData` before the user could refresh.
+
+**Fix Applied**:
+- Removed `clearE91LocalStorage()` calls after `setGameSuccess(true)` in:
+  - `socket-provider.tsx` (line 1017)
+  - `CHSH-tab.tsx` (lines 199 and 280)
+- localStorage is now cleared when starting a new game (already handled in `e91-game-form.tsx`)
+- The existing redirect logic in `game.tsx` (lines 69-78) now works correctly
+
+---
+
+### 15. 🟡 Architecture: Inconsistent Persistence Approach Across Stores
+**Status**: 🟡 LOW PRIORITY - Future Improvement  
+**Issue**: Different stores use different persistence approaches:
+
+| Store | Persistence Method |
+|-------|-------------------|
+| `player-store.ts` | ✅ Zustand `persist()` middleware |
+| `e91-room-store.ts` | ⚠️ Manual localStorage in each setter |
+| `e91-progress-store.ts` | ⚠️ Manual localStorage in each setter |
+| `e91-game-store.ts` | ❌ **No persistence at all** |
+
+**Recommendation**: Standardize on Zustand's `persist()` middleware for all stores.
+
+---
+
+### 16. 🟡 Bug: Potential Race Condition in `updateAndStore`
+**Status**: 🟡 LOW PRIORITY  
+**Location**: `e91-room-store.ts:84-95`  
+**Issue**: Rapid updates can cause race conditions when reading/writing localStorage.
+
+**Example**:
+- Call 1: reads `{}`, writes `{a: 1}`
+- Call 2 (before Call 1 writes): reads `{}`, writes `{b: 2}`
+- Result: `{b: 2}` (lost `a: 1`)
+
+**Fix**: Use debounced writes or atomic batch updates.
+
+---
+
+### 17. 🟡 Bug: `resetRoom()` Doesn't Clear localStorage
+**Status**: 🟡 MEDIUM PRIORITY  
+**Location**: `e91-room-store.ts:234-272`  
+**Issue**: `resetRoom()` resets Zustand state but doesn't clear `e91GameData` from localStorage.
+
+**Fix**: Add `localStorage.removeItem('e91GameData')` to `resetRoom()`.
+
+---
+
+### 18. 🟢 Code Quality: No Error Handling for localStorage
+**Status**: 🟢 LOW PRIORITY  
+**Issue**: If localStorage is full or disabled (e.g., private browsing), operations fail silently.
+
+**Fix**: Add try-catch wrapper function for localStorage operations.
 
 ---
 
