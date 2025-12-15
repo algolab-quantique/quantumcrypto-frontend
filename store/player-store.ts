@@ -6,14 +6,14 @@ interface PlayerStore {
     playerId: number | null;
     playerRole: string;
     playingSolo: boolean;
-    playingMultiplayer: boolean;  // NEW: Track multiplayer session for page refresh
+    playingMultiplayer: boolean;
     isAdmin: boolean;
     partner: string;
     setPlayerName: (playerName: string) => void;
     setPlayerId: (playerName: number) => void;
     setPlayerRole: (role: string) => void;
     setPlayingSolo: (playingSolo: boolean) => void;
-    setPlayingMultiplayer: (playingMultiplayer: boolean) => void;  // NEW
+    setPlayingMultiplayer: (playingMultiplayer: boolean) => void;
     setIsAdmin: (isAdmin: boolean) => void;
     setPartner: (partner: string) => void;
     resetPlayer: () => void;
@@ -26,14 +26,14 @@ const usePlayerStore = create<PlayerStore>()(
             playerId: null,
             playerRole: 'A',
             playingSolo: false,
-            playingMultiplayer: false,  // NEW
+            playingMultiplayer: false,
             isAdmin: false,
             partner: '',
             setPlayerName: (playerName) => set({ playerName: playerName }),
             setPlayerId: (playerId) => set({ playerId: playerId }),
             setPlayerRole: (role) => set({ playerRole: role }),
             setPlayingSolo: (playingSolo) => set({ playingSolo: playingSolo }),
-            setPlayingMultiplayer: (playingMultiplayer) => set({ playingMultiplayer: playingMultiplayer }),  // NEW
+            setPlayingMultiplayer: (playingMultiplayer) => set({ playingMultiplayer: playingMultiplayer }),
             setIsAdmin: (isAdmin) => set({ isAdmin: isAdmin }),
             setPartner: (partner) => set({ partner }),
             resetPlayer: () => set({
@@ -41,13 +41,13 @@ const usePlayerStore = create<PlayerStore>()(
                 playerId: null,
                 playerRole: 'A',
                 playingSolo: false,
-                playingMultiplayer: false,  // NEW
+                playingMultiplayer: false,
                 isAdmin: false,
                 partner: '',
             }),
         }),
         {
-            name: 'player-storage', // localStorage key
+            name: 'player-storage',
         }
     )
 );
