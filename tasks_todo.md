@@ -375,18 +375,51 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 ## 🔴 NEW ISSUES FOUND (December 15, 2025)
 
 ### 14. ⚠️ Multiplayer: Refresh After Game Ends Goes to Main Page
-**Status**: ✅ FIXED (December 15, 2025)  
+**Status**: ✅ WORKAROUND APPLIED (December 15, 2025)  
 **Issue**: When a multiplayer game ends and shows "Félicitations, votre partenaire était...", refreshing the page redirects to the main page instead of the results table.  
-**Expected Behavior**: Refreshing should redirect to `/games/e91/{gameCode}/results`  
 
-**Root Cause**: `clearE91LocalStorage()` was called immediately after `setGameSuccess(true)`, which deleted `e91GameData` and `e91PlayerData` before the user could refresh.
+**Current Behavior** (Workaround): Redirect to results table on refresh  
+**Ideal Behavior**: Stay on same page with same data (like solo mode)
 
-**Fix Applied**:
-- Removed `clearE91LocalStorage()` calls after `setGameSuccess(true)` in:
-  - `socket-provider.tsx` (line 1017)
-  - `CHSH-tab.tsx` (lines 199 and 280)
-- localStorage is now cleared when starting a new game (already handled in `e91-game-form.tsx`)
-- The existing redirect logic in `game.tsx` (lines 69-78) now works correctly
+**Root Cause**: `clearE91LocalStorage()` was called immediately after `setGameSuccess(true)`, which deleted game data before user could refresh.
+
+**Workaround Applied**:
+- Removed `clearE91LocalStorage()` calls after `setGameSuccess(true)`
+- Now redirects to results table on refresh (not ideal, but works)
+
+**See Issue #19 for proper fix.**
+
+---
+
+### 19. 🔴 Multiplayer: Refresh Should Stay on Same Page (NOT Redirect to Results)
+**Status**: 🔴 TODO - HIGH PRIORITY  
+**Issue**: After game ends, refresh should keep user on the SAME page with ALL data restored (like solo mode does).
+
+**Why User is Right**:
+- All game data IS already saved to localStorage ✅
+- No server connection needed after game ends ✅
+- Solo mode DOES restore properly ✅
+- Multiplayer tabs simply **lack restoration logic** ❌
+
+**What's Saved vs What's Missing**:
+| Data | Saved? | Restored on Refresh? |
+|------|--------|---------------------|
+| Game data (bits, bases) | ✅ | ❌ Not in multiplayer tabs |
+| Current step/tab | ✅ | ❌ Not in multiplayer tabs |
+| Displayed messages | ✅ | ❌ Not in multiplayer tabs |
+
+**Root Cause**: Multiplayer components assume WebSocket is always active:
+- `solo-CHSH-tab.tsx` ✅ Has restoration `useEffect`
+- `CHSH-tab.tsx` ❌ **No restoration logic**
+- `messaging-tab.tsx` ❌ **No restoration logic**
+
+**Fix Required**:
+1. Remove redirect to results in `game.tsx`
+2. Add restoration `useEffect` to `CHSH-tab.tsx`
+3. Add restoration `useEffect` to `messaging-tab.tsx`
+4. Copy pattern from solo tabs which already work
+
+**Estimated Time**: ~1.5 hours
 
 ---
 
