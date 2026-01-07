@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
 import {
     Tooltip,
     TooltipContent,
@@ -20,20 +19,23 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/components/providers/language-provider';
-import { useSocket } from '@/components/providers/socket-provider';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
-import { DPSGameStep, inputPhaseField } from '@/types';
+import { DPSGameStep } from '@/types';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
-import { CheckCircle2, SearchCode } from 'lucide-react';
+import { SearchCode } from 'lucide-react';
+import {
+    generateRandomPhases,
+    generatePulseTrains,
+    measureArrivalTime as protocolMeasureArrivalTime
+} from '@/lib/dps/dps-protocol';
 
-
-
-const BobExchangeTab = ({ photonNumber, polarIcons }: {
+const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
     photonNumber: number,
     polarIcons: any[]
 }) => {
     const { localize } = useLanguage();
-    const { sendArrivalTimes } = useSocket();
+    // No socket for solo mode
+    // const { sendArrivalTimes } = useSocket();
 
     const {
         setStep,
@@ -41,10 +43,18 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
         setDPSTab,
     } = useDPSProgressStore();
 
-    const { alicePhotons, alicePhases, bobTimeMeasurements, setBobTimeMeasurements } = useDPSRoomStore();
+    const {
+        alicePhotons,
+        alicePhases,
+        bobTimeMeasurements,
+
+        setAlicePhotons,
+        setAlicePhases,
+        setBobTimeMeasurements
+    } = useDPSRoomStore();
+
     const arrivalTimesSent = bobTimeMeasurements.length > 0;
     const alicePhasesArrived = alicePhases.length > 0;
-
 
     const [showSendButton, setShowSendButton] = useState(false);
     const [showValidateButton, setShowValidateButton] = useState(true);
@@ -59,24 +69,38 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
 
     const measured = measurements.some(time => time !== null);
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // SOLO COMPUTER LOGIC: Computer Alice sends pulses
+    // ═══════════════════════════════════════════════════════════════════════
+    useEffect(() => {
+        // If Alice hasn't sent pulses yet, Computer Alice acts
+        if (alicePhotons.length === 0) {
+            // pushLines([{ content: 'Alice is preparing pulses...' }]); // Optional: "Alice prepares..."
+
+            setTimeout(() => {
+                const phases = generateRandomPhases(photonNumber);
+                const photons = generatePulseTrains(phases);
+
+                setAlicePhases(phases);
+                setAlicePhotons(photons);
+
+                pushLines([{ content: 'component.bobExchange.photonsArrived' }]);
+                pushLines([{
+                    title: 'component.game.step1',
+                    content: 'component.bobExchange.Measurement'
+                }]);
+            }, 2000);
+        }
+    }, [alicePhotons.length, photonNumber, setAlicePhases, setAlicePhotons, pushLines]);
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BOB ACTIONS
+    // ═══════════════════════════════════════════════════════════════════════
 
     const measureArrivalTime = () => {
-        const probabilities = [1 / 6, 2 / 6, 2 / 6, 1 / 6];
-        const times = ['T0', 'T1', 'T2', 'T3'];
-
-        const getRandomTime = () => {
-            const random = Math.random();
-            let cumulativeProbability = 0;
-            for (let i = 0; i < probabilities.length; i++) {
-                cumulativeProbability += probabilities[i];
-                if (random < cumulativeProbability) {
-                    return times[i];
-                }
-            }
-            return times[times.length - 1] || "";
-        };
-
-        const newArrivalTimes = Array.from({ length: photonNumber }, () => getRandomTime());
+        // Use protocol function
+        const newArrivalTimes = protocolMeasureArrivalTime(photonNumber);
         setMeasurements(newArrivalTimes);
 
         setValidatedTimes(newArrivalTimes.map(value => ({
@@ -121,15 +145,7 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     const onSendTimes = () => {
         if (!isValidated) return;
 
-        // OPTION B REFACTOR: Keep original time values instead of converting to ''
-        // This is more pedagogical - other tabs will explicitly check for T1/T2
-        // OLD CODE (commented for safety):
-        // const validTimes = validatedTimes.map(({ discarded, value }) => 
-        //     discarded ? "" : value
-        // );
-
-        // NEW CODE: Keep original values (T0, T1, T2, T3)
-        // Other components will check: time === 'T1' || time === 'T2'
+        // Keep original T0-T3 values (Option B)
         const allTimes = validatedTimes.map(({ value }) => value);
 
         console.log("allTimes: ", allTimes);
@@ -138,10 +154,10 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
         toast.success(localize('component.bobExchange.timesSent'));
         pushLines([{ content: 'component.bobExchange.sentTimes' }]);
 
-        sendArrivalTimes(allTimes as string[]);
+        // NO SOCKET CALL
+        // sendArrivalTimes(allTimes as string[]);
 
         setTimeout(() => {
-
             setStep(DPSGameStep.MESSAGING);
             setDPSTab('messaging');
             pushLines([
@@ -150,7 +166,6 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
                     content: 'component.bobExchange.secretKey',
                 },
             ]);
-
         }, 1000);
     };
 
@@ -240,4 +255,4 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     );
 };
 
-export default BobExchangeTab;
+export default SoloBobExchangeTab;

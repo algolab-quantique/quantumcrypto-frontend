@@ -52,19 +52,19 @@ export const useLanguage = () => {
     return context;
 };
 
-export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
+export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
     const [language, setLanguage] = useState(Language.FRENCH);
     const pathname = usePathname();
     const pathParts = pathname ? pathname.split("/") : [];
- 
+
 
     const gameType = (pathParts[1] as Game) || Game.QUANTUMCRYPTO;
-    const isGameActive = pathParts[2] === 'play';
-   
+    const isGameActive = pathParts[2] === 'play' || pathParts[2] === 'solo';
+
 
     const currentGame = isGameActive && Object.values(Game).includes(gameType)
-    ? gameType.toUpperCase()
-    : Game.QUANTUMCRYPTO.toUpperCase();
+        ? gameType.toUpperCase()
+        : Game.QUANTUMCRYPTO.toUpperCase();
     const currentGameLines = gameLines[currentGame] || [];
 
 
@@ -73,7 +73,7 @@ export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
 
         const languageItem = currentGameLines[language];
         let result = languageItem?.[str] || str;
-       
+
         if (extra) {
             result = result + " " + extra;
         }
@@ -84,7 +84,7 @@ export const LanguageProvider = ({children}: { children: React.ReactNode }) => {
         setLanguage,
         localize,
     };
-    
+
     return (
         <LanguageContext.Provider value={contextValue}>
             {children}

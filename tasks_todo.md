@@ -2661,3 +2661,275 @@ Fixes: Results table showing "No rooms finished" despite completed games
     *   **Reference**: Copy logic from [solo-messaging-tab.tsx](cci:7://file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/components/e91/play-page/tabs/solo-messaging-tab.tsx:0:0-0:0).
 
 **Goal**: Treat game completion as an "Offline Mode" where the browser's `localStorage` is the source of truth, not the WebSocket.
+
+---
+
+# 🎮 DPS Solo Mode Implementation Plan
+
+**Created**: January 5, 2026  
+**Status**: 🟡 IN PROGRESS  
+**Priority**: HIGH  
+**Reference**: E91 Solo Mode (already implemented and working)
+
+---
+
+## 📋 Overview
+
+Implement **solo mode for DPS** following the exact same pattern as E91 solo mode:
+- **New files only** - No changes to existing multiplayer code
+- **Same interface** for the player - Identical experience to multiplayer
+- **Local simulation** - The "partner" is the computer
+- **Step-by-step implementation** with testing at each step
+
+---
+
+## 📁 Files to Create
+
+| E91 Solo Mode (Reference) | DPS Solo Mode (TO CREATE) | Status |
+|---------------------------|---------------------------|--------|
+| `lib/e91/solo-player.ts` | `lib/dps/solo-player.ts` | 🟡 IN PROGRESS |
+| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx` | ⬜ TODO |
+| `components/e91/play-page/solo-game.tsx` | `components/dps/play-page/solo-game.tsx` | ⬜ TODO |
+| `solo-measurement-tab.tsx` | `solo-alice-exchange-tab.tsx` | ⬜ TODO |
+| `solo-basis-tab.tsx` | `solo-bob-exchange-tab.tsx` | ⬜ TODO |
+| `solo-CHSH-tab.tsx` | `solo-alice-inference-tab.tsx` | ⬜ TODO |
+| `solo-messaging-tab.tsx` | `solo-alice-messaging-tab.tsx` | ⬜ TODO |
+| N/A (E91 symmetric) | `solo-bob-messaging-tab.tsx` | ⬜ TODO |
+| `app/(main)/e91/solo-results/page.tsx` | `app/(main)/dps/solo-results/page.tsx` | ⬜ TODO |
+| `solo-results-table.tsx` | `components/dps/results-page/solo-results-table.tsx` | ⬜ TODO |
+
+---
+
+## 🎮 DPS Protocol Flow (Multiplayer → Solo Mapping)
+
+### Alice's Flow (3 tabs)
+| Step | Tab | Multiplayer Action | Solo Mode Simulation |
+|------|-----|-------------------|----------------------|
+| 1 | Exchange | Send phases via WebSocket | Store locally, simulate Bob's time measurements |
+| 2 | Inference | Receive Bob's times via WebSocket | Use simulated Bob's times |
+| 3 | Messaging | Send encrypted message | Local encryption/verification |
+
+### Bob's Flow (2 tabs)
+| Step | Tab | Multiplayer Action | Solo Mode Simulation |
+|------|-----|-------------------|----------------------|
+| 1 | Exchange | Receive Alice's phases, send times | Simulate Alice's phases, store times locally |
+| 2 | Messaging | Decrypt message | Local decryption |
+
+---
+
+## 📝 Implementation Phases
+
+### Phase 1: Core Simulation (`lib/dps/solo-player.ts`)
+**Status**: 🟡 IN PROGRESS
+
+**Tasks**:
+- [ ] Create simulation functions based on backend Python logic
+- [ ] `generateRandomPhases(n)` - Alice's phase choices (0 or π)
+- [ ] `generatePulseTrains(phases)` - Modulated pulse trains
+- [ ] `simulateBobTimeMeasurement(pulses)` - Bob measures arrival times
+- [ ] `generateAliceInference(bobTimes, alicePhases)` - Alice infers key bits
+- [ ] `eveIntercept()` - Eve disruption simulation
+
+**Backend Reference**: Need to check DPS consumers.py for simulation logic
+
+---
+
+### Phase 2: Solo Game Modal (`components/dps/home-page/solo-game-modal.tsx`)
+**Status**: ⬜ TODO
+
+**Tasks**:
+- [ ] Create modal with role selection (Alice/Bob)
+- [ ] Add game settings form (photon count, Eve toggle)
+- [ ] Connect to player-store and dps-game-store
+- [ ] Navigate to `/dps/play` on start
+
+---
+
+### Phase 3: Solo Game Container (`components/dps/play-page/solo-game.tsx`)
+**Status**: ⬜ TODO
+
+**Tasks**:
+- [ ] Create main container with conditional tabs by role
+- [ ] Handle localStorage state restoration
+- [ ] Import solo tab components
+
+---
+
+### Phase 4: Solo Tab Components
+**Status**: ⬜ TODO
+
+#### 4.1: `solo-alice-exchange-tab.tsx`
+- [ ] Copy from `alice-exchange-tab.tsx`
+- [ ] Remove `useSocket()` and `sendPhases()` calls
+- [ ] Add local simulation for Bob's measurements
+
+#### 4.2: `solo-bob-exchange-tab.tsx`
+- [ ] Copy from `bob-exchange-tab.tsx`
+- [ ] Remove WebSocket dependencies
+- [ ] Simulate Alice's phases locally
+
+#### 4.3: `solo-alice-inference-tab.tsx`
+- [ ] Copy from `alice-inference-tab.tsx`
+- [ ] Use locally stored Bob measurements
+
+#### 4.4: `solo-alice-messaging-tab.tsx`
+- [ ] Copy from `alice-messaging-tab.tsx`
+- [ ] Local encryption/decryption
+
+#### 4.5: `solo-bob-messaging-tab.tsx`
+- [ ] Copy from `bob-messaging-tab.tsx`
+- [ ] Local decryption verification
+
+---
+
+### Phase 5: Route & Navigation
+**Status**: ⬜ TODO
+
+**Tasks**:
+- [ ] Create `app/(main)/dps/solo-results/page.tsx`
+- [ ] Create `components/dps/results-page/solo-results-table.tsx`
+- [ ] Update `dps-progression.tsx` for solo navigation
+
+---
+
+### Phase 6: Localization & Polish
+**Status**: ⬜ TODO
+
+**Tasks**:
+- [ ] Add localization keys to `lang/dps-lines.ts`
+- [ ] Test all 3 languages (EN/FR/ES)
+- [ ] Verify identical UI to multiplayer
+- [ ] Update `dps-game-form.tsx` to show solo button
+
+---
+
+## 🔧 Key Differences from E91
+
+| Aspect | E91 | DPS |
+|--------|-----|-----|
+| **Role symmetry** | Alice and Bob symmetric (same tabs) | Alice and Bob have DIFFERENT tabs |
+| **Tab count** | 4 tabs for both | Alice: 3 tabs, Bob: 2 tabs |
+| **Data type** | Bases + bits | Phases + time measurements |
+| **Key generation** | Matching bases | Phase inference from times |
+
+---
+
+## ⏱️ Time Estimates
+
+| Phase | Estimated Time |
+|-------|----------------|
+| Phase 1: Core Simulation | 2-3 hours |
+| Phase 2: Solo Game Modal | 1-2 hours |
+| Phase 3: Solo Game Container | 1 hour |
+| Phase 4: Solo Tab Components | 4-6 hours |
+| Phase 5: Route & Navigation | 1-2 hours |
+| Phase 6: Localization & Polish | 1 hour |
+| **Total** | **10-15 hours** |
+
+---
+
+## ✅ Testing Strategy
+
+### After Each Phase
+1. Verify no multiplayer code affected (run multiplayer game)
+2. Test the specific feature implemented
+3. Check localStorage persistence (refresh page)
+
+### Full Integration Test
+1. Start solo game as Alice → complete all steps → see results
+2. Start solo game as Bob → complete all steps → see results
+3. Test with Eve enabled → verify detection works
+4. Refresh page mid-game → verify restoration works
+
+---
+
+## 📝 Notes
+
+- **Backend reference needed**: Check DPS `consumers.py` for simulation logic (especially time measurement and phase inference)
+- **Same pattern as E91**: Keep implementation consistent with E91 solo mode for maintainability
+- **No multiplayer changes**: All new files, never modify existing multiplayer components
+
+---
+
+## 🔧 DPS UI/UX Improvements (Low Priority - Protocol Accuracy)
+
+These issues were identified during code review. The current implementation works but doesn't perfectly reflect the DPS protocol conceptually.
+
+### Issue 1: Bob's Time Deletion UI (Protocol Mismatch)
+
+**Current Behavior:**
+- Bob sees times T0, T1, T2, T3 in his UI
+- Bob is asked to **delete/discard** T0 and T3 manually BEFORE sending to Alice
+- After deletion, Bob sends filtered times to Alice
+
+**Correct Protocol Behavior:**
+- Bob should send **ALL times** (T0, T1, T2, T3) to Alice
+- AFTER sending, both Alice and Bob compute the key using **only T1 and T2**
+- T0 and T3 are discarded during KEY COMPUTATION, not before communication
+
+**Why This Matters:**
+- The current UI suggests Bob "filters" before sending, which is conceptually wrong
+- In the real protocol, Bob publicly announces ALL detection times
+- The filtering happens AFTER, during key extraction
+
+**Proposed Fix:**
+- [ ] Remove the "discard T0/T3" step from Bob's exchange UI
+- [ ] Bob sends all times to Alice
+- [ ] Both parties filter T0/T3 when computing the key (not during exchange)
+- [ ] Update UI messages to reflect this
+
+**Files to Modify:**
+- `components/dps/play-page/tabs/bob-exchange-tab.tsx` - Remove discard step
+- `components/dps/play-page/tabs/alice-inference-tab.tsx` - Already correct (filters during key computation)
+- `components/dps/play-page/tabs/bob-messaging-tab.tsx` - Already correct
+
+---
+
+### Issue 2: Alice's Time Display Order (T3, T2, T1, T0 vs T0, T1, T2, T3)
+
+**Current Behavior:**
+- In Alice's inference tab, times are displayed in reverse order: T3, T2, T1, T0 (right to left)
+- This might be intentional to show "arrival order" (T0 arrives first = rightmost)
+
+**Question:**
+- Is this the best visual representation?
+- Should we show T0, T1, T2, T3 (left to right) for consistency with how we talk about them?
+
+**Proposed Actions:**
+- [ ] Evaluate if current display order is pedagogically clear
+- [ ] If confusing, change to T0, T1, T2, T3 order (left to right)
+- [ ] Add visual labels/legend explaining the time relationship to pulses
+
+**Files to Check:**
+- `components/dps/play-page/tabs/alice-inference-tab.tsx` - Table display order
+
+---
+
+### Priority: LOW
+These are cosmetic/pedagogical improvements. The protocol works correctly - this is about making the UI better reflect the actual protocol steps.
+
+### When to Address:
+- After completing DPS Solo Mode implementation
+- After DPS Results Table implementation
+- During a "polish" phase
+
+---
+
+### Issue 3: Eve Implementation for DPS (LOW PRIORITY)
+
+**Status:** Not implemented in multiplayer or solo mode
+
+**Design Questions:**
+- At which step does Eve intercept?
+- What information can Eve learn?
+- How do Alice and Bob detect Eve's presence?
+- What error rate indicates eavesdropping?
+
+**Proposed Actions:**
+- [ ] Research DPS eavesdropping detection mechanism
+- [ ] Add Eve option to create-game-modal (multiplayer)
+- [ ] Add Eve option to solo-game-modal (solo)
+- [ ] Implement Eve interception logic
+- [ ] Implement Eve detection/error rate checking
+
+**Priority:** LOW - Focus on solo mode first, then add Eve later

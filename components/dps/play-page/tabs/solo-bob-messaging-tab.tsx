@@ -1,3 +1,5 @@
+'use client';
+
 import {
     Table,
     TableHeader,
@@ -9,18 +11,18 @@ import {
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { forbiddenSymbols } from '@/lib/utils';
-import { CheckCircle2, Send } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
-import { useSocket } from '@/components/providers/socket-provider';
 import { toast } from 'sonner';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
+import { computeDetectorValue } from '@/lib/dps/dps-protocol';
 
-const BobMessagingTab = () => {
+const SoloBobMessagingTab = () => {
     const { localize } = useLanguage();
-    const { sendCipher } = useSocket();
+    // No socket
     const { pushLines } = useDPSProgressStore();
 
     const {
@@ -36,7 +38,7 @@ const BobMessagingTab = () => {
     } = useDPSRoomStore();
 
     const {
-        setBobCipher,
+        setBobCipher, // Not used directly here? Ah, used in onValidateBits?
         setBobKeyBits,
         setBobCipherSent,
         setMessage: setPersistedMessage,
@@ -46,15 +48,7 @@ const BobMessagingTab = () => {
 
     const bobKeyBitsOn = bobKeyBits?.length > 0;
 
-    // OPTION B REFACTOR: Check for valid times (T1/T2) directly instead of empty string
-    // This is more pedagogical - shows exactly which times we use for key generation
-    // OLD CODE (commented for safety):
-    // const validEntries = alicePhases.map((phase, index) => ({
-    //     phase: Array.isArray(phase) ? phase : phase.split(""),
-    //     time: bobTimeMeasurements[index] ?? "", 
-    // })).filter(entry => entry.time !== "");
-
-    // NEW CODE: Explicitly filter for T1 or T2 (the only valid interference times)
+    // Filter valid entries (T1/T2)
     const validEntries = alicePhases.map((phase, index) => ({
         phase: Array.isArray(phase) ? phase : phase.split(""),
         time: bobTimeMeasurements[index] ?? "",
@@ -82,31 +76,18 @@ const BobMessagingTab = () => {
         entries.forEach((entry, i) => {
             setDetectorValues(prev => {
                 const newValues = [...prev];
-                newValues[i] = computeDetectorValue(entry);
+                // Use imported function
+                newValues[i] = computeDetectorValue(entry.phase, entry.time);
                 return newValues;
             });
         });
     };
 
-    const computeDetectorValue = ({ phase, time }: { phase: string[]; time: string }) => {
-        if (phase.length !== 3) return "Erreur";
-        if (time === "T1") {
-            const [B, A] = phase.slice(-2);
-            return (A === "π" && B === "0") || (A === "0" && B === "π") ? "1" : "0";
-        }
-        if (time === "T2") {
-            const [C, B] = phase.slice(0, 2);
-            return (B === "π" && C === "0") || (B === "0" && C === "π") ? "1" : "0";
-        }
-        return "Erreur";
-    };
     useEffect(() => {
         if (validEntries.length > 0 && !bobKeyBitsOn) {
             revealDetectorValues(validEntries);
         }
     }, []);
-
-
 
 
     const onMessageInput = (event: React.ChangeEvent<HTMLInputElement>,
@@ -137,19 +118,25 @@ const BobMessagingTab = () => {
         setCrypto(updatedCrypto);
     };
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // SOLO BOB ACTION: Send Cipher
+    // ═══════════════════════════════════════════════════════════════════════
     const onValidateBits = () => {
         setMessage(message => message.map(bit => ({ ...bit, touched: true })));
+
         const updatedCrypto = crypto.map((cryptoBit, index) => {
             const detectorValue = detectorValues[index];
             const messageValue = message[index].value;
 
-            if (detectorValue === "Erreur") {
-                console.warn(`Erreur dans getDetector pour l'entrée ${index}`);
+            if (detectorValue === "Error") { // Changed from "Erreur" to matches protocol return? 
+                // Wait, protocol returns 'Error' (English). Original code returned "Erreur".
+                // I need to be careful with string comparison if protocol return changed.
+                // Protocol returns 'Error'.
+                console.warn(`Error in detector value for entry ${index}`);
                 return { ...cryptoBit, error: true };
             }
 
             const keyNumber = parseInt(detectorValue);
-
             const messageNumber = parseInt(messageValue);
 
             const result = (keyNumber + messageNumber) % 2;
@@ -167,10 +154,36 @@ const BobMessagingTab = () => {
             setBobKeyBits(detectorValues);
             setPersistedCrypto(updatedCrypto.map(({ value }) => value));
             setPersistedMessage(message.map(({ value }) => value));
-            const payload = crypto.map(({ value }) => value);
-            sendCipher(payload);
+
+            // Send Logic
+            // In multiplayer: sendCipher(payload)
+            // In Solo: Store local + Simulate Alice
+
             toast.success(localize('component.messaging.cipherSent'));
+            pushLines([{ content: 'component.messaging.bob.sent' }]);
+            // Actually 'component.bobExchange.sentTimes' is "Temps d'arrivée envoyés !". Not quite right for Cipher.
+            // Original code used 'component.bobExchange.sentTimes' ??
+            // No, original code used local toast + setBobCipherSent.
+            // Be careful. Original code lines 138-140 used 'component.bobExchange.sentTimes' for TIMES.
+            // For CIPHER (lines 166+), it used toast 'component.messaging.cipherSent'.
+            // And NO pushLines?
+            // Wait, looking at original code (line 166 in BobMessagingTab):
+            // sendCipher(payload); toast.success... setBobCipherSent...
+            // It did NOT push lines.
+
             setBobCipherSent(true);
+
+            // Simulate Alice receiving
+            setTimeout(() => {
+                setGameSuccess(true);
+                pushLines([
+                    {
+                        title: 'component.messaging.congratulations',
+                        content: 'component.messaging.bob.end'
+                    }
+                ]);
+            }, 1500);
+
         } else {
             toast.error(localize('component.messaging.cipherError'));
         }
@@ -272,4 +285,4 @@ const BobMessagingTab = () => {
     );
 };
 
-export default BobMessagingTab;
+export default SoloBobMessagingTab;

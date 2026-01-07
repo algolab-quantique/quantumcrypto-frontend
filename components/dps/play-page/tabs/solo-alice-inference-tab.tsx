@@ -1,3 +1,5 @@
+'use client';
+
 import {
     Table,
     TableHeader,
@@ -8,19 +10,17 @@ import {
 } from '@/components/ui/table';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DPSGameStep, inputPhaseField } from '@/types';
+import { DPSGameStep } from '@/types';
 import { useLanguage } from '@/components/providers/language-provider';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
-import { CheckCircle2, Info } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
-
-
-const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
+const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     const { localize } = useLanguage();
+    // No socket needed
 
     const {
         setStep,
@@ -32,22 +32,13 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         alicePhases,
         bobTimeMeasurements,
         alicePhotons,
-        gameSuccess,
         bobCipher,
     } = useDPSRoomStore();
 
     const { inferredPhases, setInferredPhases } = useDPSRoomStore();
     const phaseInferred = inferredPhases.length > 0;
 
-
-    // OPTION B REFACTOR: Check for valid times (T1/T2) directly instead of empty string
-    // This is more pedagogical - shows exactly which times we use for key generation
-    // OLD CODE (commented for safety):
-    // const validIndices = bobTimeMeasurements
-    //     .map((time, index) => time !== "" ? index : null)
-    //     .filter(index => index !== null);
-
-    // NEW CODE: Explicitly check for T1 or T2 (the only valid interference times)
+    // Filter valid indices (T1/T2)
     const validIndices = bobTimeMeasurements
         .map((time, index) => (time === 'T1' || time === 'T2') ? index : null)
         .filter(index => index !== null);
@@ -57,7 +48,6 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         time: bobTimeMeasurements[index],
         photon: alicePhotons[index] || '-',
     }));
-
 
     const [inferences, setInferences] = useState(() => {
         return validEntries.map(() => ({
@@ -79,7 +69,6 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         setInferences(updatedInferences);
     };
 
-
     const DetectorPhase = (entries: { phase: string[]; time: string }[]) => {
         return entries.map(({ phase, time }) => {
             if (phase.length !== 3) return "Erreur";
@@ -95,6 +84,9 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         });
     };
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // SOLO ACTION: Validate Inference
+    // ═══════════════════════════════════════════════════════════════════════
     const onValidateInference = () => {
         const expectedValues = DetectorPhase(validEntries);
 
@@ -107,16 +99,16 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
 
         const allValid = !validatedInferences.some((inference) => inference.error);
 
-
         if (allValid) {
             setInferredPhases(validatedInferences.map(({ value }) => value));
             toast.success(localize('component.aliceInference.success'));
-
 
             setTimeout(() => {
                 setStep(DPSGameStep.MESSAGING);
                 setDPSTab('messaging');
 
+                // If bobCipher is not present (which it won't be in solo until next tab), 
+                // we'll handle message generation in solo-alice-messaging-tab.tsx
                 if (!bobCipher || bobCipher.length === 0) {
                     pushLines([{ content: 'component.messaging.alice.start' }]);
                 }
@@ -126,7 +118,6 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
             toast.error(localize('component.aliceInference.error'));
         }
     };
-
 
     return (
         <div className="block border text-card-foreground border-secondary bg-card shadow-lg rounded-lg">
@@ -230,6 +221,4 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     );
 };
 
-
-export default AliceInferenceTab;
-
+export default SoloAliceInferenceTab;
