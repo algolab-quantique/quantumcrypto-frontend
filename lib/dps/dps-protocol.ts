@@ -651,6 +651,23 @@ export const computeDetectorPhase = (phase: string[], time: string): string => {
         return ((B === 'π' && C === '0') || (B === '0' && C === 'π')) ? 'π' : '0';
     }
 
+    /**
+     * LOGIC NOTE: Unreachable Return "Error"
+     * 
+     * Why is this here?
+     * This function effectively requires `time` to be strictly 'T1' or 'T2'.
+     * If `time` is 'T0' or 'T3' (or invalid), we return 'Error'.
+     * 
+     * Is this safe?
+     * Yes. In the UI code (and protocol logic), we strictly filter for VALID_TIMES (T1, T2)
+     * *before* calling this function.
+     * Example: `validEntries.map(...)` in inference tabs is derived from filtered indices.
+     * 
+     * Why keep it?
+     * 1. TypeScript requires a return value for all code paths.
+     * 2. It serves as run-time defensive programming: if a T0/T3 ever leaks in, 
+     *    we get an explicit 'Error' string rather than undefined behavior or a wrong phase.
+     */
     return 'Error';
 };
 

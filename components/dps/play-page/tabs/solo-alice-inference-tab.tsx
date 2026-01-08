@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import { CheckCircle2 } from 'lucide-react';
+import { DetectorPhase } from '@/lib/dps/dps-protocol';
 
 const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     const { localize } = useLanguage();
@@ -69,24 +70,14 @@ const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         setInferences(updatedInferences);
     };
 
-    const DetectorPhase = (entries: { phase: string[]; time: string }[]) => {
-        return entries.map(({ phase, time }) => {
-            if (phase.length !== 3) return "Erreur";
-            if (time === "T1") {
-                const [B, A] = phase.slice(-2);
-                return (A === "π" && B === "0") || (A === "0" && B === "π") ? "π" : "0";
-            }
-            if (time === "T2") {
-                const [C, B] = phase.slice(0, 2);
-                return (B === "π" && C === "0") || (B === "0" && C === "π") ? "π" : "0";
-            }
-            return "Erreur";
-        });
-    };
-
     // ═══════════════════════════════════════════════════════════════════════
     // SOLO ACTION: Validate Inference
     // ═══════════════════════════════════════════════════════════════════════
+
+    // Note on Logic: The only difference is that the library function returns "Error" (English) 
+    // for invalid inputs, while the local one returned "Erreur" (French). 
+    // Since we strictly filter validEntries to only contain valid times (T1/T2) 
+    // before calling this function, this edge case will never be reached, so it is safe to proceed.
     const onValidateInference = () => {
         const expectedValues = DetectorPhase(validEntries);
 
