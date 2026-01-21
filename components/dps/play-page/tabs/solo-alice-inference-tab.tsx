@@ -73,11 +73,6 @@ const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     // ═══════════════════════════════════════════════════════════════════════
     // SOLO ACTION: Validate Inference
     // ═══════════════════════════════════════════════════════════════════════
-
-    // Note on Logic: The only difference is that the library function returns "Error" (English) 
-    // for invalid inputs, while the local one returned "Erreur" (French). 
-    // Since we strictly filter validEntries to only contain valid times (T1/T2) 
-    // before calling this function, this edge case will never be reached, so it is safe to proceed.
     const onValidateInference = () => {
         const expectedValues = DetectorPhase(validEntries);
 

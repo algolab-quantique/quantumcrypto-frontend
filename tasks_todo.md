@@ -469,6 +469,28 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 
 ---
 
+### 20. 🟢 Minor Hydration Flash (Language & Stats)
+**Status**: 🟢 VERY LOW PRIORITY - Standard SSR Behavior  
+**Date Added**: January 21, 2026
+
+**Issue**: On page load, there's a very brief (~50-100ms) flash where:
+- Language shows English before switching to user's saved language (FR/ES)
+- Game stats show 0 before loading from localStorage
+
+**Why This Happens**: This is **standard Next.js SSR behavior**. The server doesn't have access to client localStorage, so it renders defaults first. After hydration, React loads the persisted state.
+
+**What's Already Fixed**: ✅ Theme (dark/light mode) flash is fixed using CSS-based switching (`dark:hidden` / `hidden dark:block` pattern in `title.tsx`).
+
+**Should We Fix This?**: 
+- ❌ **Not recommended** - The effort significantly outweighs the benefit
+- Most users will not perceive this 50-100ms flash
+- Fixing requires blocking scripts or significant architectural changes
+- This is how most production Next.js apps behave
+
+**Decision**: Leave as-is. This is the lowest priority item - only consider if all other tasks are complete and there's nothing else to do.
+
+---
+
 ## 📋 IMPLEMENTATION ORDER (Updated)
 
 1. ~~**#2** - Page reload persistence~~ ✅ DONE
