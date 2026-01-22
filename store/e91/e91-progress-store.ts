@@ -24,7 +24,10 @@ export const useE91ProgressStore = create<E91ProgressStore>((set) => ({
         localStorage.setItem('e91Tab', tab);
         set({e91Tab: tab});
     },
-    setDisplayedLines: (lines) => set({displayedLines: lines}),
+    setDisplayedLines: (lines) => {
+        localStorage.setItem('e91DisplayedLines', JSON.stringify(lines));
+        set({displayedLines: lines});
+    },
     pushLines: (lines) => set((state) => {
         const updatedLines = [...state.displayedLines, ...lines];
         localStorage.setItem('e91DisplayedLines',
@@ -33,9 +36,15 @@ export const useE91ProgressStore = create<E91ProgressStore>((set) => ({
             displayedLines: updatedLines,
         };
     }),
-    resetProgress: () => set({
-        e91Tab: 'measurement',
-        step: E91GameStep.MEASUREMENT,
-        displayedLines: [],
-    }),
+    resetProgress: () => {
+        // Clear localStorage to prevent old messages from being restored
+        localStorage.removeItem('e91DisplayedLines');
+        localStorage.removeItem('e91Tab');
+        localStorage.removeItem('e91Step');
+        set({
+            e91Tab: 'measurement',
+            step: E91GameStep.MEASUREMENT,
+            displayedLines: [],
+        });
+    },
 }));

@@ -12,6 +12,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.measurement.welcome': 'Welcome to E91!',
         'component.e91.measurement.start': 'Choose a measurement basis for each photon.',
         'component.e91.measurement.tab': 'Photon measurements',
+        'component.e91.bobMeasured': 'Bob has completed his measurements.',
+        'component.e91.aliceMeasured': 'Alice has completed her measurements.',
         'component.e91.basis': 'Basis',
         'component.e91.random': 'Random',
         'component.game.step1': 'Step 1: ',
@@ -91,6 +93,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'Waiting for Alice\'s bases.',
         'component.e91.basis.arrivedFrom.bob': 'Bob\'s bases have arrived!',
         'component.e91.basis.arrivedFrom.alice': 'Alice\'s bases have arrived!',
+        'component.e91.basisTab.alertTitle': 'Not enough bits!',
+        'component.e91.basisTab.alertDescription': 'The key is too short to continue. You need to restart the game.',
+        'component.e91.gameRestart.restart': 'Restart',
+        'component.e91.gameProgressionTitle': 'Game Progression',
+        'component.game.gameProgressionTitle': 'Game Progression',
     },
     {
          // ... (French translations)
@@ -98,6 +105,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.measurement.welcome': 'Bienvenue dans E91!',
         'component.e91.measurement.start': 'Choisissez une base de mesure pour chaque photon.',
         'component.e91.measurement.tab': 'Mesure des photons',
+        'component.e91.bobMeasured': 'Bob a terminé ses mesures.',
+        'component.e91.aliceMeasured': 'Alice a terminé ses mesures.',
         'component.e91.basis': 'Base',
         'component.e91.random': 'Aléatoire',
         'component.game.step1': 'Étape 1: ',
@@ -182,6 +191,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'En attente des bases d\'Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Les bases de Bob sont arrivées!',
         'component.e91.basis.arrivedFrom.alice': 'Les bases d\'Alice sont arrivées!',
+        'component.e91.basisTab.alertTitle': 'Pas assez de bits !',
+        'component.e91.basisTab.alertDescription': 'La clé est trop courte pour continuer. Vous devez redémarrer le jeu.',
+        'component.e91.gameRestart.restart': 'Redémarrer',
+        'component.e91.gameProgressionTitle': 'Progression du jeu',
+        'component.game.gameProgressionTitle': 'Progression du jeu',
         
     },
     {
@@ -191,6 +205,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.measurement.welcome': '¡Bienvenido a E91!',
         'component.e91.measurement.start': 'Elige una base de medición para cada fotón.',
         'component.e91.measurement.tab': 'Mediciones de fotones',
+        'component.e91.bobMeasured': 'Bob ha completado sus mediciones.',
+        'component.e91.aliceMeasured': 'Alice ha completado sus mediciones.',
         'component.e91.basis': 'Base',
         'component.e91.random': 'Aleatorio',
         'component.game.step1': 'Paso 1: ',
@@ -270,6 +286,11 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.basis.waitingOn.alice': 'Esperando las bases de Alice.',
         'component.e91.basis.arrivedFrom.bob': 'Las bases de Bob han llegado!',
         'component.e91.basis.arrivedFrom.alice': 'Las bases de Alice han llegado!',
+        'component.e91.basisTab.alertTitle': '¡No hay suficientes bits!',
+        'component.e91.basisTab.alertDescription': 'La clave es demasiado corta para continuar. Debes reiniciar el juego.',
+        'component.e91.gameRestart.restart': 'Reiniciar',
+        'component.e91.gameProgressionTitle': 'Progresión del juego',
+        'component.game.gameProgressionTitle': 'Progresión del juego',
     }
     
 ];

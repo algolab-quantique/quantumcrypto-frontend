@@ -3,13 +3,13 @@ import {
     TableHeader,
     TableRow,
     TableHead,
-    TableBody, 
+    TableBody,
     TableCell
 } from '@/components/ui/table';
 import React, { useState, useEffect } from 'react';
-import {cn} from '@/lib/utils';
-import {forbiddenSymbols} from '@/lib/utils';
-import {CheckCircle2, Send} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { forbiddenSymbols } from '@/lib/utils';
+import { CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -21,10 +21,10 @@ import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 const BobMessagingTab = () => {
     const { localize } = useLanguage();
     const { sendCipher } = useSocket();
-    const {pushLines} = useDPSProgressStore();
+    const { pushLines } = useDPSProgressStore();
 
-    const { 
-        alicePhases, 
+    const {
+        alicePhases,
         bobTimeMeasurements,
         bobCipher,
         bobKeyBits,
@@ -43,15 +43,23 @@ const BobMessagingTab = () => {
         setCrypto: setPersistedCrypto,
         setGameSuccess,
     } = useDPSRoomStore();
-    
+
     const bobKeyBitsOn = bobKeyBits?.length > 0;
-   
-    // Filter phases with valid time
+
+    // OPTION B REFACTOR: Check for valid times (T1/T2) directly instead of empty string
+    // This is more pedagogical - shows exactly which times we use for key generation
+    // OLD CODE (commented for safety):
+    // const validEntries = alicePhases.map((phase, index) => ({
+    //     phase: Array.isArray(phase) ? phase : phase.split(""),
+    //     time: bobTimeMeasurements[index] ?? "", 
+    // })).filter(entry => entry.time !== "");
+
+    // NEW CODE: Explicitly filter for T1 or T2 (the only valid interference times)
     const validEntries = alicePhases.map((phase, index) => ({
         phase: Array.isArray(phase) ? phase : phase.split(""),
-        time: bobTimeMeasurements[index] ?? "", 
-    })).filter(entry => entry.time !== "");
-    
+        time: bobTimeMeasurements[index] ?? "",
+    })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
+
     const [message, setMessage] = useState(() => {
         return validEntries.map(() => ({
             value: '',
@@ -59,7 +67,7 @@ const BobMessagingTab = () => {
             error: true,
         }));
     });
-    
+
     const [crypto, setCrypto] = useState(() => {
         return validEntries.map(() => ({
             value: '',
@@ -72,55 +80,55 @@ const BobMessagingTab = () => {
 
     const revealDetectorValues = (entries: { phase: string[]; time: string }[]) => {
         entries.forEach((entry, i) => {
-                setDetectorValues(prev => {
-                    const newValues = [...prev];
-                    newValues[i] = computeDetectorValue(entry);
-                    return newValues;
-                });
+            setDetectorValues(prev => {
+                const newValues = [...prev];
+                newValues[i] = computeDetectorValue(entry);
+                return newValues;
+            });
         });
     };
-    
+
     const computeDetectorValue = ({ phase, time }: { phase: string[]; time: string }) => {
         if (phase.length !== 3) return "Erreur";
         if (time === "T1") {
             const [B, A] = phase.slice(-2);
             return (A === "π" && B === "0") || (A === "0" && B === "π") ? "1" : "0";
-        } 
+        }
         if (time === "T2") {
             const [C, B] = phase.slice(0, 2);
             return (B === "π" && C === "0") || (B === "0" && C === "π") ? "1" : "0";
         }
-        return "Erreur"; 
+        return "Erreur";
     };
     useEffect(() => {
         if (validEntries.length > 0 && !bobKeyBitsOn) {
             revealDetectorValues(validEntries);
         }
     }, []);
-    
-        
+
+
 
 
     const onMessageInput = (event: React.ChangeEvent<HTMLInputElement>,
-                                index: number) => {
+        index: number) => {
         const newValue = event.target.value;
         const updatedMessage = [...message];
-        const updatedBit = {...updatedMessage[index]};
+        const updatedBit = { ...updatedMessage[index] };
         updatedBit.touched = true;
         if (newValue.length === 0 || /^[01]$/.test(newValue) &&
             newValue.length <= 1) {
             updatedBit.value = newValue;
-        } 
+        }
         updatedBit.error = updatedBit.value === '';
         updatedMessage[index] = updatedBit;
         setMessage(updatedMessage);
     };
 
     const onCryptoInput = (event: React.ChangeEvent<HTMLInputElement>,
-                               index: number) => {
+        index: number) => {
         const newValue = event.target.value;
         const updatedCrypto = [...crypto];
-        const updatedBit = {...updatedCrypto[index]};
+        const updatedBit = { ...updatedCrypto[index] };
         if (newValue.length === 0 || /^[01]$/.test(newValue) &&
             newValue.length <= 1) {
             updatedBit.value = newValue;
@@ -134,7 +142,7 @@ const BobMessagingTab = () => {
         const updatedCrypto = crypto.map((cryptoBit, index) => {
             const detectorValue = detectorValues[index];
             const messageValue = message[index].value;
-    
+
             if (detectorValue === "Erreur") {
                 console.warn(`Erreur dans getDetector pour l'entrée ${index}`);
                 return { ...cryptoBit, error: true };
@@ -143,7 +151,7 @@ const BobMessagingTab = () => {
             const keyNumber = parseInt(detectorValue);
 
             const messageNumber = parseInt(messageValue);
-            
+
             const result = (keyNumber + messageNumber) % 2;
             return {
                 ...cryptoBit,
@@ -157,9 +165,9 @@ const BobMessagingTab = () => {
 
         if (allValid) {
             setBobKeyBits(detectorValues);
-            setPersistedCrypto(updatedCrypto.map(({value}) => value));
-            setPersistedMessage(message.map(({value}) => value));
-            const payload = crypto.map(({value}) => value);
+            setPersistedCrypto(updatedCrypto.map(({ value }) => value));
+            setPersistedMessage(message.map(({ value }) => value));
+            const payload = crypto.map(({ value }) => value);
             sendCipher(payload);
             toast.success(localize('component.messaging.cipherSent'));
             setBobCipherSent(true);
@@ -174,7 +182,7 @@ const BobMessagingTab = () => {
             <Table className="w-full">
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg border-secondary">
-                        
+
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.arrivalTime')}</p></TableHead>
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.detector')}</p></TableHead>
                         <TableHead className="text-center"><p>{localize('component.bobMessaging.message')}</p></TableHead>
@@ -190,77 +198,77 @@ const BobMessagingTab = () => {
                                     disabled={true}
                                     value={detectorValues[index]}
                                     className={cn('w-10 text-lg text-center' +
-                                    ' mx-auto disabled:opacity-100' +
-                                    ' disabled:bg-background' +
-                                    ' disabled:cursor-default',
-                                    )}/>
+                                        ' mx-auto disabled:opacity-100' +
+                                        ' disabled:bg-background' +
+                                        ' disabled:cursor-default',
+                                    )} />
 
                             </TableCell>
                             <TableCell>
                                 <Input
                                     value={bobCipherSent || gameSuccess ?
                                         persistedMessage[index] :
-                                        message[index].value} 
+                                        message[index].value}
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
                                     onChange={(event) => onMessageInput(event, index)}
                                     className={cn(
-                                            'w-10 text-lg text-center' +
-                                            ' mx-auto disabled:opacity-100' +
-                                            ' disabled:bg-background' +
-                                            ' disabled:cursor-default' +
-                                            ' mx-auto',
-                                            crypto[index].error &&
+                                        'w-10 text-lg text-center' +
+                                        ' mx-auto disabled:opacity-100' +
+                                        ' disabled:bg-background' +
+                                        ' disabled:cursor-default' +
+                                        ' mx-auto',
+                                        crypto[index].error &&
                                             crypto[index].touched ? 'border-red' :
-                                                '')}
+                                            '')}
                                 />
                             </TableCell>
                             <TableCell>
-                                <Input 
-                                    value = { bobCipherSent || gameSuccess ?
+                                <Input
+                                    value={bobCipherSent || gameSuccess ?
                                         persistedCrypto[index] :
                                         crypto[index].value}
                                     onChange={(event) => onCryptoInput(
                                         event, index)}
                                     onKeyDown={e => forbiddenSymbols.includes(
-                                            e.key) && e.preventDefault()}    
+                                        e.key) && e.preventDefault()}
                                     className={cn(
-                                            'w-10 text-lg text-center' +
-                                            ' mx-auto disabled:opacity-100' +
-                                            ' disabled:bg-background' +
-                                            ' disabled:cursor-default' +
-                                            ' mx-auto',
-                                            crypto[index].error &&
+                                        'w-10 text-lg text-center' +
+                                        ' mx-auto disabled:opacity-100' +
+                                        ' disabled:bg-background' +
+                                        ' disabled:cursor-default' +
+                                        ' mx-auto',
+                                        crypto[index].error &&
                                             crypto[index].touched ? 'border-red' :
-                                                '')}
+                                            '')}
                                 />
                             </TableCell>
                         </TableRow>
                     ))}
-                </TableBody>                   
+                </TableBody>
             </Table>
             <div
                 className="fixed bottom-3 right-3 md:hidden">
                 <Button size={'icon'}
 
-                        disabled={bobCipherSent || gameSuccess}
+                    disabled={bobCipherSent || gameSuccess}
 
-                        onClick={onValidateBits}>
-                    <CheckCircle2/>
+                    onClick={onValidateBits}>
+                    <CheckCircle2 />
                 </Button>
             </div>
             <div className="hidden md:block fixed right-6 bottom-6 shadow-xl">
                 <Button size="lg"
-                        disabled={bobCipherSent || gameSuccess}
+                    disabled={bobCipherSent || gameSuccess}
 
-                        onClick={onValidateBits}
+                    onClick={onValidateBits}
 
-                        className="text-lg font-bold">
-                   
-                        {localize('component.messaging.validateAndSend')}
+                    className="text-lg font-bold">
+
+                    {localize('component.messaging.validateAndSend')}
                 </Button>
             </div>
-        </div>            
+        </div>
     );
 };
 
