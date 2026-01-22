@@ -210,10 +210,14 @@ export const bb84Lines: LanguageItem[] = [
         'component.basisTab.alertTitle': 'Pas assez de bits !',
         'component.basisTab.alertDescription': 'La clé que vous avez' +
             ' obtenue n\'a pas assez de bits pour vérifier qu\'il n\'y a pas' +
-            ' d\'espion. Vous devez recommencer.',        
+            ' d\'espion. Vous devez recommencer.',
+        
+        // Validation tab dans l'interface : Eve est présente dans une partie BB84 (solo ou multi). Détectée ou non.
         'component.validationTab.title': 'Étape de validation',
         'component.validationTab.start': 'Les bits sélectionnés pour la' +
             ' validation sont',
+        'component.validation.indices': 'Les bits de la clé sélectionnés' +
+            ' de façon aléatoire pour la validation sont: ',
         'component.validationTab.select': 'Sélectionnez valide ou invalide',
         'component.validationTab.areYouSure': 'Êtes-vous sûr ? Vérifiez à' +
             ' nouveau les clés.',
@@ -233,8 +237,7 @@ export const bb84Lines: LanguageItem[] = [
             ' canal de communication est invalide',
         'component.validation.gameRestarted': 'Vous ou votre partenaire' +
             ' avez redémarré le jeu après avoir découvert l\'espion.',
-        'component.validation.indices': 'Les bits de la clé sélectionnés' +
-            ' de façon aléatoire pour la validation sont: ',
+        
         
     },
     {

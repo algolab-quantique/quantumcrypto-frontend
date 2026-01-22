@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@nextui-org/react": "^2.2.9",
@@ -29,7 +32,7 @@
     "d3": "^7.9.0",
     "framer-motion": "^11.0.5",
     "lucide-react": "^0.309.0",
-    "next": "14.0.4",
+    "next": "^14.2.33",
     "next-themes": "^0.2.1",
     "react": "^18",
     "react-dnd": "^16.0.1",

@@ -16,7 +16,8 @@ interface ResultsTableProps {
 const Bb84ResultsTable = ({rooms, players}: ResultsTableProps) => {
 
     const getPlayerName = (playerId: number) => {
-        return players.filter(player => player.id === playerId)[0]?.name;
+        const player = players.filter(player => player.id === playerId)[0];
+        return player?.name || `Unknown-${playerId}`;
     };
 
     const sortRooms = () => {
@@ -26,6 +27,33 @@ const Bb84ResultsTable = ({rooms, players}: ResultsTableProps) => {
             return shortestA - shortestB;
         });
     }
+    
+    // 🔍 DEBUG: Log rendering info
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎮 BB84 RESULTS TABLE RENDERING:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('Rooms to Display:', rooms.length);
+    console.log('Players Available for Lookup:', players.length);
+    
+    // Extract all player IDs from rooms
+    const playerIdsInRooms = new Set<number>();
+    rooms.forEach(room => {
+        playerIdsInRooms.add(room.player1);
+        playerIdsInRooms.add(room.player2);
+    });
+    console.log('Unique Players in Rooms:', playerIdsInRooms.size);
+    console.log('Player IDs in Rooms:', Array.from(playerIdsInRooms));
+    
+    // Find players NOT in any room
+    const allPlayerIds = players.map(p => p.id);
+    const unpairedPlayerIds = allPlayerIds.filter(id => !playerIdsInRooms.has(id));
+    console.log('Unpaired Players:', unpairedPlayerIds.length);
+    if (unpairedPlayerIds.length > 0) {
+        console.log('Unpaired Player IDs:', unpairedPlayerIds);
+        console.log('Unpaired Players Details:', 
+            players.filter(p => unpairedPlayerIds.includes(p.id)));
+    }
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return (
         <div

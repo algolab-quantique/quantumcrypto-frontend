@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table,
     TableBody,
@@ -9,57 +9,57 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {Button} from '@/components/ui/button';
-import {toast} from 'sonner';
-import {cn} from '@/lib/utils';
-import {Input} from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {useLanguage} from '@/components/providers/language-provider';
-import {useSocket} from '@/components/providers/socket-provider';
+import { useLanguage } from '@/components/providers/language-provider';
+import { useSocket } from '@/components/providers/socket-provider';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
-import {DPSGameStep, inputPhaseField } from '@/types';
+import { DPSGameStep, inputPhaseField } from '@/types';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
-import {CheckCircle2, SearchCode} from 'lucide-react';
+import { CheckCircle2, SearchCode } from 'lucide-react';
 
 
 
-const BobExchangeTab = ({ photonNumber, polarIcons }: { 
+const BobExchangeTab = ({ photonNumber, polarIcons }: {
     photonNumber: number,
     polarIcons: any[]
- }) => {
+}) => {
     const { localize } = useLanguage();
-    const {sendArrivalTimes} = useSocket();
-    
-    const { 
+    const { sendArrivalTimes } = useSocket();
+
+    const {
         setStep,
         pushLines,
         setDPSTab,
-         } = useDPSProgressStore();
+    } = useDPSProgressStore();
 
     const { alicePhotons, alicePhases, bobTimeMeasurements, setBobTimeMeasurements } = useDPSRoomStore();
     const arrivalTimesSent = bobTimeMeasurements.length > 0;
     const alicePhasesArrived = alicePhases.length > 0;
-    
+
 
     const [showSendButton, setShowSendButton] = useState(false);
     const [showValidateButton, setShowValidateButton] = useState(true);
     const [isValidated, setIsValidated] = useState(false);
 
     const [measurements, setMeasurements] = useState<(string | null)[]>(Array(photonNumber).fill(null));
-    const [validatedTimes, setValidatedTimes] = useState<{ 
-        value: string | null; 
-        error: boolean; 
-        discarded: boolean; 
+    const [validatedTimes, setValidatedTimes] = useState<{
+        value: string | null;
+        error: boolean;
+        discarded: boolean;
     }[]>([]);
 
     const measured = measurements.some(time => time !== null);
 
-    
+
     const measureArrivalTime = () => {
         const probabilities = [1 / 6, 2 / 6, 2 / 6, 1 / 6];
         const times = ['T0', 'T1', 'T2', 'T3'];
@@ -121,18 +121,26 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     const onSendTimes = () => {
         if (!isValidated) return;
 
-        const validTimes = validatedTimes.map(({ discarded, value }) => 
-            discarded ? "" : value
-        );
-        console.log("validTimes: ", validTimes);
-        setBobTimeMeasurements(validTimes as string[]);
-        
+        // OPTION B REFACTOR: Keep original time values instead of converting to ''
+        // This is more pedagogical - other tabs will explicitly check for T1/T2
+        // OLD CODE (commented for safety):
+        // const validTimes = validatedTimes.map(({ discarded, value }) => 
+        //     discarded ? "" : value
+        // );
+
+        // NEW CODE: Keep original values (T0, T1, T2, T3)
+        // Other components will check: time === 'T1' || time === 'T2'
+        const allTimes = validatedTimes.map(({ value }) => value);
+
+        console.log("allTimes: ", allTimes);
+        setBobTimeMeasurements(allTimes as string[]);
+
         toast.success(localize('component.bobExchange.timesSent'));
         pushLines([{ content: 'component.bobExchange.sentTimes' }]);
 
-        sendArrivalTimes(validTimes as string[]);
+        sendArrivalTimes(allTimes as string[]);
 
-        setTimeout( () => {
+        setTimeout(() => {
 
             setStep(DPSGameStep.MESSAGING);
             setDPSTab('messaging');
@@ -179,15 +187,15 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
                     {Array.from({ length: photonNumber }).map((_, i) => (
                         <TableRow key={i} className="text-center border-secondary">
                             <TableCell>
-                            <div className="gaussian-container">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="flex items-center justify-center"
-                                >{alicePhotons.length > 0 ? polarIcons[3] : ''}
-                                </Button>
-                            </div>
-                                
+                                <div className="gaussian-container">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="flex items-center justify-center"
+                                    >{alicePhotons.length > 0 ? polarIcons[3] : ''}
+                                    </Button>
+                                </div>
+
                             </TableCell>
                             <TableCell>
                                 <div
@@ -216,7 +224,7 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
                         {localize('component.dps.validateBtn')}
                     </Button>
                 )}
-                
+
                 {showSendButton && (
                     <Button
                         size="lg"
