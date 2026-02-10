@@ -3,6 +3,48 @@
 
 ---
 
+## 🎨 UI REDESIGN (January 2026)
+
+**Status**: 📋 PLANNING  
+**Date Added**: January 29, 2026  
+**Priority**: 🟠 HIGH
+
+### Overview
+Redesign website based on colleague's Canva mockup. New design includes:
+- Updated landing page with new navigation
+- Protocol pages with left sidebar navigation
+- Video tutorials integration
+- Lexique/Glossary sections
+
+### Phases
+
+| Phase | Scope | Estimated Time | Status |
+|-------|-------|----------------|--------|
+| **Phase 1** | Landing Page Redesign | 2-3 hours | ⬜ TODO |
+| **Phase 2** | BB84 Page Redesign | 4-6 hours | ⬜ TODO |
+| **Phase 3** | E91 & DPS Pages | 4-6 hours | ⬜ TODO |
+
+### Approach
+**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes.
+
+### New Components Needed
+- [ ] `ProtocolSidebar.tsx` - Sticky left navigation
+- [ ] `VideoEmbed.tsx` - YouTube embed component
+- [ ] `GlossarySection.tsx` - Lexique definitions
+- [ ] `SectionCard.tsx` - Reusable card wrapper
+
+### Implementation Order
+```
+□ Create branch: git checkout -b ui-redesign
+□ Phase 1: Landing page
+□ Phase 2: BB84 page
+□ Phase 3: E91 & DPS pages
+□ Final testing
+□ Merge to main
+```
+
+---
+
 ## 📦 Next.js Version Documentation
 
 ### Current Version Status (December 2025)

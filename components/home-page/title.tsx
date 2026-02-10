@@ -18,7 +18,7 @@ const Title = () => {
     const logoLang = isClient ? (langCode === 'es' ? 'en' : langCode) : 'en';
 
     return (
-        <div className="h-fit w-fit flex flex-col gap-y-3 mt-20 mx-auto text-center">
+        <div className="h-fit flex flex-col gap-y-3 mt-20 mx-auto text-center max-w-[500px]">
             {/* 
               CSS-based theme switching: render BOTH logos, CSS shows correct one instantly.
               This prevents the hydration flash because dark: classes work immediately.
@@ -30,7 +30,7 @@ const Title = () => {
                 alt="QuantumCrypto"
                 width={500}
                 height={100}
-                className="block dark:hidden h-24 md:h-32 w-auto object-contain"
+                className="block dark:hidden h-32 md:h-44 w-auto object-contain"
                 priority
             />
 
@@ -40,7 +40,7 @@ const Title = () => {
                 alt="QuantumCrypto"
                 width={500}
                 height={100}
-                className="hidden dark:block h-24 md:h-32 w-auto object-contain"
+                className="hidden dark:block h-32 md:h-44 w-auto object-contain"
                 priority
             />
 
