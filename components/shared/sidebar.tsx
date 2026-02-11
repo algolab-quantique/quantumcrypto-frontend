@@ -34,7 +34,7 @@ const Sidebar = () => {
                         </p>
                         <div className="flex flex-col gap-y-1 pl-3">
                             {protocols.map(({ name, href }) => (
-                                <Link key={name} href={href} target="_blank">
+                                <Link key={name} href={href}>
                                     <p className="text-md cursor-pointer flex items-center gap-1
                                         hover:text-primary-foreground/90 transition-all">
                                         <ChevronRight size={14} /> {name}

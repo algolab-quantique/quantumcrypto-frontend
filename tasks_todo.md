@@ -5,42 +5,48 @@
 
 ## 🎨 UI REDESIGN (January 2026)
 
-**Status**: 📋 PLANNING  
+**Status**: � IN PROGRESS  
 **Date Added**: January 29, 2026  
+**Last Updated**: February 11, 2026  
 **Priority**: 🟠 HIGH
 
 ### Overview
 Redesign website based on colleague's Canva mockup. New design includes:
-- Updated landing page with new navigation
-- Protocol pages with left sidebar navigation
+- ~~Updated landing page with new navigation~~ ✅ DONE
+- ~~Protocol pages with left sidebar navigation~~ ✅ DONE
 - Video tutorials integration
-- Lexique/Glossary sections
+- ~~Lexique/Glossary sections~~ ✅ DONE (Guide page with terminology)
 
 ### Phases
 
 | Phase | Scope | Estimated Time | Status |
 |-------|-------|----------------|--------|
-| **Phase 1** | Landing Page Redesign | 2-3 hours | ⬜ TODO |
-| **Phase 2** | BB84 Page Redesign | 4-6 hours | ⬜ TODO |
-| **Phase 3** | E91 & DPS Pages | 4-6 hours | ⬜ TODO |
+| **Phase 1** | Header Navigation (Protocoles \| Guide \| À propos) | 2-3 hours | ✅ DONE |
+| **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS) | 2-3 hours | ✅ DONE |
+| **Phase 3** | Guide Page (How to Play, Terminology, Context) | 2-3 hours | ✅ DONE (Context section placeholder) |
+| **Phase 4** | Video Tutorials Integration | TBD | ⬜ TODO |
+| **Phase 5** | Landing Page Visual Redesign (per Canva mockup) | TBD | ⬜ TODO |
 
 ### Approach
 **Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes.
 
 ### New Components Needed
-- [ ] `ProtocolSidebar.tsx` - Sticky left navigation
+- [x] `ProtocolPageSidebar.tsx` - Sticky left navigation ✅ Created
+- [x] `GuideNavigationMenu.tsx` - Guide dropdown in header ✅ Created
 - [ ] `VideoEmbed.tsx` - YouTube embed component
-- [ ] `GlossarySection.tsx` - Lexique definitions
+- [x] Guide page with glossary/terminology ✅ Created
 - [ ] `SectionCard.tsx` - Reusable card wrapper
 
 ### Implementation Order
 ```
-□ Create branch: git checkout -b ui-redesign
-□ Phase 1: Landing page
-□ Phase 2: BB84 page
-□ Phase 3: E91 & DPS pages
-□ Final testing
-□ Merge to main
+✅ Header navigation: Protocoles | Guide | À propos (all pages)
+✅ ProtocolPageSidebar on BB84, E91, DPS pages
+✅ Guide page with How to Play, Terminology, Context
+✅ Mobile sidebar mirrors desktop navigation
+✅ Localization (EN/FR/ES) for all new components
+□ Video tutorials integration
+□ Landing page visual redesign (Canva mockup)
+□ Guide > Context section (currently placeholder)
 ```
 
 ---
@@ -2991,6 +2997,78 @@ These are cosmetic/pedagogical improvements. The protocol works correctly - this
 
 **Proposed Actions:**
 - [ ] Research DPS eavesdropping detection mechanism
+
+---
+
+## 🔧 TECH DEBT & TOOLING (February 2026)
+
+**Date Added**: February 11, 2026  
+**Priority**: 🟡 MEDIUM
+
+### Issue 1: No Testing Framework
+
+**Status:** ⬜ TODO
+
+Currently the project has **zero** test infrastructure — no Jest, Vitest, Playwright, or Cypress. This means:
+- No unit tests for utility functions (e.g., `lib/bb84/utils.ts`, `lib/e91/utils.ts`)
+- No component tests for complex UI (play pages, results pages)
+- No end-to-end tests for game flows
+
+**Recommendation:** Install **Vitest** (fast, native ESM support, works great with Next.js) for unit/component tests, and optionally **Playwright** for E2E tests later.
+
+**Proposed Actions:**
+- [ ] Install Vitest + @testing-library/react
+- [ ] Write tests for critical utility functions first
+- [ ] Add component tests for key flows
+- [ ] Consider Playwright for E2E game flow tests later
+
+---
+
+### Issue 2: ESLint Version Mismatch
+
+**Status:** ⬜ TODO
+
+`eslint-config-next` is at version `14.0.4` while Next.js itself is at `14.2.33`. This won't break anything right now, but the ESLint plugin may miss new rules/fixes introduced in later 14.x versions.
+
+**Fix:** Run `npm install eslint-config-next@14.2.33 --save-dev` to align versions.
+
+**Proposed Actions:**
+- [ ] Update eslint-config-next to match Next.js version
+
+---
+
+### Issue 3: Duplicate UI Libraries (@nextui-org/react + Radix UI)
+
+**Status:** ⬜ TODO — Needs investigation
+
+The project has **two** UI component libraries installed:
+- **Radix UI** (`@radix-ui/react-*`) — Used extensively throughout the app (dialog, dropdown, tabs, navigation-menu, tooltip, etc.)
+- **@nextui-org/react** — Also installed in package.json
+
+Both provide similar components (buttons, modals, dropdowns, etc.). Having both means:
+- **Larger bundle size** — users download code for two libraries
+- **Inconsistent styling** — components from different libraries may look/behave differently
+- **Maintenance burden** — two sets of docs, two sets of updates
+
+**Recommendation:** Since the project is built on Radix UI (via shadcn/ui components), @nextui-org/react is likely unused or barely used. Check if any component actually imports from `@nextui-org/react`. If not, remove it.
+
+**Proposed Actions:**
+- [ ] Search codebase for `@nextui-org` imports
+- [ ] If unused, run `npm uninstall @nextui-org/react`
+- [ ] If partially used, migrate those components to Radix/shadcn equivalents
+
+---
+
+### Issue 4: No Code Formatter (Prettier)
+
+**Status:** ⬜ TODO
+
+No Prettier or similar formatter is configured. Code formatting is inconsistent across files (mixed quote styles, inconsistent indentation in some places).
+
+**Proposed Actions:**
+- [ ] Install Prettier + eslint-config-prettier
+- [ ] Add `.prettierrc` with team preferences
+- [ ] Run initial format pass on codebase
 - [ ] Add Eve option to create-game-modal (multiplayer)
 - [ ] Add Eve option to solo-game-modal (solo)
 - [ ] Implement Eve interception logic

@@ -142,7 +142,7 @@ export default function GuidePage() {
                     </p>
                     <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
                         {protocols.map(({ name, href }) => (
-                            <Link key={name} href={href} target="_blank">
+                            <Link key={name} href={href}>
                                 <Card className="p-6 border-none shadow-md hover:shadow-lg 
                                     hover:scale-[1.02] transition-all cursor-pointer h-full">
                                     <CardContent className="flex flex-col items-center justify-center gap-y-3 p-0">
