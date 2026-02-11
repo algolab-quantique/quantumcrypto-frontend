@@ -1,23 +1,17 @@
 'use client';
-import React, {MutableRefObject, useEffect} from 'react';
-import {useLanguage} from '@/components/providers/language-provider';
+import React, { useEffect } from 'react';
+import { useLanguage } from '@/components/providers/language-provider';
 import Image from 'next/image';
 import ProtocolNavigationMenu
     from '@/components/shared/protocol-navigation-menu';
-import {useRouter} from 'next/navigation';
+import GuideNavigationMenu
+    from '@/components/shared/guide-navigation-menu';
 import Sidebar from '@/components/shared/sidebar';
 import Link from 'next/link';
 
-export interface HeaderLink {
-    label: string,
-    href?: string,
-    ref?: MutableRefObject<any>,
-}
+const Header = () => {
 
-const Header = ({links}: { links?: HeaderLink[] }) => {
-
-    const {localize, setLanguage} = useLanguage();
-    const router = useRouter();
+    const { localize, setLanguage } = useLanguage();
 
     useEffect(() => {
         const language = localStorage.getItem('language');
@@ -27,14 +21,6 @@ const Header = ({links}: { links?: HeaderLink[] }) => {
         }
     }, [])
 
-    const onLinkClick = (link: HeaderLink) => {
-        if (link.ref) {
-            link.ref.current.scrollIntoView({behavior: 'smooth'});
-        } else if (link.href) {
-            router.push(link.href);
-        }
-    };
-
     return (
         <>
             <div
@@ -43,23 +29,22 @@ const Header = ({links}: { links?: HeaderLink[] }) => {
                 <div className="flex gap-x-11 items-center">
                     <Link href={'/'}>
                         <Image className="my-2" priority={true}
-                               src={'/institut-quantique.svg'}
-                               alt={'Institut' +
-                                   ' Quantique Logo'}
-                               width={250} height={79}/>
+                            src={'/institut-quantique.svg'}
+                            alt={'Institut' +
+                                ' Quantique Logo'}
+                            width={250} height={79} />
                     </Link>
-                    {links?.map((link, index) => (
-                        <p key={index}
-                           onClick={() => onLinkClick(link)}
-                           className="text-md cursor-pointer
+                    <ProtocolNavigationMenu />
+                    <GuideNavigationMenu />
+                    <Link href="/#about">
+                        <p className="text-md cursor-pointer
                            hover:text-primary-foreground/90 transition-all">
-                            {localize(link.label)}
+                            {localize('component.header.about')}
                         </p>
-                    ))}
-                    <ProtocolNavigationMenu/>
+                    </Link>
                 </div>
             </div>
-            <Sidebar/>
+            <Sidebar />
         </>
     );
 };
