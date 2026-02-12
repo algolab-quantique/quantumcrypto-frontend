@@ -80,7 +80,7 @@ const ProtocolsSectionV2 = () => {
                                             <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
                                                 {name}
                                             </h3>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                            <p className="text-sm text-foreground/80 leading-relaxed">
                                                 {localize(description)}
                                             </p>
                                         </div>

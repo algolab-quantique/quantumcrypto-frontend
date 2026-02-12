@@ -1,83 +1,111 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/components/providers/language-provider';
+import { getLanguageCode } from '@/lib/utils';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 /**
  * TitleV2 - Narrative Signature Version
- * Keeps the original green theme.
- * Alice & Bob as mascots, narrative intro, NO scroll-down CTA.
+ * Uses the actual QuantumCrypto logo (dark/light, fr/en/es).
+ * Alice & Bob mascots flanking the hero.
  */
 const TitleV2 = () => {
-    const { localize } = useLanguage();
+    const { localize, language } = useLanguage();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const langCode = getLanguageCode(language);
+    const logoLang = isClient ? (langCode === 'es' ? 'en' : langCode) : 'en';
 
     return (
         <div className="relative w-full max-w-6xl mx-auto pt-16 pb-6 px-4">
-            {/* Background Glow - using our green */}
+            {/* Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/15 blur-[120px] rounded-full -z-10" />
 
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center justify-center gap-6 md:gap-10">
 
-                {/* Alice */}
+                {/* Alice mascot — left */}
                 <motion.div
-                    initial={{ opacity: 0, x: -40 }}
+                    initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.7 }}
-                    className="hidden lg:block w-1/5"
+                    className="hidden lg:block flex-shrink-0"
                 >
                     <Image
-                        src="/images/alice_bb_en.png"
+                        src="/images/Alice_mascottes.png"
                         alt="Alice"
-                        width={260}
-                        height={360}
-                        className="drop-shadow-[0_0_12px_hsl(152,100%,33%,0.3)] object-contain"
+                        width={180}
+                        height={240}
+                        className="object-contain drop-shadow-[0_0_12px_hsl(152,100%,33%,0.25)]"
                     />
                 </motion.div>
 
-                {/* Main Text */}
-                <div className="flex-1 text-center space-y-4">
+                {/* Center: Logo + subtitle + narrative */}
+                <div className="flex flex-col items-center text-center max-w-[500px]">
+
+                    {/* Logo — same dual-render as original title.tsx */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.15 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">
-                            QUANTUM MISSION
-                        </h1>
-                        <p className="mt-3 text-lg md:text-2xl text-primary font-mono tracking-widest uppercase">
-                            {localize('component.homePage.title.description')}
-                        </p>
+                        <Image
+                            src={`/images/QuantumCrypto_black_${logoLang}.png`}
+                            alt="QuantumCrypto"
+                            width={500}
+                            height={100}
+                            className="block dark:hidden h-32 md:h-44 w-auto object-contain mx-auto"
+                            priority
+                        />
+                        <Image
+                            src={`/images/QuantumCrypto_white_${logoLang}.png`}
+                            alt="QuantumCrypto"
+                            width={500}
+                            height={100}
+                            className="hidden dark:block h-32 md:h-44 w-auto object-contain mx-auto"
+                            priority
+                        />
                     </motion.div>
 
-                    <motion.div
+                    {/* Localized subtitle — constrained to logo width, like original */}
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="mt-3 text-md md:text-2xl"
+                    >
+                        {localize('component.homePage.title.description')}
+                    </motion.p>
+
+                    {/* Narrative quote — hardcoded POC */}
+                    <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="max-w-xl mx-auto"
+                        className="mt-4 text-foreground/70 text-sm md:text-base italic"
                     >
-                        <p className="text-muted-foreground text-base md:text-lg italic">
-                            &ldquo;Alice et Bob doivent sécuriser leurs communications.
-                            Suivez leurs aventures à travers les protocoles cryptographiques
-                            les plus avancés de l&apos;univers.&rdquo;
-                        </p>
-                    </motion.div>
+                        {`"Alice et Bob doivent sécuriser leurs communications. Suivez leurs aventures à travers les protocoles cryptographiques les plus avancés de l'univers."`}
+                    </motion.p>
                 </div>
 
-                {/* Bob */}
+                {/* Bob mascot — right */}
                 <motion.div
-                    initial={{ opacity: 0, x: 40 }}
+                    initial={{ opacity: 0, x: 30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.7 }}
-                    className="hidden lg:block w-1/5"
+                    className="hidden lg:block flex-shrink-0"
                 >
                     <Image
-                        src="/images/bob_bb_en.png"
+                        src="/images/Bob_mascottes.png"
                         alt="Bob"
-                        width={260}
-                        height={360}
-                        className="drop-shadow-[0_0_12px_hsl(152,100%,33%,0.3)] object-contain"
+                        width={180}
+                        height={240}
+                        className="object-contain drop-shadow-[0_0_12px_hsl(152,100%,33%,0.25)]"
                     />
                 </motion.div>
             </div>
