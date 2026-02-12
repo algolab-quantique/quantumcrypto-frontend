@@ -18,6 +18,7 @@ export default function E91() {
     const howToPlayRef = useRef(null);
     const aboutRef = useRef(null);
     const gameRef = useRef(null);
+    const terminologyRef = useRef(null);
     const { localize } = useLanguage();
     const { theme } = useTheme();
     const isDark = theme === "dark";
@@ -192,6 +193,7 @@ export default function E91() {
         { label: 'component.sidebar.play', ref: gameRef },
         { label: 'component.header.howToPlay', ref: howToPlayRef },
         { label: 'component.header.about.e91', ref: aboutRef },
+        { label: 'component.header.guide.terminology', ref: terminologyRef },
     ];
 
     return (
@@ -448,7 +450,13 @@ export default function E91() {
                                 </div>
                             </CardContent>
                         </Card>
-                        <div className="pt-8 grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    </section>
+                    <section ref={terminologyRef}
+                        className="w-full h-fit mt-16 px-5 md:px-20">
+                        <h2 className="font-bold text-2xl md:text-3xl mb-8">
+                            {localize('component.header.guide.terminology')}
+                        </h2>
+                        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {sections.map(({ id, title, content }) => (
                                 <Card
                                     key={id}

@@ -20,6 +20,7 @@ export default function DPS() {
     const howToPlayRef = useRef(null);
     const aboutRef = useRef(null);
     const gameRef = useRef(null);
+    const terminologyRef = useRef(null);
     const { localize } = useLanguage();
     const { theme } = useTheme();
     const isDark = theme === "dark";
@@ -199,6 +200,7 @@ export default function DPS() {
         { label: 'component.sidebar.play', ref: gameRef },
         { label: 'component.header.howToPlay', ref: howToPlayRef },
         { label: 'component.header.about.dps', ref: aboutRef },
+        { label: 'component.header.guide.terminology', ref: terminologyRef },
     ];
 
     return (
@@ -831,8 +833,14 @@ export default function DPS() {
                             </CardContent>
                         </Card>
 
-                        {/* Definitions grid section - like E91 */}
-                        <div className="pt-8 grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    </section>
+                    {/* Definitions grid section */}
+                    <section ref={terminologyRef}
+                        className="w-full h-fit mt-16 px-5 md:px-20">
+                        <h2 className="font-bold text-2xl md:text-3xl mb-8">
+                            {localize('component.header.guide.terminology')}
+                        </h2>
+                        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {sections.map(({ id, title, content }) => (
                                 <Card
                                     key={id}

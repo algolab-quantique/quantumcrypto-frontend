@@ -3059,12 +3059,12 @@ Currently the player avatar in waiting rooms is a simple placeholder icon (User 
 
 **Options (easiest → hardest):**
 
-| Option | Description | Effort |
-|--------|-------------|--------|
-| **A) Default avatar list** | Provide 8-10 pre-made avatars (quantum-themed icons/animals). Player picks one when creating/joining a game. No upload needed. | Low |
-| **B) Initials-based** | Auto-generate avatar from player name initials with random background color (e.g., "AB" in a blue circle). Zero effort from user. | Very Low |
-| **C) Gravatar / DiceBear** | Use an external API like DiceBear to auto-generate unique avatars from the player name. Free, no uploads. | Low |
-| **D) Image upload** | Let users upload their own photo. Requires backend storage (S3/cloud), image resizing, moderation. | High |
+| Option                     | Description                                                                                                                       | Effort   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **A) Default avatar list** | Provide 8-10 pre-made avatars (quantum-themed icons/animals). Player picks one when creating/joining a game. No upload needed.    | Low      |
+| **B) Initials-based**      | Auto-generate avatar from player name initials with random background color (e.g., "AB" in a blue circle). Zero effort from user. | Very Low |
+| **C) Gravatar / DiceBear** | Use an external API like DiceBear to auto-generate unique avatars from the player name. Free, no uploads.                         | Low      |
+| **D) Image upload**        | Let users upload their own photo. Requires backend storage (S3/cloud), image resizing, moderation.                                | High     |
 
 **Recommendation:** Option **B (initials)** or **C (DiceBear API)** — both are lightweight, require no backend changes, and give players a unique visual identity without any upload complexity.
 
