@@ -42,7 +42,7 @@ body,
         --radius: 0.5rem;
     }
 
-    .dark  {
+    .dark {
         --background: 20 14.3% 4.1%;
         --foreground: 0 0% 95%;
         /*--card: 24 9.8% 10%;*/
@@ -67,7 +67,7 @@ body,
         --highlight: 45 93% 47%;
         --red: 0 100% 32%;
     }
-   
+
     .flash-delete {
         animation: flashDelete 0.25s ease forwards;
     }
@@ -78,11 +78,13 @@ body,
             opacity: 1;
             transform: translateY(0);
         }
+
         50% {
             background-color: #ff4d4d;
             opacity: 0.8;
             transform: translateY(-5px);
         }
+
         100% {
             background-color: transparent;
             opacity: 0;
@@ -103,7 +105,7 @@ body,
         z-index: 1000;
         animation: fadeIn 0.3s;
     }
-    
+
     .popup-content {
         background: rgb(50, 49, 48);
         padding: 20px;
@@ -115,7 +117,7 @@ body,
         transform: scale(0.9);
         animation: popupOpen 0.3s forwards;
     }
-    
+
     .close-btn {
         position: absolute;
         top: 5px;
@@ -128,17 +130,27 @@ body,
         cursor: pointer;
         font-size: 25px;
     }
-    
+
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
-    
+
     @keyframes popupOpen {
-        from { transform: scale(0.9); }
-        to { transform: scale(1); }
+        from {
+            transform: scale(0.9);
+        }
+
+        to {
+            transform: scale(1);
+        }
     }
-    
+
     @media (max-height: 900px) {
         .table-head {
             transform: scale(0.75);
@@ -150,39 +162,53 @@ body,
         from {
             transform: translateX(100%);
         }
+
         to {
             transform: translateX(0);
         }
     }
-    
+
     .gaussian-container {
         display: flex;
         justify-content: center;
         align-items: center;
         overflow: hidden;
     }
-    
+
     .gaussian-item {
         animation: slideIn 1s ease-out forwards;
         pointer-events: none;
     }
-    
+
     @media (min-height: 901px) {
         .table-head {
             transform: scale(1);
         }
-    }  
+    }
 
     @media (max-height: 1150px) {
         .chsh-table {
             max-height: 15rem;
         }
     }
-    
+
     @media (min-height: 1151px) {
         .chsh-table {
             max-height: 30rem;
         }
-    }  
+    }
 
+}
+
+/**
+ * Visual Signature V2 - Landing Page Playground
+ * Uses the same green/dark theme as the main site.
+ * Only layout and structure differ.
+ */
+.v2-theme-root {
+    /* Subtle glow using our existing primary green */
+    background-image:
+        radial-gradient(at 20% 0%, hsl(152, 100%, 33%, 0.08) 0px, transparent 50%),
+        radial-gradient(at 80% 100%, hsl(152, 100%, 33%, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
 }
