@@ -19,7 +19,7 @@ const QCLockIcon = ({ active }: { active: boolean }) => (
     <span className="relative inline-block w-[20px] h-[20px]">
         {/* Black icon for light mode */}
         <Image
-            src="/images/QC_icon_black.svg"
+            src="/images/QC_icon_black_20_27.png"
             alt=""
             width={20}
             height={20}
@@ -27,7 +27,7 @@ const QCLockIcon = ({ active }: { active: boolean }) => (
         />
         {/* White icon for dark mode */}
         <Image
-            src="/images/QC_icon_white.svg"
+            src="/images/QC_icon_white_20_27.png"
             alt=""
             width={20}
             height={20}
