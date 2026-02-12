@@ -1,10 +1,11 @@
 'use client';
 
-import Header from '@/components/shared/header';
-import Footer from '@/components/shared/footer';
+import HeaderV2 from '@/components/home-page/v2/header-v2';
+import FooterV2 from '@/components/home-page/v2/footer-v2';
 import TitleV2 from '@/components/home-page/v2/title-v2';
 import ProtocolsSectionV2 from '@/components/home-page/v2/protocols-section-v2';
 import AboutSection from '@/components/home-page/about-section';
+import Image from 'next/image';
 
 /**
  * Visual Signature V2 - Progress Page
@@ -17,8 +18,8 @@ import AboutSection from '@/components/home-page/about-section';
 export default function LandingPageV2() {
 
     return (
-        <div className="v2-theme-root min-h-screen">
-            <Header />
+        <div className="v2-theme-root min-h-screen relative">
+            <HeaderV2 />
             <div className="w-full flex flex-col">
                 {/* Hero: Title + Alice/Bob + narrative — compact */}
                 <TitleV2 />
@@ -30,7 +31,19 @@ export default function LandingPageV2() {
                     <AboutSection />
                 </div>
             </div>
-            <Footer />
+            
+            {/* Brand Signature Watermark — subtle decor in bottom left */}
+            <div className="fixed bottom-8 left-8 pointer-events-none opacity-10 hidden xl:block select-none">
+                <Image
+                    src="/images/QC_icon.png"
+                    alt="QC Watermark"
+                    width={80}
+                    height={80}
+                    className="grayscale"
+                />
+            </div>
+
+            <FooterV2 />
         </div>
     );
 }
