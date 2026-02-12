@@ -3,19 +3,16 @@
 import HeaderV2 from '@/components/home-page/v2/header-v2';
 import FooterV2 from '@/components/home-page/v2/footer-v2';
 import TitleV2 from '@/components/home-page/v2/title-v2';
-import ProtocolsSectionV2 from '@/components/home-page/v2/protocols-section-v2';
+import ProtocolsSectionV2Locks from '@/components/home-page/v2/protocols-section-v2-locks';
 import AboutSection from '@/components/home-page/about-section';
 import Image from 'next/image';
 
 /**
- * Visual Signature V2 - Progress Page
- * This is a playground for the new design inspired by Enigmes Quantiques.
- * Accessible at /landingpagegame_progress
- *
- * Same green/dark theme as the main site.
- * Title + Protocol cards are immediately visible (no scroll needed).
+ * Visual Signature V2 - QC Lock Icons Variant
+ * Same as landingpagegame_progress but uses QC lock icons for difficulty.
+ * Accessible at /landingpagegame_progress_level_dif
  */
-export default function LandingPageV2() {
+export default function LandingPageV2Locks() {
 
     return (
         <div className="v2-theme-root min-h-screen relative">
@@ -24,8 +21,8 @@ export default function LandingPageV2() {
                 {/* Hero: Title + Alice/Bob + narrative — compact */}
                 <TitleV2 />
 
-                {/* Protocol mission cards — directly visible, no gap */}
-                <ProtocolsSectionV2 />
+                {/* Protocol mission cards — QC Lock icons for difficulty */}
+                <ProtocolsSectionV2Locks />
 
                 <div id="about" className="mt-12">
                     <AboutSection />
