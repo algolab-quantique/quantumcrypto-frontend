@@ -4,7 +4,7 @@ import HeaderV2 from '@/components/home-page/v2/header-v2';
 import FooterV2 from '@/components/home-page/v2/footer-v2';
 import TitleV2 from '@/components/home-page/v2/title-v2';
 import ProtocolsSectionV2Locks from '@/components/home-page/v2/protocols-section-v2-locks';
-import AboutSection from '@/components/home-page/about-section';
+import AboutSectionV2 from '@/components/home-page/v2/about-section-v2';
 import Image from 'next/image';
 
 /**
@@ -25,7 +25,7 @@ export default function LandingPageV2Locks() {
                 <ProtocolsSectionV2Locks />
 
                 <div id="about" className="mt-12">
-                    <AboutSection />
+                    <AboutSectionV2 />
                 </div>
             </div>
             
