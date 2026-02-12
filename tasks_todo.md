@@ -19,13 +19,13 @@ Redesign website based on colleague's Canva mockup. New design includes:
 
 ### Phases
 
-| Phase | Scope | Estimated Time | Status |
-|-------|-------|----------------|--------|
-| **Phase 1** | Header Navigation (Protocoles \| Guide \| À propos) | 2-3 hours | ✅ DONE |
-| **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS) | 2-3 hours | ✅ DONE |
-| **Phase 3** | Guide Page (How to Play, Terminology, Context) | 2-3 hours | ✅ DONE (Context section placeholder) |
-| **Phase 4** | Video Tutorials Integration | TBD | ⬜ TODO |
-| **Phase 5** | Landing Page Visual Redesign (per Canva mockup) | TBD | ⬜ TODO |
+| Phase       | Scope                                               | Estimated Time | Status                               |
+| ----------- | --------------------------------------------------- | -------------- | ------------------------------------ |
+| **Phase 1** | Header Navigation (Protocoles \| Guide \| À propos) | 2-3 hours      | ✅ DONE                               |
+| **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS)       | 2-3 hours      | ✅ DONE                               |
+| **Phase 3** | Guide Page (How to Play, Terminology, Context)      | 2-3 hours      | ✅ DONE (Context section placeholder) |
+| **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
+| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ⬜ TODO                               |
 
 ### Approach
 **Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes.
@@ -274,14 +274,14 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 
 **Analysis Completed**:
 
-| Data | Solo Mode | Multiplayer Mode | Status |
-|------|-----------|------------------|--------|
-| **Game Data** (bits/bases) | ✅ `solo-game.tsx` restores | ❌ `game.tsx` has NO restore | 🔴 Missing |
-| **Progress Step** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
-| **Current Tab** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
-| **Displayed Lines** | ✅ Full restoration | ⚠️ Only checks `length === 0` | 🟡 Partial |
-| **WebSocket** | N/A | ❌ Needs reconnection | 🔴 Critical |
-| **Tabs with Restore** | ✅ Solo tabs have `useEffect` | ❌ Multiplayer tabs have NONE | 🔴 Missing |
+| Data                       | Solo Mode                     | Multiplayer Mode             | Status     |
+| -------------------------- | ----------------------------- | ---------------------------- | ---------- |
+| **Game Data** (bits/bases) | ✅ `solo-game.tsx` restores    | ❌ `game.tsx` has NO restore  | 🔴 Missing  |
+| **Progress Step**          | ✅ Restored in `solo-game.tsx` | ❌ Not restored               | 🔴 Missing  |
+| **Current Tab**            | ✅ Restored in `solo-game.tsx` | ❌ Not restored               | 🔴 Missing  |
+| **Displayed Lines**        | ✅ Full restoration            | ⚠️ Only checks `length === 0` | 🟡 Partial  |
+| **WebSocket**              | N/A                           | ❌ Needs reconnection         | 🔴 Critical |
+| **Tabs with Restore**      | ✅ Solo tabs have `useEffect`  | ❌ Multiplayer tabs have NONE | 🔴 Missing  |
 
 **Root Causes**:
 1. **Line 75 in `e91-game-form.tsx`** - Rejoin dialog is commented out: `//setRejoinDialogOpen(true);`
@@ -450,11 +450,11 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 - Multiplayer tabs simply **lack restoration logic** ❌
 
 **What's Saved vs What's Missing**:
-| Data | Saved? | Restored on Refresh? |
-|------|--------|---------------------|
-| Game data (bits, bases) | ✅ | ❌ Not in multiplayer tabs |
-| Current step/tab | ✅ | ❌ Not in multiplayer tabs |
-| Displayed messages | ✅ | ❌ Not in multiplayer tabs |
+| Data                    | Saved? | Restored on Refresh?      |
+| ----------------------- | ------ | ------------------------- |
+| Game data (bits, bases) | ✅      | ❌ Not in multiplayer tabs |
+| Current step/tab        | ✅      | ❌ Not in multiplayer tabs |
+| Displayed messages      | ✅      | ❌ Not in multiplayer tabs |
 
 **Root Cause**: Multiplayer components assume WebSocket is always active:
 - `solo-CHSH-tab.tsx` ✅ Has restoration `useEffect`
@@ -475,12 +475,12 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 **Status**: 🟡 LOW PRIORITY - Future Improvement  
 **Issue**: Different stores use different persistence approaches:
 
-| Store | Persistence Method |
-|-------|-------------------|
-| `player-store.ts` | ✅ Zustand `persist()` middleware |
-| `e91-room-store.ts` | ⚠️ Manual localStorage in each setter |
+| Store                   | Persistence Method                   |
+| ----------------------- | ------------------------------------ |
+| `player-store.ts`       | ✅ Zustand `persist()` middleware     |
+| `e91-room-store.ts`     | ⚠️ Manual localStorage in each setter |
 | `e91-progress-store.ts` | ⚠️ Manual localStorage in each setter |
-| `e91-game-store.ts` | ❌ **No persistence at all** |
+| `e91-game-store.ts`     | ❌ **No persistence at all**          |
 
 **Recommendation**: Standardize on Zustand's `persist()` middleware for all stores.
 
@@ -2755,35 +2755,35 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 ## 📁 Files to Create
 
-| E91 Solo Mode (Reference) | DPS Solo Mode (TO CREATE) | Status |
-|---------------------------|---------------------------|--------|
-| `lib/e91/solo-player.ts` | `lib/dps/solo-player.ts` | 🟡 IN PROGRESS |
-| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx` | ⬜ TODO |
-| `components/e91/play-page/solo-game.tsx` | `components/dps/play-page/solo-game.tsx` | ⬜ TODO |
-| `solo-measurement-tab.tsx` | `solo-alice-exchange-tab.tsx` | ⬜ TODO |
-| `solo-basis-tab.tsx` | `solo-bob-exchange-tab.tsx` | ⬜ TODO |
-| `solo-CHSH-tab.tsx` | `solo-alice-inference-tab.tsx` | ⬜ TODO |
-| `solo-messaging-tab.tsx` | `solo-alice-messaging-tab.tsx` | ⬜ TODO |
-| N/A (E91 symmetric) | `solo-bob-messaging-tab.tsx` | ⬜ TODO |
-| `app/(main)/e91/solo-results/page.tsx` | `app/(main)/dps/solo-results/page.tsx` | ⬜ TODO |
-| `solo-results-table.tsx` | `components/dps/results-page/solo-results-table.tsx` | ⬜ TODO |
+| E91 Solo Mode (Reference)                      | DPS Solo Mode (TO CREATE)                            | Status        |
+| ---------------------------------------------- | ---------------------------------------------------- | ------------- |
+| `lib/e91/solo-player.ts`                       | `lib/dps/solo-player.ts`                             | 🟡 IN PROGRESS |
+| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx`       | ⬜ TODO        |
+| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`             | ⬜ TODO        |
+| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                        | ⬜ TODO        |
+| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                          | ⬜ TODO        |
+| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                       | ⬜ TODO        |
+| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                       | ⬜ TODO        |
+| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                         | ⬜ TODO        |
+| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo-results/page.tsx`               | ⬜ TODO        |
+| `solo-results-table.tsx`                       | `components/dps/results-page/solo-results-table.tsx` | ⬜ TODO        |
 
 ---
 
 ## 🎮 DPS Protocol Flow (Multiplayer → Solo Mapping)
 
 ### Alice's Flow (3 tabs)
-| Step | Tab | Multiplayer Action | Solo Mode Simulation |
-|------|-----|-------------------|----------------------|
-| 1 | Exchange | Send phases via WebSocket | Store locally, simulate Bob's time measurements |
-| 2 | Inference | Receive Bob's times via WebSocket | Use simulated Bob's times |
-| 3 | Messaging | Send encrypted message | Local encryption/verification |
+| Step | Tab       | Multiplayer Action                | Solo Mode Simulation                            |
+| ---- | --------- | --------------------------------- | ----------------------------------------------- |
+| 1    | Exchange  | Send phases via WebSocket         | Store locally, simulate Bob's time measurements |
+| 2    | Inference | Receive Bob's times via WebSocket | Use simulated Bob's times                       |
+| 3    | Messaging | Send encrypted message            | Local encryption/verification                   |
 
 ### Bob's Flow (2 tabs)
-| Step | Tab | Multiplayer Action | Solo Mode Simulation |
-|------|-----|-------------------|----------------------|
-| 1 | Exchange | Receive Alice's phases, send times | Simulate Alice's phases, store times locally |
-| 2 | Messaging | Decrypt message | Local decryption |
+| Step | Tab       | Multiplayer Action                 | Solo Mode Simulation                         |
+| ---- | --------- | ---------------------------------- | -------------------------------------------- |
+| 1    | Exchange  | Receive Alice's phases, send times | Simulate Alice's phases, store times locally |
+| 2    | Messaging | Decrypt message                    | Local decryption                             |
 
 ---
 
@@ -2875,26 +2875,26 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 ## 🔧 Key Differences from E91
 
-| Aspect | E91 | DPS |
-|--------|-----|-----|
-| **Role symmetry** | Alice and Bob symmetric (same tabs) | Alice and Bob have DIFFERENT tabs |
-| **Tab count** | 4 tabs for both | Alice: 3 tabs, Bob: 2 tabs |
-| **Data type** | Bases + bits | Phases + time measurements |
-| **Key generation** | Matching bases | Phase inference from times |
+| Aspect             | E91                                 | DPS                               |
+| ------------------ | ----------------------------------- | --------------------------------- |
+| **Role symmetry**  | Alice and Bob symmetric (same tabs) | Alice and Bob have DIFFERENT tabs |
+| **Tab count**      | 4 tabs for both                     | Alice: 3 tabs, Bob: 2 tabs        |
+| **Data type**      | Bases + bits                        | Phases + time measurements        |
+| **Key generation** | Matching bases                      | Phase inference from times        |
 
 ---
 
 ## ⏱️ Time Estimates
 
-| Phase | Estimated Time |
-|-------|----------------|
-| Phase 1: Core Simulation | 2-3 hours |
-| Phase 2: Solo Game Modal | 1-2 hours |
-| Phase 3: Solo Game Container | 1 hour |
-| Phase 4: Solo Tab Components | 4-6 hours |
-| Phase 5: Route & Navigation | 1-2 hours |
-| Phase 6: Localization & Polish | 1 hour |
-| **Total** | **10-15 hours** |
+| Phase                          | Estimated Time  |
+| ------------------------------ | --------------- |
+| Phase 1: Core Simulation       | 2-3 hours       |
+| Phase 2: Solo Game Modal       | 1-2 hours       |
+| Phase 3: Solo Game Container   | 1 hour          |
+| Phase 4: Solo Tab Components   | 4-6 hours       |
+| Phase 5: Route & Navigation    | 1-2 hours       |
+| Phase 6: Localization & Polish | 1 hour          |
+| **Total**                      | **10-15 hours** |
 
 ---
 
@@ -3039,23 +3039,39 @@ Currently the project has **zero** test infrastructure — no Jest, Vitest, Play
 
 ### Issue 3: Duplicate UI Libraries (@nextui-org/react + Radix UI)
 
-**Status:** ⬜ TODO — Needs investigation
+**Status:** ✅ RESOLVED (February 12, 2026)
 
-The project has **two** UI component libraries installed:
-- **Radix UI** (`@radix-ui/react-*`) — Used extensively throughout the app (dialog, dropdown, tabs, navigation-menu, tooltip, etc.)
-- **@nextui-org/react** — Also installed in package.json
+The project had two UI component libraries: Radix UI (used everywhere) and @nextui-org/react (only used for `Avatar` in 3 waiting-room player-card files).
 
-Both provide similar components (buttons, modals, dropdowns, etc.). Having both means:
-- **Larger bundle size** — users download code for two libraries
-- **Inconsistent styling** — components from different libraries may look/behave differently
-- **Maintenance burden** — two sets of docs, two sets of updates
+**What was done:**
+- [x] Searched codebase — only `Avatar` was imported from `@nextui-org/react` (3 files)
+- [x] Replaced with Tailwind + lucide-react `User` icon (same look)
+- [x] Ran `npm uninstall @nextui-org/react` — **removed 232 packages**
 
-**Recommendation:** Since the project is built on Radix UI (via shadcn/ui components), @nextui-org/react is likely unused or barely used. Check if any component actually imports from `@nextui-org/react`. If not, remove it.
+---
+
+### Issue 4: Player Avatar System (Future Enhancement)
+
+**Status:** ⬜ TODO — Low priority  
+**Date Added**: February 12, 2026
+
+Currently the player avatar in waiting rooms is a simple placeholder icon (User silhouette). In the future, this could be enhanced to give players a visual identity.
+
+**Options (easiest → hardest):**
+
+| Option | Description | Effort |
+|--------|-------------|--------|
+| **A) Default avatar list** | Provide 8-10 pre-made avatars (quantum-themed icons/animals). Player picks one when creating/joining a game. No upload needed. | Low |
+| **B) Initials-based** | Auto-generate avatar from player name initials with random background color (e.g., "AB" in a blue circle). Zero effort from user. | Very Low |
+| **C) Gravatar / DiceBear** | Use an external API like DiceBear to auto-generate unique avatars from the player name. Free, no uploads. | Low |
+| **D) Image upload** | Let users upload their own photo. Requires backend storage (S3/cloud), image resizing, moderation. | High |
+
+**Recommendation:** Option **B (initials)** or **C (DiceBear API)** — both are lightweight, require no backend changes, and give players a unique visual identity without any upload complexity.
 
 **Proposed Actions:**
-- [ ] Search codebase for `@nextui-org` imports
-- [ ] If unused, run `npm uninstall @nextui-org/react`
-- [ ] If partially used, migrate those components to Radix/shadcn equivalents
+- [ ] Decide on approach (A, B, C, or D)
+- [ ] Implement in `PlayerCard` component (shared across BB84, E91, DPS)
+- [ ] Optionally store avatar choice in player store (zustand)
 
 ---
 
