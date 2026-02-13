@@ -45,7 +45,7 @@ const ProtocolPageSidebar = ({ items }: ProtocolPageSidebarProps) => {
     };
 
     return (
-        <nav className="hidden lg:block sticky top-20 h-fit w-56 shrink-0">
+        <nav className="hidden lg:block fixed top-1/2 -translate-y-1/2 left-4 h-fit w-fit z-40">
             <div className="flex flex-col gap-y-1">
                 {items.map((item, index) => (
                     <button

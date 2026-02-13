@@ -206,12 +206,13 @@ export default function DPS() {
     return (
         <MathJaxContext config={mathJaxConfig}>
             <Header />
-            <div className="flex gap-x-6">
+            <div className="relative">
                 <ProtocolPageSidebar items={sidebarItems} />
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className="w-full flex flex-col">
                     <div ref={gameRef}>
                         <DPSMain />
                     </div>
+                    <div className="lg:pl-40">
                     <HowToPlaySection ref={howToPlayRef} />
                     <section ref={aboutRef} className="w-full h-fit mt-20 px-5 md:px-20">
                         <Card className='pb-2 border-none mx-auto shadow-md'>
@@ -877,6 +878,7 @@ export default function DPS() {
                             </p>
                         </div>
                     </section>
+                    </div>
                 </div>
             </div>
             <Footer />

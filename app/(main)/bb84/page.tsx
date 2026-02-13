@@ -134,12 +134,13 @@ export default function BB84() {
     return (
         <>
             <Header />
-            <div className="flex gap-x-6">
+            <div className="relative">
                 <ProtocolPageSidebar items={sidebarItems} />
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className="w-full flex flex-col">
                     <div ref={gameRef}>
                         <BB84Main />
                     </div>
+                    <div className="lg:pl-40">
                     <HowToPlaySection ref={howToPlayRef} />
                     <section ref={aboutRef}
                         className="w-full h-fit mt-20 px-5 md:px-20">
@@ -267,6 +268,7 @@ export default function BB84() {
                             </p>
                         </div>
                     </section>
+                    </div>
                 </div>
             </div>
             <Footer />
