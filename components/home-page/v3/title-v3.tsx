@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/components/providers/language-provider';
 import { getLanguageCode } from '@/lib/utils';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 /**
@@ -105,6 +106,24 @@ const TitleV3 = () => {
                     >
                         {`"Alice et Bob doivent sécuriser leurs communications. Suivez leurs aventures à travers les protocoles cryptographiques les plus avancés de l'univers."`}
                     </motion.p>
+
+                    {/* CTA — small, non-intrusive, easy to remove */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="mt-5"
+                    >
+                        <Link href="/bb84">
+                            <span className="inline-block px-5 py-2 text-sm font-medium rounded-md
+                                border border-primary/50 text-primary
+                                hover:bg-primary hover:text-primary-foreground
+                                transition-all duration-200
+                                hover:shadow-[0_0_16px_hsl(152,100%,33%,0.25)]">
+                                {localize('component.homePage.title.description') ? '▶ Start First Mission' : '▶ Start First Mission'}
+                            </span>
+                        </Link>
+                    </motion.div>
                 </div>
 
                 {/* Bob mascot — right */}

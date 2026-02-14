@@ -3,7 +3,7 @@
 import HeaderV2 from '@/components/home-page/v2/header-v2';
 import FooterV2 from '@/components/home-page/v2/footer-v2';
 import TitleV3 from '@/components/home-page/v3/title-v3';
-import ProtocolsSectionV2 from '@/components/home-page/v2/protocols-section-v2';
+import ProtocolsSectionV3 from '@/components/home-page/v3/protocols-section-v3';
 import AboutSectionV2 from '@/components/home-page/v2/about-section-v2';
 import AtmosphericBackground from '@/components/home-page/v3/atmospheric-background';
 import Image from 'next/image';
@@ -23,8 +23,8 @@ export default function LandingPageV3() {
                 {/* Hero: Title + Alice/Bob + narrative — enhanced glow */}
                 <TitleV3 />
 
-                {/* Protocol mission cards — directly visible, no gap */}
-                <ProtocolsSectionV2 />
+                {/* Protocol mission cards — glassmorphism + live pulse */}
+                <ProtocolsSectionV3 />
 
                 <div id="about" className="mt-12">
                     <AboutSectionV2 />
