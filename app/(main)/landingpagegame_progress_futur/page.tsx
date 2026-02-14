@@ -4,7 +4,7 @@ import HeaderV2 from '@/components/home-page/v2/header-v2';
 import FooterV2 from '@/components/home-page/v2/footer-v2';
 import TitleV3 from '@/components/home-page/v3/title-v3';
 import ProtocolsSectionV3 from '@/components/home-page/v3/protocols-section-v3';
-import AboutSectionV2 from '@/components/home-page/v2/about-section-v2';
+import AboutSectionV3 from '@/components/home-page/v3/about-section-v3';
 import AtmosphericBackground from '@/components/home-page/v3/atmospheric-background';
 import Image from 'next/image';
 
@@ -27,7 +27,7 @@ export default function LandingPageV3() {
                 <ProtocolsSectionV3 />
 
                 <div id="about" className="mt-12">
-                    <AboutSectionV2 />
+                    <AboutSectionV3 />
                 </div>
             </div>
 
