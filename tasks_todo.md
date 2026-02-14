@@ -25,10 +25,12 @@ Redesign website based on colleague's Canva mockup. New design includes:
 | **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS)       | 2-3 hours      | ✅ DONE                               |
 | **Phase 3** | Guide Page (How to Play, Terminology, Context)      | 2-3 hours      | ✅ DONE (Context section placeholder) |
 | **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
-| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ⬜ TODO                               |
+| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
+| **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | **🏗️ IN PROGRESS**                    |
 
 ### Approach
-**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes.
+**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes. 
+*Experimental V3 work is happening at `/landingpagegame_progress_futur`.*
 
 ### New Components Needed
 - [x] `ProtocolPageSidebar.tsx` - Sticky left navigation ✅ Created
@@ -45,7 +47,11 @@ Redesign website based on colleague's Canva mockup. New design includes:
 ✅ Mobile sidebar mirrors desktop navigation
 ✅ Localization (EN/FR/ES) for all new components
 □ Video tutorials integration
-□ Landing page visual redesign (Canva mockup)
+✅ Landing page visual redesign (V2)
+✅ **V3 Experimental: Atmospheric Background (Noise/Particles)**
+□ **V3 Experimental: Hero CTA & Narrative Glow**
+□ **V3 Experimental: Premium Glassmorphism & Live Pulse**
+□ **V3 Experimental: Thematic Section Dividers**
 □ Guide > Context section (currently placeholder)
 ```
 
