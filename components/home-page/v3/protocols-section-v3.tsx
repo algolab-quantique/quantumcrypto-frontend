@@ -10,9 +10,9 @@ import { KeyRound } from 'lucide-react';
 
 /** Difficulty rating (1-3 key icons) per protocol */
 const protocolMeta: Record<string, { mission: string; difficulty: number }> = {
-    BB84:  { mission: 'Mission 01', difficulty: 1 },
-    E91:   { mission: 'Mission 02', difficulty: 2 },
-    DPS:   { mission: 'Mission 03', difficulty: 3 },
+    BB84: { mission: 'Mission 01', difficulty: 1 },
+    E91: { mission: 'Mission 02', difficulty: 2 },
+    DPS: { mission: 'Mission 03', difficulty: 3 },
 };
 
 const DifficultyKeys = ({ level }: { level: number }) => (
@@ -36,14 +36,10 @@ const LiveDot = () => (
 );
 
 /**
- * ProtocolsSectionV3 — Glassmorphism variant
+ * ProtocolsSectionV3 — Exact V2 Styling + Wider V3 Glow
  * 
- * Changes vs V2:
- * - backdrop-blur-md (stronger glass)
- * - thin white/dark glass border
- * - live pulse dot on stats
- * - slightly stronger hover glow
- * Same layout, same data — just visual refinement.
+ * Reverted to V2 backdrop-blur-sm and border opacity.
+ * Added wider green shadow on hover.
  */
 const ProtocolsSectionV3 = () => {
 
@@ -82,11 +78,9 @@ const ProtocolsSectionV3 = () => {
                             >
                                 <Link href={href}>
                                     <div className="group hover:scale-[1.03] cursor-pointer transition-all duration-200
-                                        rounded-lg
-                                        border border-white/10 dark:border-white/[0.08]
-                                        bg-card/60 backdrop-blur-md
+                                        rounded-lg border border-border/60 bg-card/80 backdrop-blur-sm
                                         p-5 h-[260px] flex flex-col justify-between
-                                        hover:border-primary/40 hover:shadow-[0_0_24px_hsl(152,100%,33%,0.18)]">
+                                        hover:border-primary/50 hover:shadow-[0_0_30px_hsl(152,100%,33%,0.3)]">
 
                                         {/* Header: Mission label + Difficulty */}
                                         <div>
@@ -107,7 +101,7 @@ const ProtocolsSectionV3 = () => {
 
                                         {/* Footer: Stats with live pulse */}
                                         {protocolStats[name.toLowerCase()] !== undefined && (
-                                            <div className="mt-3 pt-3 border-t border-border/30 text-xs text-muted-foreground flex items-center">
+                                            <div className="mt-3 pt-3 border-t border-border/40 text-xs text-muted-foreground flex items-center">
                                                 <LiveDot />
                                                 {localize('component.quantumCrypto.gamesPlayed')} {protocolStats[name.toLowerCase()] || 0}
                                             </div>

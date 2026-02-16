@@ -13,11 +13,10 @@ interface FeatureCardProps {
 }
 
 /**
- * FeatureCardV3 — Glassmorphism + smooth hover
- *
- * Same two-layer technique as protocol cards:
- * - Outer motion.div: Framer entrance animation only
- * - Inner div: pure CSS hover (scale + glow) — GPU-accelerated, no Framer conflict
+ * FeatureCardV3 — Exact V2 Styling + Wider V3 Glow
+ * 
+ * This is a "hard reset" to match V2 exactly. 
+ * Reverted border-secondary and removed V3 glass effects.
  */
 const FeatureCardV3 = ({ icon, title, description, index }: FeatureCardProps) => {
     return (
@@ -26,32 +25,24 @@ const FeatureCardV3 = ({ icon, title, description, index }: FeatureCardProps) =>
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ delay: index * 0.12, duration: 0.5 }}
+            className="w-[300px] border border-secondary items-center p-5 rounded-md drop-shadow-2xl flex flex-col gap-y-2
+                hover:scale-[1.03] hover:border-primary/50 hover:shadow-[0_0_30px_hsl(152,100%,33%,0.3)]
+                transition-all duration-200 cursor-default"
         >
-            <div className="h-full items-center p-5 rounded-md drop-shadow-2xl flex flex-col gap-y-2
-                border border-white/10 dark:border-white/[0.08]
-                bg-card/60 backdrop-blur-md
-                hover:scale-[1.03] hover:border-primary/40
-                hover:shadow-[0_0_24px_hsl(152,100%,33%,0.18)]
-                transition-all duration-200 cursor-default">
-                <div>
-                    {React.cloneElement(icon as React.ReactElement<any>,
-                        { className: 'mb-2', size: 70 })}
-                </div>
-                <div>
-                    <p className="font-bold text-2xl mb-3 text-primary">{title}</p>
-                    <p className="text-foreground/70">{description}</p>
-                </div>
+            <div>
+                {React.cloneElement(icon as React.ReactElement<any>,
+                    { className: 'mb-2', size: 70 })}
+            </div>
+            <div>
+                <p className="font-bold text-2xl mb-3 text-primary">{title}</p>
+                <p className="text-neutral-600 dark:text-neutral-400">{description}</p>
             </div>
         </motion.div>
     );
 };
 
 /**
- * AboutSectionV3 — Glass cards matching protocol section style
- *
- * Uses CSS grid (same as protocol section) so that:
- * - All cards in a row are the same height automatically
- * - Two-layer card nesting works (grid propagates height, flex-wrap does not)
+ * AboutSectionV3 — Exact V2 Centered Layout
  */
 const AboutSectionV3 = forwardRef<HTMLElement>((_, ref) => {
 
@@ -65,7 +56,7 @@ const AboutSectionV3 = forwardRef<HTMLElement>((_, ref) => {
                 'component.header.about')}</h1>
             <p className="text-lg">{localize(
                 'component.homePage.aboutSection')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mt-10 gap-5 mx-auto">
+            <div className="flex flex-wrap mt-10 gap-5 justify-center mx-auto w-fit">
                 <FeatureCardV3 index={0} icon={<Smile />} title={localize(
                     'component.homePage.userFriendlyTitle') ?? ''}
                     description={localize(

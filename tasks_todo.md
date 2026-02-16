@@ -26,7 +26,7 @@ Redesign website based on colleague's Canva mockup. New design includes:
 | **Phase 3** | Guide Page (How to Play, Terminology, Context)      | 2-3 hours      | ✅ DONE (Context section placeholder) |
 | **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
 | **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
-| **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | **🏗️ IN PROGRESS**                    |
+| **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | ✅ DONE (Integrated)                  |
 
 ### Approach
 **Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes. 
@@ -49,11 +49,32 @@ Redesign website based on colleague's Canva mockup. New design includes:
 □ Video tutorials integration
 ✅ Landing page visual redesign (V2)
 ✅ **V3 Experimental: Atmospheric Background (Noise/Particles)**
-□ **V3 Experimental: Hero CTA & Narrative Glow**
-□ **V3 Experimental: Premium Glassmorphism & Live Pulse**
-□ **V3 Experimental: Thematic Section Dividers**
+✅ **V3 Experimental: Hero CTA & Narrative Glow**
+✅ **V3 Experimental: Premium Glassmorphism & Live Pulse**
+✅ **V3 Experimental: Thematic Section Dividers**
 □ Guide > Context section (currently placeholder)
 ```
+
+---
+
+### 🏛️ V3 DESIGN RATIONALE (Why we did what we did)
+
+To ensure future developers understand the evolution of the V3 landing page, here is the rationale:
+
+#### 1. "V2-Exact" Marriage
+**Problem**: Pure glassmorphism and experimental layouts were causing readability issues and stretching on varied screens.
+**Solution**: We reverted to the **exact V2 code architecture** (fixed widths, flex-centering, defined borders) but decorated it with V3's depth. This gives us V2's robust "bedrock" with V3's "premium paint."
+
+#### 2. "Bright Heart" Quantum Photons
+**Problem**: Initial particles were too subtle and looked like random noise.
+**Solution**: Each photon now has a **brilliant white center (Bright Core)** that fades into green glow. This makes them look like actual concentrated quantum energy (Heart-of-Red/White) rather than static dots.
+
+#### 3. Intelligent "Safe Zones"
+**Problem**: Background movement can distract from the main message (text).
+**Solution**: The particle engine avoids the central 40% of the screen. Energy flows around the Alice/Bob mascots and the sides of the text, keeping the **Hero message 100% readable**.
+
+#### 4. The "Laser Line" Snap
+**Hover Feel**: We prioritised an instant transition from neutral grey to primary green with a **30px wide glow**. This provides immediate feedback and feels "sharp" and "fast," like a quantum transition.
 
 ---
 
