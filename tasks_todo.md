@@ -78,6 +78,30 @@ To ensure future developers understand the evolution of the V3 landing page, her
 
 ---
 
+### 🧭 NAVIGATION & UX PRINCIPLES (Why we organized it this way)
+
+A key part of the V3 update was refining how users move through the application. Here is why we chose this specific structure over other "flat" menus:
+
+#### 1. Top Menu: "Global Context" (Reducing Cognitive Load)
+**Decision**: Group items into dropdowns (Protocoles -> BB84/E91/DPS, Guide -> How to Play/Lexique) instead of listing everything.
+**Why?**:
+*   **Hick’s Law**: The time it takes to make a decision increases with the number and complexity of choices. By grouping, we simplify the initial choice to just 3 things: "Do I want to *Do* (Protocols), *Learn* (Guide), or *Know* (About)?"
+*   **Universal Access**: If a user is deep in the BB84 tutorial and wants to switch to E91, the **Protocol Dropdown** allows a direct jump. If we didn't have this, they would have to go Home -> Select E91 (2 clicks vs 1).
+
+#### 2. Side Menu: "Local Context" (Deep Focus)
+**Decision**: The left sidebar is **Context-Aware**. It *only* shows sections relevant to the page you are on (e.g., on BB84 page: Intro -> Game -> Review).
+**Why?**:
+*   **Tunnel Vision for Learning**: When learning a complex topic like Quantum Cryptography, we don't want to distract the user with "Guide" or "About" links on the side.
+*   **Progress Tracking**: It acts as a "Table of Contents" for the specific mission, helping the user know exactly how much playspace is left.
+*   **Standard Pattern**: This follows the **Documentation/Courseware Pattern** (used by Vercel, Stripe, Coursera) where Top = App Navigation, Left = Chapter Navigation.
+
+#### 3. Separation of Concerns
+*   **Top Bar**: "Where am I in the **Application**?" (Global State)
+*   **Side Bar**: "Where am I in the **Lesson**?" (Local State)
+*   by separating these, we prevent the "Context Confusion" you mentioned, where a user might think "Context" applies to the whole app when it might just be for the protocol.
+
+---
+
 ## 📦 Next.js Version Documentation
 
 ### Current Version Status (December 2025)
