@@ -46,16 +46,18 @@ const ProtocolPageSidebar = ({ items }: ProtocolPageSidebarProps) => {
 
     return (
         <nav className="hidden lg:block fixed top-1/2 -translate-y-1/2 left-4 h-fit w-fit z-40">
-            <div className="flex flex-col gap-y-1">
+            <div className="flex flex-col gap-y-1
+                bg-card/60 backdrop-blur-md border border-border/30
+                rounded-xl p-2 shadow-lg">
                 {items.map((item, index) => (
                     <button
                         key={index}
                         onClick={() => handleClick(item)}
                         className={cn(
-                            'text-left text-sm px-3 py-2 rounded-md transition-all',
-                            'hover:bg-secondary/50',
+                            'text-left text-sm px-3 py-2 rounded-md transition-all duration-300',
+                            'hover:bg-primary/10 hover:text-primary',
                             activeIndex === index
-                                ? 'bg-primary/10 text-primary font-semibold border-l-2 border-primary'
+                                ? 'bg-primary/10 text-primary font-semibold border-l-2 border-primary shadow-[0_0_12px_hsl(152,100%,33%,0.3)]'
                                 : 'text-muted-foreground'
                         )}
                     >

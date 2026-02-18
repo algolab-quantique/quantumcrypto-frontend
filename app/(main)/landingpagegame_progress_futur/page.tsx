@@ -1,7 +1,7 @@
 'use client';
 
-import HeaderV2 from '@/components/home-page/v2/header-v2';
-import FooterV2 from '@/components/home-page/v2/footer-v2';
+import HeaderV3 from '@/components/home-page/v3/header-v3';
+import FooterV3 from '@/components/home-page/v3/footer-v3';
 import TitleV3 from '@/components/home-page/v3/title-v3';
 import ProtocolsSectionV3 from '@/components/home-page/v3/protocols-section-v3';
 import AboutSectionV3 from '@/components/home-page/v3/about-section-v3';
@@ -18,7 +18,7 @@ export default function LandingPageV3() {
     return (
         <div className="v2-theme-root min-h-screen relative">
             <AtmosphericBackground />
-            <HeaderV2 />
+            <HeaderV3 />
             <div className="w-full flex flex-col">
                 {/* Hero: Title + Alice/Bob + narrative — enhanced glow */}
                 <TitleV3 />
@@ -49,7 +49,7 @@ export default function LandingPageV3() {
                 />
             </div>
 
-            <FooterV2 />
+            <FooterV3 />
         </div>
     );
 }

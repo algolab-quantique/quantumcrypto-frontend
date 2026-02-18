@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -33,10 +34,12 @@ const CreateGameModal = ({
     connecting,
     creatingGame,
     onCreateGame,
+    triggerClassName,
 }: {
     connecting: boolean,
     creatingGame: boolean, onCreateGame: (photonNumber: number
-    ) => void
+    ) => void,
+    triggerClassName?: string
 
 }) => {
 
@@ -98,7 +101,7 @@ const CreateGameModal = ({
             <DialogTrigger asChild>
                 <Button
                     variant={'secondary'} type="button"
-                    className="text-md w-[50%] mt-2">{localize(
+                    className={cn("text-md w-[50%] mt-2", triggerClassName)}>{localize(
                         'component.main.createGame')}</Button>
             </DialogTrigger>
             <DialogContent
