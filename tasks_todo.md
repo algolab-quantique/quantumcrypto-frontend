@@ -3141,4 +3141,140 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 - [ ] Implement Eve interception logic
 - [ ] Implement Eve detection/error rate checking
 
+---
+---
+
+# 🎮 PLATFORM EVOLUTION PLAN — From "Form" to "Game"
+
+**Date Created**: February 17, 2026  
+**Context**: V3 landing page presented to students — positive visual feedback, but students noted the protocol game pages feel like "dead forms" rather than a real game. Below is the full roadmap.
+
+---
+
+## 📌 SHORT-TERM: V3 Visual Upgrade → Protocol Pages (Task 2)
+
+**Status**: 🔄 IN PROGRESS  
+**Goal**: Apply V3 landing page design elements to BB84/E91/DPS protocol pages  
+**Approach**: Isolated sandbox (`/bb84_future`) — no changes to live pages
+
+### What to Apply from V3
+- ✅ Atmospheric Background (particles, grain, glow)
+- ✅ Green Neon Glow on Hover (`shadow-[0_0_30px_...]`)
+- ✅ Glassmorphism Cards (`backdrop-blur`, `bg-card/80`)
+- ✅ Section Divider Waves
+- ✅ CTA Button Style (border-primary, hover glow)
+- ⚠️ Alice/Bob Character Art (decorative, optional)
+
+### What NOT to Apply
+- ❌ Hero Section Layout (protocol pages need game form first)
+- ❌ Mission Card Grid (already have their own navigation)
+- ❌ Landing Page Typography Scale (too large for protocol context)
+
+### Implementation Steps
+- [ ] Create sandbox route `/bb84_future`
+- [ ] Copy `bb84/page.tsx` → `bb84_future/page.tsx`
+- [ ] Apply AtmosphericBackground to protocol hero section
+- [ ] Apply V3 card styles to game form (glassmorphism + glow)
+- [ ] Apply V3 card styles to terminology cards
+- [ ] Apply V3 button styles to all CTAs (Jouer solo, Créer, Rejoindre)
+- [ ] Apply V3 styles to "How to Play" section
+- [ ] Style sidebar with V3 active glow
+- [ ] Verify in browser (Dark + Light mode)
+- [ ] Iterate, then replicate for E91 and DPS
+
+---
+
+## 🚀 LONG-TERM: Gamification Roadmap (Task 1)
+
+**Status**: ⬜ PLANNED  
+**Goal**: Transform the platform into an engaging, competitive learning game  
+**Recommended Order**: G3 → G1 → G2 → G4 → G5
+
+### Phase G3: Progressive Unlocking 🔒→🔓 (Priority 1 — 1-2 days)
+Lock E91 and DPS until BB84 is completed. Creates an immediate learning path.
+
+- [ ] Track protocol completion in `localStorage` (`bb84_completed`, etc.)
+- [ ] Add lock overlay to E91/DPS cards on landing page
+- [ ] Show "Complete BB84 to unlock" message
+- [ ] Add progress bar showing overall completion
+- [ ] Achievement badges ("First Key Exchange", "Eve Hunter")
+
+### Phase G1: Player Identity & Avatars 🎭 (Priority 2 — 2-3 days)
+Give users a persistent identity and visual representation.
+
+- [ ] Create `player-profile-store.ts` (Zustand)
+- [ ] Avatar selection (quantum-themed: Alice, Bob, Eve skins)
+- [ ] Persistent profile in `localStorage`
+- [ ] Display avatar in game lobby and during gameplay
+- [ ] Consider DiceBear API for auto-generated avatars
+
+### Phase G2: Scoring & Competition 🏆 (Priority 3 — 3-5 days)
+Add stakes and competition to each game session.
+
+- [ ] Scoring formula: basis accuracy + Eve detection + speed
+- [ ] End-game score screen with breakdown
+- [ ] Local leaderboard per protocol
+- [ ] Server-side leaderboard via API
+- [ ] XP system with titles ("Quantum Apprentice" → "Cryptography Master")
+
+### Phase G4: Interactive Tutorial / Guided Mode 📖 (Priority 4 — 5-7 days)
+Transform the linear form-filling into a guided experience with story.
+
+- [ ] `TutorialOverlay.tsx` component (contextual popups)
+- [ ] `tutorial-store.ts` (Zustand, tracks shown tips)
+- [ ] Tutorial data in JSON files (supports i18n)
+- [ ] Step-by-step highlights (glow/pulse on next action)
+- [ ] "Skip Tutorial" button for returning players
+- [ ] Animated transitions between protocol steps
+- [ ] Dramatic Eve detection reveal (screen shake, red glow)
+- [ ] Victory screen with confetti + score + "Next Protocol" CTA
+
+### Phase G5: Visual Gameplay Enhancements 🎨 (Priority 5 — 7-10 days)
+Make the game screens visually exciting, not just functional.
+
+- [ ] Photon animations (fly from Alice to Bob with polarization)
+- [ ] Visual basis selection (clickable cards instead of dropdowns)
+- [ ] Real-time Eve indicator (flickering, interference pattern)
+- [ ] Optional sound effects (photon send/receive, Eve alert)
+- [ ] Game-specific themes beyond global dark/light
+
+---
+
+## 🃏 CARD UX REDESIGN — Multi-Scenario Form Problem
+
+**Status**: ⬜ PLANNED  
+**Date**: February 18, 2026  
+**Problem**: The current game card tries to serve 3 different workflows with 1 form, but each needs different information:
+
+| Workflow | Needs Name? | Needs PIN? | Role |
+|----------|:-----------:|:----------:|------|
+| **Jouer solo** | ✅ (+ avatar later?) | ❌ | Player |
+| **Rejoindre** | ✅ | ✅ | Player |
+| **Créer un jeu** | ✅ | ❌ (generates one) | Master (can't play) |
+
+The PIN field is useless for Solo and Create, yet always visible. The form feels confused and doesn't satisfy any scenario well.
+
+### 3 Design Options (to be decided later)
+
+**Option 1: Tab-Based Card** — 3 tabs (Solo | Rejoindre | Créer), each shows only relevant fields.  
+- Pros: Clean, familiar UX, each scenario is focused  
+- Cons: Takes horizontal space, 3 tabs might feel heavy  
+
+**Option 2: Progressive Reveal** ⭐ (Recommended) — Name + "Jouer solo" as default fast path. Collapsible "Multijoueur" section below reveals PIN + Rejoindre/Créer.  
+- Pros: Default solo path is instant and clean, multiplayer is optional/progressive  
+- Cons: Multiplayer is "hidden" for new users  
+- Bonus: Pairs well with gamification (lock multiplayer until first solo completed)  
+
+**Option 3: Two-Card Split** — Separate Solo card and Multiplayer card side-by-side.  
+- Pros: Crystal clear separation, scalable for adding avatar/difficulty  
+- Cons: More page space, name field duplicated  
+
+### Implementation Steps (when decided)
+- [ ] Choose card design approach
+- [ ] Design mockup / prototype
+- [ ] Implement for BB84 first
+- [ ] Replicate to E91 and DPS
+
+---
+
 **Priority:** LOW - Focus on solo mode first, then add Eve later
