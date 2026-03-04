@@ -27,7 +27,7 @@ Redesign website based on colleague's Canva mockup. New design includes:
 | **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
 | **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
 | **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | ✅ DONE (Integrated)                  |
-| **Phase 7** | Shared How-to-Play Component (BB84/E91/DPS)        | 1 hour         | ✅ DONE                               |
+| **Phase 7** | Shared How-to-Play Component (BB84/E91/DPS)         | 1 hour         | ✅ DONE                               |
 | **Phase 8** | Card UX Comparison Page (`/bb84_card`)              | 3-4 hours      | ✅ DONE (7 options, awaiting choice)  |
 
 ### Approach
@@ -2793,9 +2793,14 @@ Fixes: Results table showing "No rooms finished" despite completed games
 # 🎮 DPS Solo Mode Implementation Plan
 
 **Created**: January 5, 2026  
-**Status**: 🟡 IN PROGRESS  
+**Status**: ✅ DONE  
+**Completed**: March 2026  
 **Priority**: HIGH  
 **Reference**: E91 Solo Mode (already implemented and working)
+
+> **Note (March 4, 2026):** All 6 phases are complete. DPS uses a unified `lib/dps/dps-protocol.ts` (916 lines)
+> instead of a separate `solo-player.ts` — valid design choice. Solo mode has 5 dedicated tab components,
+> a dedicated `/dps/solo` route, and a solo game modal with role selection (Alice/Bob). Tested and working.
 
 ---
 
@@ -2813,16 +2818,16 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 | E91 Solo Mode (Reference)                      | DPS Solo Mode (TO CREATE)                            | Status        |
 | ---------------------------------------------- | ---------------------------------------------------- | ------------- |
-| `lib/e91/solo-player.ts`                       | `lib/dps/solo-player.ts`                             | 🟡 IN PROGRESS |
-| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx`       | ⬜ TODO        |
-| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`             | ⬜ TODO        |
-| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                        | ⬜ TODO        |
-| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                          | ⬜ TODO        |
-| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                       | ⬜ TODO        |
-| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                       | ⬜ TODO        |
-| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                         | ⬜ TODO        |
-| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo-results/page.tsx`               | ⬜ TODO        |
-| `solo-results-table.tsx`                       | `components/dps/results-page/solo-results-table.tsx` | ⬜ TODO        |
+| `lib/e91/solo-player.ts`                       | `lib/dps/dps-protocol.ts` (unified)                  | ✅ DONE         |
+| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx`       | ✅ DONE         |
+| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`             | ✅ DONE         |
+| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                        | ✅ DONE         |
+| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                          | ✅ DONE         |
+| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                       | ✅ DONE         |
+| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                       | ✅ DONE         |
+| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                         | ✅ DONE         |
+| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo/page.tsx`                       | ✅ DONE         |
+| `solo-results-table.tsx`                       | N/A (handled in solo-game.tsx)                       | ✅ DONE         |
 
 ---
 
@@ -2845,87 +2850,51 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 ## 📝 Implementation Phases
 
-### Phase 1: Core Simulation (`lib/dps/solo-player.ts`)
-**Status**: 🟡 IN PROGRESS
+### Phase 1: Core Simulation (`lib/dps/dps-protocol.ts`)
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Create simulation functions based on backend Python logic
-- [ ] `generateRandomPhases(n)` - Alice's phase choices (0 or π)
-- [ ] `generatePulseTrains(phases)` - Modulated pulse trains
-- [ ] `simulateBobTimeMeasurement(pulses)` - Bob measures arrival times
-- [ ] `generateAliceInference(bobTimes, alicePhases)` - Alice infers key bits
-- [ ] `eveIntercept()` - Eve disruption simulation
-
-**Backend Reference**: Need to check DPS consumers.py for simulation logic
+Used unified `dps-protocol.ts` (916 lines) instead of a separate solo-player file.
+Includes `generateRandomPhases()`, pulse train simulation, Bob time measurement, Alice inference.
 
 ---
 
 ### Phase 2: Solo Game Modal (`components/dps/home-page/solo-game-modal.tsx`)
-**Status**: ⬜ TODO
+**Status**: ✅ DONE (321 lines)
 
-**Tasks**:
-- [ ] Create modal with role selection (Alice/Bob)
-- [ ] Add game settings form (photon count, Eve toggle)
-- [ ] Connect to player-store and dps-game-store
-- [ ] Navigate to `/dps/play` on start
+Role selection (Alice/Bob), game settings, navigates to `/dps/solo`.
 
 ---
 
 ### Phase 3: Solo Game Container (`components/dps/play-page/solo-game.tsx`)
-**Status**: ⬜ TODO
+**Status**: ✅ DONE (189 lines)
 
-**Tasks**:
-- [ ] Create main container with conditional tabs by role
-- [ ] Handle localStorage state restoration
-- [ ] Import solo tab components
+Renders all 5 solo tabs conditionally by role.
 
 ---
 
 ### Phase 4: Solo Tab Components
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-#### 4.1: `solo-alice-exchange-tab.tsx`
-- [ ] Copy from `alice-exchange-tab.tsx`
-- [ ] Remove `useSocket()` and `sendPhases()` calls
-- [ ] Add local simulation for Bob's measurements
-
-#### 4.2: `solo-bob-exchange-tab.tsx`
-- [ ] Copy from `bob-exchange-tab.tsx`
-- [ ] Remove WebSocket dependencies
-- [ ] Simulate Alice's phases locally
-
-#### 4.3: `solo-alice-inference-tab.tsx`
-- [ ] Copy from `alice-inference-tab.tsx`
-- [ ] Use locally stored Bob measurements
-
-#### 4.4: `solo-alice-messaging-tab.tsx`
-- [ ] Copy from `alice-messaging-tab.tsx`
-- [ ] Local encryption/decryption
-
-#### 4.5: `solo-bob-messaging-tab.tsx`
-- [ ] Copy from `bob-messaging-tab.tsx`
-- [ ] Local decryption verification
+- `solo-alice-exchange-tab.tsx` (367 lines) ✅
+- `solo-bob-exchange-tab.tsx` (258 lines) ✅
+- `solo-alice-inference-tab.tsx` (210 lines) ✅
+- `solo-alice-messaging-tab.tsx` (237 lines) ✅
+- `solo-bob-messaging-tab.tsx` (288 lines) ✅
 
 ---
 
 ### Phase 5: Route & Navigation
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Create `app/(main)/dps/solo-results/page.tsx`
-- [ ] Create `components/dps/results-page/solo-results-table.tsx`
-- [ ] Update `dps-progression.tsx` for solo navigation
+- `app/(main)/dps/solo/page.tsx` exists (19 lines)
+- DPS game form has Play Solo button connected to solo modal
 
 ---
 
 ### Phase 6: Localization & Polish
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Add localization keys to `lang/dps-lines.ts`
-- [ ] Test all 3 languages (EN/FR/ES)
-- [ ] Verify identical UI to multiplayer
-- [ ] Update `dps-game-form.tsx` to show solo button
+Uses shared localization keys from `lang/quantumcrypto-lines.ts` (EN/FR/ES).
 
 ---
 
@@ -3189,11 +3158,107 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 
 ## 🚀 LONG-TERM: Gamification Roadmap (Task 1)
 
-**Status**: ⬜ PLANNED  
+**Status**: ⬜ PLANNED (ideas phase)  
 **Goal**: Transform the platform into an engaging, competitive learning game  
+**Last Updated**: March 4, 2026
+
+---
+
+### 🧠 UNIVERSAL QUANTUM CONCEPTS → GAME MECHANICS
+
+All 3 protocols (BB84, E91, DPS) share these core quantum concepts. Each maps naturally to a game mechanic:
+
+| Quantum Concept | Game Mechanic Analogy | Existing Game Reference |
+|---|---|---|
+| **Photon travels A→B** | Projectile / delivery | *Angry Birds* trajectory, *Guitar Hero* note highway |
+| **Basis selection** | Strategic choice under uncertainty | *Rock-Paper-Scissors*, *Poker* blind bets |
+| **Same basis = correct info** | Match = reward | *Memory/Concentration* card game, *Candy Crush* matching |
+| **Different basis = random** | Miss = penalty/lost turn | *Minesweeper* wrong click |
+| **Eve intercepts** | Hidden adversary / spy | *Among Us* impostor, *Spy vs Spy*, *Werewolf* |
+| **Error rate reveals Eve** | Detective / forensics | *Clue/Cluedo*, *Papers Please* document inspection |
+| **Key generation** | Crafting / building | *Minecraft* crafting from collected resources |
+
+---
+
+### 🎮 GAME CONCEPT IDEAS (Universal — All Protocols)
+
+**Concept 1: "Photon Catcher" (Guitar Hero / Fruit Ninja style)**
+- Photons fly across the screen, you must pick the correct basis (filter) *before* they arrive
+- Speed + accuracy scoring. Wrong basis = photon lost
+- Eve photons are disguised — if you catch one, you get a warning
+- Works for all 3 protocols with different visual skins
+
+**Concept 2: "Base Match" (Memory Card Game)**
+- Cards face-down, flip pairs to find matching bases
+- Same basis pair = you keep the bit → builds your key
+- Different basis = cards flip back, you lose a turn
+- Eve cards hidden in the deck — if you flip one, she steals a matched pair
+- Difficulty: more cards, faster timer, more Eve cards
+
+**Concept 3: "Eve Hunter" (Among Us / Detective mode)**
+- After a key exchange round, you see the stats (error rates, mismatches)
+- You must decide: "Is Eve present? Yes/No"
+- Higher levels = Eve intercepts fewer photons (subtler, harder to detect)
+- Score based on correct detection + confidence threshold
+- Like *Papers Please* — inspect the data, spot the anomaly
+
+**Concept 4: "Quantum Relay" (Tower Defense)**
+- Photons travel a path from Alice to Bob
+- Player places basis filters along the channel
+- Eve tries to intercept at random points
+- Player scores by maximizing correct key bits while detecting Eve
+- Could have "shields" and "decoys" as power-ups
+
+**Concept 5: "Speed Exchange" (Typing Test / Speedrun)**
+- Complete a full key exchange as fast as possible
+- Timer + accuracy = combined score
+- Leaderboard per protocol
+- Like *TypeRacer* but for quantum operations
+
+---
+
+### 🔬 PROTOCOL-SPECIFIC GAME TWISTS
+
+| Protocol | Unique Mechanic | Game Twist |
+|---|---|---|
+| **BB84** | Polarization filters (↕ ↔ ↗ ↘) | Rotate a physical filter widget to match — visual/tactile |
+| **E91** | Entangled pairs, Bell inequality | Puzzle mode: "Do these measurements violate Bell's inequality?" — logic puzzle |
+| **DPS** | Phase differences in pulse trains | Rhythm game: detect phase shifts like beats in music (*Guitar Hero* / *osu!*) |
+
+Each protocol gets its own "flavor" of gamification on top of the universal mechanics.
+
+---
+
+### 📊 DIFFICULTY LEVELS (Per Protocol)
+
+| Level | Name | Description |
+|---|---|---|
+| 1 | **Tutorial** | Guided walkthrough, no Eve, no timer |
+| 2 | **Apprentice** | Solo, no Eve, scored |
+| 3 | **Agent** | Solo + Eve present, must detect |
+| 4 | **Operative** | Multiplayer, real partner |
+| 5 | **Master** | Multiplayer + Eve, coordinate detection |
+
+---
+
+### 🏅 BADGE IDEAS
+
+- **"First Photon"** — Complete your first exchange
+- **"Perfect Basis"** — 100% basis match in a round
+- **"Eve Hunter"** — Correctly detect Eve 3 times
+- **"Ghost Protocol"** — Complete a round with 0 errors
+- **"Speed Demon"** — Exchange under 30 seconds
+- **"Protocol Master"** — Complete all 3 protocols
+- **"Quantum Trio"** — Play BB84 + E91 + DPS in one session
+- **"Unbreakable"** — Generate a key with 0% error rate
+
+---
+
+### 🛣️ IMPLEMENTATION PHASES
+
 **Recommended Order**: G3 → G1 → G2 → G4 → G5
 
-### Phase G3: Progressive Unlocking 🔒→🔓 (Priority 1 — 1-2 days)
+#### Phase G3: Progressive Unlocking 🔒→🔓 (Priority 1 — 1-2 days)
 Lock E91 and DPS until BB84 is completed. Creates an immediate learning path.
 
 - [ ] Track protocol completion in `localStorage` (`bb84_completed`, etc.)
@@ -3202,7 +3267,7 @@ Lock E91 and DPS until BB84 is completed. Creates an immediate learning path.
 - [ ] Add progress bar showing overall completion
 - [ ] Achievement badges ("First Key Exchange", "Eve Hunter")
 
-### Phase G1: Player Identity & Avatars 🎭 (Priority 2 — 2-3 days)
+#### Phase G1: Player Identity & Avatars 🎭 (Priority 2 — 2-3 days)
 Give users a persistent identity and visual representation.
 
 - [ ] Create `player-profile-store.ts` (Zustand)
@@ -3211,7 +3276,7 @@ Give users a persistent identity and visual representation.
 - [ ] Display avatar in game lobby and during gameplay
 - [ ] Consider DiceBear API for auto-generated avatars
 
-### Phase G2: Scoring & Competition 🏆 (Priority 3 — 3-5 days)
+#### Phase G2: Scoring & Competition 🏆 (Priority 3 — 3-5 days)
 Add stakes and competition to each game session.
 
 - [ ] Scoring formula: basis accuracy + Eve detection + speed
@@ -3220,7 +3285,7 @@ Add stakes and competition to each game session.
 - [ ] Server-side leaderboard via API
 - [ ] XP system with titles ("Quantum Apprentice" → "Cryptography Master")
 
-### Phase G4: Interactive Tutorial / Guided Mode 📖 (Priority 4 — 5-7 days)
+#### Phase G4: Interactive Tutorial / Guided Mode 📖 (Priority 4 — 5-7 days)
 Transform the linear form-filling into a guided experience with story.
 
 - [ ] `TutorialOverlay.tsx` component (contextual popups)
@@ -3232,7 +3297,7 @@ Transform the linear form-filling into a guided experience with story.
 - [ ] Dramatic Eve detection reveal (screen shake, red glow)
 - [ ] Victory screen with confetti + score + "Next Protocol" CTA
 
-### Phase G5: Visual Gameplay Enhancements 🎨 (Priority 5 — 7-10 days)
+#### Phase G5: Visual Gameplay Enhancements 🎨 (Priority 5 — 7-10 days)
 Make the game screens visually exciting, not just functional.
 
 - [ ] Photon animations (fly from Alice to Bob with polarization)
@@ -3245,18 +3310,19 @@ Make the game screens visually exciting, not just functional.
 
 ## 🃏 CARD UX REDESIGN — Multi-Scenario Form Problem
 
-**Status**: ✅ COMPARISON BUILT — Awaiting team choice  
+**Status**: ⏸️ WAITING — Team meeting needed to pick winning design  
 **Date**: February 18, 2026  
 **Last Updated**: March 4, 2026  
 **Comparison Page**: `/bb84_card` (7 interactive options, all functional)  
 **Branch**: Merged into `ibra_development` (commit `60c682c`)  
+**Blocked By**: Team meeting to review and vote on the 7 options  
 **Problem**: The current game card tries to serve 3 different workflows with 1 form, but each needs different information:
 
-| Workflow | Needs Name? | Needs PIN? | Role |
-|----------|:-----------:|:----------:|------|
-| **Jouer solo** | ✅ (+ avatar later?) | ❌ | Player |
-| **Rejoindre** | ✅ | ✅ | Player |
-| **Créer un jeu** | ✅ | ❌ (generates one) | Master (can't play) |
+| Workflow         |     Needs Name?     |    Needs PIN?     | Role                |
+| ---------------- | :-----------------: | :---------------: | ------------------- |
+| **Jouer solo**   | ✅ (+ avatar later?) |         ❌         | Player              |
+| **Rejoindre**    |          ✅          |         ✅         | Player              |
+| **Créer un jeu** |          ✅          | ❌ (generates one) | Master (can't play) |
 
 The PIN field is useless for Solo and Create, yet always visible. The form feels confused and doesn't satisfy any scenario well.
 
@@ -3264,16 +3330,16 @@ The PIN field is useless for Solo and Create, yet always visible. The form feels
 
 Ordered by quality ranking:
 
-| Rank | Option | Name | Key Idea |
-|------|--------|------|----------|
-| 1 | **Option 1** | Card Flip | 3D flip animation, binary Solo/Multiplayer choice — best "wow" factor |
-| 2 | **Option 2** | Tab-Based | 3 tabs (Solo \| Rejoindre \| Créer), familiar pattern |
-| 3 | **Option 3** | Unified Dashboard | MOBA-style mode selector, single action button |
-| 4 | **Option 4** | Progressive Reveal | Solo-first with collapsible multiplayer section |
-| 4b | **Option 4b** | Always-Open | Same as 4 but multiplayer always visible |
-| 5 | **Option 5** | Two-Card Split | Side-by-side Solo + Multiplayer cards |
-| 6 | **Option 6** | Join-First | Jackbox-style, PIN input front and center |
-| 7 | **Option 7** | Wizard / Stepper | 3-step guided flow (Name → Mode → Action) |
+| Rank | Option        | Name               | Key Idea                                                              |
+| ---- | ------------- | ------------------ | --------------------------------------------------------------------- |
+| 1    | **Option 1**  | Card Flip          | 3D flip animation, binary Solo/Multiplayer choice — best "wow" factor |
+| 2    | **Option 2**  | Tab-Based          | 3 tabs (Solo \| Rejoindre \| Créer), familiar pattern                 |
+| 3    | **Option 3**  | Unified Dashboard  | MOBA-style mode selector, single action button                        |
+| 4    | **Option 4**  | Progressive Reveal | Solo-first with collapsible multiplayer section                       |
+| 4b   | **Option 4b** | Always-Open        | Same as 4 but multiplayer always visible                              |
+| 5    | **Option 5**  | Two-Card Split     | Side-by-side Solo + Multiplayer cards                                 |
+| 6    | **Option 6**  | Join-First         | Jackbox-style, PIN input front and center                             |
+| 7    | **Option 7**  | Wizard / Stepper   | 3-step guided flow (Name → Mode → Action)                             |
 
 ### Text Consistency (applied to all 7 cards)
 - Label: "Player Name" / Placeholder: "Alice"
