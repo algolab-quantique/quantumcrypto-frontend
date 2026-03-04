@@ -5,9 +5,9 @@
 
 ## 🎨 UI REDESIGN (January 2026)
 
-**Status**: � IN PROGRESS  
+**Status**: ✅ DONE  
 **Date Added**: January 29, 2026  
-**Last Updated**: February 11, 2026  
+**Last Updated**: March 4, 2026  
 **Priority**: 🟠 HIGH
 
 ### Overview
@@ -27,6 +27,8 @@ Redesign website based on colleague's Canva mockup. New design includes:
 | **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
 | **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
 | **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | ✅ DONE (Integrated)                  |
+| **Phase 7** | Shared How-to-Play Component (BB84/E91/DPS)        | 1 hour         | ✅ DONE                               |
+| **Phase 8** | Card UX Comparison Page (`/bb84_card`)              | 3-4 hours      | ✅ DONE (7 options, awaiting choice)  |
 
 ### Approach
 **Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes. 
@@ -52,6 +54,9 @@ Redesign website based on colleague's Canva mockup. New design includes:
 ✅ **V3 Experimental: Hero CTA & Narrative Glow**
 ✅ **V3 Experimental: Premium Glassmorphism & Live Pulse**
 ✅ **V3 Experimental: Thematic Section Dividers**
+✅ Shared How-to-Play component (replaces 3 per-protocol copies)
+✅ BB84 Card UX comparison page with 7 interactive options
+□ Video tutorials integration
 □ Guide > Context section (currently placeholder)
 ```
 
@@ -3153,9 +3158,9 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 
 ## 📌 SHORT-TERM: V3 Visual Upgrade → Protocol Pages (Task 2)
 
-**Status**: 🔄 IN PROGRESS  
+**Status**: ✅ DONE  
 **Goal**: Apply V3 landing page design elements to BB84/E91/DPS protocol pages  
-**Approach**: Isolated sandbox (`/bb84_future`) — no changes to live pages
+**Approach**: Applied directly to live pages (BB84, E91, DPS) — future sandbox routes also created
 
 ### What to Apply from V3
 - ✅ Atmospheric Background (particles, grain, glow)
@@ -3171,16 +3176,14 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 - ❌ Landing Page Typography Scale (too large for protocol context)
 
 ### Implementation Steps
-- [ ] Create sandbox route `/bb84_future`
-- [ ] Copy `bb84/page.tsx` → `bb84_future/page.tsx`
-- [ ] Apply AtmosphericBackground to protocol hero section
-- [ ] Apply V3 card styles to game form (glassmorphism + glow)
-- [ ] Apply V3 card styles to terminology cards
-- [ ] Apply V3 button styles to all CTAs (Jouer solo, Créer, Rejoindre)
-- [ ] Apply V3 styles to "How to Play" section
-- [ ] Style sidebar with V3 active glow
-- [ ] Verify in browser (Dark + Light mode)
-- [ ] Iterate, then replicate for E91 and DPS
+- [x] Create sandbox route `/bb84_future` ✅
+- [x] Apply AtmosphericBackground to protocol pages ✅
+- [x] Apply V3 card styles to game form (glassmorphism + glow) ✅
+- [x] Apply V3 button styles to all CTAs (Jouer solo, Créer, Rejoindre) ✅
+- [x] Apply V3 styles to "How to Play" section ✅ (shared component)
+- [x] Style sidebar with V3 active glow ✅
+- [x] Verify in browser (Dark + Light mode) ✅
+- [x] Replicate for E91 and DPS ✅
 
 ---
 
@@ -3242,8 +3245,11 @@ Make the game screens visually exciting, not just functional.
 
 ## 🃏 CARD UX REDESIGN — Multi-Scenario Form Problem
 
-**Status**: ⬜ PLANNED  
+**Status**: ✅ COMPARISON BUILT — Awaiting team choice  
 **Date**: February 18, 2026  
+**Last Updated**: March 4, 2026  
+**Comparison Page**: `/bb84_card` (7 interactive options, all functional)  
+**Branch**: Merged into `ibra_development` (commit `60c682c`)  
 **Problem**: The current game card tries to serve 3 different workflows with 1 form, but each needs different information:
 
 | Workflow | Needs Name? | Needs PIN? | Role |
@@ -3254,26 +3260,36 @@ Make the game screens visually exciting, not just functional.
 
 The PIN field is useless for Solo and Create, yet always visible. The form feels confused and doesn't satisfy any scenario well.
 
-### 3 Design Options (to be decided later)
+### 7 Design Options — All Built & Interactive at `/bb84_card`
 
-**Option 1: Tab-Based Card** — 3 tabs (Solo | Rejoindre | Créer), each shows only relevant fields.  
-- Pros: Clean, familiar UX, each scenario is focused  
-- Cons: Takes horizontal space, 3 tabs might feel heavy  
+Ordered by quality ranking:
 
-**Option 2: Progressive Reveal** ⭐ (Recommended) — Name + "Jouer solo" as default fast path. Collapsible "Multijoueur" section below reveals PIN + Rejoindre/Créer.  
-- Pros: Default solo path is instant and clean, multiplayer is optional/progressive  
-- Cons: Multiplayer is "hidden" for new users  
-- Bonus: Pairs well with gamification (lock multiplayer until first solo completed)  
+| Rank | Option | Name | Key Idea |
+|------|--------|------|----------|
+| 1 | **Option 1** | Card Flip | 3D flip animation, binary Solo/Multiplayer choice — best "wow" factor |
+| 2 | **Option 2** | Tab-Based | 3 tabs (Solo \| Rejoindre \| Créer), familiar pattern |
+| 3 | **Option 3** | Unified Dashboard | MOBA-style mode selector, single action button |
+| 4 | **Option 4** | Progressive Reveal | Solo-first with collapsible multiplayer section |
+| 4b | **Option 4b** | Always-Open | Same as 4 but multiplayer always visible |
+| 5 | **Option 5** | Two-Card Split | Side-by-side Solo + Multiplayer cards |
+| 6 | **Option 6** | Join-First | Jackbox-style, PIN input front and center |
+| 7 | **Option 7** | Wizard / Stepper | 3-step guided flow (Name → Mode → Action) |
 
-**Option 3: Two-Card Split** — Separate Solo card and Multiplayer card side-by-side.  
-- Pros: Crystal clear separation, scalable for adding avatar/difficulty  
-- Cons: More page space, name field duplicated  
+### Text Consistency (applied to all 7 cards)
+- Label: "Player Name" / Placeholder: "Alice"
+- Label: "Game PIN" / Placeholder: "62V2H" / maxLength: 5
+- Buttons: "Play Solo" / "Join Game" / "Create Game" (Title Case)
 
-### Implementation Steps (when decided)
-- [ ] Choose card design approach
-- [ ] Design mockup / prototype
-- [ ] Implement for BB84 first
+### Technical Notes
+- SSR hydration fix: Card Flip uses inline `style` props (not Tailwind arbitrary)
+- SSR hydration fix: Tab-Based uses controlled Radix Tabs (`value` + `onValueChange`)
+- All cards match real BB84 page width: `w-[350px] md:w-[500px]`
+
+### Next Steps
+- [ ] **Team reviews `/bb84_card` and picks the winning design**
+- [ ] Implement chosen design in real BB84 game form
 - [ ] Replicate to E91 and DPS
+- [ ] Remove `/bb84_card` comparison page (or keep as reference)
 
 ---
 
