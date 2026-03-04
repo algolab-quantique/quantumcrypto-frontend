@@ -4,7 +4,8 @@ import HeaderV3 from '@/components/home-page/v3/header-v3';
 import FooterV3 from '@/components/home-page/v3/footer-v3';
 import E91MainV3 from '@/components/e91/home-page/e91-game-form-v3';
 import { useEffect, useRef, useState } from 'react';
-import HowToPlaySectionV3 from '@/components/e91/home-page/how-to-play-section-v3';
+import HowToPlaySection from '@/components/shared/how-to-play-section';
+import type { HowToPlayStep } from '@/components/shared/how-to-play-section';
 import { useLanguage } from '@/components/providers/language-provider';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
@@ -193,6 +194,22 @@ export default function E91Future() {
         { label: 'component.header.guide.terminology', ref: terminologyRef },
     ];
 
+    /* ── How-to-play step definitions for E91 ── */
+    const aliceSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.e91.highlights.highlight1', contentKey: 'component.e91.steps.step1' },
+        { highlightKey: 'component.e91.highlights.highlight2', contentKey: 'component.e91.steps.step2Alice' },
+        { highlightKey: 'component.e91.highlights.highlight3', contentKey: 'component.e91.steps.step3' },
+        { highlightKey: 'component.e91.highlights.highlight4', contentKey: 'component.e91.steps.step4' },
+        { highlightKey: 'component.e91.highlights.highlight5Alice', contentKey: 'component.e91.steps.step5Alice' },
+    ];
+    const bobSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.e91.highlights.highlight1', contentKey: 'component.e91.steps.step1' },
+        { highlightKey: 'component.e91.highlights.highlight2', contentKey: 'component.e91.steps.step2Bob' },
+        { highlightKey: 'component.e91.highlights.highlight3', contentKey: 'component.e91.steps.step3' },
+        { highlightKey: 'component.e91.highlights.highlight4', contentKey: 'component.e91.steps.step4' },
+        { highlightKey: 'component.e91.highlights.highlight5Bob', contentKey: 'component.e91.steps.step5Bob' },
+    ];
+
     return (
         <MathJaxContext config={mathJaxConfig}>
             <div className="v2-theme-root min-h-screen relative">
@@ -225,7 +242,13 @@ export default function E91Future() {
                             {/* ═══════════════════════════════════════════
                                 HOW TO PLAY SECTION
                                 ═══════════════════════════════════════════ */}
-                            <HowToPlaySectionV3 ref={howToPlayRef} />
+                            <HowToPlaySection
+                                ref={howToPlayRef}
+                                titleKey="component.e91.howToPlayTitle"
+                                descriptionKey="component.e91.howToPlayDescription"
+                                aliceSteps={aliceSteps}
+                                bobSteps={bobSteps}
+                            />
 
                             {/* ═══════════════════════════════════════════
                                 SECTION DIVIDER — Quantum Wave

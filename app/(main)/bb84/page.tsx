@@ -4,7 +4,8 @@ import HeaderV3 from '@/components/home-page/v3/header-v3';
 import FooterV3 from '@/components/home-page/v3/footer-v3';
 import BB84MainV3 from '@/components/bb84/home-page/bb84-game-form-v3';
 import { useEffect, useRef, useState } from 'react';
-import HowToPlaySection from '@/components/bb84/home-page/how-to-play-section';
+import HowToPlaySection from '@/components/shared/how-to-play-section';
+import type { HowToPlayStep, ExtraBlock } from '@/components/shared/how-to-play-section';
 import { useLanguage } from '@/components/providers/language-provider';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -131,6 +132,31 @@ export default function BB84Future() {
         { label: 'component.header.guide.terminology', ref: terminologyRef },
     ];
 
+    /* ── How-to-play step definitions for BB84 ── */
+    const aliceSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.bb84.highlights.highlight1Alice', contentKey: 'component.bb84.steps.step1Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight2Alice', contentKey: 'component.bb84.steps.step2Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight3Alice', contentKey: 'component.bb84.steps.step3Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight4Alice', contentKey: 'component.bb84.steps.step4Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight5Alice', contentKey: 'component.bb84.steps.step5Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight6Alice', contentKey: 'component.bb84.steps.step6Alice' },
+        { highlightKey: 'component.bb84.highlights.highlight7Alice', contentKey: 'component.bb84.steps.step7Alice' },
+    ];
+    const aliceExtras: ExtraBlock[] = [
+        { afterStep: 5, paragraphKeys: ['component.bb84.rawKeyInfo', 'component.bb84.additionalStep'] },
+    ];
+    const bobSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.bb84.highlights.highlight1Bob', contentKey: 'component.bb84.steps.step1Bob' },
+        { highlightKey: 'component.bb84.highlights.highlight2Bob', contentKey: 'component.bb84.steps.step2Bob' },
+        { highlightKey: 'component.bb84.highlights.highlight3Bob', contentKey: 'component.bb84.steps.step3Bob' },
+        { highlightKey: 'component.bb84.highlights.highlight4Bob', contentKey: 'component.bb84.steps.step4Bob' },
+        { highlightKey: 'component.bb84.highlights.highlight5Bob', contentKey: 'component.bb84.steps.step5Bob' },
+        { highlightKey: 'component.bb84.highlights.highlight6Bob', contentKey: 'component.bb84.steps.step6Bob' },
+    ];
+    const bobExtras: ExtraBlock[] = [
+        { afterStep: 4, paragraphKeys: ['component.bb84.rawKeyInfo', 'component.bb84.additionalStep'] },
+    ];
+
     return (
         <div className="v2-theme-root min-h-screen relative">
             {/* V3 Atmospheric Background — Quantum Photons */}
@@ -162,7 +188,15 @@ export default function BB84Future() {
                         {/* ═══════════════════════════════════════════
                             HOW TO PLAY SECTION
                             ═══════════════════════════════════════════ */}
-                        <HowToPlaySection ref={howToPlayRef} />
+                        <HowToPlaySection
+                            ref={howToPlayRef}
+                            titleKey="component.bb84.howToPlayTitle"
+                            descriptionKey="component.bb84.howToPlayDescription"
+                            aliceSteps={aliceSteps}
+                            bobSteps={bobSteps}
+                            aliceExtras={aliceExtras}
+                            bobExtras={bobExtras}
+                        />
 
                         {/* ═══════════════════════════════════════════
                             SECTION DIVIDER — Quantum Wave

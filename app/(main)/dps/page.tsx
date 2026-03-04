@@ -5,7 +5,8 @@ import FooterV3 from '@/components/home-page/v3/footer-v3';
 import DPSMainV3 from '@/components/dps/home-page/dps-game-form-v3';
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/components/providers/language-provider';
-import HowToPlaySectionV3 from '@/components/dps/home-page/how-to-play-section-v3';
+import HowToPlaySection from '@/components/shared/how-to-play-section';
+import type { HowToPlayStep } from '@/components/shared/how-to-play-section';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from "next-themes";
@@ -204,6 +205,23 @@ export default function DPSFuture() {
         { label: 'component.header.guide.terminology', ref: terminologyRef },
     ];
 
+    /* ── How-to-play step definitions for DPS ── */
+    const aliceSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.dps.howToPlay.Alice.step1.part0', contentKey: 'component.dps.howToPlay.Alice.step1.part1' },
+        { highlightKey: 'component.dps.howToPlay.Alice.step2.part0', contentKey: 'component.dps.howToPlay.Alice.step2.part1' },
+        { highlightKey: 'component.dps.howToPlay.Alice.step3.part0', contentKey: 'component.dps.howToPlay.Alice.step3.part1' },
+        { highlightKey: 'component.dps.howToPlay.Alice.step4.part0', contentKey: 'component.dps.howToPlay.Alice.step4.part1' },
+        { highlightKey: 'component.dps.howToPlay.Alice.step5.part0', contentKey: 'component.dps.howToPlay.Alice.step5.part1' },
+        { highlightKey: 'component.dps.howToPlay.Alice.step6.part0', contentKey: 'component.dps.howToPlay.Alice.step6.part1' },
+    ];
+    const bobSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.dps.howToPlay.Bob.step1.part0', contentKey: 'component.dps.howToPlay.Bob.step1.part1' },
+        { highlightKey: 'component.dps.howToPlay.Bob.step2.part0', contentKey: 'component.dps.howToPlay.Bob.step2.part1' },
+        { highlightKey: 'component.dps.howToPlay.Bob.step3.part0', contentKey: 'component.dps.howToPlay.Bob.step3.part1' },
+        { highlightKey: 'component.dps.howToPlay.Bob.step4.part0', contentKey: 'component.dps.howToPlay.Bob.step4.part1' },
+        { highlightKey: 'component.dps.howToPlay.Bob.step5.part0', contentKey: 'component.dps.howToPlay.Bob.step5.part1' },
+    ];
+
     return (
         <MathJaxContext config={mathJaxConfig}>
             <div className="v2-theme-root min-h-screen relative">
@@ -224,7 +242,13 @@ export default function DPSFuture() {
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
                             </div>
 
-                            <HowToPlaySectionV3 ref={howToPlayRef} />
+                            <HowToPlaySection
+                                ref={howToPlayRef}
+                                titleKey="component.dps.howToPlayTitle"
+                                descriptionKey="component.dps.howToPlayDescription"
+                                aliceSteps={aliceSteps}
+                                bobSteps={bobSteps}
+                            />
 
                             {/* ═══════════════════════════════════════════
                             SECTION DIVIDER — Quantum Wave
