@@ -36,7 +36,16 @@ import { TailSpin } from 'react-loading-icons';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-const E91Main: React.FC = () => {
+/**
+ * E91MainV3 — V3 Visual Skin for the E91 Game Form
+ * 
+ * Isolated copy of E91Main with V3 styles baked in:
+ * - Hero title with green neon glow
+ * - Outlined primary button (fills on hover)
+ * - V3 hover effects on all buttons (glow, scale, border)
+ * - V3 alert dialog styling
+ */
+const E91MainV3: React.FC = () => {
 
     const {
         connectToWaitingRoom,
@@ -246,7 +255,7 @@ const E91Main: React.FC = () => {
     return (
         <>
             <AlertDialog open={rejoinDialogOpen}>
-                <AlertDialogContent className="border-secondary">
+                <AlertDialogContent className="border-primary/30 bg-card/90 backdrop-blur-sm">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {localize('component.bb84.gameFound')}
@@ -267,14 +276,21 @@ const E91Main: React.FC = () => {
             </AlertDialog>
             <div
                 className="h-fit w-fit mx-auto p-2 mt-6 flex flex-col gap-y-16">
+
+                {/* ═══ V3 Hero Title with Glow ═══ */}
                 <div className="flex flex-col gap-y-4 text-center">
-                    <h1 className="text-5xl font-bold text-primary">E91</h1>
+                    <h1 className="text-5xl font-bold text-primary
+                        drop-shadow-[0_0_25px_hsl(152,100%,33%,0.5)]">
+                        E91
+                    </h1>
                     <h1 className="text-4xl font-bold">{localize(
                         'component.main.game')}</h1>
                 </div>
+
+                {/* ═══ V3 Form Card (Matched to Standard) ═══ */}
                 <Card
                     className="pt-4 pb-2 border-none w-[350px] md:w-[500px] mx-auto
-                 shadow-md">
+                     shadow-md">
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onJoinGame)}
@@ -317,21 +333,45 @@ const E91Main: React.FC = () => {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="flex gap-x-3 mx-auto w-full">
-                                    <Button type="submit"
-                                        disabled={waitingRoomConnecting}
-                                        className="text-md w-full p-2">{creatingGame ?
-                                            <TailSpin className="p-2" /> :
-                                            localize(
-                                                'component.main.join')}</Button>
+
+                                {/* ═══ PRIMARY: JOUER SOLO (Outlined → Fills on Hover) ═══ */}
+                                <div className="flex gap-x-3 w-full">
+                                    <SoloGameModal
+                                        triggerClassName="w-full text-md p-2
+                                            bg-transparent border-2 border-primary text-primary
+                                            hover:bg-primary hover:text-primary-foreground
+                                            hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)]
+                                            hover:scale-[1.02]
+                                            transition-all duration-300"
+                                    />
                                 </div>
                             </form>
                         </Form>
+                        {/* ═══ SECONDARY: Rejoindre + Créer (Outside form, like standard) ═══ */}
                         <div className="flex flex-row justify-center gap-x-2">
-                            <SoloGameModal />
-                            <CreateGameModal connecting={waitingRoomConnecting}
+                            <Button type="submit"
+                                disabled={waitingRoomConnecting}
+                                variant="secondary"
+                                onClick={form.handleSubmit(onJoinGame)}
+                                className="text-md mt-2 w-[50%] p-2
+                                    border border-transparent
+                                    hover:border-primary/50
+                                    hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)]
+                                    hover:scale-[1.02]
+                                    transition-all duration-300">
+                                {creatingGame ? <TailSpin className="w-5 h-5" /> : localize('component.main.join')}
+                            </Button>
+                            <CreateGameModal
+                                connecting={waitingRoomConnecting}
                                 creatingGame={creatingGame}
-                                onCreateGame={onCreateGame} />
+                                onCreateGame={onCreateGame}
+                                triggerClassName="text-md mt-2 w-[50%] p-2
+                                    border border-transparent
+                                    hover:border-primary/50
+                                    hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)]
+                                    hover:scale-[1.02]
+                                    transition-all duration-300"
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -340,4 +380,4 @@ const E91Main: React.FC = () => {
     );
 };
 
-export default E91Main;
+export default E91MainV3;

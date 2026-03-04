@@ -30,6 +30,7 @@
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 import {
     Dialog,
@@ -66,7 +67,7 @@ const DPS_SOLO_PHOTON_MIN = 4;
 const DPS_SOLO_PHOTON_MAX = 20;
 const DPS_SOLO_PHOTON_DEFAULT = 6;
 
-const SoloGameModal = () => {
+const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -291,7 +292,7 @@ const SoloGameModal = () => {
                 <Button
                     type="button"
                     variant="secondary"
-                    className="text-md mt-2 w-[50%] p-2"
+                    className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
                 >
                     {localize('component.e91.playSolo')}
                 </Button>

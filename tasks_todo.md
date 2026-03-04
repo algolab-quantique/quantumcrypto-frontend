@@ -25,10 +25,12 @@ Redesign website based on colleague's Canva mockup. New design includes:
 | **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS)       | 2-3 hours      | ✅ DONE                               |
 | **Phase 3** | Guide Page (How to Play, Terminology, Context)      | 2-3 hours      | ✅ DONE (Context section placeholder) |
 | **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
-| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ⬜ TODO                               |
+| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
+| **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | ✅ DONE (Integrated)                  |
 
 ### Approach
-**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes.
+**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes. 
+*Experimental V3 work is happening at `/landingpagegame_progress_futur`.*
 
 ### New Components Needed
 - [x] `ProtocolPageSidebar.tsx` - Sticky left navigation ✅ Created
@@ -45,9 +47,58 @@ Redesign website based on colleague's Canva mockup. New design includes:
 ✅ Mobile sidebar mirrors desktop navigation
 ✅ Localization (EN/FR/ES) for all new components
 □ Video tutorials integration
-□ Landing page visual redesign (Canva mockup)
+✅ Landing page visual redesign (V2)
+✅ **V3 Experimental: Atmospheric Background (Noise/Particles)**
+✅ **V3 Experimental: Hero CTA & Narrative Glow**
+✅ **V3 Experimental: Premium Glassmorphism & Live Pulse**
+✅ **V3 Experimental: Thematic Section Dividers**
 □ Guide > Context section (currently placeholder)
 ```
+
+---
+
+### 🏛️ V3 DESIGN RATIONALE (Why we did what we did)
+
+To ensure future developers understand the evolution of the V3 landing page, here is the rationale:
+
+#### 1. "V2-Exact" Marriage
+**Problem**: Pure glassmorphism and experimental layouts were causing readability issues and stretching on varied screens.
+**Solution**: We reverted to the **exact V2 code architecture** (fixed widths, flex-centering, defined borders) but decorated it with V3's depth. This gives us V2's robust "bedrock" with V3's "premium paint."
+
+#### 2. "Bright Heart" Quantum Photons
+**Problem**: Initial particles were too subtle and looked like random noise.
+**Solution**: Each photon now has a **brilliant white center (Bright Core)** that fades into green glow. This makes them look like actual concentrated quantum energy (Heart-of-Red/White) rather than static dots.
+
+#### 3. Intelligent "Safe Zones"
+**Problem**: Background movement can distract from the main message (text).
+**Solution**: The particle engine avoids the central 40% of the screen. Energy flows around the Alice/Bob mascots and the sides of the text, keeping the **Hero message 100% readable**.
+
+#### 4. The "Laser Line" Snap
+**Hover Feel**: We prioritised an instant transition from neutral grey to primary green with a **30px wide glow**. This provides immediate feedback and feels "sharp" and "fast," like a quantum transition.
+
+---
+
+### 🧭 NAVIGATION & UX PRINCIPLES (Why we organized it this way)
+
+A key part of the V3 update was refining how users move through the application. Here is why we chose this specific structure over other "flat" menus:
+
+#### 1. Top Menu: "Global Context" (Reducing Cognitive Load)
+**Decision**: Group items into dropdowns (Protocoles -> BB84/E91/DPS, Guide -> How to Play/Lexique) instead of listing everything.
+**Why?**:
+*   **Hick’s Law**: The time it takes to make a decision increases with the number and complexity of choices. By grouping, we simplify the initial choice to just 3 things: "Do I want to *Do* (Protocols), *Learn* (Guide), or *Know* (About)?"
+*   **Universal Access**: If a user is deep in the BB84 tutorial and wants to switch to E91, the **Protocol Dropdown** allows a direct jump. If we didn't have this, they would have to go Home -> Select E91 (2 clicks vs 1).
+
+#### 2. Side Menu: "Local Context" (Deep Focus)
+**Decision**: The left sidebar is **Context-Aware**. It *only* shows sections relevant to the page you are on (e.g., on BB84 page: Intro -> Game -> Review).
+**Why?**:
+*   **Tunnel Vision for Learning**: When learning a complex topic like Quantum Cryptography, we don't want to distract the user with "Guide" or "About" links on the side.
+*   **Progress Tracking**: It acts as a "Table of Contents" for the specific mission, helping the user know exactly how much playspace is left.
+*   **Standard Pattern**: This follows the **Documentation/Courseware Pattern** (used by Vercel, Stripe, Coursera) where Top = App Navigation, Left = Chapter Navigation.
+
+#### 3. Separation of Concerns
+*   **Top Bar**: "Where am I in the **Application**?" (Global State)
+*   **Side Bar**: "Where am I in the **Lesson**?" (Local State)
+*   by separating these, we prevent the "Context Confusion" you mentioned, where a user might think "Context" applies to the whole app when it might just be for the protocol.
 
 ---
 
@@ -3089,5 +3140,141 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 - [ ] Add Eve option to solo-game-modal (solo)
 - [ ] Implement Eve interception logic
 - [ ] Implement Eve detection/error rate checking
+
+---
+---
+
+# 🎮 PLATFORM EVOLUTION PLAN — From "Form" to "Game"
+
+**Date Created**: February 17, 2026  
+**Context**: V3 landing page presented to students — positive visual feedback, but students noted the protocol game pages feel like "dead forms" rather than a real game. Below is the full roadmap.
+
+---
+
+## 📌 SHORT-TERM: V3 Visual Upgrade → Protocol Pages (Task 2)
+
+**Status**: 🔄 IN PROGRESS  
+**Goal**: Apply V3 landing page design elements to BB84/E91/DPS protocol pages  
+**Approach**: Isolated sandbox (`/bb84_future`) — no changes to live pages
+
+### What to Apply from V3
+- ✅ Atmospheric Background (particles, grain, glow)
+- ✅ Green Neon Glow on Hover (`shadow-[0_0_30px_...]`)
+- ✅ Glassmorphism Cards (`backdrop-blur`, `bg-card/80`)
+- ✅ Section Divider Waves
+- ✅ CTA Button Style (border-primary, hover glow)
+- ⚠️ Alice/Bob Character Art (decorative, optional)
+
+### What NOT to Apply
+- ❌ Hero Section Layout (protocol pages need game form first)
+- ❌ Mission Card Grid (already have their own navigation)
+- ❌ Landing Page Typography Scale (too large for protocol context)
+
+### Implementation Steps
+- [ ] Create sandbox route `/bb84_future`
+- [ ] Copy `bb84/page.tsx` → `bb84_future/page.tsx`
+- [ ] Apply AtmosphericBackground to protocol hero section
+- [ ] Apply V3 card styles to game form (glassmorphism + glow)
+- [ ] Apply V3 card styles to terminology cards
+- [ ] Apply V3 button styles to all CTAs (Jouer solo, Créer, Rejoindre)
+- [ ] Apply V3 styles to "How to Play" section
+- [ ] Style sidebar with V3 active glow
+- [ ] Verify in browser (Dark + Light mode)
+- [ ] Iterate, then replicate for E91 and DPS
+
+---
+
+## 🚀 LONG-TERM: Gamification Roadmap (Task 1)
+
+**Status**: ⬜ PLANNED  
+**Goal**: Transform the platform into an engaging, competitive learning game  
+**Recommended Order**: G3 → G1 → G2 → G4 → G5
+
+### Phase G3: Progressive Unlocking 🔒→🔓 (Priority 1 — 1-2 days)
+Lock E91 and DPS until BB84 is completed. Creates an immediate learning path.
+
+- [ ] Track protocol completion in `localStorage` (`bb84_completed`, etc.)
+- [ ] Add lock overlay to E91/DPS cards on landing page
+- [ ] Show "Complete BB84 to unlock" message
+- [ ] Add progress bar showing overall completion
+- [ ] Achievement badges ("First Key Exchange", "Eve Hunter")
+
+### Phase G1: Player Identity & Avatars 🎭 (Priority 2 — 2-3 days)
+Give users a persistent identity and visual representation.
+
+- [ ] Create `player-profile-store.ts` (Zustand)
+- [ ] Avatar selection (quantum-themed: Alice, Bob, Eve skins)
+- [ ] Persistent profile in `localStorage`
+- [ ] Display avatar in game lobby and during gameplay
+- [ ] Consider DiceBear API for auto-generated avatars
+
+### Phase G2: Scoring & Competition 🏆 (Priority 3 — 3-5 days)
+Add stakes and competition to each game session.
+
+- [ ] Scoring formula: basis accuracy + Eve detection + speed
+- [ ] End-game score screen with breakdown
+- [ ] Local leaderboard per protocol
+- [ ] Server-side leaderboard via API
+- [ ] XP system with titles ("Quantum Apprentice" → "Cryptography Master")
+
+### Phase G4: Interactive Tutorial / Guided Mode 📖 (Priority 4 — 5-7 days)
+Transform the linear form-filling into a guided experience with story.
+
+- [ ] `TutorialOverlay.tsx` component (contextual popups)
+- [ ] `tutorial-store.ts` (Zustand, tracks shown tips)
+- [ ] Tutorial data in JSON files (supports i18n)
+- [ ] Step-by-step highlights (glow/pulse on next action)
+- [ ] "Skip Tutorial" button for returning players
+- [ ] Animated transitions between protocol steps
+- [ ] Dramatic Eve detection reveal (screen shake, red glow)
+- [ ] Victory screen with confetti + score + "Next Protocol" CTA
+
+### Phase G5: Visual Gameplay Enhancements 🎨 (Priority 5 — 7-10 days)
+Make the game screens visually exciting, not just functional.
+
+- [ ] Photon animations (fly from Alice to Bob with polarization)
+- [ ] Visual basis selection (clickable cards instead of dropdowns)
+- [ ] Real-time Eve indicator (flickering, interference pattern)
+- [ ] Optional sound effects (photon send/receive, Eve alert)
+- [ ] Game-specific themes beyond global dark/light
+
+---
+
+## 🃏 CARD UX REDESIGN — Multi-Scenario Form Problem
+
+**Status**: ⬜ PLANNED  
+**Date**: February 18, 2026  
+**Problem**: The current game card tries to serve 3 different workflows with 1 form, but each needs different information:
+
+| Workflow | Needs Name? | Needs PIN? | Role |
+|----------|:-----------:|:----------:|------|
+| **Jouer solo** | ✅ (+ avatar later?) | ❌ | Player |
+| **Rejoindre** | ✅ | ✅ | Player |
+| **Créer un jeu** | ✅ | ❌ (generates one) | Master (can't play) |
+
+The PIN field is useless for Solo and Create, yet always visible. The form feels confused and doesn't satisfy any scenario well.
+
+### 3 Design Options (to be decided later)
+
+**Option 1: Tab-Based Card** — 3 tabs (Solo | Rejoindre | Créer), each shows only relevant fields.  
+- Pros: Clean, familiar UX, each scenario is focused  
+- Cons: Takes horizontal space, 3 tabs might feel heavy  
+
+**Option 2: Progressive Reveal** ⭐ (Recommended) — Name + "Jouer solo" as default fast path. Collapsible "Multijoueur" section below reveals PIN + Rejoindre/Créer.  
+- Pros: Default solo path is instant and clean, multiplayer is optional/progressive  
+- Cons: Multiplayer is "hidden" for new users  
+- Bonus: Pairs well with gamification (lock multiplayer until first solo completed)  
+
+**Option 3: Two-Card Split** — Separate Solo card and Multiplayer card side-by-side.  
+- Pros: Crystal clear separation, scalable for adding avatar/difficulty  
+- Cons: More page space, name field duplicated  
+
+### Implementation Steps (when decided)
+- [ ] Choose card design approach
+- [ ] Design mockup / prototype
+- [ ] Implement for BB84 first
+- [ ] Replicate to E91 and DPS
+
+---
 
 **Priority:** LOW - Focus on solo mode first, then add Eve later

@@ -1,13 +1,13 @@
 'use client';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import * as z from 'zod';
-import {zodResolver} from '@hookform/resolvers/zod';
-import {TailSpin} from 'react-loading-icons';
-import {useForm} from 'react-hook-form';
-import {Button} from '@/components/ui/button';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TailSpin } from 'react-loading-icons';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
 import axios from '@/commons/http';
-import {useSocket} from '@/components/providers/socket-provider';
-import {useLanguage} from '@/components/providers/language-provider';
+import { useSocket } from '@/components/providers/socket-provider';
+import { useLanguage } from '@/components/providers/language-provider';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import usePlayerStore from '@/store/player-store';
 import {
@@ -22,21 +22,30 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import {Input} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import CreateGameModal from '@/components/bb84/home-page/create-game-modal';
-import {useRouter} from 'next/navigation';
-import {toast} from 'sonner';
-import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {clearBB84LocalStorage} from '@/lib/bb84/utils';
+import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import SoloGameModal from '@/components/bb84/home-page/solo-game-modal';
 
-const BB84Main: React.FC = () => {
+/**
+ * BB84MainV3 — V3 Visual Skin for the BB84 Game Form
+ * 
+ * Isolated copy of BB84Main with V3 styles baked in:
+ * - Glassmorphism card (backdrop-blur, semi-transparent bg)
+ * - Green neon glow on hover
+ * - V3 CTA button styles
+ * - V3 hero title with glow
+ */
+const BB84MainV3: React.FC = () => {
 
     const {
         connectToWaitingRoom,
@@ -47,7 +56,7 @@ const BB84Main: React.FC = () => {
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
-    const {localize} = useLanguage();
+    const { localize } = useLanguage();
     const {
         setGameCode,
         setGameHasEve,
@@ -66,7 +75,7 @@ const BB84Main: React.FC = () => {
         setDisplayedLines,
         resetProgress,
     } = useBB84ProgressStore();
-    const {restoreGame, resetRoom} = useBB84RoomStore();
+    const { restoreGame, resetRoom } = useBB84RoomStore();
     const router = useRouter();
 
     useEffect(() => {
@@ -166,9 +175,9 @@ const BB84Main: React.FC = () => {
     });
 
     const onJoinGame = async ({
-                                  gamePIN,
-                                  playerName,
-                              }: z.infer<typeof formSchema>) => {
+        gamePIN,
+        playerName,
+    }: z.infer<typeof formSchema>) => {
 
         if (isWaitingRoomConnected) return;
 
@@ -187,8 +196,8 @@ const BB84Main: React.FC = () => {
     };
 
     const onCreateGame = async (photonNumber: number, eve: boolean,
-                                validationBits: number,
-                                evePercentage: number) => {
+        validationBits: number,
+        evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
 
@@ -204,7 +213,7 @@ const BB84Main: React.FC = () => {
             };
 
             const response = await axios.post('/games/bb84/', gameData);
-            const {code: gamePIN} = response.data;
+            const { code: gamePIN } = response.data;
 
             setGameCode(gamePIN);
             setPlayerName('admin');
@@ -238,7 +247,7 @@ const BB84Main: React.FC = () => {
     return (
         <>
             <AlertDialog open={rejoinDialogOpen}>
-                <AlertDialogContent className="border-secondary">
+                <AlertDialogContent className="border-primary/30 bg-card/90 backdrop-blur-sm">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {localize('component.bb84.gameFound')}
@@ -259,26 +268,33 @@ const BB84Main: React.FC = () => {
             </AlertDialog>
             <div
                 className="h-fit w-fit mx-auto p-2 mt-6 flex flex-col gap-y-16">
+
+                {/* ═══ V3 Hero Title with Glow ═══ */}
                 <div className="flex flex-col gap-y-4 text-center">
-                    <h1 className="text-5xl font-bold text-primary">BB84</h1>
+                    <h1 className="text-5xl font-bold text-primary
+                        drop-shadow-[0_0_25px_hsl(152,100%,33%,0.5)]">
+                        BB84
+                    </h1>
                     <h1 className="text-4xl font-bold">{localize(
                         'component.main.game')}</h1>
                 </div>
+
+                {/* ═══ V3 Form Card (Matched to Standard) ═══ */}
                 <Card
                     className="pt-4 pb-2 border-none w-[350px] md:w-[500px] mx-auto
-                 shadow-md">
+                     shadow-md">
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onJoinGame)}
-                                  className="space-y-8">
+                                className="space-y-8">
                                 <FormField
                                     control={form.control}
                                     name="playerName"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel
                                                 className="text-lg">{localize(
-                                                'component.main.nameLabel')}</FormLabel>
+                                                    'component.main.nameLabel')}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder={localize(
@@ -288,43 +304,60 @@ const BB84Main: React.FC = () => {
                                                 {localize(
                                                     'component.main.nameDescription')}
                                             </FormDescription>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="gamePIN"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel
                                                 className="text-lg">{localize(
-                                                'component.main.pinLabel')}</FormLabel>
+                                                    'component.main.pinLabel')}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="SR117" {...field}
-                                                    value={field.value.toUpperCase()}/>
+                                                    value={field.value.toUpperCase()} />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                <div
-                                    className="flex gap-x-3 w-full">
-                                    <Button type="submit"
-                                            disabled={waitingRoomConnecting}
-                                            className="text-md w-full p-2">{creatingGame ?
-                                        <TailSpin className="p-2"/> :
-                                        localize(
-                                            'component.main.join')}</Button>
+
+                                {/* ═══ PRIMARY: JOUER SOLO (Outlined → Fills on Hover) ═══ */}
+                                <div className="flex gap-x-3 w-full">
+                                    <SoloGameModal
+                                        triggerClassName="w-full text-md p-2
+                                            bg-transparent border-2 border-primary text-primary
+                                            hover:bg-primary hover:text-primary-foreground
+                                            hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)]
+                                            hover:scale-[1.02]
+                                            transition-all duration-300"
+                                    />
                                 </div>
                             </form>
                         </Form>
+                        {/* ═══ SECONDARY: Rejoindre + Créer (Outside form, like standard) ═══ */}
                         <div className="flex flex-row justify-center gap-x-2">
-                            <SoloGameModal />
-                            <CreateGameModal connecting={waitingRoomConnecting}
-                                             creatingGame={creatingGame}
-                                             onCreateGame={onCreateGame}/>
+                            <Button type="submit"
+                                disabled={waitingRoomConnecting}
+                                variant="secondary"
+                                onClick={form.handleSubmit(onJoinGame)}
+                                className="text-md mt-2 w-[50%] p-2
+                                    border border-transparent
+                                    hover:border-primary/50
+                                    hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)]
+                                    hover:scale-[1.02]
+                                    transition-all duration-300">
+                                {creatingGame ? <TailSpin className="w-5 h-5" /> : localize('component.main.join')}
+                            </Button>
+                            <CreateGameModal
+                                connecting={waitingRoomConnecting}
+                                creatingGame={creatingGame}
+                                onCreateGame={onCreateGame}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -333,4 +366,4 @@ const BB84Main: React.FC = () => {
     );
 };
 
-export default BB84Main;
+export default BB84MainV3;

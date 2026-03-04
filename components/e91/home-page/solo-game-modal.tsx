@@ -66,6 +66,7 @@
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -117,7 +118,7 @@ import {
  * Provides role selection (Alice/Bob) and game settings configuration
  * for playing E91 in solo mode against a simulated partner.
  */
-const SoloGameModal = () => {
+const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -476,7 +477,7 @@ const SoloGameModal = () => {
                 <Button
                     type="button"
                     variant="secondary"
-                    className="text-md mt-2 w-[50%] p-2"
+                    className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
                 >
                     {localize('component.e91.playSolo')}
                 </Button>
