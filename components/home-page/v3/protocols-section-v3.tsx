@@ -35,10 +35,7 @@ const LiveDot = () => (
     </span>
 );
 
-/** Override links for V3 sandbox testing */
-const v3HrefOverrides: Record<string, string> = {
-    '/bb84': '/bb84_future',
-};
+
 
 /**
  * ProtocolsSectionV3 — Exact V2 Styling + Wider V3 Glow
@@ -74,7 +71,7 @@ const ProtocolsSectionV3 = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {protocols.map(({ name, description, href }, index) => {
                         const meta = protocolMeta[name] || { mission: `Mission 0${index + 1}`, difficulty: 1 };
-                        const resolvedHref = v3HrefOverrides[href] || href;
+                        const resolvedHref = href;
                         return (
                             <motion.div
                                 key={index}

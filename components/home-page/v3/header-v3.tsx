@@ -4,13 +4,12 @@ import { useLanguage } from '@/components/providers/language-provider';
 import Image from 'next/image';
 import ProtocolNavigationMenu from '@/components/shared/protocol-navigation-menu';
 import GuideNavigationMenu from '@/components/shared/guide-navigation-menu';
-import SidebarV2 from '@/components/home-page/v2/sidebar-v2';
+import SidebarV3 from '@/components/home-page/v3/sidebar-v3';
 import Link from 'next/link';
 import { getLanguageCode } from '@/lib/utils';
 
 /**
- * HeaderV3 - V3 "Future" landing and protocol page header.
- * Hardcoded to link back to /landingpagegame_progress_futur.
+ * HeaderV3 - V3 landing and protocol page header.
  * Uses Wide QuantumCrypto logo to match V3 aesthetic.
  */
 const HeaderV3 = () => {
@@ -38,7 +37,7 @@ const HeaderV3 = () => {
             text-primary-foreground">
                 <div className="flex gap-x-11 items-center">
                     <div className="w-[250px] flex items-center">
-                        <Link href={'/landingpagegame_progress_futur'}>
+                        <Link href={'/'}>
                             <Image className="my-1 h-12 w-auto object-contain" priority={true}
                                 src={`/images/QuantumCrypto_white_${logoLang}.png`}
                                 alt={'QuantumCrypto'}
@@ -55,7 +54,7 @@ const HeaderV3 = () => {
                     </Link>
                 </div>
             </div>
-            <SidebarV2 />
+            <SidebarV3 />
         </>
     );
 };

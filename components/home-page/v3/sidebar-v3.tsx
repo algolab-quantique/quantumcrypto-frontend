@@ -10,10 +10,10 @@ import { protocols } from '@/components/shared/protocol-data';
 import { getLanguageCode } from '@/lib/utils';
 
 /**
- * SidebarV2 - Mobile sidebar for V2 landing page only.
- * Uses QC_icon.png instead of institut-quantique.svg.
+ * SidebarV3 - Mobile sidebar navigation.
+ * Uses QuantumCrypto logo. Matches V3 aesthetic.
  */
-const SidebarV2 = () => {
+const SidebarV3 = () => {
 
     const { localize, language } = useLanguage();
     const [isClient, setIsClient] = React.useState(false);
@@ -98,4 +98,4 @@ const SidebarV2 = () => {
     );
 };
 
-export default SidebarV2;
+export default SidebarV3;
