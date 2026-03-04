@@ -2816,18 +2816,18 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 ## 📁 Files to Create
 
-| E91 Solo Mode (Reference)                      | DPS Solo Mode (TO CREATE)                            | Status        |
-| ---------------------------------------------- | ---------------------------------------------------- | ------------- |
-| `lib/e91/solo-player.ts`                       | `lib/dps/dps-protocol.ts` (unified)                  | ✅ DONE         |
-| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx`       | ✅ DONE         |
-| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`             | ✅ DONE         |
-| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                        | ✅ DONE         |
-| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                          | ✅ DONE         |
-| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                       | ✅ DONE         |
-| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                       | ✅ DONE         |
-| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                         | ✅ DONE         |
-| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo/page.tsx`                       | ✅ DONE         |
-| `solo-results-table.tsx`                       | N/A (handled in solo-game.tsx)                       | ✅ DONE         |
+| E91 Solo Mode (Reference)                      | DPS Solo Mode (TO CREATE)                      | Status |
+| ---------------------------------------------- | ---------------------------------------------- | ------ |
+| `lib/e91/solo-player.ts`                       | `lib/dps/dps-protocol.ts` (unified)            | ✅ DONE |
+| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx` | ✅ DONE |
+| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`       | ✅ DONE |
+| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                  | ✅ DONE |
+| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                    | ✅ DONE |
+| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                 | ✅ DONE |
+| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                 | ✅ DONE |
+| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                   | ✅ DONE |
+| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo/page.tsx`                 | ✅ DONE |
+| `solo-results-table.tsx`                       | N/A (handled in solo-game.tsx)                 | ✅ DONE |
 
 ---
 
@@ -3168,15 +3168,15 @@ No Prettier or similar formatter is configured. Code formatting is inconsistent 
 
 All 3 protocols (BB84, E91, DPS) share these core quantum concepts. Each maps naturally to a game mechanic:
 
-| Quantum Concept | Game Mechanic Analogy | Existing Game Reference |
-|---|---|---|
-| **Photon travels A→B** | Projectile / delivery | *Angry Birds* trajectory, *Guitar Hero* note highway |
-| **Basis selection** | Strategic choice under uncertainty | *Rock-Paper-Scissors*, *Poker* blind bets |
-| **Same basis = correct info** | Match = reward | *Memory/Concentration* card game, *Candy Crush* matching |
-| **Different basis = random** | Miss = penalty/lost turn | *Minesweeper* wrong click |
-| **Eve intercepts** | Hidden adversary / spy | *Among Us* impostor, *Spy vs Spy*, *Werewolf* |
-| **Error rate reveals Eve** | Detective / forensics | *Clue/Cluedo*, *Papers Please* document inspection |
-| **Key generation** | Crafting / building | *Minecraft* crafting from collected resources |
+| Quantum Concept               | Game Mechanic Analogy              | Existing Game Reference                                  |
+| ----------------------------- | ---------------------------------- | -------------------------------------------------------- |
+| **Photon travels A→B**        | Projectile / delivery              | *Angry Birds* trajectory, *Guitar Hero* note highway     |
+| **Basis selection**           | Strategic choice under uncertainty | *Rock-Paper-Scissors*, *Poker* blind bets                |
+| **Same basis = correct info** | Match = reward                     | *Memory/Concentration* card game, *Candy Crush* matching |
+| **Different basis = random**  | Miss = penalty/lost turn           | *Minesweeper* wrong click                                |
+| **Eve intercepts**            | Hidden adversary / spy             | *Among Us* impostor, *Spy vs Spy*, *Werewolf*            |
+| **Error rate reveals Eve**    | Detective / forensics              | *Clue/Cluedo*, *Papers Please* document inspection       |
+| **Key generation**            | Crafting / building                | *Minecraft* crafting from collected resources            |
 
 ---
 
@@ -3219,11 +3219,11 @@ All 3 protocols (BB84, E91, DPS) share these core quantum concepts. Each maps na
 
 ### 🔬 PROTOCOL-SPECIFIC GAME TWISTS
 
-| Protocol | Unique Mechanic | Game Twist |
-|---|---|---|
-| **BB84** | Polarization filters (↕ ↔ ↗ ↘) | Rotate a physical filter widget to match — visual/tactile |
-| **E91** | Entangled pairs, Bell inequality | Puzzle mode: "Do these measurements violate Bell's inequality?" — logic puzzle |
-| **DPS** | Phase differences in pulse trains | Rhythm game: detect phase shifts like beats in music (*Guitar Hero* / *osu!*) |
+| Protocol | Unique Mechanic                   | Game Twist                                                                     |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------ |
+| **BB84** | Polarization filters (↕ ↔ ↗ ↘)    | Rotate a physical filter widget to match — visual/tactile                      |
+| **E91**  | Entangled pairs, Bell inequality  | Puzzle mode: "Do these measurements violate Bell's inequality?" — logic puzzle |
+| **DPS**  | Phase differences in pulse trains | Rhythm game: detect phase shifts like beats in music (*Guitar Hero* / *osu!*)  |
 
 Each protocol gets its own "flavor" of gamification on top of the universal mechanics.
 
@@ -3231,13 +3231,13 @@ Each protocol gets its own "flavor" of gamification on top of the universal mech
 
 ### 📊 DIFFICULTY LEVELS (Per Protocol)
 
-| Level | Name | Description |
-|---|---|---|
-| 1 | **Tutorial** | Guided walkthrough, no Eve, no timer |
-| 2 | **Apprentice** | Solo, no Eve, scored |
-| 3 | **Agent** | Solo + Eve present, must detect |
-| 4 | **Operative** | Multiplayer, real partner |
-| 5 | **Master** | Multiplayer + Eve, coordinate detection |
+| Level | Name           | Description                             |
+| ----- | -------------- | --------------------------------------- |
+| 1     | **Tutorial**   | Guided walkthrough, no Eve, no timer    |
+| 2     | **Apprentice** | Solo, no Eve, scored                    |
+| 3     | **Agent**      | Solo + Eve present, must detect         |
+| 4     | **Operative**  | Multiplayer, real partner               |
+| 5     | **Master**     | Multiplayer + Eve, coordinate detection |
 
 ---
 
