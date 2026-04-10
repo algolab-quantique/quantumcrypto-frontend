@@ -70,7 +70,7 @@ const TitleV3 = () => {
                         transition={{ duration: 0.6 }}
                     >
                         <Image
-                            src={`/images/QuantumCrypto_black_${logoLang}.png`}
+                            src={`/images/QuantumCrypto_black-text_green-cadna_${logoLang}.png`}
                             alt="QuantumCrypto"
                             width={500}
                             height={100}
@@ -78,7 +78,7 @@ const TitleV3 = () => {
                             priority
                         />
                         <Image
-                            src={`/images/QuantumCrypto_white_${logoLang}.png`}
+                            src={`/images/QuantumCrypto_white-text_green-cadna_${logoLang}.png`}
                             alt="QuantumCrypto"
                             width={500}
                             height={100}

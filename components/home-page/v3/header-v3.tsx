@@ -39,8 +39,7 @@ const HeaderV3 = () => {
                     <div className="w-[250px] flex items-center">
                         <Link href={'/'}>
                             <Image className="my-1 h-12 w-auto object-contain" priority={true}
-                                src={`/images/QuantumCrypto_white_${logoLang}.png`}
-                                /*src={`/images/QuantumCrypto_black_${logoLang}_black_cadna.png`}*/
+                                src={`/images/QuantumCrypto_white-text_white-cadna_${logoLang}.png`}
                                 alt={'QuantumCrypto'}
                                 width={250} height={60} />
                         </Link>
