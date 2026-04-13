@@ -523,6 +523,12 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 3. Add restoration `useEffect` to `messaging-tab.tsx`
 4. Copy pattern from solo tabs which already work
 
+**Scope**: multiplayer only. Solo mode already restores correctly; this issue is about the E91 multiplayer flow after a browser refresh.
+
+**YouTrack FR**:
+- E91 multijoueur ne restaure pas complètement l’état après refresh : hydrater les données de jeu, la progression et le contexte joueur au montage, puis reconnecter la room.
+- E91 multijoueur terminé : supprimer le workaround de redirection et restaurer l’état sauvegardé sur la même page après refresh.
+
 **Estimated Time**: ~1.5 hours
 
 ---
@@ -539,6 +545,11 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 | `e91-game-store.ts`     | ❌ **No persistence at all**          |
 
 **Recommendation**: Standardize on Zustand's `persist()` middleware for all stores.
+
+**Note**: this is architecture cleanup, not one gameplay bug. It affects BB84, E91, and DPS stores, in both solo and multiplayer flows, because the goal is to make save/hydrate/reset behavior consistent.
+
+**YouTrack FR**:
+- Refactoriser la persistance des stores BB84 / E91 / DPS pour unifier `hydrate / persist / remove` et fiabiliser la restauration après refresh.
 
 ---
 
