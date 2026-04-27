@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Table,
     TableBody,
@@ -88,6 +88,31 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         }
         return polars;
     });
+
+    // Fix: Reset local arrays if photonNumber changes (e.g. after refresh/restore)
+    useEffect(() => {
+        setBitsInputs(() => {
+            const inputs: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                inputs.push({ value: '', touched: false, error: true });
+            }
+            return inputs;
+        });
+        setBasisInputs(() => {
+            const inputs: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                inputs.push({ value: '', touched: false, error: true });
+            }
+            return inputs;
+        });
+        setPolarList(() => {
+            const polars: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                polars.push({ value: '0', touched: false, error: true });
+            }
+            return polars;
+        });
+    }, [photonNumber]);
 
     const validateForm = !polarList.some(
             ({value, error}) => value === '0' || error) &&

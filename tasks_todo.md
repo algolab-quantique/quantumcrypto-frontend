@@ -2801,6 +2801,61 @@ Fixes: Results table showing "No rooms finished" despite completed games
 
 ---
 
+### 21. 🔴 Fix Store / Refresh / Save — Comprehensive Hydration Across All Protocols
+**Status**: 🔴 TODO — HIGH PRIORITY  
+**Date Added**: April 24, 2026  
+**Scope**: BB84, E91, DPS — Solo & Multiplayer  
+
+#### Problem Summary
+On-page refresh, game state is lost in most protocol/mode combinations. Only **E91 Solo** correctly restores data. All other flows have broken or missing hydration logic.
+
+#### Test Results (April 2026)
+
+| Protocol | Mode | Alice | Bob | Root Cause |
+| -------- | ---- | ----- | --- | ---------- |
+| **BB84** | Solo | ❌ Empty tabs, photons reset to 20 | ❌ Same | Refactored stores not integrated; hydration never called |
+| **BB84** | Multi | ❌ Broken | ❌ Broken | Same as BB84 solo + no multiplayer restoration logic |
+| **E91** | Solo | ✅ Works | ✅ Works | **Gold reference** — all tabs have `useEffect` hydration |
+| **E91** | Multi | ❌ Appends duplicate photons | ❌ Same | No restoration `useEffect` in multiplayer tabs (#13/#19) |
+| **DPS** | Solo Alice | ❌ Goes to wrong tab, empty | — | No hydration helpers exist for DPS stores |
+| **DPS** | Solo Bob | — | ❌ Stays on tab, empty | Same — no hydration |
+
+#### Key Insight
+Issue #2 (December 2025, marked ✅ DONE) only fixed the **redirect** problem (persisting `playingSolo` so `isConnected` HOC doesn't kick users to `/`). It did **NOT** fix actual game data restoration in the tabs. The tabs themselves need `useEffect` hooks that read from `localStorage` and re-populate component state.
+
+#### Fix Plan — Phased Approach
+
+**Phase 0: Study E91 Solo (Reference Pattern)** — 30 min  
+Read and document exactly how E91 Solo saves, hydrates, and restores state. Every subsequent fix copies this pattern.
+
+**Phase 1: Fix BB84 Solo** — ~2-3h  
+- [ ] Investigate why BB84 solo doesn't restore (refactored stores vs old stores, missing hydration calls)
+- [ ] Align BB84 solo with E91 solo pattern (ensure `restoreGame()` and progress hydration are called on mount)
+- [ ] Fix photon count defaulting to 20 (stored config not being read back)
+- [ ] Test: Alice refresh at each tab, Bob refresh at each tab
+
+**Phase 2: Fix DPS Solo** — ~2-3h  
+- [ ] Create hydration helpers for DPS room store and progress store
+- [ ] Add `useEffect` restoration in DPS solo tab components
+- [ ] Test: Alice refresh at each tab, Bob refresh at each tab
+
+**Phase 3: Quick Wins — E91 Multiplayer** — ~20 min  
+- [ ] #5 — Fix wrong dialog import in `basis-tab.tsx` and `CHSH-tab.tsx` (use E91 dialog, not BB84)
+- [ ] #6 — Add `E91_MIN_KEY_LENGTH` check in `onMoveToMessaging()` 
+- [ ] #17 — Add `localStorage.removeItem('e91GameData')` to `resetRoom()`
+
+**Phase 4: Fix E91 Multiplayer Refresh** — ~2.5h  
+- [ ] #13 — Add state restoration `useEffect` to `game.tsx` (copy from `solo-game.tsx`)
+- [ ] #19 — Add restoration `useEffect` to `CHSH-tab.tsx` and `messaging-tab.tsx`
+- [ ] Remove results-page redirect workaround
+
+**Phase 5: Fix BB84 Multiplayer Refresh** — ~2h  
+- [ ] Same pattern as Phase 4, applied to BB84 multiplayer tabs
+
+**Estimated Total**: ~10-12 hours
+
+---
+
 # 🎮 DPS Solo Mode Implementation Plan
 
 **Created**: January 5, 2026  
@@ -3371,3 +3426,17 @@ Ordered by quality ranking:
 ---
 
 **Priority:** LOW - Focus on solo mode first, then add Eve later
+
+
+
+
+# My quick notes
+
+## bb84 solo:
+alice: tab 1 ok, tab 2 ok, tab 3 : (Félicitations Bob a réussi à déchiffrer votre message !) + 2 buttons. we stay on the same page, very good, with message and button. but (Votre message
+
+Votre message chiffré (0 ou 1)) become empty, it should keep the information.
+
+BOB : tab 1 refresh it give same number of photo (4) but (Aléatoire
+Mesures) buttons are de-activated, we can not click on them to generate and continue.
+last tab (Félicitations Vous avez déchiffré le message d'Alice !) work good, the same problem as in alice, all text message are saved, but the new entred bits (Message d'Alice déchiffré) are not displayed, it should be displayed.

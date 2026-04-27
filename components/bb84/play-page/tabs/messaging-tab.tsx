@@ -5,7 +5,7 @@ import {
     TableHead,
     TableBody, TableCell,
 } from '@/components/ui/table';
-import React, { useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import {CheckCircle2, Send} from 'lucide-react';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {Input} from '@/components/ui/input';
@@ -45,6 +45,14 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     } = useBB84RoomStore();
 
     const [message, setMessage] = useState(() => {
+        // On restore: if game is already finished, pre-fill from persisted values
+        if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
+            return persistedMessage.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
         return [...keyBits].map(_ => ({
             value: '',
             touched: false,
@@ -53,12 +61,38 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     });
 
     const [crypto, setCrypto] = useState(() => {
+        // On restore: if game is already finished, pre-fill from persisted values
+        if ((aliceCipherSent || gameSuccess) && persistedCrypto.length > 0) {
+            return persistedCrypto.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
         return [...keyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
         }));
     });
+
+    // Hydrate local state from store after refresh (store may hydrate after first render)
+    useEffect(() => {
+        if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0 && message.length === 0) {
+            setMessage(persistedMessage.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            })));
+        }
+        if ((aliceCipherSent || gameSuccess) && persistedCrypto.length > 0 && crypto.length === 0) {
+            setCrypto(persistedCrypto.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            })));
+        }
+    }, [keyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
 
     const onMessageInput = (event: React.ChangeEvent<HTMLInputElement>,
                             index: number) => {
@@ -128,8 +162,9 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                     toast.success(localize('component.basis.correct'));
                 }
                 
+                setPersistedCrypto(updatedCrypto.map(({value}) => value));
+                setPersistedMessage(message.map(({value}) => value));
                 setGameSuccess(true);
-                clearBB84LocalStorage();
             } else {
                 setPersistedCrypto(updatedCrypto.map(({value}) => value));
                 setPersistedMessage(message.map(({value}) => value));
@@ -200,31 +235,31 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                        onKeyDown={e => forbiddenSymbols.includes(
                                            e.key) && e.preventDefault()}
                                        value={playerRole === 'B' ?
-                                           aliceCipher[i] ?? '' :
-                                           aliceCipherSent || gameSuccess ?
-                                               persistedMessage[i] :
-                                               message[i].value}
+                                            aliceCipher[i] ?? '' :
+                                            aliceCipherSent || gameSuccess ?
+                                                (persistedMessage[i] ?? '') :
+                                                (message[i]?.value ?? '')}
                                        onChange={(event) => onMessageInput(
-                                           event, i)}
+                                            event, i)}
                                        className={cn(
-                                           'w-10 text-lg text-center' +
-                                           ' mx-auto disabled:opacity-100' +
-                                           ' disabled:bg-background' +
-                                           ' disabled:cursor-default' +
-                                           ' mx-auto', playerRole === 'A' &&
-                                           message[i].error &&
-                                           message[i].touched ? 'border-red' :
-                                               '')}/>
+                                            'w-10 text-lg text-center' +
+                                            ' mx-auto disabled:opacity-100' +
+                                            ' disabled:bg-background' +
+                                            ' disabled:cursor-default' +
+                                            ' mx-auto', playerRole === 'A' &&
+                                            message[i]?.error &&
+                                            message[i]?.touched ? 'border-red' :
+                                                '')}/>
                             </TableCell>
                             <TableCell>
                                 <Input
                                     value={playerRole === 'A' ?
                                         (aliceCipherSent || gameSuccess ?
-                                            persistedCrypto[i] :
-                                            crypto[i].value) :
+                                            (persistedCrypto[i] ?? '') :
+                                            (crypto[i]?.value ?? '')) :
                                         (gameSuccess ?
-                                            persistedCrypto[i] :
-                                            crypto[i].value)}
+                                            (persistedCrypto[i] ?? '') :
+                                            (crypto[i]?.value ?? ''))}
                                     // type="number"
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
@@ -236,8 +271,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                         ' disabled:bg-background' +
                                         ' disabled:cursor-default' +
                                         ' mx-auto',
-                                        crypto[i].error &&
-                                        crypto[i].touched ? 'border-red' :
+                                        crypto[i]?.error &&
+                                        crypto[i]?.touched ? 'border-red' :
                                             '')}/>
                             </TableCell>
                         </TableRow>

@@ -127,6 +127,12 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
         setGameHasEve(eve);
         setValidationBitsLength(validationBitsLength);
         setPhotonNumber(photonNumber);
+
+        // Save game config to localStorage for page refresh persistence
+        localStorage.setItem('bb84PhotonNumber', JSON.stringify(photonNumber));
+        localStorage.setItem('bb84GameHasEve', JSON.stringify(eve));
+        localStorage.setItem('bb84GameData', JSON.stringify({ evePresent: eve }));
+
         if (playerRole === 'B') {
             const aliceBits = generateAliceBits(photonNumber);
             const aliceBases = generateAliceBases(photonNumber);

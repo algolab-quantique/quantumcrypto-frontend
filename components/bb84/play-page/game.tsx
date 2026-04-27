@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab
     from '@/components/bb84/play-page/tabs/alice-exchange-tab';
@@ -20,9 +20,12 @@ import isConnected from '@/components/hoc/is-connected';
 import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
+import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 
 
 const Game = () => {
+    // Track if we've already restored/initialized to prevent duplicate messages
+    const hasInitialized = useRef(false);
 
     const polarIcons =
 
@@ -34,12 +37,46 @@ const Game = () => {
 
     const {localize} = useLanguage();
     const {step, displayedLines, bb84Tab} = useBB84ProgressStore();
-    const {pushLines, setBb84Tab} = useBB84ProgressStore();
+    const {pushLines, setBb84Tab, setStep, setDisplayedLines} = useBB84ProgressStore();
     const {playerRole, playerName} = usePlayerStore();
-    const {photonNumber, gameHasEve} = useBB84GameStore();
+    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve} = useBB84GameStore();
+    const {restoreGame} = useBB84RoomStore();
 
+    // Restore game state from localStorage on mount (for page refresh)
+    // AND initialize welcome messages if no saved state exists
     useEffect(() => {
-        if (displayedLines.length === 0) {
+        // Prevent running twice (React StrictMode)
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
+        const getItem = (key: string) => {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        };
+
+        // Restore BB84 game data
+        const gameData = getItem('bb84GameData');
+        if (gameData) {
+            restoreGame(gameData);
+        }
+
+        // Restore progress (step, tab)
+        const savedStep = getItem('bb84Step');
+        if (savedStep !== null) {
+            setStep(savedStep);
+        }
+
+        const savedTab = localStorage.getItem('bb84Tab');
+        if (savedTab) {
+            setBb84Tab(savedTab);
+        }
+
+        // Restore displayed lines OR show welcome messages
+        const savedLines = getItem('bb84DisplayedLines');
+        if (savedLines && savedLines.length > 0) {
+            setDisplayedLines(savedLines);
+        } else {
+            // No saved lines - show welcome messages
             if (playerRole === 'A') {
                 pushLines([
                     {
@@ -60,6 +97,17 @@ const Game = () => {
                     },
                 ]);
             }
+        }
+
+        // Restore game config
+        const savedPhotonNumber = getItem('bb84PhotonNumber');
+        if (savedPhotonNumber) {
+            setPhotonNumber(savedPhotonNumber);
+        }
+
+        const savedGameHasEve = getItem('bb84GameHasEve');
+        if (savedGameHasEve !== null) {
+            setGameHasEve(savedGameHasEve);
         }
     }, []);
 

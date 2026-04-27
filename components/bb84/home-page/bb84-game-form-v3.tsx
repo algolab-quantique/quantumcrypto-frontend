@@ -79,8 +79,6 @@ const BB84MainV3: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
-        resetRoom();
-        resetProgress();
         if (isPlayRoomConnected) {
             router.push('/bb84/play');
             return;
