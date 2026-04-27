@@ -39,7 +39,7 @@ const Game = () => {
     const {step, displayedLines, bb84Tab} = useBB84ProgressStore();
     const {pushLines, setBb84Tab, setStep, setDisplayedLines} = useBB84ProgressStore();
     const {playerRole, playerName} = usePlayerStore();
-    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve} = useBB84GameStore();
+    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength} = useBB84GameStore();
     const {restoreGame} = useBB84RoomStore();
 
     // Restore game state from localStorage on mount (for page refresh)
@@ -108,6 +108,11 @@ const Game = () => {
         const savedGameHasEve = getItem('bb84GameHasEve');
         if (savedGameHasEve !== null) {
             setGameHasEve(savedGameHasEve);
+        }
+
+        const savedValidationBitsLength = getItem('bb84ValidationBitsLength');
+        if (savedValidationBitsLength) {
+            setValidationBitsLength(savedValidationBitsLength);
         }
     }, []);
 
