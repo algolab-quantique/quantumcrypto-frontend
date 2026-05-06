@@ -1,6 +1,7 @@
 'use client';
 
-import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
+// Use E91-specific dialog with correct translation keys (component.e91.*)
+import GameRestartDialog from '@/components/e91/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
@@ -267,6 +268,12 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
             .map((field, index) => (field.value === '1' ? index : null))
             .filter(index => index !== null) as number[];
 
+        // Check if key is too short (uses E91_MIN_KEY_LENGTH constant)
+        if (validBitIndices.length < E91_MIN_KEY_LENGTH) {
+            pushLines([{content: 'component.e91.shortKey.restart'}]);
+            setRestartModalOpen(true);
+            return;
+        }
 
         setAliceValidBits(validBitIndices.map(i => aliceBits[i]));
         setBobValidBits(validBitIndices.map(i => bobBits[i]));

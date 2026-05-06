@@ -1,4 +1,5 @@
-import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
+// Use E91-specific dialog with correct translation keys (component.e91.*)
+import GameRestartDialog from '@/components/e91/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import { useDrag, DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
-import { RESTART_WITHOUT_EVE_EVENT } from '@/bb84-constants';
+
 
 
 export const moveToExchangeTab = () => {

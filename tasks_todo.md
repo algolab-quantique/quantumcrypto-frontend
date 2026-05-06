@@ -2829,25 +2829,42 @@ Issue #2 (December 2025, marked ✅ DONE) only fixed the **redirect** problem (p
 Read and document exactly how E91 Solo saves, hydrates, and restores state. Every subsequent fix copies this pattern.
 
 **Phase 1: Fix BB84 Solo** — ~2-3h  
-- [ ] Investigate why BB84 solo doesn't restore (refactored stores vs old stores, missing hydration calls)
-- [ ] Align BB84 solo with E91 solo pattern (ensure `restoreGame()` and progress hydration are called on mount)
-- [ ] Fix photon count defaulting to 20 (stored config not being read back)
-- [ ] Test: Alice refresh at each tab, Bob refresh at each tab
+- [x] Investigate why BB84 solo doesn't restore (refactored stores vs old stores, missing hydration calls)
+- [x] Align BB84 solo with E91 solo pattern (ensure `restoreGame()` and progress hydration are called on mount)
+- [x] Fix photon count defaulting to 20 (stored config not being read back)
+- [x] Fix missing `validationBitsLength` hydration on Eve presence
+- [x] Test: Alice refresh at each tab, Bob refresh at each tab
 
 **Phase 2: Fix DPS Solo** — ~2-3h  
 - [ ] Create hydration helpers for DPS room store and progress store
 - [ ] Add `useEffect` restoration in DPS solo tab components
 - [ ] Test: Alice refresh at each tab, Bob refresh at each tab
 
-**Phase 3: Quick Wins — E91 Multiplayer** — ~20 min  
-- [ ] #5 — Fix wrong dialog import in `basis-tab.tsx` and `CHSH-tab.tsx` (use E91 dialog, not BB84)
-- [ ] #6 — Add `E91_MIN_KEY_LENGTH` check in `onMoveToMessaging()` 
-- [ ] #17 — Add `localStorage.removeItem('e91GameData')` to `resetRoom()`
+**Phase 3: Quick Wins — E91 Multiplayer** — ~20 min ✅  
+- [x] #5 — Fix wrong dialog import in `basis-tab.tsx` and `CHSH-tab.tsx` (use E91 dialog, not BB84)
+- [x] #6 — Add `E91_MIN_KEY_LENGTH` check in `onMoveToMessaging()` 
+- [x] #17 — Add `localStorage.removeItem('e91GameData')` to `resetRoom()`
 
 **Phase 4: Fix E91 Multiplayer Refresh** — ~2.5h  
 - [ ] #13 — Add state restoration `useEffect` to `game.tsx` (copy from `solo-game.tsx`)
 - [ ] #19 — Add restoration `useEffect` to `CHSH-tab.tsx` and `messaging-tab.tsx`
 - [ ] Remove results-page redirect workaround
+
+---
+
+### 22. 🟡 Validation Consumes All Bits (No Bits Left for Key)
+**Status**: 🟡 TODO — MEDIUM PRIORITY  
+**Date Added**: April 27, 2026  
+**Scope**: BB84 (potentially others)
+
+**Problem Summary**: 
+At the end of the experiment, if the number of matching bases (valid bits) equals the `validationBitsLength` configured at the start of the game, the system uses ALL matching bits for validation. This leaves exactly 0 bits for the final cryptographic key. However, the game currently re-uses those exact same validation bits as the secret key. 
+
+This breaks the fundamental principle of QKD (Quantum Key Distribution), where bits used for validation MUST be discarded to prevent Eve from knowing the key, and only the *remaining* bits should form the secret key.
+
+**Ideal Fix**:
+- The game should discard the validation bits.
+- If not enough bits remain to form a key after validation, the game should inform the players and prompt them to restart the protocol (or adjust the minimum key requirements).
 
 **Phase 5: Fix BB84 Multiplayer Refresh** — ~2h  
 - [ ] Same pattern as Phase 4, applied to BB84 multiplayer tabs

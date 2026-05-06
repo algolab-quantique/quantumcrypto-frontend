@@ -231,7 +231,9 @@ const useE91RoomStore = create<E91RoomStore>(set => ({
     },
     setValidationIndices: validationIndices => updateAndStore(
         'validationIndices', validationIndices, set),
-    resetRoom: () => set({
+    resetRoom: () => {
+        localStorage.removeItem('e91GameData');
+        set({
         photons: [],
         photonsRevealed: false,
         basesShared: false,
@@ -269,7 +271,8 @@ const useE91RoomStore = create<E91RoomStore>(set => ({
         aliceInvalidBases: [],
         bobInvalidBases: [],
         securedDecision: null,
-    }),
+    });
+    },
     restoreGame: gameData => {
         for (const key of Object.keys(gameData)) {
             const value = gameData[key];
