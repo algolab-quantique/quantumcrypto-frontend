@@ -2866,6 +2866,29 @@ This breaks the fundamental principle of QKD (Quantum Key Distribution), where b
 - The game should discard the validation bits.
 - If not enough bits remain to form a key after validation, the game should inform the players and prompt them to restart the protocol (or adjust the minimum key requirements).
 
+---
+
+### 23. 🔴 E91 : Revenir sur /e91 après une partie terminée replonge dans l'ancienne partie
+**Status**: 🔴 TODO — HIGH PRIORITY  
+**Date Added**: May 5, 2026  
+**Scope**: E91 — Solo & Multiplayer  
+
+**Problem Summary**:  
+Après avoir terminé une partie E91 (solo ou multi), si l'utilisateur revient sur la page d'accueil (`/`) puis clique sur la carte E91, il est redirigé directement vers `/e91/play` qui affiche la dernière étape de la partie précédente (déjà terminée) au lieu de démarrer une nouvelle partie.
+
+**Root Cause**:  
+1. Quand le jeu se termine (`setGameSuccess(true)`), `e91GameData` et `playingSolo` ne sont **jamais nettoyés** du `localStorage`.
+2. Le HOC `isConnected` vérifie `playingSolo` (persisté dans `player-store`) → comme il est toujours `true`, il redirige vers `/e91/play`.
+3. La page `/e91/play` restaure l'état depuis `e91GameData` → affiche l'ancienne partie terminée.
+
+**Fix potentiel**:  
+- Appeler `clearE91LocalStorage()` + `setPlayingSolo(false)` quand le jeu se termine avec succès (après `setGameSuccess(true)`).
+- OU : dans la page `/e91`, détecter `gameSuccess === true` dans le `localStorage` et nettoyer automatiquement avant de proposer un nouveau jeu.
+
+**Testé le** : May 5, 2026 — Reproduit en solo E91 (sans Eve, jeu complet jusqu'à la messagerie).
+
+---
+
 **Phase 5: Fix BB84 Multiplayer Refresh** — ~2h  
 - [ ] Same pattern as Phase 4, applied to BB84 multiplayer tabs
 
