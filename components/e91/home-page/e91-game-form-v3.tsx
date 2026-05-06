@@ -76,24 +76,31 @@ const E91MainV3: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
+        // Check if there's a previous game in localStorage
+        const previousGame = localStorage.getItem('e91PlayerData');
+        const gameDataRaw = localStorage.getItem('e91GameData');
+        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const gameCompleted = gameData && gameData.gameSuccess === true;
+
+        // If the game was already completed, clean up stale data
+        // Do NOT redirect to play page — there's nothing to resume
+        if (gameCompleted) {
+            clearE91LocalStorage();
+            setPlayingSolo(false);
+            setPlayingMultiplayer(false);
+            return;
+        }
+
+        // If WebSocket is still connected AND game is NOT completed,
+        // redirect to the play page (active game in progress)
         if (isPlayRoomConnected) {
             router.push('/e91/play');
             return;
         }
-        const previousGame = localStorage.getItem('e91PlayerData');
+
+        // If there's player data from an interrupted game, offer to rejoin
         if (previousGame) {
-            // Check if the previous game was already completed
-            // If so, auto-clear instead of offering rejoin (nothing to resume)
-            const gameDataRaw = localStorage.getItem('e91GameData');
-            const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
-            if (gameData && gameData.gameSuccess === true) {
-                // Game was completed — clean up stale data silently
-                clearE91LocalStorage();
-                setPlayingSolo(false);
-            } else {
-                // Game was interrupted — offer to rejoin
-                setRejoinDialogOpen(true);
-            }
+            setRejoinDialogOpen(true);
         }
     }, [isPlayRoomConnected]);
 

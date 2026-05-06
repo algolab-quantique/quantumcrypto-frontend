@@ -151,6 +151,8 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
 
     // Navigate to game home page (e91, bb84, etc.)
     const handleReplay = () => {
+        // Don't clear localStorage here — e91GameData.gameSuccess=true
+        // serves as a signal for the form page to clean up properly
         router.replace(`/${params.gameType}`);
     };
 
