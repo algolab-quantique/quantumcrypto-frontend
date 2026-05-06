@@ -2868,8 +2868,8 @@ This breaks the fundamental principle of QKD (Quantum Key Distribution), where b
 
 ---
 
-### 23. 🔴 E91 : Revenir sur /e91 après une partie terminée replonge dans l'ancienne partie
-**Status**: 🔴 TODO — HIGH PRIORITY  
+### 23. ✅ E91 : Revenir sur /e91 après une partie terminée replonge dans l'ancienne partie
+**Status**: ✅ DONE (May 5, 2026)  
 **Date Added**: May 5, 2026  
 **Scope**: E91 — Solo & Multiplayer  
 

@@ -20,6 +20,8 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Home, RotateCcw } from 'lucide-react';
+import { clearE91LocalStorage } from '@/lib/e91/utils';
+import usePlayerStore from '@/store/player-store';
 
 interface SoloResultsTableProps {
     playerName: string;
@@ -53,11 +55,16 @@ const SoloResultsTable = ({
     const score = Math.max(0, Math.round((keyLength * 10) - (elapsedTime / 10)));
 
     const handleReplay = () => {
-        // Clear game state and go to E91 home
+        // Clean up all game state before starting a new game
+        clearE91LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
         router.replace('/e91');
     };
 
     const handleHomeMenu = () => {
+        // Clean up all game state before going to main menu
+        clearE91LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
         router.replace('/');
     };
 

@@ -82,7 +82,18 @@ const E91MainV3: React.FC = () => {
         }
         const previousGame = localStorage.getItem('e91PlayerData');
         if (previousGame) {
-            setRejoinDialogOpen(true);
+            // Check if the previous game was already completed
+            // If so, auto-clear instead of offering rejoin (nothing to resume)
+            const gameDataRaw = localStorage.getItem('e91GameData');
+            const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+            if (gameData && gameData.gameSuccess === true) {
+                // Game was completed — clean up stale data silently
+                clearE91LocalStorage();
+                setPlayingSolo(false);
+            } else {
+                // Game was interrupted — offer to rejoin
+                setRejoinDialogOpen(true);
+            }
         }
     }, [isPlayRoomConnected]);
 
