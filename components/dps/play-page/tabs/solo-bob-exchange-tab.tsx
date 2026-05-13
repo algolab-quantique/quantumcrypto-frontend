@@ -33,10 +33,11 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
     photonNumber: number,
     polarIcons: any[]
 }) => {
-    const { localize } = useLanguage();
-    // No socket for solo mode
-    // const { sendArrivalTimes } = useSocket();
+    const MEASUREMENTS_KEY = 'dpsSoloBobExchangeMeasurements';
+    const VALIDATED_TIMES_KEY = 'dpsSoloBobExchangeValidatedTimes';
+    const IS_VALIDATED_KEY = 'dpsSoloBobExchangeIsValidated';
 
+    const { localize } = useLanguage();
     const {
         setStep,
         pushLines,
@@ -56,16 +57,46 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
     const arrivalTimesSent = bobTimeMeasurements.length > 0;
     const alicePhasesArrived = alicePhases.length > 0;
 
-    const [showSendButton, setShowSendButton] = useState(false);
-    const [showValidateButton, setShowValidateButton] = useState(true);
-    const [isValidated, setIsValidated] = useState(false);
+    const [showSendButton, setShowSendButton] = useState(() => {
+        if (arrivalTimesSent) return false;
+        return localStorage.getItem(IS_VALIDATED_KEY) === 'true';
+    });
+    const [showValidateButton, setShowValidateButton] = useState(() => {
+        if (arrivalTimesSent) return false;
+        return localStorage.getItem(IS_VALIDATED_KEY) !== 'true';
+    });
+    const [isValidated, setIsValidated] = useState(() => {
+        if (arrivalTimesSent) return true;
+        return localStorage.getItem(IS_VALIDATED_KEY) === 'true';
+    });
 
-    const [measurements, setMeasurements] = useState<(string | null)[]>(Array(photonNumber).fill(null));
+    const [measurements, setMeasurements] = useState<(string | null)[]>(() => {
+        const draft = localStorage.getItem(MEASUREMENTS_KEY);
+        if (!draft) return Array(photonNumber).fill(null);
+        try {
+            const parsed = JSON.parse(draft);
+            return Array.isArray(parsed) && parsed.length === photonNumber ? parsed : Array(photonNumber).fill(null);
+        } catch {
+            return Array(photonNumber).fill(null);
+        }
+    });
     const [validatedTimes, setValidatedTimes] = useState<{
         value: string | null;
         error: boolean;
         discarded: boolean;
-    }[]>([]);
+    }[]>(() => {
+        if (arrivalTimesSent) {
+            return bobTimeMeasurements.map(value => ({ value, error: false, discarded: false }));
+        }
+        const draft = localStorage.getItem(VALIDATED_TIMES_KEY);
+        if (!draft) return [];
+        try {
+            const parsed = JSON.parse(draft);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
 
     const measured = measurements.some(time => time !== null);
 
@@ -73,10 +104,7 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
     // SOLO COMPUTER LOGIC: Computer Alice sends pulses
     // ═══════════════════════════════════════════════════════════════════════
     useEffect(() => {
-        // If Alice hasn't sent pulses yet, Computer Alice acts
         if (alicePhotons.length === 0) {
-            // pushLines([{ content: 'Alice is preparing pulses...' }]); // Optional: "Alice prepares..."
-
             setTimeout(() => {
                 const phases = generateRandomPhases(photonNumber);
                 const photons = generatePulseTrains(phases);
@@ -93,13 +121,28 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
         }
     }, [alicePhotons.length, photonNumber, setAlicePhases, setAlicePhotons, pushLines]);
 
+    useEffect(() => {
+        if (arrivalTimesSent) {
+            localStorage.removeItem(MEASUREMENTS_KEY);
+            localStorage.removeItem(VALIDATED_TIMES_KEY);
+            localStorage.removeItem(IS_VALIDATED_KEY);
+            setIsValidated(true);
+            setShowValidateButton(false);
+            setShowSendButton(false);
+            return;
+        }
+
+        localStorage.setItem(MEASUREMENTS_KEY, JSON.stringify(measurements));
+        localStorage.setItem(VALIDATED_TIMES_KEY, JSON.stringify(validatedTimes));
+        localStorage.setItem(IS_VALIDATED_KEY, isValidated ? 'true' : 'false');
+    }, [measurements, validatedTimes, isValidated, arrivalTimesSent]);
+
 
     // ═══════════════════════════════════════════════════════════════════════
     // BOB ACTIONS
     // ═══════════════════════════════════════════════════════════════════════
 
     const measureArrivalTime = () => {
-        // Use protocol function
         const newArrivalTimes = protocolMeasureArrivalTime(photonNumber);
         setMeasurements(newArrivalTimes);
 
@@ -145,17 +188,15 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
     const onSendTimes = () => {
         if (!isValidated) return;
 
-        // Keep original T0-T3 values (Option B)
         const allTimes = validatedTimes.map(({ value }) => value);
 
-        console.log("allTimes: ", allTimes);
         setBobTimeMeasurements(allTimes as string[]);
+        localStorage.removeItem(MEASUREMENTS_KEY);
+        localStorage.removeItem(VALIDATED_TIMES_KEY);
+        localStorage.removeItem(IS_VALIDATED_KEY);
 
         toast.success(localize('component.bobExchange.timesSent'));
         pushLines([{ content: 'component.bobExchange.sentTimes' }]);
-
-        // NO SOCKET CALL
-        // sendArrivalTimes(allTimes as string[]);
 
         setTimeout(() => {
             setStep(DPSGameStep.MESSAGING);

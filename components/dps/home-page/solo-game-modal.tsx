@@ -66,6 +66,7 @@ import { clearDPSLocalStorage } from '@/lib/dps/utils';
 const DPS_SOLO_PHOTON_MIN = 4;
 const DPS_SOLO_PHOTON_MAX = 20;
 const DPS_SOLO_PHOTON_DEFAULT = 6;
+const DPS_SOLO_PHOTON_DRAFT_KEY = 'dpsSoloPhotonNumberDraft';
 
 const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
@@ -124,13 +125,30 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
         }),
     });
 
+    const getDraftPhotonNumber = () => {
+        if (typeof window === 'undefined') return DPS_SOLO_PHOTON_DEFAULT;
+        const draftPhotonNumber = localStorage.getItem(DPS_SOLO_PHOTON_DRAFT_KEY);
+        if (!draftPhotonNumber) return DPS_SOLO_PHOTON_DEFAULT;
+
+        try {
+            const parsedPhotonNumber = Number(JSON.parse(draftPhotonNumber));
+            return Number.isNaN(parsedPhotonNumber)
+                ? DPS_SOLO_PHOTON_DEFAULT
+                : parsedPhotonNumber;
+        } catch {
+            return DPS_SOLO_PHOTON_DEFAULT;
+        }
+    };
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: DPS_SOLO_PHOTON_DEFAULT,
+            photonNumber: getDraftPhotonNumber(),
             playerName: '',
         },
     });
+
+    
 
     // ═══════════════════════════════════════════════════════════════════════
     // HANDLERS
@@ -163,6 +181,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
 
         // Save to localStorage for page refresh persistence
         localStorage.setItem('dpsPhotonNumber', JSON.stringify(photonNumber));
+        localStorage.setItem(DPS_SOLO_PHOTON_DRAFT_KEY, JSON.stringify(photonNumber));
         localStorage.setItem('dpsPlayerData', JSON.stringify({
             playerName,
             role: playerRole,
@@ -283,11 +302,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
 
     return (
-        <Dialog
-            onOpenChange={(open) => {
-                if (!open) setFormStep(0);
-            }}
-        >
+        <Dialog onOpenChange={(isOpen) => { if (!isOpen) setFormStep(0); }}>
             <DialogTrigger asChild>
                 <Button
                     type="button"

@@ -3480,3 +3480,59 @@ Votre message chiffré (0 ou 1)) become empty, it should keep the information.
 BOB : tab 1 refresh it give same number of photo (4) but (Aléatoire
 Mesures) buttons are de-activated, we can not click on them to generate and continue.
 last tab (Félicitations Vous avez déchiffré le message d'Alice !) work good, the same problem as in alice, all text message are saved, but the new entred bits (Message d'Alice déchiffré) are not displayed, it should be displayed.
+
+---
+
+## 🔄 TASK — Harmoniser les flows solo (DPS / BB84 / E91)
+
+**Status**: 🟡 TODO — Priorité moyenne  
+**Date Added**: May 13, 2026  
+**Scope**: DPS solo ✅ (déjà stabilisé) · BB84 solo ⚠️ · E91 solo ⚠️
+
+### Contexte
+
+Après l'analyse comparative des trois protocoles, les comportements suivants ont été identifiés :
+
+| Comportement | DPS solo | BB84 solo | E91 solo |
+|---|---|---|---|
+| HOC `isConnected` | ❌ non (restaure playerData manuellement) | ✅ oui | ✅ oui |
+| Gate `isHydrated` (spinner pendant restauration) | ✅ oui | ❌ non | ❌ non |
+| `clearXxxLocalStorage()` avant redirect sur "Re-jouer" | ✅ oui | ❌ **non** | ❌ **N/A** (va vers résultats) |
+| Restauration `playerData` au refresh | ✅ manuel dans `useEffect` | ❌ délégué au HOC | ❌ délégué au HOC |
+| `clearXxxLocalStorage()` utilitaire dédié | ✅ `lib/dps/utils.ts` | ❌ **non** | ❌ **non** |
+
+### Problèmes identifiés
+
+#### BB84 solo
+- `goToBB84Page()` dans `bb84-progression.tsx` fait `router.replace('/bb84')` **sans** vider le localStorage → les données de l'ancienne partie restent jusqu'au prochain démarrage. Ce n'est pas un crash, mais c'est moins propre.
+- Pas de `clearBB84LocalStorage()` centralisé (DPS a son équivalent dans `lib/dps/utils.ts`).
+- Pas de gate `isHydrated` → le jeu peut flasher avec des valeurs par défaut pendant la restauration.
+
+#### E91 solo
+- Même absence de `clearE91LocalStorage()` centralisé.
+- Même absence de gate `isHydrated`.
+- Le "restart sans Eve" (`handleSoloRestart`) appelle `resetRoom()` + `resetProgress()` directement en Zustand **sans** vider le localStorage → `e91GameData` reste en LS (voir aussi issue #17).
+
+### Travaux suggérés
+
+1. **Créer `lib/bb84/utils.ts → clearBB84LocalStorage()`** (pattern DPS) :
+   - Lister toutes les clés BB84 : `bb84GameData`, `bb84Step`, `bb84Tab`, `bb84DisplayedLines`, `bb84PhotonNumber`, `bb84GameHasEve`, `bb84ValidationBitsLength`, et les drafts des onglets.
+
+2. **Mettre à jour `bb84-progression.tsx → goToBB84Page()`** :
+   - Ajouter `clearBB84LocalStorage()` avant `router.replace('/bb84')` (ou `window.location.replace('/bb84')` pour un hard reload propre).
+
+3. **Créer `lib/e91/utils.ts → clearE91LocalStorage()`** (si pas encore fait) :
+   - Lister toutes les clés E91.
+   - Appeler dans `handleSoloRestart()` (fix du bug #17 aussi).
+
+4. **Optionnel — Ajouter gate `isHydrated` à BB84 et E91** :
+   - Copier le pattern de `solo-game.tsx` DPS : `useState(false)` + `setIsHydrated(true)` à la fin du `useEffect` de restauration.
+   - Affiche un spinner pendant que le localStorage se charge → élimine les flashs.
+
+5. **Optionnel — Unifier l'architecture HOC vs manuel** :
+   - Soit DPS adopte `isConnected` HOC (et restaure `playerData` dedans comme BB84/E91).
+   - Soit BB84/E91 abandonnent le HOC et font une restauration manuelle comme DPS.
+   - Choix à faire en équipe.
+
+### Estimation
+~1–2h pour les points 1–3. Points 4–5 optionnels ~1h chacun.

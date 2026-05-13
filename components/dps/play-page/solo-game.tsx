@@ -1,18 +1,14 @@
 /**
  * DPS Solo Game Container
- * 
- * Adapted from game.tsx for solo mode.
- * - Instantiates solo-specific tabs (Phase 3)
- * - Manages solo game state restoration
- * - No WebSocket connection required
+ *
+ * Manages solo game state restoration and renders role-appropriate tabs.
+ * No WebSocket connection required.
  */
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import usePlayerStore from '@/store/player-store';
-// OPTION B: Will use separate solo files in Phase 3. 
-// For now, using placeholders or existing tabs to ensure build passes.
 import SoloAliceExchangeTab from '@/components/dps/play-page/tabs/solo-alice-exchange-tab';
 import SoloBobExchangeTab from '@/components/dps/play-page/tabs/solo-bob-exchange-tab';
 import SoloAliceInferenceTab from '@/components/dps/play-page/tabs/solo-alice-inference-tab';
@@ -26,7 +22,7 @@ import {
     Minus,
 } from 'lucide-react';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
-import isConnected from '@/components/hoc/is-connected'; // NOT needed for solo, but creating structure first
+import isConnected from '@/components/hoc/is-connected';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
@@ -36,6 +32,7 @@ import useDPSRoomStore from '@/store/dps/dps-room-store';
 const SoloGame = () => {
     // Track if we've already restored/initialized
     const hasInitialized = useRef(false);
+    const [isHydrated, setIsHydrated] = useState(false);
 
     const { theme } = useTheme();
     const isDark = theme === "dark";
@@ -66,10 +63,17 @@ const SoloGame = () => {
     ];
 
     const { localize } = useLanguage();
-    const { step, displayedLines, dpsTab } = useDPSProgressStore();
+    const { step, dpsTab } = useDPSProgressStore();
     const { pushLines, setDPSTab, setStep, setDisplayedLines } = useDPSProgressStore();
     const { playerRole, playerName } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameCode } = useDPSGameStore();
+    const {
+        photonNumber,
+        gameHasEve,
+        setPhotonNumber,
+        setGameCode,
+        setGameHasEve,
+        setValidationBitsLength,
+    } = useDPSGameStore();
     const { restoreGame } = useDPSRoomStore();
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -98,9 +102,25 @@ const SoloGame = () => {
             }
         }
 
+        // Restore room state (source of truth for in-progress gameplay)
+        const gameData = getItem('dpsGameData');
+        if (gameData) {
+            restoreGame(gameData);
+        }
+
         // Restore game config
         const savedPhotonNumber = getItem('dpsPhotonNumber');
         if (savedPhotonNumber) setPhotonNumber(savedPhotonNumber);
+
+        const savedValidationBitsLength = getItem('dpsValidationBitsLength');
+        if (savedValidationBitsLength !== null) {
+            setValidationBitsLength(savedValidationBitsLength);
+        }
+
+        const playerData = getItem('dpsPlayerData');
+        if (playerData?.gameHasEve !== undefined) {
+            setGameHasEve(playerData.gameHasEve);
+        }
 
         // Restore progress
         const savedStep = getItem('dpsStep');
@@ -109,13 +129,12 @@ const SoloGame = () => {
         const savedTab = localStorage.getItem('dpsTab');
         if (savedTab) setDPSTab(savedTab);
 
-        // Restore displayed lines OR show welcome messages
         const savedLines = getItem('dpsDisplayedLines');
         if (savedLines && savedLines.length > 0) {
             setDisplayedLines(savedLines);
         } else {
-            // Welcome messages
-            if (playerRole === 'A' || getItem('dpsPlayerData')?.role === 'A') {
+            const role = playerRole || getItem('dpsPlayerData')?.role;
+            if (role === 'A') {
                 pushLines([
                     { title: 'component.dps.exchange.welcome' },
                     { title: 'component.game.step1', content: 'component.aliceExchange.start' },
@@ -127,7 +146,17 @@ const SoloGame = () => {
                 ]);
             }
         }
+
+        setIsHydrated(true);
     }, []);
+
+    if (!isHydrated) {
+        return (
+            <div className="flex h-full w-full items-center justify-center p-6">
+                <p className="text-lg font-medium text-foreground">Loading DPS solo game...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="block md:flex w-full h-full p-2 overflow-hidden">
@@ -163,7 +192,6 @@ const SoloGame = () => {
                                 </TabsTrigger>
                             </TabsList>
 
-                            {/* TODO: Replace with Solo*Tabs in Phase 3 */}
                             <TabsContent value={'exchange'}>
                                 {playerRole === 'A' ?
                                     <SoloAliceExchangeTab photonNumber={photonNumber} polarIcons={polarIcons} /> :

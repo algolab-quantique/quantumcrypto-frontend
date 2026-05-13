@@ -50,6 +50,9 @@ const updateAndStore = <T>(key: string, value: T,
     if (gameDataJSON) {
         const updatedGameData = {...JSON.parse(gameDataJSON), [key]: value};
         localStorage.setItem('dpsGameData', JSON.stringify(updatedGameData));
+    } else {
+        // First write in solo: initialize dpsGameData from scratch
+        localStorage.setItem('dpsGameData', JSON.stringify({[key]: value}));
     }
 };
 
@@ -96,26 +99,30 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
         'validationIndices', validationIndices, set),
     setEveUndetected: eveUndetected => updateAndStore('eveUndetected',
         eveUndetected, set),
-    resetRoom: () => set({
-        alicePhotons: [],
-        alicePhases: [],      
-        bobTimeMeasurements: [],
-        decryptedMessage: [],
-        inferredPhases: [],
-        keyBits: [],
-        aliceKeyBits: [],
-        bobKeyBits: [],
-        partnerBits: [],
-        bobCipher: [],
-        bobCipherSent: false,
-        gameSuccess: false,
-        validated: false,
-        validatedByPartner: false,
-        validationIndices: [],
-        crypto: [],
-        message: [],
-        eveUndetected: false,
-    }),
+    resetRoom: () => {
+        localStorage.removeItem('dpsGameData');
+        set({
+            evePresent: false,
+            alicePhotons: [],
+            alicePhases: [],
+            bobTimeMeasurements: [],
+            decryptedMessage: [],
+            inferredPhases: [],
+            keyBits: [],
+            aliceKeyBits: [],
+            bobKeyBits: [],
+            partnerBits: [],
+            bobCipher: [],
+            bobCipherSent: false,
+            gameSuccess: false,
+            validated: false,
+            validatedByPartner: false,
+            validationIndices: [],
+            crypto: [],
+            message: [],
+            eveUndetected: false,
+        });
+    },
     restoreGame: gameData => {
         for (const key of Object.keys(gameData)) {
             const value = gameData[key];

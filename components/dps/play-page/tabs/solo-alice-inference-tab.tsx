@@ -8,7 +8,7 @@ import {
     TableBody,
     TableCell
 } from '@/components/ui/table';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DPSGameStep } from '@/types';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -20,8 +20,9 @@ import { CheckCircle2 } from 'lucide-react';
 import { DetectorPhase } from '@/lib/dps/dps-protocol';
 
 const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
+    const INFERENCES_KEY = 'dpsSoloAliceInferenceInputs';
+
     const { localize } = useLanguage();
-    // No socket needed
 
     const {
         setStep,
@@ -51,12 +52,48 @@ const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     }));
 
     const [inferences, setInferences] = useState(() => {
+        if (phaseInferred && inferredPhases.length > 0) {
+            return inferredPhases.map(value => ({
+                value,
+                touched: true,
+                error: false,
+            }));
+        }
+
+        const draft = localStorage.getItem(INFERENCES_KEY);
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft);
+                if (Array.isArray(parsed) && parsed.length === validEntries.length) {
+                    return parsed;
+                }
+            } catch {
+                // Ignore parse errors and fall back to empty rows
+            }
+        }
+
         return validEntries.map(() => ({
             value: '',
             touched: false,
             error: true,
         }));
     });
+
+    useEffect(() => {
+        if (phaseInferred && inferredPhases.length > 0) {
+            setInferences(inferredPhases.map(value => ({
+                value,
+                touched: true,
+                error: false,
+            })));
+            localStorage.removeItem(INFERENCES_KEY);
+            return;
+        }
+
+        if (inferences.length === validEntries.length) {
+            localStorage.setItem(INFERENCES_KEY, JSON.stringify(inferences));
+        }
+    }, [phaseInferred, inferredPhases, inferences, validEntries.length]);
 
     const onInferenceClick = (index: number) => {
         const updatedInferences = [...inferences];
@@ -87,14 +124,12 @@ const SoloAliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
 
         if (allValid) {
             setInferredPhases(validatedInferences.map(({ value }) => value));
+            localStorage.removeItem(INFERENCES_KEY);
             toast.success(localize('component.aliceInference.success'));
 
             setTimeout(() => {
                 setStep(DPSGameStep.MESSAGING);
                 setDPSTab('messaging');
-
-                // If bobCipher is not present (which it won't be in solo until next tab), 
-                // we'll handle message generation in solo-alice-messaging-tab.tsx
                 if (!bobCipher || bobCipher.length === 0) {
                     pushLines([{ content: 'component.messaging.alice.start' }]);
                 }

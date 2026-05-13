@@ -33,9 +33,14 @@ export const useDPSProgressStore = create<DPSProgressStore>((set) => ({
             displayedLines: updatedLines,
         };
     }),
-    resetProgress: () => set({
-        dpsTab: 'exchange',
-        step: DPSGameStep.EXCHANGE,
-        displayedLines: [],
-    }),
+    resetProgress: () => {
+        localStorage.removeItem('dpsDisplayedLines');
+        localStorage.removeItem('dpsTab');
+        localStorage.removeItem('dpsStep');
+        set({
+            dpsTab: 'exchange',
+            step: DPSGameStep.EXCHANGE,
+            displayedLines: [],
+        });
+    },
 }));

@@ -9,7 +9,6 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
-import useDPSGameStore from '@/store/dps/dps-game-store';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 
 const DPSProgression = () => {
@@ -19,14 +18,12 @@ const DPSProgression = () => {
     const router = useRouter();
 
 
-    const { playerRole, partner: partnerName, playingSolo, setPlayerRole } = usePlayerStore();
+    const { playerRole, partner: partnerName, playingSolo } = usePlayerStore();
 
     const { displayedLines } = useDPSProgressStore();
 
     const {
         gameSuccess,
-        evePresent,
-        validated,
     } = useDPSRoomStore();
 
 
@@ -45,30 +42,10 @@ const DPSProgression = () => {
 
     const restartWithSwappedRoles = () => {
         if (playingSolo) {
-            const currentRole = playerRole;
-            const newRole = currentRole === 'A' ? 'B' : 'A';
-            setPlayerRole(newRole);
-
-            // Update localStorage
-            const playerData = JSON.parse(localStorage.getItem('dpsPlayerData') || '{}');
-            playerData.role = newRole;
-            localStorage.setItem('dpsPlayerData', JSON.stringify(playerData));
-
-            // Reset Game State
+            // Clear all DPS state then hard redirect.
+            // window.location.replace = full page reload → Zustand stores reset automatically.
             clearDPSLocalStorage();
-            useDPSRoomStore.getState().resetRoom();
-            useDPSProgressStore.getState().resetProgress();
-
-            // Push Welcome Messages for New Role
-            const { pushLines } = useDPSProgressStore.getState();
-            pushLines([
-                { title: 'component.dps.exchange.welcome' },
-                ...(newRole === 'A'
-                    ? [{ title: 'component.game.step1', content: 'component.aliceExchange.start' }]
-                    : [{ content: 'component.bobExchange.waiting' }]),
-            ]);
-
-            // No need to route change as we are on same page, but state update triggers re-render
+            window.location.replace('/dps');
         } else {
             restartGameAndSwappedRoles();
             router.replace(`/dps/play`);
@@ -77,16 +54,13 @@ const DPSProgression = () => {
 
     const goToMainMenu = () => {
         if (playingSolo) {
-            localStorage.setItem('dpsPlayerData', JSON.stringify({}));
-            localStorage.setItem('dpsGameData', JSON.stringify({}));
-            localStorage.clear();
+            // Same rationale: page reload resets stores, no Zustand calls needed.
             clearDPSLocalStorage();
-            useDPSRoomStore.getState().resetRoom();
-            useDPSProgressStore.getState().resetProgress();
+            window.location.replace('/');
         } else {
             leftGame();
+            router.replace('/');
         }
-        router.replace('/');
     };
 
     return (

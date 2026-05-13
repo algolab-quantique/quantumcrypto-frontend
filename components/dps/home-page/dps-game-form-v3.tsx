@@ -218,7 +218,6 @@ const DPSMainV3: React.FC = () => {
 
         } catch (e) {
             setCreatingGame(false);
-            console.log(e);
             toast.error(localize('component.main.errorCreating'));
         }
     };

@@ -21,8 +21,10 @@ import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import { computeDetectorValue } from '@/lib/dps/dps-protocol';
 
 const SoloBobMessagingTab = () => {
+    const MESSAGE_DRAFT_KEY = 'dpsSoloBobMessagingMessageDraft';
+    const CRYPTO_DRAFT_KEY = 'dpsSoloBobMessagingCryptoDraft';
+
     const { localize } = useLanguage();
-    // No socket
     const { pushLines } = useDPSProgressStore();
 
     const {
@@ -38,7 +40,7 @@ const SoloBobMessagingTab = () => {
     } = useDPSRoomStore();
 
     const {
-        setBobCipher, // Not used directly here? Ah, used in onValidateBits?
+        setBobCipher,
         setBobKeyBits,
         setBobCipherSent,
         setMessage: setPersistedMessage,
@@ -55,6 +57,26 @@ const SoloBobMessagingTab = () => {
     })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
 
     const [message, setMessage] = useState(() => {
+        if ((bobCipherSent || gameSuccess) && persistedMessage.length > 0 && persistedMessage.length === validEntries.length) {
+            return persistedMessage.map(value => ({
+                value: value ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
+
+        const draft = localStorage.getItem(MESSAGE_DRAFT_KEY);
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft);
+                if (Array.isArray(parsed) && parsed.length === validEntries.length) {
+                    return parsed;
+                }
+            } catch {
+                // Ignore parse errors and use defaults
+            }
+        }
+
         return validEntries.map(() => ({
             value: '',
             touched: false,
@@ -63,6 +85,26 @@ const SoloBobMessagingTab = () => {
     });
 
     const [crypto, setCrypto] = useState(() => {
+        if ((bobCipherSent || gameSuccess) && persistedCrypto.length > 0 && persistedCrypto.length === validEntries.length) {
+            return persistedCrypto.map(value => ({
+                value: value ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
+
+        const draft = localStorage.getItem(CRYPTO_DRAFT_KEY);
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft);
+                if (Array.isArray(parsed) && parsed.length === validEntries.length) {
+                    return parsed;
+                }
+            } catch {
+                // Ignore parse errors and use defaults
+            }
+        }
+
         return validEntries.map(() => ({
             value: '',
             touched: false,
@@ -70,7 +112,12 @@ const SoloBobMessagingTab = () => {
         }));
     });
 
-    const [detectorValues, setDetectorValues] = useState<string[]>([]);
+    const [detectorValues, setDetectorValues] = useState<string[]>(() => {
+        if (bobKeyBitsOn) {
+            return bobKeyBits;
+        }
+        return [];
+    });
 
     const revealDetectorValues = (entries: { phase: string[]; time: string }[]) => {
         entries.forEach((entry, i) => {
@@ -87,7 +134,82 @@ const SoloBobMessagingTab = () => {
         if (validEntries.length > 0 && !bobKeyBitsOn) {
             revealDetectorValues(validEntries);
         }
-    }, []);
+    }, [validEntries, bobKeyBitsOn]);
+
+    useEffect(() => {
+        const shouldHydratePersisted = bobCipherSent || gameSuccess;
+
+        if (shouldHydratePersisted) {
+            if (persistedMessage.length > 0 && persistedMessage.length === validEntries.length) {
+                setMessage(persistedMessage.map(value => ({
+                    value: value ?? '',
+                    touched: true,
+                    error: false,
+                })));
+            }
+            if (persistedCrypto.length > 0 && persistedCrypto.length === validEntries.length) {
+                setCrypto(persistedCrypto.map(value => ({
+                    value: value ?? '',
+                    touched: true,
+                    error: false,
+                })));
+            }
+            localStorage.removeItem(MESSAGE_DRAFT_KEY);
+            localStorage.removeItem(CRYPTO_DRAFT_KEY);
+            return;
+        }
+
+        if (message.length > 0) {
+            localStorage.setItem(MESSAGE_DRAFT_KEY, JSON.stringify(message));
+        }
+        if (crypto.length > 0) {
+            localStorage.setItem(CRYPTO_DRAFT_KEY, JSON.stringify(crypto));
+        }
+    }, [
+        bobCipherSent,
+        gameSuccess,
+        persistedMessage,
+        persistedCrypto,
+        message,
+        crypto,
+        validEntries.length,
+    ]);
+
+    useEffect(() => {
+        if (validEntries.length === 0) return;
+
+        setMessage(prev => {
+            if (prev.length === validEntries.length) return prev;
+            if ((bobCipherSent || gameSuccess) && persistedMessage.length === validEntries.length) {
+                return persistedMessage.map(value => ({
+                    value: value ?? '',
+                    touched: true,
+                    error: false,
+                }));
+            }
+            return validEntries.map(() => ({
+                value: '',
+                touched: false,
+                error: true,
+            }));
+        });
+
+        setCrypto(prev => {
+            if (prev.length === validEntries.length) return prev;
+            if ((bobCipherSent || gameSuccess) && persistedCrypto.length === validEntries.length) {
+                return persistedCrypto.map(value => ({
+                    value: value ?? '',
+                    touched: true,
+                    error: false,
+                }));
+            }
+            return validEntries.map(() => ({
+                value: '',
+                touched: false,
+                error: true,
+            }));
+        });
+    }, [validEntries.length, bobCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
 
 
     const onMessageInput = (event: React.ChangeEvent<HTMLInputElement>,
@@ -128,11 +250,7 @@ const SoloBobMessagingTab = () => {
             const detectorValue = detectorValues[index];
             const messageValue = message[index].value;
 
-            if (detectorValue === "Error") { // Changed from "Erreur" to matches protocol return? 
-                // Wait, protocol returns 'Error' (English). Original code returned "Erreur".
-                // I need to be careful with string comparison if protocol return changed.
-                // Protocol returns 'Error'.
-                console.warn(`Error in detector value for entry ${index}`);
+            if (detectorValue === "Error") {
                 return { ...cryptoBit, error: true };
             }
 
@@ -154,6 +272,8 @@ const SoloBobMessagingTab = () => {
             setBobKeyBits(detectorValues);
             setPersistedCrypto(updatedCrypto.map(({ value }) => value));
             setPersistedMessage(message.map(({ value }) => value));
+            localStorage.removeItem(MESSAGE_DRAFT_KEY);
+            localStorage.removeItem(CRYPTO_DRAFT_KEY);
 
             // Send Logic
             // In multiplayer: sendCipher(payload)
@@ -161,15 +281,6 @@ const SoloBobMessagingTab = () => {
 
             toast.success(localize('component.messaging.cipherSent'));
             pushLines([{ content: 'component.messaging.bob.sent' }]);
-            // Actually 'component.bobExchange.sentTimes' is "Temps d'arrivée envoyés !". Not quite right for Cipher.
-            // Original code used 'component.bobExchange.sentTimes' ??
-            // No, original code used local toast + setBobCipherSent.
-            // Be careful. Original code lines 138-140 used 'component.bobExchange.sentTimes' for TIMES.
-            // For CIPHER (lines 166+), it used toast 'component.messaging.cipherSent'.
-            // And NO pushLines?
-            // Wait, looking at original code (line 166 in BobMessagingTab):
-            // sendCipher(payload); toast.success... setBobCipherSent...
-            // It did NOT push lines.
 
             setBobCipherSent(true);
 
@@ -220,7 +331,7 @@ const SoloBobMessagingTab = () => {
                             <TableCell>
                                 <Input
                                     value={bobCipherSent || gameSuccess ?
-                                        persistedMessage[index] :
+                                        (persistedMessage[index] ?? '') :
                                         message[index].value}
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
@@ -239,7 +350,7 @@ const SoloBobMessagingTab = () => {
                             <TableCell>
                                 <Input
                                     value={bobCipherSent || gameSuccess ?
-                                        persistedCrypto[index] :
+                                        (persistedCrypto[index] ?? '') :
                                         crypto[index].value}
                                     onChange={(event) => onCryptoInput(
                                         event, index)}
