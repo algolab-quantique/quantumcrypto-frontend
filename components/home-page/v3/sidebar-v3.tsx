@@ -36,7 +36,7 @@ const SidebarV3 = () => {
             <SheetContent className="bg-primary" side={'left'}>
                 <div className="flex flex-col gap-y-4 h-full">
                     <div className="flex items-center gap-2 mb-4">
-                        <Image priority={true} src={`/images/QuantumCrypto_white-text_white-cadna_${logoLang}.png`}
+                        <Image priority={true} src={`/images/QuantumCrypto_white-text_transp-cadna_${logoLang}.png`}
                             alt={'QuantumCrypto'}
                             width={200} height={50} className="h-10 w-auto object-contain" />
                     </div>
