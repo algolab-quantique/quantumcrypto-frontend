@@ -50,9 +50,9 @@ const TitleV3 = () => {
                     className="hidden lg:block flex-shrink-0"
                 >
                     <Image
-                        src="/images/Alice_mascottes.png"
+                        src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
                         alt="Alice"
-                        width={180}
+                        width={240}
                         height={240}
                         className="object-contain
                             drop-shadow-[0_0_18px_hsl(152,100%,33%,0.3)]
@@ -131,10 +131,10 @@ const TitleV3 = () => {
                     initial={{ opacity: 0, x: 30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.7 }}
-                    className="hidden lg:block flex-shrink-0"
+                    className="hidden lg:block flex-shrink-0 mt-[10px]"
                 >
                     <Image
-                        src="/images/Bob_mascottes.png"
+                        src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
                         alt="Bob"
                         width={180}
                         height={240}
