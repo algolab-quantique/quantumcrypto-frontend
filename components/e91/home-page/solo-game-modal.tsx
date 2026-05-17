@@ -78,6 +78,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Cat, Dog } from 'lucide-react';
+import Image from 'next/image';
 import { z } from 'zod';
 import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -331,7 +332,14 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
                         setFormStep(1);
                     }}
                 >
-                    <Cat size={50} />
+                    <div className="relative h-[100px] w-[130px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
+                            alt="Alice"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Alice</p>
                 </div>
                 {/* Bob Selection */}
@@ -344,7 +352,14 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
                         setFormStep(1);
                     }}
                 >
-                    <Dog size={50} />
+                    <div className="relative h-[100px] w-[100px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
+                            alt="Bob"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Bob</p>
                 </div>
             </div>

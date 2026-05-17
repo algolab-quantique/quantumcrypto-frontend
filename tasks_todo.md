@@ -3536,3 +3536,45 @@ Après l'analyse comparative des trois protocoles, les comportements suivants on
 
 ### Estimation
 ~1–2h pour les points 1–3. Points 4–5 optionnels ~1h chacun.
+
+---
+
+## Design: Mascots in Solo Role Selection (BB84 & E91) ✅ DONE
+
+### Réalisé
+- Remplacé les icônes `Cat`/`Dog` (Lucide) par les vraies mascottes Alice et Bob (PNG transparent)
+- Technique : `Next.js Image` avec `fill + object-contain` dans un conteneur fixe `h-[100px]`
+- Alice : conteneur élargi à `w-[130px]` pour compenser son ratio landscape (cheveux larges)
+- Bob : conteneur `w-[100px]` standard
+- BB84 ✅ | E91 ✅ | DPS ❌ (intentionnellement conservé comme référence de comparaison)
+- Page home (`title-v3`) : mascottes SNE à fond transparent, alignement Bob `mt-[10px]`
+
+### À faire — Refactor du flow Solo (redondance UX)
+Voir analyse ci-dessous. Priorité : moyenne.
+
+**Flow actuel (trop d'étapes) :**
+1. Card front → clic "Jouer Solo" → card flip
+2. Card back → Champ Nom + bouton "Play Solo" → ouvre modal
+3. Modal Step 0 → "Select your role" Alice/Bob
+4. Modal Step 1 → Nom (encore !), nb photons, Eve → Start
+
+**Problèmes :**
+- Le nom est demandé deux fois (card back + modal step 1)
+- 4 étapes = trop pour un étudiant
+- La card back avec juste un nom + bouton est redondante
+
+**Scénario recommandé (3 clics au lieu de 4+) :**
+1. Card front → "Jouer Solo" → card flip
+2. Card back → **Sélection de rôle directement** (Alice/Bob avec mascottes, sans nom ici)
+3. Clic Alice ou Bob → Modal avec **Nom + Photons + Eve** → Start
+
+**Bénéfices :**
+- Plus engageant : le choix du personnage est la première action (excitant !)
+- Élimine le doublon du champ Nom
+- Réduit de 4 à 3 étapes
+
+**Fichiers à modifier :**
+- `components/bb84/home-page/bb84-game-form-v3.tsx` → card back solo : remplacer input Nom + bouton par les 2 cartes Alice/Bob
+- `components/bb84/home-page/solo-game-modal.tsx` → supprimer Step 0 (role selection), garder seulement Step 1 (settings)
+- Idem pour E91
+
