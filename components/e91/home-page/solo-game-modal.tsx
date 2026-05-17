@@ -119,7 +119,15 @@ import {
  * Provides role selection (Alice/Bob) and game settings configuration
  * for playing E91 in solo mode against a simulated partner.
  */
-const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
+const SoloGameModal = ({
+    triggerClassName,
+    open,
+    onOpenChange,
+}: {
+    triggerClassName?: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -484,35 +492,41 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
 
     return (
         <Dialog
-            onOpenChange={(open) => {
-                if (!open) setFormStep(0);
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) setFormStep(0);
+                onOpenChange?.(isOpen);
             }}
         >
-            <DialogTrigger asChild>
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
-                >
-                    {localize('component.e91.playSolo')}
-                </Button>
-            </DialogTrigger>
+            {/* Only show trigger button in legacy/uncontrolled mode */}
+            {open === undefined && (
+                <DialogTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
+                    >
+                        {localize('component.e91.playSolo')}
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="border-secondary w-[90%] md:w-full rounded-lg">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
                         {localize('component.e91.startSolo')}
                     </DialogTitle>
                 </DialogHeader>
-                {(() => {
-                    switch (formStep) {
-                        case 0:
-                            return roleSelection;
-                        case 1:
-                            return gameSettings;
-                        default:
-                            return null;
-                    }
-                })()}
+                {/* Controlled mode: skip role selection, go straight to settings */}
+                {open !== undefined
+                    ? gameSettings
+                    : (() => {
+                        switch (formStep) {
+                            case 0: return roleSelection;
+                            case 1: return gameSettings;
+                            default: return null;
+                        }
+                    })()
+                }
             </DialogContent>
         </Dialog>
     );
