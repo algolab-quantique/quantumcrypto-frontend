@@ -3549,32 +3549,17 @@ Après l'analyse comparative des trois protocoles, les comportements suivants on
 - BB84 ✅ | E91 ✅ | DPS ❌ (intentionnellement conservé comme référence de comparaison)
 - Page home (`title-v3`) : mascottes SNE à fond transparent, alignement Bob `mt-[10px]`
 
-### À faire — Refactor du flow Solo (redondance UX)
-Voir analyse ci-dessous. Priorité : moyenne.
+### Refactor du flow Solo (redondance UX) ✅ DONE (pour E91 uniquement)
+Cette refonte a été implémentée sur **E91** uniquement. BB84 et DPS sont conservés dans leur état d'origine pour comparaison.
 
-**Flow actuel (trop d'étapes) :**
+**Le nouveau flow (E91) :**
 1. Card front → clic "Jouer Solo" → card flip
-2. Card back → Champ Nom + bouton "Play Solo" → ouvre modal
-3. Modal Step 0 → "Select your role" Alice/Bob
-4. Modal Step 1 → Nom (encore !), nb photons, Eve → Start
+2. Card back → **Sélection de rôle directe** (Mascottes Alice/Bob cliquables, le champ Nom redondant a été supprimé)
+3. Clic Alice ou Bob → Ouvre le modal directement sur les **Paramètres (Nom + Photons + Eve)**
+4. Start
 
-**Problèmes :**
-- Le nom est demandé deux fois (card back + modal step 1)
-- 4 étapes = trop pour un étudiant
-- La card back avec juste un nom + bouton est redondante
-
-**Scénario recommandé (3 clics au lieu de 4+) :**
-1. Card front → "Jouer Solo" → card flip
-2. Card back → **Sélection de rôle directement** (Alice/Bob avec mascottes, sans nom ici)
-3. Clic Alice ou Bob → Modal avec **Nom + Photons + Eve** → Start
-
-**Bénéfices :**
-- Plus engageant : le choix du personnage est la première action (excitant !)
-- Élimine le doublon du champ Nom
-- Réduit de 4 à 3 étapes
-
-**Fichiers à modifier :**
-- `components/bb84/home-page/bb84-game-form-v3.tsx` → card back solo : remplacer input Nom + bouton par les 2 cartes Alice/Bob
-- `components/bb84/home-page/solo-game-modal.tsx` → supprimer Step 0 (role selection), garder seulement Step 1 (settings)
-- Idem pour E91
-
+**Bénéfices constatés :**
+- Réduction du nombre d'étapes (3 au lieu de 4+)
+- Choix du personnage immédiat et engageant
+- Plus de doublon sur la saisie du nom
+- Le composant `SoloGameModal` a été adapté en mode hybride (contrôlé via props ou autonome) pour supporter ce nouveau flow sans casser les autres appels.
