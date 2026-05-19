@@ -27,8 +27,13 @@ import {
 } from '@/components/ui/form';
 import { TailSpin } from 'react-loading-icons';
 import { CheckedState } from '@radix-ui/react-checkbox';
-
-
+import {
+    DPS_MULTIPLAYER_PHOTON_MAX,
+    DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+    DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE,
+    DPS_MULTIPLAYER_PHOTON_DEFAULT,
+    DPS_EVE_PERCENTAGE_DEFAULT,
+} from '@/dps-constants';
 
 const CreateGameModal = ({
     connecting,
@@ -50,7 +55,7 @@ const CreateGameModal = ({
             invalid_type_error: localize('component.createGame.keyError'),
         })
             .int()
-            .max(30, {
+            .max(DPS_MULTIPLAYER_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),
             }),
         eve: z.boolean({
@@ -74,9 +79,9 @@ const CreateGameModal = ({
             }),
     }).refine(schema =>
         (schema.eve &&
-            (schema.photonNumber >= 20 && schema.photonNumber <= 30)) ||
+            (schema.photonNumber >= DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE && schema.photonNumber <= DPS_MULTIPLAYER_PHOTON_MAX)) ||
         (!schema.eve &&
-            (schema.photonNumber >= 10 && schema.photonNumber <= 30)),
+            (schema.photonNumber >= DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= DPS_MULTIPLAYER_PHOTON_MAX)),
         {
             message: localize('component.e91.createGame.keyMin'),
             path: ['photonNumber'],
@@ -85,9 +90,9 @@ const CreateGameModal = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: 10,
+            photonNumber: DPS_MULTIPLAYER_PHOTON_DEFAULT,
             eve: false,
-            evePercentage: 0.5,
+            evePercentage: DPS_EVE_PERCENTAGE_DEFAULT,
         },
     });
 

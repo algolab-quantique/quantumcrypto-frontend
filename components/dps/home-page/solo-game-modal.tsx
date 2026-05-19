@@ -61,12 +61,12 @@ import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { useRouter } from 'next/navigation';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-
-// DPS Solo Mode Constants
-const DPS_SOLO_PHOTON_MIN = 4;
-const DPS_SOLO_PHOTON_MAX = 20;
-const DPS_SOLO_PHOTON_DEFAULT = 6;
-const DPS_SOLO_PHOTON_DRAFT_KEY = 'dpsSoloPhotonNumberDraft';
+import {
+    DPS_SOLO_PHOTON_MIN,
+    DPS_SOLO_PHOTON_MAX,
+    DPS_SOLO_PHOTON_DEFAULT,
+    DPS_SOLO_PHOTON_DRAFT_KEY,
+} from '@/dps-constants';
 
 const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
