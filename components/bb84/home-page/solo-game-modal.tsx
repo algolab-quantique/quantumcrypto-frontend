@@ -36,6 +36,14 @@ import {
 import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import { recordGameStats } from '@/app/(main)/services/api';
+import {
+    BB84_TEST_MODE,
+    BB84_SOLO_PHOTON_MAX,
+    BB84_SOLO_PHOTON_MIN_WITH_EVE,
+    BB84_SOLO_PHOTON_MIN_WITHOUT_EVE,
+    BB84_SOLO_PHOTON_DEFAULT,
+    getDefaultValidationBits,
+} from '@/bb84-constants';
 
 const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassName?: string; open?: boolean; onOpenChange?: (open: boolean) => void }) => {
 
@@ -69,7 +77,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
             invalid_type_error: localize('component.createGame.keyError'),
         })
             .int()
-            .max(30, {
+            .max(BB84_SOLO_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),
             }),
         eve: z.boolean({
@@ -88,9 +96,9 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         }),
     }).refine(schema =>
         (schema.eve &&
-            (schema.photonNumber >= 4 && schema.photonNumber <= 30)) ||  // 🧪 TEST: Changed from 16 to 4
+            (schema.photonNumber >= BB84_SOLO_PHOTON_MIN_WITH_EVE && schema.photonNumber <= BB84_SOLO_PHOTON_MAX)) ||
         (!schema.eve &&
-            (schema.photonNumber >= 4 && schema.photonNumber <= 30)),  // 🧪 TEST: Changed from 10 to 4
+            (schema.photonNumber >= BB84_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= BB84_SOLO_PHOTON_MAX)),
         {
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
@@ -105,9 +113,34 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: 4,  // 🧪 TEST: Changed from 10 to 4 for quick testing
+            /**
+             * PRE-FILLED DEFAULTS STRATEGY
+             * ════════════════════════════════════════════════════════════
+             * 
+             * These defaults adapt based on BB84_TEST_MODE:
+             * 
+             * TEST MODE (BB84_TEST_MODE = true):
+             *   - photonNumber: 4 → Quick test iterations, instant feedback
+             *   - validationBitsLength: 1 → Minimal sifting overhead
+             * 
+             * PRODUCTION (BB84_TEST_MODE = false):
+             *   - photonNumber: 10 → Realistic quantum key distribution demo
+             *                     ~5 bits after basis matching (sifting)
+             *                     ~2-3 bits for validation/eavesdropping detection
+             *   - validationBitsLength: 2-3 (25% of photons)
+             *                     Matches practical BB84 security model:
+             *                     • First 50% basis match → sifted key
+             *                     • Next 50% of sifted → validation (Eve detection)
+             * 
+             * RATIONALE:
+             * - Using 25% validation ratio reflects real BB84 security proofs
+             * - Pre-filled values avoid blank forms (UX best practice)
+             * - Students see correct defaults on deploy; devs use low values for speed
+             * - Min values with Eve are higher because sifting reduces key further
+             */
+            photonNumber: BB84_SOLO_PHOTON_DEFAULT,
             eve: false,
-            validationBitsLength: 0,
+            validationBitsLength: getDefaultValidationBits(BB84_SOLO_PHOTON_DEFAULT),
             playerName: '',
         },
     });
@@ -208,10 +241,15 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         </div>
     );
 
-    const onEveChecked = (onChange: (...event: any[]) => void,
-        checked: CheckedState) => {
+    const onEveChecked = (
+        onChange: (...event: any[]) => void,
+        checked: CheckedState,
+        photonNumber: number
+    ) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Automatically adjust validation bits when Eve is toggled
+        form.setValue('validationBitsLength', getDefaultValidationBits(photonNumber));
     };
 
     const gameSettings = (
@@ -282,7 +320,9 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
                                     checked={field.value}
                                     onCheckedChange={(checkState) => onEveChecked(
                                         field.onChange,
-                                        checkState)}
+                                        checkState,
+                                        form.getValues('photonNumber')
+                                    )}
                                 />
                             </FormControl>
                             <FormMessage />

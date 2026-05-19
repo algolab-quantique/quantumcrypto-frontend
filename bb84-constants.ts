@@ -21,4 +21,73 @@ export const B_SUCCESS_EVENT = 'B_SUCCESS';
 export const A_VALIDATED_EVENT = 'A_VALIDATED';
 export const B_VALIDATED_EVENT = 'B_VALIDATED';
 export const RESTART_WITHOUT_EVE_EVENT = 'RESTART_WITHOUT_EVE';
+// ═══════════════════════════════════════════════════════════════════════════
+// BB84 GAME CONFIGURATION CONSTANTS - SOLO MODE
+// ═══════════════════════════════════════════════════════════════════════════
+/**
+ * Environment toggle for TEST vs PRODUCTION values (SOLO MODE ONLY).
+ * Set to `true` during development for faster testing with fewer photons.
+ * Set to `false` for production with realistic quantum simulation values.
+ * 
+ * These values only affect solo gameplay setup form defaults.
+ * No impact on multiplayer or WebSocket communication.
+ */
+export const BB84_TEST_MODE = true;  // TODO: Set to false for production
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Photon Number Limits - SOLO MODE
+// ─────────────────────────────────────────────────────────────────────────────
+// These values are used for solo mode only (no backend validation).
+// Controlled by BB84_TEST_MODE toggle above.
+
+/** Maximum number of photons allowed (solo mode) */
+export const BB84_SOLO_PHOTON_MAX = 30;
+
+/** Minimum photons when Eve is enabled (more bits needed for sifting statistics) */
+export const BB84_SOLO_PHOTON_MIN_WITH_EVE = BB84_TEST_MODE ? 6 : 16;
+
+/** Minimum photons when Eve is disabled */
+export const BB84_SOLO_PHOTON_MIN_WITHOUT_EVE = BB84_TEST_MODE ? 4 : 10;
+
+/** Default photon number for new solo games */
+export const BB84_SOLO_PHOTON_DEFAULT = BB84_TEST_MODE ? 4 : 10;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Validation Bits Configuration - SOLO MODE
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Default validation bits = ~25% of photon count.
+ * This represents the practical sifting phase in BB84:
+ * - ~50% of transmitted bits match bases → sifted key
+ * - ~50% of sifted key reserved for validation (eavesdropping detection)
+ * 
+ * Examples:
+ *   - 4 photons (test):  → ~2 sifted → 1 validation bit
+ *   - 10 photons (prod): → ~5 sifted → 2-3 validation bits
+ *   - 20 photons (prod): → ~10 sifted → 5 validation bits
+ * 
+ * Calculation: Math.floor(photonNumber * 0.25)
+ */
+export const BB84_VALIDATION_BITS_PERCENTAGE = 0.25;
+
+/** Minimum validation bits required */
+export const BB84_VALIDATION_BITS_MIN = 1;
+
+/**
+ * Calculate intelligent default validation bits from photon count.
+ * Ensures students see sensible defaults without manual calculation.
+ * 
+ * @param photonCount - Number of photons for the game
+ * @returns Default validation bits (minimum 1, ~25% of photons)
+ * 
+ * @example
+ * getDefaultValidationBits(4)  // → 1
+ * getDefaultValidationBits(10) // → 2
+ * getDefaultValidationBits(20) // → 5
+ */
+export const getDefaultValidationBits = (photonCount: number): number => {
+    return Math.max(
+        BB84_VALIDATION_BITS_MIN,
+        Math.floor(photonCount * BB84_VALIDATION_BITS_PERCENTAGE)
+    );
+};
