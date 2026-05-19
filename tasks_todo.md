@@ -3563,3 +3563,78 @@ Cette refonte a été implémentée sur **E91** uniquement. BB84 et DPS sont con
 - Choix du personnage immédiat et engageant
 - Plus de doublon sur la saisie du nom
 - Le composant `SoloGameModal` a été adapté en mode hybride (contrôlé via props ou autonome) pour supporter ce nouveau flow sans casser les autres appels.
+
+---
+
+## 🎯 CONSTANTS IMPLEMENTATION ROADMAP (May 19, 2026)
+
+**Status**: 🟡 IN PROGRESS - Constants pattern partially applied  
+**Date Added**: May 19, 2026  
+**Goal**: Centralize all hardcoded game configuration values (photon limits, defaults, Eve settings) into centralized `*-constants.ts` files for consistency, maintainability, and easy TEST/PRODUCTION toggling
+
+### Current State
+
+| Protocol | Solo Mode | Multiplayer Mode | Constants File | Status |
+|----------|-----------|------------------|-----------------|--------|
+| **E91** | ✅ Constants (`E91_SOLO_PHOTON_*` + `E91_TEST_MODE`) | ✅ Constants (`E91_MULTIPLAYER_PHOTON_*`) | `e91-constants.ts` | ✅ **COMPLETE** |
+| **BB84** | ✅ Just added (`BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`) | ❌ Hardcoded in `create-game-modal.tsx` | `bb84-constants.ts` | ⚠️ **PARTIAL** |
+| **DPS** | ⚠️ Local constants INSIDE `solo-game-modal.tsx` (not centralized) | ❌ Hardcoded in `create-game-modal.tsx` | `dps-constants.ts` | ❌ **MISSING** |
+
+### Phase 1: DONE ✅ (May 19, 2026)
+- [x] Created `/bb84-constants.ts` with `BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`
+- [x] Updated `/components/bb84/home-page/solo-game-modal.tsx` to import and use BB84 constants
+- [x] Added smart form defaults (photonNumber intelligently set, validationBits calculated as 25%)
+- [x] Auto-recalculate validation bits when Eve checkbox toggled
+
+### Phase 2: HIGH PRIORITY - Keep BB84 Multiplayer Consistent (SAFE - Minimal Change)
+**Safety Level**: 🟢 **SAFE** — This mirrors what E91 already does  
+**Files to Update**:
+- [ ] Add `BB84_MULTIPLAYER_PHOTON_MAX`, `BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE`, `BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE`, `BB84_MULTIPLAYER_PHOTON_DEFAULT` to `/bb84-constants.ts`
+- [ ] Update `/components/bb84/home-page/create-game-modal.tsx` to import and use these constants in validation schema
+
+**Why Now**: Ensures consistency between solo and multiplayer modes. Current state: BB84 solo has constants, multiplayer still hardcoded. E91 already has both.
+
+**Time Estimate**: ~15 minutes
+
+### Phase 3: MEDIUM PRIORITY - Centralize DPS Constants (MUST DO - Currently Scattered)
+**Safety Level**: 🟡 **MEDIUM** — Moving local constants to centralized file, minimal logic change  
+**Files to Update**:
+- [ ] Create game configuration section in `/dps-constants.ts`:
+  - `DPS_TEST_MODE` toggle
+  - `DPS_SOLO_PHOTON_MIN`, `DPS_SOLO_PHOTON_MAX`, `DPS_SOLO_PHOTON_DEFAULT`
+  - `DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE`, `DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE`, `DPS_MULTIPLAYER_PHOTON_DEFAULT`
+- [ ] Extract local constants from `/components/dps/home-page/solo-game-modal.tsx` (currently: `DPS_SOLO_PHOTON_MIN=4`, `MAX=20`, `DEFAULT=6`)
+- [ ] Update `/components/dps/home-page/solo-game-modal.tsx` to import from `dps-constants.ts`
+- [ ] Update `/components/dps/home-page/create-game-modal.tsx` to import and use DPS multiplayer constants
+
+**Why Now**: DPS currently has local constants scattered in components. Moving to centralized file makes it maintainable and matches E91/BB84 pattern.
+
+**Time Estimate**: ~30 minutes
+
+### Phase 4: LOW PRIORITY - E91 Validation Bits Constants (Optional - Consistency Bonus)
+**Safety Level**: 🟢 **SAFE** — E91 already has complete constants  
+**Files to Update**:
+- [ ] Consider adding `E91_VALIDATION_BITS_PERCENTAGE`, `E91_VALIDATION_BITS_MIN`, `getDefaultValidationBits()` function to `e91-constants.ts` (mirroring what BB84 just did for smart form defaults)
+
+**Why Later**: E91 forms already work. This is consistency/maintainability bonus if BB84 approach proves valuable.
+
+**Time Estimate**: ~10 minutes
+
+### Why This Matters (Future-Proofing)
+- **Prevents Bugs**: If someone updates min photon value in one place but forgets another, game breaks. Constants = single source of truth.
+- **Easy Deployment**: Flip `*_TEST_MODE = false` once before production, all limits update everywhere automatically.
+- **Readable Code**: Removes magic numbers like `20` or `16` from validation schemas. Instead: `DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE`
+- **E91 Already Proves It Works**: E91's centralized constants are used by both solo and multiplayer forms successfully.
+
+### Recommended Order
+1. ✅ **Phase 1 DONE** — BB84 solo constants (safety: low risk, already implemented)
+2. 🟢 **Phase 2 NEXT** — BB84 multiplayer constants (safety: mirrors E91 pattern)
+3. 🟡 **Phase 3 AFTER** — DPS centralized constants (safety: medium effort, high value)
+4. 🟢 **Phase 4 OPTIONAL** — E91 validation bits (safety: just polish, low risk)
+
+### Non-Breaking, Incremental Approach
+Each phase is independent:
+- Phase 1 doesn't affect Phase 2
+- Phase 2 doesn't affect Phase 3
+- Can do phases 1+2 today, Phase 3 next sprint
+- No risk of breaking existing code — just refactoring where hardcoded values live
