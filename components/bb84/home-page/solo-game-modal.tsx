@@ -37,7 +37,7 @@ import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import { recordGameStats } from '@/app/(main)/services/api';
 
-const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
+const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassName?: string; open?: boolean; onOpenChange?: (open: boolean) => void }) => {
 
     const {
         playerRole,
@@ -321,16 +321,23 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     );
 
     return (
-        <Dialog onOpenChange={(open) => {
-            if (!open) setFormStep(0);
-        }}>
-            <DialogTrigger asChild>
-                <Button type="button"
-                    variant="secondary"
-                    className={cn("text-md mt-2 w-[50%] p-2 border border-transparent hover:border-primary/50 hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)] hover:scale-[1.02] transition-all duration-300", triggerClassName)}>
-                    {localize('component.bb84.playSolo')}
-                </Button>
-            </DialogTrigger>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) setFormStep(0);
+                onOpenChange?.(isOpen);
+            }}
+        >
+            {/* Only show trigger button in legacy/uncontrolled mode */}
+            {open === undefined && (
+                <DialogTrigger asChild>
+                    <Button type="button"
+                        variant="secondary"
+                        className={cn("text-md mt-2 w-[50%] p-2 border border-transparent hover:border-primary/50 hover:shadow-[0_0_20px_hsl(152,100%,33%,0.25)] hover:scale-[1.02] transition-all duration-300", triggerClassName)}>
+                        {localize('component.bb84.playSolo')}
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent
                 className="border-secondary w-[90%] md:w-full rounded-lg">
                 <DialogHeader>
@@ -338,20 +345,20 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
                         {localize('component.bb84.startSolo')}
                     </DialogTitle>
                 </DialogHeader>
-                {(() => {
-                    switch (formStep) {
-                        case 0:
-                            return roleSelection;
-                        case 1:
-                            return gameSettings;
-                        default:
-                            return null;
-                    }
-                })()}
+                {/* Controlled mode: skip role selection, go straight to settings */}
+                {open !== undefined
+                    ? gameSettings
+                    : (() => {
+                        switch (formStep) {
+                            case 0: return roleSelection;
+                            case 1: return gameSettings;
+                            default: return null;
+                        }
+                    })()
+                }
             </DialogContent>
         </Dialog>
     );
-}
-    ;
+};
 
 export default SoloGameModal;

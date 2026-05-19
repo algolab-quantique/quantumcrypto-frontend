@@ -37,6 +37,7 @@ import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import SoloGameModal from '@/components/bb84/home-page/solo-game-modal';
 import { Gamepad2, Users, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 /**
  * BB84MainV3 — V3 Visual Skin for the BB84 Game Form
@@ -59,6 +60,7 @@ const BB84MainV3: React.FC = () => {
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
     const [flipFace, setFlipFace] = useState<'front' | 'solo' | 'multi'>('front');
+    const [soloModalOpen, setSoloModalOpen] = useState(false);
     const { localize } = useLanguage();
     const {
         setGameCode,
@@ -358,21 +360,46 @@ const BB84MainV3: React.FC = () => {
 
                                 {/* Solo */}
                                 {flipFace === 'solo' && (
-                                    <div className="space-y-5 flex-grow flex flex-col justify-center">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-medium text-muted-foreground ml-1">
-                                                {localize('component.main.nameLabel')}
-                                            </label>
-                                            <Input
-                                                placeholder={localize('component.main.name')}
-                                                className="bg-background/50 h-10"
-                                                {...form.register('playerName')} 
-                                            />
+                                    <div className="flex-grow flex flex-col justify-center space-y-3">
+                                        <p className="text-sm text-center text-muted-foreground font-medium">
+                                            Choisissez votre rôle
+                                        </p>
+                                        <div className="flex gap-x-4 justify-center">
+                                            {/* Alice */}
+                                            <div
+                                                className="flex flex-col items-center gap-y-2 p-3
+                                                    border border-border rounded-md cursor-pointer
+                                                    hover:border-primary/50 hover:bg-primary/5
+                                                    transition-all duration-200"
+                                                onClick={() => { setPlayerRole('A'); setSoloModalOpen(true); }}>
+                                                <div className="relative h-[80px] w-[110px]">
+                                                    <Image
+                                                        fill
+                                                        src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
+                                                        alt="Alice"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                                <p className="text-sm font-semibold">Alice</p>
+                                            </div>
+                                            {/* Bob */}
+                                            <div
+                                                className="flex flex-col items-center gap-y-2 p-3
+                                                    border border-border rounded-md cursor-pointer
+                                                    hover:border-primary/50 hover:bg-primary/5
+                                                    transition-all duration-200"
+                                                onClick={() => { setPlayerRole('B'); setSoloModalOpen(true); }}>
+                                                <div className="relative h-[80px] w-[80px]">
+                                                    <Image
+                                                        fill
+                                                        src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
+                                                        alt="Bob"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                                <p className="text-sm font-semibold">Bob</p>
+                                            </div>
                                         </div>
-                                        <SoloGameModal
-                                            triggerClassName="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90
-                                                text-primary-foreground shadow-[0_0_15px_hsl(152,100%,33%,0.3)]"
-                                        />
                                     </div>
                                 )}
 
@@ -446,6 +473,8 @@ const BB84MainV3: React.FC = () => {
                     </div>
                 </div>
             </div>
+            {/* Controlled SoloGameModal — opened when role selected on card */}
+            <SoloGameModal open={soloModalOpen} onOpenChange={setSoloModalOpen} />
         </>
     );
 };
