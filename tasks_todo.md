@@ -2811,14 +2811,14 @@ On-page refresh, game state is lost in most protocol/mode combinations. Only **E
 
 #### Test Results (April 2026)
 
-| Protocol | Mode | Alice | Bob | Root Cause |
-| -------- | ---- | ----- | --- | ---------- |
-| **BB84** | Solo | ❌ Empty tabs, photons reset to 20 | ❌ Same | Refactored stores not integrated; hydration never called |
-| **BB84** | Multi | ❌ Broken | ❌ Broken | Same as BB84 solo + no multiplayer restoration logic |
-| **E91** | Solo | ✅ Works | ✅ Works | **Gold reference** — all tabs have `useEffect` hydration |
-| **E91** | Multi | ❌ Appends duplicate photons | ❌ Same | No restoration `useEffect` in multiplayer tabs (#13/#19) |
-| **DPS** | Solo Alice | ❌ Goes to wrong tab, empty | — | No hydration helpers exist for DPS stores |
-| **DPS** | Solo Bob | — | ❌ Stays on tab, empty | Same — no hydration |
+| Protocol | Mode       | Alice                             | Bob                   | Root Cause                                               |
+| -------- | ---------- | --------------------------------- | --------------------- | -------------------------------------------------------- |
+| **BB84** | Solo       | ❌ Empty tabs, photons reset to 20 | ❌ Same                | Refactored stores not integrated; hydration never called |
+| **BB84** | Multi      | ❌ Broken                          | ❌ Broken              | Same as BB84 solo + no multiplayer restoration logic     |
+| **E91**  | Solo       | ✅ Works                           | ✅ Works               | **Gold reference** — all tabs have `useEffect` hydration |
+| **E91**  | Multi      | ❌ Appends duplicate photons       | ❌ Same                | No restoration `useEffect` in multiplayer tabs (#13/#19) |
+| **DPS**  | Solo Alice | ❌ Goes to wrong tab, empty        | —                     | No hydration helpers exist for DPS stores                |
+| **DPS**  | Solo Bob   | —                                 | ❌ Stays on tab, empty | Same — no hydration                                      |
 
 #### Key Insight
 Issue #2 (December 2025, marked ✅ DONE) only fixed the **redirect** problem (persisting `playingSolo` so `isConnected` HOC doesn't kick users to `/`). It did **NOT** fix actual game data restoration in the tabs. The tabs themselves need `useEffect` hooks that read from `localStorage` and re-populate component state.
@@ -3493,13 +3493,13 @@ last tab (Félicitations Vous avez déchiffré le message d'Alice !) work good, 
 
 Après l'analyse comparative des trois protocoles, les comportements suivants ont été identifiés :
 
-| Comportement | DPS solo | BB84 solo | E91 solo |
-|---|---|---|---|
-| HOC `isConnected` | ❌ non (restaure playerData manuellement) | ✅ oui | ✅ oui |
-| Gate `isHydrated` (spinner pendant restauration) | ✅ oui | ❌ non | ❌ non |
-| `clearXxxLocalStorage()` avant redirect sur "Re-jouer" | ✅ oui | ❌ **non** | ❌ **N/A** (va vers résultats) |
-| Restauration `playerData` au refresh | ✅ manuel dans `useEffect` | ❌ délégué au HOC | ❌ délégué au HOC |
-| `clearXxxLocalStorage()` utilitaire dédié | ✅ `lib/dps/utils.ts` | ❌ **non** | ❌ **non** |
+| Comportement                                           | DPS solo                                 | BB84 solo        | E91 solo                      |
+| ------------------------------------------------------ | ---------------------------------------- | ---------------- | ----------------------------- |
+| HOC `isConnected`                                      | ❌ non (restaure playerData manuellement) | ✅ oui            | ✅ oui                         |
+| Gate `isHydrated` (spinner pendant restauration)       | ✅ oui                                    | ❌ non            | ❌ non                         |
+| `clearXxxLocalStorage()` avant redirect sur "Re-jouer" | ✅ oui                                    | ❌ **non**        | ❌ **N/A** (va vers résultats) |
+| Restauration `playerData` au refresh                   | ✅ manuel dans `useEffect`                | ❌ délégué au HOC | ❌ délégué au HOC              |
+| `clearXxxLocalStorage()` utilitaire dédié              | ✅ `lib/dps/utils.ts`                     | ❌ **non**        | ❌ **non**                     |
 
 ### Problèmes identifiés
 
@@ -3574,11 +3574,11 @@ Cette refonte a été implémentée sur **E91** uniquement. BB84 et DPS sont con
 
 ### Current State
 
-| Protocol | Solo Mode | Multiplayer Mode | Constants File | Status |
-|----------|-----------|------------------|-----------------|--------|
-| **E91** | ✅ Constants (`E91_SOLO_PHOTON_*` + `E91_TEST_MODE`) | ✅ Constants (`E91_MULTIPLAYER_PHOTON_*`) | `e91-constants.ts` | ✅ **COMPLETE** |
-| **BB84** | ✅ Just added (`BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`) | ❌ Hardcoded in `create-game-modal.tsx` | `bb84-constants.ts` | ⚠️ **PARTIAL** |
-| **DPS** | ⚠️ Local constants INSIDE `solo-game-modal.tsx` (not centralized) | ❌ Hardcoded in `create-game-modal.tsx` | `dps-constants.ts` | ❌ **MISSING** |
+| Protocol | Solo Mode                                                        | Multiplayer Mode                         | Constants File      | Status         |
+| -------- | ---------------------------------------------------------------- | ---------------------------------------- | ------------------- | -------------- |
+| **E91**  | ✅ Constants (`E91_SOLO_PHOTON_*` + `E91_TEST_MODE`)              | ✅ Constants (`E91_MULTIPLAYER_PHOTON_*`) | `e91-constants.ts`  | ✅ **COMPLETE** |
+| **BB84** | ✅ Just added (`BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`)           | ❌ Hardcoded in `create-game-modal.tsx`   | `bb84-constants.ts` | ⚠️ **PARTIAL**  |
+| **DPS**  | ⚠️ Local constants INSIDE `solo-game-modal.tsx` (not centralized) | ❌ Hardcoded in `create-game-modal.tsx`   | `dps-constants.ts`  | ❌ **MISSING**  |
 
 ### Phase 1: DONE ✅ (May 19, 2026)
 - [x] Created `/bb84-constants.ts` with `BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`
