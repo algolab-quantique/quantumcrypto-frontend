@@ -20,9 +20,10 @@ import { forbiddenSymbols } from '@/lib/utils';
 import { computeDetectorValue } from '@/lib/dps/dps-protocol';
 
 const SoloAliceMessagingTab = () => {
+    const DECRYPT_DRAFT_KEY = 'dpsSoloAliceMessagingDecryptDraft';
+
     const { localize } = useLanguage();
     const { pushLines } = useDPSProgressStore();
-    // No socket
 
     const {
         inferredPhases,
@@ -95,6 +96,26 @@ const SoloAliceMessagingTab = () => {
     // ═══════════════════════════════════════════════════════════════════════
 
     const [decryptedMessage, setDecryptedMessage] = useState(() => {
+        if ((gameSuccess || persistedDecryptedMessage.length > 0) && persistedDecryptedMessage.length === bobCipher.length && bobCipher.length > 0) {
+            return persistedDecryptedMessage.map(value => ({
+                value: value ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
+
+        const draft = localStorage.getItem(DECRYPT_DRAFT_KEY);
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft);
+                if (Array.isArray(parsed) && parsed.length === bobCipher.length) {
+                    return parsed;
+                }
+            } catch {
+                // Ignore parse errors and use default values
+            }
+        }
+
         return bobCipher.map(() => ({
             value: '',
             touched: false,
@@ -111,7 +132,33 @@ const SoloAliceMessagingTab = () => {
                 error: true,
             })));
         }
-    }, [bobCipher]);
+    }, [bobCipher, decryptedMessage.length]);
+
+    useEffect(() => {
+        if (gameSuccess || persistedDecryptedMessage.length > 0) {
+            localStorage.removeItem(DECRYPT_DRAFT_KEY);
+            return;
+        }
+
+        if (decryptedMessage.length > 0) {
+            localStorage.setItem(DECRYPT_DRAFT_KEY, JSON.stringify(decryptedMessage));
+        }
+    }, [decryptedMessage, gameSuccess, persistedDecryptedMessage.length]);
+
+    useEffect(() => {
+        const shouldHydrateFromPersisted =
+            (gameSuccess || persistedDecryptedMessage.length > 0) &&
+            persistedDecryptedMessage.length === bobCipher.length &&
+            bobCipher.length > 0;
+
+        if (!shouldHydrateFromPersisted) return;
+
+        setDecryptedMessage(persistedDecryptedMessage.map(value => ({
+            value: value ?? '',
+            touched: true,
+            error: false,
+        })));
+    }, [gameSuccess, persistedDecryptedMessage, bobCipher.length]);
 
 
     const onDecryptionInput = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -148,6 +195,7 @@ const SoloAliceMessagingTab = () => {
         if (allValid) {
             setAliceKeyBits(secretKey);
             setPersistedDecryptedMessage(updatedMessage.map(({ value }) => value));
+            localStorage.removeItem(DECRYPT_DRAFT_KEY);
             toast.success(localize('component.basis.correct'));
             if (!gameSuccess) {
                 setGameSuccess(true); // Local success
@@ -158,7 +206,6 @@ const SoloAliceMessagingTab = () => {
                     },
                 ]);
             }
-            // sendAliceSuccess(); // No socket
         } else {
             toast.error(localize('component.messaging.decryptError'));
         }
@@ -196,7 +243,7 @@ const SoloAliceMessagingTab = () => {
                                     disabled={bobCipher.length == 0 || gameSuccess}
                                     onKeyDown={e => forbiddenSymbols.includes(e.key) && e.preventDefault()}
                                     value={gameSuccess
-                                        ? persistedDecryptedMessage[index]
+                                        ? (persistedDecryptedMessage[index] ?? '')
                                         : (decryptedMessage[index]?.value || "")
                                     }
                                     onChange={(event) => onDecryptionInput(event, index)}

@@ -1,22 +1,27 @@
 'use client';
 
-import Header from '@/components/shared/header';
-import E91Main from '@/components/e91/home-page/e91-game-form';
-import Footer from '@/components/shared/footer';
-import {useEffect, useRef, useState} from 'react';
-import HowToPlaySection from '@/components/e91/home-page/how-to-play-section';
-import {useLanguage} from '@/components/providers/language-provider';
+import HeaderV3 from '@/components/home-page/v3/header-v3';
+import FooterV3 from '@/components/home-page/v3/footer-v3';
+import E91MainV3 from '@/components/e91/home-page/e91-game-form-v3';
+import { useEffect, useRef, useState } from 'react';
+import HowToPlaySection from '@/components/shared/how-to-play-section';
+import type { HowToPlayStep } from '@/components/shared/how-to-play-section';
+import { useLanguage } from '@/components/providers/language-provider';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from "next-themes";
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import ProtocolPageSidebar from '@/components/shared/protocol-page-sidebar';
+import AtmosphericBackground from '@/components/home-page/v3/atmospheric-background';
 
-export default function E91() {
+export default function E91Future() {
 
     const howToPlayRef = useRef(null);
     const aboutRef = useRef(null);
-    const {localize} = useLanguage();
+    const gameRef = useRef(null);
+    const terminologyRef = useRef(null);
+    const { localize } = useLanguage();
     const { theme } = useTheme();
     const isDark = theme === "dark";
 
@@ -26,29 +31,18 @@ export default function E91() {
     const mathJaxConfig = {
         loader: { load: ['[tex]/color'] },
         tex: { packages: { '[+]': ['color'] } },
-      };
+    };
 
     // Ensure MathJax only renders on client side to avoid hydration errors
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    const headerLinks = [
-        {
-            label: 'component.header.howToPlay',
-            ref: howToPlayRef,
-        },
-        {
-            label: 'component.header.about.e91',
-            ref: aboutRef,
-        },
-    ];
-
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
-            element.scrollIntoView({behavior: 'smooth', block: 'start'});
-            setActiveSection(id); // Trigger glow effect
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveSection(id);
         }
     };
 
@@ -63,7 +57,6 @@ export default function E91() {
             }
         };
 
-        // Attach event listener to the document
         document.addEventListener('click', handleLinkClick);
 
         return () => {
@@ -83,23 +76,23 @@ export default function E91() {
         if (!text) return '';
 
         const processedText = text
-            .replace('<link1>', `<a href="#photon" class="text-blue-500 hover:underline">`)
+            .replace('<link1>', `<a href="#photon" class="text-primary hover:underline font-medium">`)
             .replace('</link1>', `</a>`)
-            .replace('<link2>', `<a href="#encryption-key" class="text-blue-500 hover:underline">`)
+            .replace('<link2>', `<a href="#encryption-key" class="text-primary hover:underline font-medium">`)
             .replace('</link2>', `</a>`)
-            .replace('<link3>', `<a href="#public-private" class="text-blue-500 hover:underline">`)
+            .replace('<link3>', `<a href="#public-private" class="text-primary hover:underline font-medium">`)
             .replace('</link3>', `</a>`)
-            .replace('<link4>', `<a href="#polarization" class="text-blue-500 hover:underline">`)
+            .replace('<link4>', `<a href="#polarization" class="text-primary hover:underline font-medium">`)
             .replace('</link4>', `</a>`)
-            .replace('<link5>', `<a href="#maximally-entangled" class="text-blue-500 hover:underline">`)
+            .replace('<link5>', `<a href="#maximally-entangled" class="text-primary hover:underline font-medium">`)
             .replace('</link5>', `</a>`)
-            .replace('<link6>', `<a href="#bell-pairs" class="text-blue-500 hover:underline">`)
+            .replace('<link6>', `<a href="#bell-pairs" class="text-primary hover:underline font-medium">`)
             .replace('</link6>', `</a>`)
-            .replace('<link7>', `<a href="#measurement-basis" class="text-blue-500 hover:underline">`)
+            .replace('<link7>', `<a href="#measurement-basis" class="text-primary hover:underline font-medium">`)
             .replace('</link7>', `</a>`)
-            .replace('<link8>', `<a href="#bell-inequalities" class="text-blue-500 hover:underline">`)
+            .replace('<link8>', `<a href="#bell-inequalities" class="text-primary hover:underline font-medium">`)
             .replace('</link8>', `</a>`)
-            .replace('<link9>', `<a href="#chsh-inequality" class="text-blue-500 hover:underline">`)
+            .replace('<link9>', `<a href="#chsh-inequality" class="text-primary hover:underline font-medium">`)
             .replace('</link9>', `</a>`);
 
         return processedText;
@@ -132,15 +125,15 @@ export default function E91() {
             content: (
                 <div className="space-y-4">
                     <p>{localize('component.e91.about.maximallyEntangled.part1')}</p>
-                    
+
                     <p>{localize('component.e91.about.maximallyEntangled.part2')}</p>
-                    
+
                     {isClient && (
                         <div className="text-center my-4">
                             <MathJax>{localize('component.e91.about.maximallyEntangled.equation1')}</MathJax>
                         </div>
                     )}
-                    
+
                     <p>{localize('component.e91.about.maximallyEntangled.part3')}</p>
                     {isClient && <p>
                         <MathJax dynamic>{localize('component.e91.about.maximallyEntangled.part4')}</MathJax>
@@ -155,7 +148,7 @@ export default function E91() {
             content: (
                 <div className="space-y-4">
                     <p>{localize('component.e91.about.bellPairs.part1')}</p>
-                    
+
                     {isClient && (
                         <div className="space-y-2 my-4">
                             <div className="text-center">
@@ -172,7 +165,7 @@ export default function E91() {
                             </div>
                         </div>
                     )}
-                    
+
                     <p>{localize('component.e91.about.bellPairs.part2')}</p>
                 </div>
             ),
@@ -194,276 +187,395 @@ export default function E91() {
         },
     ];
 
+    const sidebarItems = [
+        { label: 'component.sidebar.play', ref: gameRef },
+        { label: 'component.header.howToPlay', ref: howToPlayRef },
+        { label: 'component.header.about.e91', ref: aboutRef },
+        { label: 'component.header.guide.terminology', ref: terminologyRef },
+    ];
+
+    /* ── How-to-play step definitions for E91 ── */
+    const aliceSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.e91.highlights.highlight1', contentKey: 'component.e91.steps.step1' },
+        { highlightKey: 'component.e91.highlights.highlight2', contentKey: 'component.e91.steps.step2Alice' },
+        { highlightKey: 'component.e91.highlights.highlight3', contentKey: 'component.e91.steps.step3' },
+        { highlightKey: 'component.e91.highlights.highlight4', contentKey: 'component.e91.steps.step4' },
+        { highlightKey: 'component.e91.highlights.highlight5Alice', contentKey: 'component.e91.steps.step5Alice' },
+    ];
+    const bobSteps: HowToPlayStep[] = [
+        { highlightKey: 'component.e91.highlights.highlight1', contentKey: 'component.e91.steps.step1' },
+        { highlightKey: 'component.e91.highlights.highlight2', contentKey: 'component.e91.steps.step2Bob' },
+        { highlightKey: 'component.e91.highlights.highlight3', contentKey: 'component.e91.steps.step3' },
+        { highlightKey: 'component.e91.highlights.highlight4', contentKey: 'component.e91.steps.step4' },
+        { highlightKey: 'component.e91.highlights.highlight5Bob', contentKey: 'component.e91.steps.step5Bob' },
+    ];
+
     return (
         <MathJaxContext config={mathJaxConfig}>
-            <Header links={headerLinks}/>
-            <E91Main/>
-            <HowToPlaySection ref={howToPlayRef}/>
-            <section ref={aboutRef}
-                     className="w-full h-fit mt-20 px-5 md:px-20">
-                <Card className="p-6 md:p-8 border-none mx-auto shadow-md">
-                    <h1 className="font-bold text-3xl md:text-5xl mb-4">
-                        {localize('component.bb84.aboutTitle')}
-                    </h1>
-                    <p
-                        className="mb-4 text-lg text-gray-400"
-                    >
-                        {localize('component.e91.about.part1.0')}
-                        <a href="#reference-1" className="text-blue-500 hover:underline ml-1">[1]</a>
-                        <span
-                            dangerouslySetInnerHTML={{
-                                __html: parseLocalizedText(localize('component.e91.about.part1.1') ?? ''),
-                            }}
-                        />
-                    </p>
-                </Card>
-                
-                {/* Main content card with detailed explanation, figures, and tables */}
-                <Card className='pt-4 pb-2 border-none mx-auto shadow-md mt-6'>
-                    <CardContent>
-                        <div className='flex justify-center mb-4 mt-4'>
-                            {isClient ? (
-                                <Image 
-                                    src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
-                                    alt="E91 Polarization measurement bases for Alice and Bob"
-                                    width={400}
-                                    height={300}
-                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
-                                />
-                            ) : (
-                                <Image 
-                                    src="/images/e91_bases_white.png"
-                                    alt="E91 Polarization measurement bases for Alice and Bob"
-                                    width={400}
-                                    height={300}
-                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded" 
-                                />
-                            )}
+            <div className="v2-theme-root min-h-screen relative">
+                {/* V3 Atmospheric Background — Quantum Photons */}
+                <AtmosphericBackground />
+
+                <HeaderV3 />
+
+                <div className="relative">
+                    <ProtocolPageSidebar items={sidebarItems} />
+                    <div className="w-full flex flex-col">
+
+                        {/* ═══════════════════════════════════════════
+                            GAME FORM SECTION  
+                            ═══════════════════════════════════════════ */}
+                        <div ref={gameRef}>
+                            <E91MainV3 />
                         </div>
-                        
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part1')}</p>
-                        
-                        {/* Base combinations table */}
-                        <div className="mb-4 flex justify-center">
-                            <table className="table-auto border-collapse border border-gray-300">
-                                <thead className="">
-                                    <tr>
-                                        <th className="px-4 py-2 border border-gray-300 text-left">Alice</th>
-                                        <th className="px-4 py-2 border border-gray-300 text-left">Bob</th>
-                                    </tr>
-                                </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">a</td>
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">a&apos;</td>
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{color:"#80d1ef"}} className="italic font-bold px-4 py-2 border border-gray-300">a</td>
-                                            <td style={{color:"#80d1ef"}} className="italic font-bold px-4 py-2 border border-gray-300">b&apos;</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{color:"#0a629e"}} className="italic font-bold px-4 py-2 border border-gray-300">a&apos;</td>
-                                            <td style={{color:"#0a629e"}} className="italic font-bold px-4 py-2 border border-gray-300">b&apos;</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                        </div>
-                        
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part2')}</p>
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part3')}</p>
-                        
-                        <div className="mb-4 flex justify-center">
-                            <table className="table-auto border-collapse border border-gray-300">
-                                <thead>
-                                    <tr>
-                                        <th className="px-4 py-2 border border-gray-300" colSpan={2}>Alice</th>
-                                        <th className="px-4 py-2 border border-gray-300" colSpan={2}>Bob</th>
-                                        <th className="px-4 py-2 border border-gray-300" rowSpan={2}>mA × mB</th>
-                                    </tr>
-                                    <tr>
-                                        <th className="px-4 py-2 border border-gray-300">Base</th>
-                                        <th className="px-4 py-2 border border-gray-300">mA</th>
-                                        <th className="px-4 py-2 border border-gray-300">Base</th>
-                                        <th className="px-4 py-2 border border-gray-300">mB</th>
-                                    </tr>
-                                </thead>
-                                    <tbody>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">a</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">+1</td>
-                                        </tr>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">a</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">-1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">-1</td>
-                                        </tr>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">a</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">-1</td>
-                                            <td style={{color:"#2C6E49"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">-1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">+1</td>
-                                        </tr>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">a′</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">+1</td>
-                                        </tr>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">a′</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">-1</td>
-                                            <td style={{color:"#88D4AB"}} className="italic font-bold px-4 py-2 border border-gray-300">b</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">-1</td>
-                                        </tr>
-                                        <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td style={{color:"#0a629e"}} className="italic font-bold px-4 py-2 border border-gray-300">a′</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td style={{color:"#0a629e"}} className="italic font-bold px-4 py-2 border border-gray-300">b′</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center">+1</td>
-                                            <td className="px-4 py-2 border border-gray-300 text-center font-medium">+1</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                        </div>
-                        
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part4')}</p>
-                        
-                        {/* Mathematical equations */}
-                        {isClient && (
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
-                                <div className="space-y-4">
-                                    <MathJax>
-                                        {`
+
+                        <div className="lg:pl-40">
+
+                            {/* ═══════════════════════════════════════════
+                                SECTION DIVIDER — Quantum Wave
+                                ═══════════════════════════════════════════ */}
+                            <div className="relative w-full h-px my-12 mx-auto max-w-4xl">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
+                            </div>
+
+                            {/* ═══════════════════════════════════════════
+                                HOW TO PLAY SECTION
+                                ═══════════════════════════════════════════ */}
+                            <HowToPlaySection
+                                ref={howToPlayRef}
+                                titleKey="component.e91.howToPlayTitle"
+                                descriptionKey="component.e91.howToPlayDescription"
+                                aliceSteps={aliceSteps}
+                                bobSteps={bobSteps}
+                            />
+
+                            {/* ═══════════════════════════════════════════
+                                SECTION DIVIDER — Quantum Wave
+                                ═══════════════════════════════════════════ */}
+                            <div className="relative w-full h-px my-12 mx-auto max-w-4xl">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
+                            </div>
+
+                            {/* ═══════════════════════════════════════════
+                                ABOUT SECTION — V3 Glassmorphism
+                                ═══════════════════════════════════════════ */}
+                            <section ref={aboutRef}
+                                className="w-full h-fit mt-8 px-5 md:px-20">
+                                <Card className="p-6 md:p-8 mx-auto
+                                    border border-border/60 bg-card/80 backdrop-blur-sm
+                                    shadow-lg
+                                    hover:border-primary/50 hover:shadow-[0_0_30px_hsl(152,100%,33%,0.15)]
+                                    transition-all duration-300">
+                                    <h1 className="font-bold text-3xl md:text-5xl mb-4">
+                                        {localize('component.bb84.aboutTitle')}
+                                    </h1>
+                                    <p className="mb-4 text-lg text-muted-foreground">
+                                        {localize('component.e91.about.part1.0')}
+                                        <a href="#reference-1" className="text-primary hover:underline font-medium ml-1">[1]</a>
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: parseLocalizedText(localize('component.e91.about.part1.1') ?? ''),
+                                            }}
+                                        />
+                                    </p>
+                                </Card>
+
+                                {/* Main content card with detailed explanation, figures, and tables */}
+                                <Card className="pt-4 pb-2 mx-auto mt-6
+                                    border border-border/60 bg-card/80 backdrop-blur-sm
+                                    shadow-lg
+                                    hover:border-primary/50 hover:shadow-[0_0_30px_hsl(152,100%,33%,0.15)]
+                                    transition-all duration-300">
+                                    <CardContent>
+                                        <div className='flex justify-center mb-4 mt-4'>
+                                            {isClient ? (
+                                                <Image
+                                                    src={isDark ? "/images/e91_bases_black.png" : "/images/e91_bases_white.png"}
+                                                    alt="E91 Polarization measurement bases for Alice and Bob"
+                                                    width={400}
+                                                    height={300}
+                                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src="/images/e91_bases_white.png"
+                                                    alt="E91 Polarization measurement bases for Alice and Bob"
+                                                    width={400}
+                                                    height={300}
+                                                    className="w-52 h-52 xl:w-64 xl:h-64 rounded"
+                                                />
+                                            )}
+                                        </div>
+
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part1')}</p>
+
+                                        {/* Base combinations table */}
+                                        <div className="mb-4 flex justify-center">
+                                            <table className="table-auto border-collapse border border-border/60">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="px-4 py-2 border border-border/60 text-left">Alice</th>
+                                                        <th className="px-4 py-2 border border-border/60 text-left">Bob</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">a</td>
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">a&apos;</td>
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style={{ color: "#80d1ef" }} className="italic font-bold px-4 py-2 border border-border/60">a</td>
+                                                        <td style={{ color: "#80d1ef" }} className="italic font-bold px-4 py-2 border border-border/60">b&apos;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style={{ color: "#0a629e" }} className="italic font-bold px-4 py-2 border border-border/60">a&apos;</td>
+                                                        <td style={{ color: "#0a629e" }} className="italic font-bold px-4 py-2 border border-border/60">b&apos;</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part2')}</p>
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part3')}</p>
+
+                                        <div className="mb-4 flex justify-center">
+                                            <table className="table-auto border-collapse border border-border/60">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="px-4 py-2 border border-border/60" colSpan={2}>Alice</th>
+                                                        <th className="px-4 py-2 border border-border/60" colSpan={2}>Bob</th>
+                                                        <th className="px-4 py-2 border border-border/60" rowSpan={2}>mA × mB</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th className="px-4 py-2 border border-border/60">Base</th>
+                                                        <th className="px-4 py-2 border border-border/60">mA</th>
+                                                        <th className="px-4 py-2 border border-border/60">Base</th>
+                                                        <th className="px-4 py-2 border border-border/60">mB</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">a</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">+1</td>
+                                                    </tr>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">a</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">-1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">-1</td>
+                                                    </tr>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">a</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">-1</td>
+                                                        <td style={{ color: "#2C6E49" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">-1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">+1</td>
+                                                    </tr>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">a′</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">+1</td>
+                                                    </tr>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">a′</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">-1</td>
+                                                        <td style={{ color: "#88D4AB" }} className="italic font-bold px-4 py-2 border border-border/60">b</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">-1</td>
+                                                    </tr>
+                                                    <tr className="hover:bg-muted/50">
+                                                        <td style={{ color: "#0a629e" }} className="italic font-bold px-4 py-2 border border-border/60">a′</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td style={{ color: "#0a629e" }} className="italic font-bold px-4 py-2 border border-border/60">b′</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center">+1</td>
+                                                        <td className="px-4 py-2 border border-border/60 text-center font-medium">+1</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part4')}</p>
+
+                                        {/* Mathematical equations — V3 glassmorphism */}
+                                        {isClient && (
+                                            <div className="border border-border/60 bg-card/80 backdrop-blur-sm p-6 rounded-lg mb-6">
+                                                <div className="space-y-4">
+                                                    <MathJax>
+                                                        {`
                                         \\[
                                         E_{a,b} = \\frac{1 - 1 + 1}{3} = \\frac{1}{3} \\approx 0.33
                                         \\]
                                         `}
-                                    </MathJax>
-                                    <MathJax>
-                                        {`
+                                                    </MathJax>
+                                                    <MathJax>
+                                                        {`
                                         \\[
                                         E_{a',b} = \\frac{1 - 1}{2} = 0
                                         \\]
                                         `}
-                                    </MathJax>
-                                    <MathJax>
-                                        {`
+                                                    </MathJax>
+                                                    <MathJax>
+                                                        {`
                                         \\[
                                         E_{a',b'} = \\frac{1}{1} = 1
                                         \\]
                                         `}
-                                    </MathJax>
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <MathJax>
-                                            {`
+                                                    </MathJax>
+                                                    <div className="flex items-center justify-center space-x-2">
+                                                        <MathJax>
+                                                            {`
                                             \\[
                                             E_{a,b'} = 0
                                             \\]
                                             `}
-                                        </MathJax>
-                                        <span className="text-sm text-gray-600 dark:text-gray-400 italic">
-                                            ({localize('component.e91.about.figures.noMeasurements')})
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part5')}</p>
-                        
-                        {/* CHSH inequality equation */}
-                        {isClient && (
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
-                                <div className="mb-4">
-                                    <MathJax>
-                                        {`
+                                                        </MathJax>
+                                                        <span className="text-sm text-muted-foreground italic">
+                                                            ({localize('component.e91.about.figures.noMeasurements')})
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part5')}</p>
+
+                                        {/* CHSH inequality equation — V3 glassmorphism */}
+                                        {isClient && (
+                                            <div className="border border-border/60 bg-card/80 backdrop-blur-sm p-6 rounded-lg mb-6">
+                                                <div className="mb-4">
+                                                    <MathJax>
+                                                        {`
                                         \\[
                                         S = \\lvert E_{a,b} + E_{a',b} + E_{a',b'} - E_{a,b'} \\rvert \\leq 2
                                         \\]
                                         `}
-                                    </MathJax>
-                                </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                                    <p>{localize('component.e91.about.figures.chsh.classical')}</p>
-                                    <p>{localize('component.e91.about.figures.chsh.quantum')}</p>
-                                    <p>{localize('component.e91.about.figures.chsh.example')}</p>
-                                </div>
+                                                    </MathJax>
+                                                </div>
+                                                <div className="text-sm text-muted-foreground space-y-1">
+                                                    <p>{localize('component.e91.about.figures.chsh.classical')}</p>
+                                                    <p>{localize('component.e91.about.figures.chsh.quantum')}</p>
+                                                    <p>{localize('component.e91.about.figures.chsh.example')}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part6')}</p>
+
+                                        <p className="text-lg mb-6">{localize('component.e91.about.figures.part7.1')}
+                                            <span>&#40;</span>
+                                            <span className='italic font-bold'>a</span>
+                                            <span>, </span>
+                                            <span className='italic font-bold'>a&apos;</span>
+                                            <span>&#41;</span>
+                                            <span>, </span>
+                                            <span>&#40;</span>
+                                            <span className='italic font-bold'>b</span>
+                                            <span>, </span>
+                                            <span className='italic font-bold'>b&apos;</span>
+                                            <span>&#41;, and </span>
+                                            <span>&#40;</span>
+                                            <span className='italic font-bold'>b</span>
+                                            <span>, </span>
+                                            <span className='italic font-bold'>a&apos;</span>
+                                            <span>&#41;. </span>
+                                            {localize('component.e91.about.figures.part7.2')}
+                                        </p>
+
+                                        {/* Reference section — V3 styled */}
+                                        <div id="reference-1" className="border border-border/60 bg-card/80 backdrop-blur-sm p-4 rounded-lg mb-4">
+                                            <h3 className="font-semibold text-lg mb-2">Reference</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                <strong>[1]</strong> Ekert, A. K. (1991). &ldquo;Quantum cryptography based on Bell&apos;s theorem.&rdquo;
+                                                <em> Physical Review Letters</em>, 67(6), 661.
+                                                <a
+                                                    href="https://doi.org/10.1103/PhysRevLett.67.661"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-primary hover:underline font-medium ml-1"
+                                                >
+                                                    https://doi.org/10.1103/PhysRevLett.67.661
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </section>
+
+                            {/* ═══════════════════════════════════════════
+                                SECTION DIVIDER — Quantum Wave
+                                ═══════════════════════════════════════════ */}
+                            <div className="relative w-full h-px my-12 mx-auto max-w-4xl">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
                             </div>
-                        )}
-                        
-                        <p className="text-lg mb-4">{localize('component.e91.about.figures.part6')}</p>
-                        
-                        <p className="text-lg mb-6">{localize('component.e91.about.figures.part7.1')}
-                            <span>&#40;</span>
-                            <span className='italic font-bold'>a</span>
-                            <span>, </span>
-                            <span className='italic font-bold'>a&apos;</span>
-                            <span>&#41;</span>
-                            <span>, </span>
-                            <span>&#40;</span>
-                            <span className='italic font-bold'>b</span>
-                            <span>, </span>
-                            <span className='italic font-bold'>b&apos;</span>
-                            <span>&#41;, and </span>
-                            <span>&#40;</span>
-                            <span className='italic font-bold'>b</span>
-                            <span>, </span>
-                            <span className='italic font-bold'>a&apos;</span>
-                            <span>&#41;. </span>
-                            {localize('component.e91.about.figures.part7.2')}
-                        </p>
-                        
-                        {/* Reference section */}
-                        <div id="reference-1" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
-                            <h3 className="font-semibold text-lg mb-2">Reference</h3>
-                            <p className="text-sm">
-                                <strong>[1]</strong> Ekert, A. K. (1991). &ldquo;Quantum cryptography based on Bell&apos;s theorem.&rdquo; 
-                                <em> Physical Review Letters</em>, 67(6), 661. 
-                                <a 
-                                    href="https://doi.org/10.1103/PhysRevLett.67.661" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
-                                >
-                                    https://doi.org/10.1103/PhysRevLett.67.661
-                                </a>
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <div className="pt-8 grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {sections.map(({id, title, content}) => (
-                        <Card
-                            key={id}
-                            id={id}
-                            className={cn(
-                                'pt-4 pb-2 border-none mx-auto shadow-md h-[400px]',
-                                activeSection === id && 'ring-4 ring-blue-400'
-                            )}
-                        >
-                            <CardContent className="h-full flex flex-col overflow-y-auto">
-                                <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                                <div className="text-gray-400">
-                                    {typeof content === 'string' ? <p>{content}</p> : content}
+
+                            {/* ═══════════════════════════════════════════
+                                TERMINOLOGY SECTION — V3 Glassmorphism Cards
+                                ═══════════════════════════════════════════ */}
+                            <section ref={terminologyRef}
+                                className="w-full h-fit mt-8 px-5 md:px-20 mb-12">
+                                <h2 className="font-bold text-2xl md:text-3xl mb-8">
+                                    {localize('component.header.guide.terminology')}
+                                </h2>
+                                <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                    {sections.map(({ id, title, content }) => (
+                                        <Card
+                                            key={id}
+                                            id={id}
+                                            className={cn(
+                                                'pt-4 pb-2 mx-auto h-[400px]',
+                                                'border border-border/60 bg-card/80 backdrop-blur-sm',
+                                                'hover:border-primary/50 hover:shadow-[0_0_30px_hsl(152,100%,33%,0.15)]',
+                                                'transition-all duration-300',
+                                                activeSection === id && 'ring-2 ring-primary shadow-[0_0_30px_hsl(152,100%,33%,0.3)]'
+                                            )}
+                                        >
+                                            <CardContent className="h-full flex flex-col overflow-y-auto">
+                                                <h2 className="text-2xl font-bold mb-4">{title}</h2>
+                                                <div className="text-muted-foreground">
+                                                    {typeof content === 'string' ? <p>{content}</p> : content}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                            </section>
+                        </div>
+                    </div>
                 </div>
-            </section>
-            <Footer/>
+
+                {/* Brand Signature Watermark — matching V3 landing page */}
+                <div className="fixed bottom-8 left-8 pointer-events-none opacity-10 hidden xl:block select-none">
+                    <Image
+                        src="/images/QC_icon_black.svg"
+                        alt="QC Watermark"
+                        width={80}
+                        height={80}
+                        className="block dark:hidden"
+                    />
+                    <Image
+                        src="/images/QC_icon_white.svg"
+                        alt="QC Watermark"
+                        width={80}
+                        height={80}
+                        className="hidden dark:block"
+                    />
+                </div>
+
+                <FooterV3 />
+            </div>
         </MathJaxContext>
     );
 }

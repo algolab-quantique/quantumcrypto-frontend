@@ -48,6 +48,9 @@ const updateAndStore = <T>(key: string, value: T,
     if (gameDataJSON) {
         const updatedGameData = {...JSON.parse(gameDataJSON), [key]: value};
         localStorage.setItem('bb84GameData', JSON.stringify(updatedGameData));
+    } else {
+        // Initialize bb84GameData if it doesn't exist (e.g., in solo mode)
+        localStorage.setItem('bb84GameData', JSON.stringify({[key]: value}));
     }
 };
 

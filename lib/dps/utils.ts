@@ -1,9 +1,19 @@
 export const clearDPSLocalStorage = () => {
     localStorage.removeItem('dpsPlayerData');
-    localStorage.removeItem('dpsPhotonNumber')
+    localStorage.removeItem('dpsPhotonNumber');
+    localStorage.removeItem('dpsSoloPhotonNumberDraft');
     localStorage.removeItem('dpsStep');
     localStorage.removeItem('dpsTab');
     localStorage.removeItem('dpsGameData');
     localStorage.removeItem('dpsDisplayedLines');
-    localStorage.removeItem('dpsValidationBitsLength')
-}
+    localStorage.removeItem('dpsValidationBitsLength');
+    localStorage.removeItem('dpsSoloAliceExchangePhaseInputs');
+    localStorage.removeItem('dpsSoloAliceExchangePulseInputs');
+    localStorage.removeItem('dpsSoloBobExchangeMeasurements');
+    localStorage.removeItem('dpsSoloBobExchangeValidatedTimes');
+    localStorage.removeItem('dpsSoloBobExchangeIsValidated');
+    localStorage.removeItem('dpsSoloAliceInferenceInputs');
+    localStorage.removeItem('dpsSoloAliceMessagingDecryptDraft');
+    localStorage.removeItem('dpsSoloBobMessagingMessageDraft');
+    localStorage.removeItem('dpsSoloBobMessagingCryptoDraft');
+};

@@ -3,6 +3,110 @@
 
 ---
 
+## 🎨 UI REDESIGN (January 2026)
+
+**Status**: ✅ DONE  
+**Date Added**: January 29, 2026  
+**Last Updated**: March 4, 2026  
+**Priority**: 🟠 HIGH
+
+### Overview
+Redesign website based on colleague's Canva mockup. New design includes:
+- ~~Updated landing page with new navigation~~ ✅ DONE
+- ~~Protocol pages with left sidebar navigation~~ ✅ DONE
+- Video tutorials integration
+- ~~Lexique/Glossary sections~~ ✅ DONE (Guide page with terminology)
+
+### Phases
+
+| Phase       | Scope                                               | Estimated Time | Status                               |
+| ----------- | --------------------------------------------------- | -------------- | ------------------------------------ |
+| **Phase 1** | Header Navigation (Protocoles \| Guide \| À propos) | 2-3 hours      | ✅ DONE                               |
+| **Phase 2** | Sticky Protocol Page Sidebar (BB84, E91, DPS)       | 2-3 hours      | ✅ DONE                               |
+| **Phase 3** | Guide Page (How to Play, Terminology, Context)      | 2-3 hours      | ✅ DONE (Context section placeholder) |
+| **Phase 4** | Video Tutorials Integration                         | TBD            | ⬜ TODO                               |
+| **Phase 5** | Landing Page Visual Redesign (per Canva mockup)     | TBD            | ✅ DONE (V2)                          |
+| **Phase 6** | **V3 Futuristic Experience (Atmosphere/Premium)**   | **TBD**        | ✅ DONE (Integrated)                  |
+| **Phase 7** | Shared How-to-Play Component (BB84/E91/DPS)         | 1 hour         | ✅ DONE                               |
+| **Phase 8** | Card UX Comparison Page (`/bb84_card`)              | 3-4 hours      | ✅ DONE (7 options, awaiting choice)  |
+
+### Approach
+**Modify existing pages** (not create new ones) - current structure is modular and supports gradual changes. 
+*Experimental V3 work is happening at `/landingpagegame_progress_futur`.*
+
+### New Components Needed
+- [x] `ProtocolPageSidebar.tsx` - Sticky left navigation ✅ Created
+- [x] `GuideNavigationMenu.tsx` - Guide dropdown in header ✅ Created
+- [ ] `VideoEmbed.tsx` - YouTube embed component
+- [x] Guide page with glossary/terminology ✅ Created
+- [ ] `SectionCard.tsx` - Reusable card wrapper
+
+### Implementation Order
+```
+✅ Header navigation: Protocoles | Guide | À propos (all pages)
+✅ ProtocolPageSidebar on BB84, E91, DPS pages
+✅ Guide page with How to Play, Terminology, Context
+✅ Mobile sidebar mirrors desktop navigation
+✅ Localization (EN/FR/ES) for all new components
+□ Video tutorials integration
+✅ Landing page visual redesign (V2)
+✅ **V3 Experimental: Atmospheric Background (Noise/Particles)**
+✅ **V3 Experimental: Hero CTA & Narrative Glow**
+✅ **V3 Experimental: Premium Glassmorphism & Live Pulse**
+✅ **V3 Experimental: Thematic Section Dividers**
+✅ Shared How-to-Play component (replaces 3 per-protocol copies)
+✅ BB84 Card UX comparison page with 7 interactive options
+□ Video tutorials integration
+□ Guide > Context section (currently placeholder)
+```
+
+---
+
+### 🏛️ V3 DESIGN RATIONALE (Why we did what we did)
+
+To ensure future developers understand the evolution of the V3 landing page, here is the rationale:
+
+#### 1. "V2-Exact" Marriage
+**Problem**: Pure glassmorphism and experimental layouts were causing readability issues and stretching on varied screens.
+**Solution**: We reverted to the **exact V2 code architecture** (fixed widths, flex-centering, defined borders) but decorated it with V3's depth. This gives us V2's robust "bedrock" with V3's "premium paint."
+
+#### 2. "Bright Heart" Quantum Photons
+**Problem**: Initial particles were too subtle and looked like random noise.
+**Solution**: Each photon now has a **brilliant white center (Bright Core)** that fades into green glow. This makes them look like actual concentrated quantum energy (Heart-of-Red/White) rather than static dots.
+
+#### 3. Intelligent "Safe Zones"
+**Problem**: Background movement can distract from the main message (text).
+**Solution**: The particle engine avoids the central 40% of the screen. Energy flows around the Alice/Bob mascots and the sides of the text, keeping the **Hero message 100% readable**.
+
+#### 4. The "Laser Line" Snap
+**Hover Feel**: We prioritised an instant transition from neutral grey to primary green with a **30px wide glow**. This provides immediate feedback and feels "sharp" and "fast," like a quantum transition.
+
+---
+
+### 🧭 NAVIGATION & UX PRINCIPLES (Why we organized it this way)
+
+A key part of the V3 update was refining how users move through the application. Here is why we chose this specific structure over other "flat" menus:
+
+#### 1. Top Menu: "Global Context" (Reducing Cognitive Load)
+**Decision**: Group items into dropdowns (Protocoles -> BB84/E91/DPS, Guide -> How to Play/Lexique) instead of listing everything.
+**Why?**:
+*   **Hick’s Law**: The time it takes to make a decision increases with the number and complexity of choices. By grouping, we simplify the initial choice to just 3 things: "Do I want to *Do* (Protocols), *Learn* (Guide), or *Know* (About)?"
+*   **Universal Access**: If a user is deep in the BB84 tutorial and wants to switch to E91, the **Protocol Dropdown** allows a direct jump. If we didn't have this, they would have to go Home -> Select E91 (2 clicks vs 1).
+
+#### 2. Side Menu: "Local Context" (Deep Focus)
+**Decision**: The left sidebar is **Context-Aware**. It *only* shows sections relevant to the page you are on (e.g., on BB84 page: Intro -> Game -> Review).
+**Why?**:
+*   **Tunnel Vision for Learning**: When learning a complex topic like Quantum Cryptography, we don't want to distract the user with "Guide" or "About" links on the side.
+*   **Progress Tracking**: It acts as a "Table of Contents" for the specific mission, helping the user know exactly how much playspace is left.
+*   **Standard Pattern**: This follows the **Documentation/Courseware Pattern** (used by Vercel, Stripe, Coursera) where Top = App Navigation, Left = Chapter Navigation.
+
+#### 3. Separation of Concerns
+*   **Top Bar**: "Where am I in the **Application**?" (Global State)
+*   **Side Bar**: "Where am I in the **Lesson**?" (Local State)
+*   by separating these, we prevent the "Context Confusion" you mentioned, where a user might think "Context" applies to the whole app when it might just be for the protocol.
+
+---
+
 ## 📦 Next.js Version Documentation
 
 ### Current Version Status (December 2025)
@@ -226,14 +330,14 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 
 **Analysis Completed**:
 
-| Data | Solo Mode | Multiplayer Mode | Status |
-|------|-----------|------------------|--------|
-| **Game Data** (bits/bases) | ✅ `solo-game.tsx` restores | ❌ `game.tsx` has NO restore | 🔴 Missing |
-| **Progress Step** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
-| **Current Tab** | ✅ Restored in `solo-game.tsx` | ❌ Not restored | 🔴 Missing |
-| **Displayed Lines** | ✅ Full restoration | ⚠️ Only checks `length === 0` | 🟡 Partial |
-| **WebSocket** | N/A | ❌ Needs reconnection | 🔴 Critical |
-| **Tabs with Restore** | ✅ Solo tabs have `useEffect` | ❌ Multiplayer tabs have NONE | 🔴 Missing |
+| Data                       | Solo Mode                     | Multiplayer Mode             | Status     |
+| -------------------------- | ----------------------------- | ---------------------------- | ---------- |
+| **Game Data** (bits/bases) | ✅ `solo-game.tsx` restores    | ❌ `game.tsx` has NO restore  | 🔴 Missing  |
+| **Progress Step**          | ✅ Restored in `solo-game.tsx` | ❌ Not restored               | 🔴 Missing  |
+| **Current Tab**            | ✅ Restored in `solo-game.tsx` | ❌ Not restored               | 🔴 Missing  |
+| **Displayed Lines**        | ✅ Full restoration            | ⚠️ Only checks `length === 0` | 🟡 Partial  |
+| **WebSocket**              | N/A                           | ❌ Needs reconnection         | 🔴 Critical |
+| **Tabs with Restore**      | ✅ Solo tabs have `useEffect`  | ❌ Multiplayer tabs have NONE | 🔴 Missing  |
 
 **Root Causes**:
 1. **Line 75 in `e91-game-form.tsx`** - Rejoin dialog is commented out: `//setRejoinDialogOpen(true);`
@@ -402,11 +506,11 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 - Multiplayer tabs simply **lack restoration logic** ❌
 
 **What's Saved vs What's Missing**:
-| Data | Saved? | Restored on Refresh? |
-|------|--------|---------------------|
-| Game data (bits, bases) | ✅ | ❌ Not in multiplayer tabs |
-| Current step/tab | ✅ | ❌ Not in multiplayer tabs |
-| Displayed messages | ✅ | ❌ Not in multiplayer tabs |
+| Data                    | Saved? | Restored on Refresh?      |
+| ----------------------- | ------ | ------------------------- |
+| Game data (bits, bases) | ✅      | ❌ Not in multiplayer tabs |
+| Current step/tab        | ✅      | ❌ Not in multiplayer tabs |
+| Displayed messages      | ✅      | ❌ Not in multiplayer tabs |
 
 **Root Cause**: Multiplayer components assume WebSocket is always active:
 - `solo-CHSH-tab.tsx` ✅ Has restoration `useEffect`
@@ -419,6 +523,12 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 3. Add restoration `useEffect` to `messaging-tab.tsx`
 4. Copy pattern from solo tabs which already work
 
+**Scope**: multiplayer only. Solo mode already restores correctly; this issue is about the E91 multiplayer flow after a browser refresh.
+
+**YouTrack FR**:
+- E91 multijoueur ne restaure pas complètement l’état après refresh : hydrater les données de jeu, la progression et le contexte joueur au montage, puis reconnecter la room.
+- E91 multijoueur terminé : supprimer le workaround de redirection et restaurer l’état sauvegardé sur la même page après refresh.
+
 **Estimated Time**: ~1.5 hours
 
 ---
@@ -427,14 +537,19 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 **Status**: 🟡 LOW PRIORITY - Future Improvement  
 **Issue**: Different stores use different persistence approaches:
 
-| Store | Persistence Method |
-|-------|-------------------|
-| `player-store.ts` | ✅ Zustand `persist()` middleware |
-| `e91-room-store.ts` | ⚠️ Manual localStorage in each setter |
+| Store                   | Persistence Method                   |
+| ----------------------- | ------------------------------------ |
+| `player-store.ts`       | ✅ Zustand `persist()` middleware     |
+| `e91-room-store.ts`     | ⚠️ Manual localStorage in each setter |
 | `e91-progress-store.ts` | ⚠️ Manual localStorage in each setter |
-| `e91-game-store.ts` | ❌ **No persistence at all** |
+| `e91-game-store.ts`     | ❌ **No persistence at all**          |
 
 **Recommendation**: Standardize on Zustand's `persist()` middleware for all stores.
+
+**Note**: this is architecture cleanup, not one gameplay bug. It affects BB84, E91, and DPS stores, in both solo and multiplayer flows, because the goal is to make save/hydrate/reset behavior consistent.
+
+**YouTrack FR**:
+- Refactoriser la persistance des stores BB84 / E91 / DPS pour unifier `hydrate / persist / remove` et fiabiliser la restauration après refresh.
 
 ---
 
@@ -2686,12 +2801,112 @@ Fixes: Results table showing "No rooms finished" despite completed games
 
 ---
 
+### 21. 🔴 Fix Store / Refresh / Save — Comprehensive Hydration Across All Protocols
+**Status**: 🔴 TODO — HIGH PRIORITY  
+**Date Added**: April 24, 2026  
+**Scope**: BB84, E91, DPS — Solo & Multiplayer  
+
+#### Problem Summary
+On-page refresh, game state is lost in most protocol/mode combinations. Only **E91 Solo** correctly restores data. All other flows have broken or missing hydration logic.
+
+#### Test Results (April 2026)
+
+| Protocol | Mode       | Alice                             | Bob                   | Root Cause                                               |
+| -------- | ---------- | --------------------------------- | --------------------- | -------------------------------------------------------- |
+| **BB84** | Solo       | ❌ Empty tabs, photons reset to 20 | ❌ Same                | Refactored stores not integrated; hydration never called |
+| **BB84** | Multi      | ❌ Broken                          | ❌ Broken              | Same as BB84 solo + no multiplayer restoration logic     |
+| **E91**  | Solo       | ✅ Works                           | ✅ Works               | **Gold reference** — all tabs have `useEffect` hydration |
+| **E91**  | Multi      | ❌ Appends duplicate photons       | ❌ Same                | No restoration `useEffect` in multiplayer tabs (#13/#19) |
+| **DPS**  | Solo Alice | ❌ Goes to wrong tab, empty        | —                     | No hydration helpers exist for DPS stores                |
+| **DPS**  | Solo Bob   | —                                 | ❌ Stays on tab, empty | Same — no hydration                                      |
+
+#### Key Insight
+Issue #2 (December 2025, marked ✅ DONE) only fixed the **redirect** problem (persisting `playingSolo` so `isConnected` HOC doesn't kick users to `/`). It did **NOT** fix actual game data restoration in the tabs. The tabs themselves need `useEffect` hooks that read from `localStorage` and re-populate component state.
+
+#### Fix Plan — Phased Approach
+
+**Phase 0: Study E91 Solo (Reference Pattern)** — 30 min  
+Read and document exactly how E91 Solo saves, hydrates, and restores state. Every subsequent fix copies this pattern.
+
+**Phase 1: Fix BB84 Solo** — ~2-3h  
+- [x] Investigate why BB84 solo doesn't restore (refactored stores vs old stores, missing hydration calls)
+- [x] Align BB84 solo with E91 solo pattern (ensure `restoreGame()` and progress hydration are called on mount)
+- [x] Fix photon count defaulting to 20 (stored config not being read back)
+- [x] Fix missing `validationBitsLength` hydration on Eve presence
+- [x] Test: Alice refresh at each tab, Bob refresh at each tab
+
+**Phase 2: Fix DPS Solo** — ~2-3h  
+- [ ] Create hydration helpers for DPS room store and progress store
+- [ ] Add `useEffect` restoration in DPS solo tab components
+- [ ] Test: Alice refresh at each tab, Bob refresh at each tab
+
+**Phase 3: Quick Wins — E91 Multiplayer** — ~20 min ✅  
+- [x] #5 — Fix wrong dialog import in `basis-tab.tsx` and `CHSH-tab.tsx` (use E91 dialog, not BB84)
+- [x] #6 — Add `E91_MIN_KEY_LENGTH` check in `onMoveToMessaging()` 
+- [x] #17 — Add `localStorage.removeItem('e91GameData')` to `resetRoom()`
+
+**Phase 4: Fix E91 Multiplayer Refresh** — ~2.5h  
+- [ ] #13 — Add state restoration `useEffect` to `game.tsx` (copy from `solo-game.tsx`)
+- [ ] #19 — Add restoration `useEffect` to `CHSH-tab.tsx` and `messaging-tab.tsx`
+- [ ] Remove results-page redirect workaround
+
+---
+
+### 22. 🟡 Validation Consumes All Bits (No Bits Left for Key)
+**Status**: 🟡 TODO — MEDIUM PRIORITY  
+**Date Added**: April 27, 2026  
+**Scope**: BB84 (potentially others)
+
+**Problem Summary**: 
+At the end of the experiment, if the number of matching bases (valid bits) equals the `validationBitsLength` configured at the start of the game, the system uses ALL matching bits for validation. This leaves exactly 0 bits for the final cryptographic key. However, the game currently re-uses those exact same validation bits as the secret key. 
+
+This breaks the fundamental principle of QKD (Quantum Key Distribution), where bits used for validation MUST be discarded to prevent Eve from knowing the key, and only the *remaining* bits should form the secret key.
+
+**Ideal Fix**:
+- The game should discard the validation bits.
+- If not enough bits remain to form a key after validation, the game should inform the players and prompt them to restart the protocol (or adjust the minimum key requirements).
+
+---
+
+### 23. ✅ E91 : Revenir sur /e91 après une partie terminée replonge dans l'ancienne partie
+**Status**: ✅ DONE (May 5, 2026)  
+**Date Added**: May 5, 2026  
+**Scope**: E91 — Solo & Multiplayer  
+
+**Problem Summary**:  
+Après avoir terminé une partie E91 (solo ou multi), si l'utilisateur revient sur la page d'accueil (`/`) puis clique sur la carte E91, il est redirigé directement vers `/e91/play` qui affiche la dernière étape de la partie précédente (déjà terminée) au lieu de démarrer une nouvelle partie.
+
+**Root Cause**:  
+1. Quand le jeu se termine (`setGameSuccess(true)`), `e91GameData` et `playingSolo` ne sont **jamais nettoyés** du `localStorage`.
+2. Le HOC `isConnected` vérifie `playingSolo` (persisté dans `player-store`) → comme il est toujours `true`, il redirige vers `/e91/play`.
+3. La page `/e91/play` restaure l'état depuis `e91GameData` → affiche l'ancienne partie terminée.
+
+**Fix potentiel**:  
+- Appeler `clearE91LocalStorage()` + `setPlayingSolo(false)` quand le jeu se termine avec succès (après `setGameSuccess(true)`).
+- OU : dans la page `/e91`, détecter `gameSuccess === true` dans le `localStorage` et nettoyer automatiquement avant de proposer un nouveau jeu.
+
+**Testé le** : May 5, 2026 — Reproduit en solo E91 (sans Eve, jeu complet jusqu'à la messagerie).
+
+---
+
+**Phase 5: Fix BB84 Multiplayer Refresh** — ~2h  
+- [ ] Same pattern as Phase 4, applied to BB84 multiplayer tabs
+
+**Estimated Total**: ~10-12 hours
+
+---
+
 # 🎮 DPS Solo Mode Implementation Plan
 
 **Created**: January 5, 2026  
-**Status**: 🟡 IN PROGRESS  
+**Status**: ✅ DONE  
+**Completed**: March 2026  
 **Priority**: HIGH  
 **Reference**: E91 Solo Mode (already implemented and working)
+
+> **Note (March 4, 2026):** All 6 phases are complete. DPS uses a unified `lib/dps/dps-protocol.ts` (916 lines)
+> instead of a separate `solo-player.ts` — valid design choice. Solo mode has 5 dedicated tab components,
+> a dedicated `/dps/solo` route, and a solo game modal with role selection (Alice/Bob). Tested and working.
 
 ---
 
@@ -2707,146 +2922,110 @@ Implement **solo mode for DPS** following the exact same pattern as E91 solo mod
 
 ## 📁 Files to Create
 
-| E91 Solo Mode (Reference) | DPS Solo Mode (TO CREATE) | Status |
-|---------------------------|---------------------------|--------|
-| `lib/e91/solo-player.ts` | `lib/dps/solo-player.ts` | 🟡 IN PROGRESS |
-| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx` | ⬜ TODO |
-| `components/e91/play-page/solo-game.tsx` | `components/dps/play-page/solo-game.tsx` | ⬜ TODO |
-| `solo-measurement-tab.tsx` | `solo-alice-exchange-tab.tsx` | ⬜ TODO |
-| `solo-basis-tab.tsx` | `solo-bob-exchange-tab.tsx` | ⬜ TODO |
-| `solo-CHSH-tab.tsx` | `solo-alice-inference-tab.tsx` | ⬜ TODO |
-| `solo-messaging-tab.tsx` | `solo-alice-messaging-tab.tsx` | ⬜ TODO |
-| N/A (E91 symmetric) | `solo-bob-messaging-tab.tsx` | ⬜ TODO |
-| `app/(main)/e91/solo-results/page.tsx` | `app/(main)/dps/solo-results/page.tsx` | ⬜ TODO |
-| `solo-results-table.tsx` | `components/dps/results-page/solo-results-table.tsx` | ⬜ TODO |
+| E91 Solo Mode (Reference)                      | DPS Solo Mode (TO CREATE)                      | Status |
+| ---------------------------------------------- | ---------------------------------------------- | ------ |
+| `lib/e91/solo-player.ts`                       | `lib/dps/dps-protocol.ts` (unified)            | ✅ DONE |
+| `components/e91/home-page/solo-game-modal.tsx` | `components/dps/home-page/solo-game-modal.tsx` | ✅ DONE |
+| `components/e91/play-page/solo-game.tsx`       | `components/dps/play-page/solo-game.tsx`       | ✅ DONE |
+| `solo-measurement-tab.tsx`                     | `solo-alice-exchange-tab.tsx`                  | ✅ DONE |
+| `solo-basis-tab.tsx`                           | `solo-bob-exchange-tab.tsx`                    | ✅ DONE |
+| `solo-CHSH-tab.tsx`                            | `solo-alice-inference-tab.tsx`                 | ✅ DONE |
+| `solo-messaging-tab.tsx`                       | `solo-alice-messaging-tab.tsx`                 | ✅ DONE |
+| N/A (E91 symmetric)                            | `solo-bob-messaging-tab.tsx`                   | ✅ DONE |
+| `app/(main)/e91/solo-results/page.tsx`         | `app/(main)/dps/solo/page.tsx`                 | ✅ DONE |
+| `solo-results-table.tsx`                       | N/A (handled in solo-game.tsx)                 | ✅ DONE |
 
 ---
 
 ## 🎮 DPS Protocol Flow (Multiplayer → Solo Mapping)
 
 ### Alice's Flow (3 tabs)
-| Step | Tab | Multiplayer Action | Solo Mode Simulation |
-|------|-----|-------------------|----------------------|
-| 1 | Exchange | Send phases via WebSocket | Store locally, simulate Bob's time measurements |
-| 2 | Inference | Receive Bob's times via WebSocket | Use simulated Bob's times |
-| 3 | Messaging | Send encrypted message | Local encryption/verification |
+| Step | Tab       | Multiplayer Action                | Solo Mode Simulation                            |
+| ---- | --------- | --------------------------------- | ----------------------------------------------- |
+| 1    | Exchange  | Send phases via WebSocket         | Store locally, simulate Bob's time measurements |
+| 2    | Inference | Receive Bob's times via WebSocket | Use simulated Bob's times                       |
+| 3    | Messaging | Send encrypted message            | Local encryption/verification                   |
 
 ### Bob's Flow (2 tabs)
-| Step | Tab | Multiplayer Action | Solo Mode Simulation |
-|------|-----|-------------------|----------------------|
-| 1 | Exchange | Receive Alice's phases, send times | Simulate Alice's phases, store times locally |
-| 2 | Messaging | Decrypt message | Local decryption |
+| Step | Tab       | Multiplayer Action                 | Solo Mode Simulation                         |
+| ---- | --------- | ---------------------------------- | -------------------------------------------- |
+| 1    | Exchange  | Receive Alice's phases, send times | Simulate Alice's phases, store times locally |
+| 2    | Messaging | Decrypt message                    | Local decryption                             |
 
 ---
 
 ## 📝 Implementation Phases
 
-### Phase 1: Core Simulation (`lib/dps/solo-player.ts`)
-**Status**: 🟡 IN PROGRESS
+### Phase 1: Core Simulation (`lib/dps/dps-protocol.ts`)
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Create simulation functions based on backend Python logic
-- [ ] `generateRandomPhases(n)` - Alice's phase choices (0 or π)
-- [ ] `generatePulseTrains(phases)` - Modulated pulse trains
-- [ ] `simulateBobTimeMeasurement(pulses)` - Bob measures arrival times
-- [ ] `generateAliceInference(bobTimes, alicePhases)` - Alice infers key bits
-- [ ] `eveIntercept()` - Eve disruption simulation
-
-**Backend Reference**: Need to check DPS consumers.py for simulation logic
+Used unified `dps-protocol.ts` (916 lines) instead of a separate solo-player file.
+Includes `generateRandomPhases()`, pulse train simulation, Bob time measurement, Alice inference.
 
 ---
 
 ### Phase 2: Solo Game Modal (`components/dps/home-page/solo-game-modal.tsx`)
-**Status**: ⬜ TODO
+**Status**: ✅ DONE (321 lines)
 
-**Tasks**:
-- [ ] Create modal with role selection (Alice/Bob)
-- [ ] Add game settings form (photon count, Eve toggle)
-- [ ] Connect to player-store and dps-game-store
-- [ ] Navigate to `/dps/play` on start
+Role selection (Alice/Bob), game settings, navigates to `/dps/solo`.
 
 ---
 
 ### Phase 3: Solo Game Container (`components/dps/play-page/solo-game.tsx`)
-**Status**: ⬜ TODO
+**Status**: ✅ DONE (189 lines)
 
-**Tasks**:
-- [ ] Create main container with conditional tabs by role
-- [ ] Handle localStorage state restoration
-- [ ] Import solo tab components
+Renders all 5 solo tabs conditionally by role.
 
 ---
 
 ### Phase 4: Solo Tab Components
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-#### 4.1: `solo-alice-exchange-tab.tsx`
-- [ ] Copy from `alice-exchange-tab.tsx`
-- [ ] Remove `useSocket()` and `sendPhases()` calls
-- [ ] Add local simulation for Bob's measurements
-
-#### 4.2: `solo-bob-exchange-tab.tsx`
-- [ ] Copy from `bob-exchange-tab.tsx`
-- [ ] Remove WebSocket dependencies
-- [ ] Simulate Alice's phases locally
-
-#### 4.3: `solo-alice-inference-tab.tsx`
-- [ ] Copy from `alice-inference-tab.tsx`
-- [ ] Use locally stored Bob measurements
-
-#### 4.4: `solo-alice-messaging-tab.tsx`
-- [ ] Copy from `alice-messaging-tab.tsx`
-- [ ] Local encryption/decryption
-
-#### 4.5: `solo-bob-messaging-tab.tsx`
-- [ ] Copy from `bob-messaging-tab.tsx`
-- [ ] Local decryption verification
+- `solo-alice-exchange-tab.tsx` (367 lines) ✅
+- `solo-bob-exchange-tab.tsx` (258 lines) ✅
+- `solo-alice-inference-tab.tsx` (210 lines) ✅
+- `solo-alice-messaging-tab.tsx` (237 lines) ✅
+- `solo-bob-messaging-tab.tsx` (288 lines) ✅
 
 ---
 
 ### Phase 5: Route & Navigation
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Create `app/(main)/dps/solo-results/page.tsx`
-- [ ] Create `components/dps/results-page/solo-results-table.tsx`
-- [ ] Update `dps-progression.tsx` for solo navigation
+- `app/(main)/dps/solo/page.tsx` exists (19 lines)
+- DPS game form has Play Solo button connected to solo modal
 
 ---
 
 ### Phase 6: Localization & Polish
-**Status**: ⬜ TODO
+**Status**: ✅ DONE
 
-**Tasks**:
-- [ ] Add localization keys to `lang/dps-lines.ts`
-- [ ] Test all 3 languages (EN/FR/ES)
-- [ ] Verify identical UI to multiplayer
-- [ ] Update `dps-game-form.tsx` to show solo button
+Uses shared localization keys from `lang/quantumcrypto-lines.ts` (EN/FR/ES).
 
 ---
 
 ## 🔧 Key Differences from E91
 
-| Aspect | E91 | DPS |
-|--------|-----|-----|
-| **Role symmetry** | Alice and Bob symmetric (same tabs) | Alice and Bob have DIFFERENT tabs |
-| **Tab count** | 4 tabs for both | Alice: 3 tabs, Bob: 2 tabs |
-| **Data type** | Bases + bits | Phases + time measurements |
-| **Key generation** | Matching bases | Phase inference from times |
+| Aspect             | E91                                 | DPS                               |
+| ------------------ | ----------------------------------- | --------------------------------- |
+| **Role symmetry**  | Alice and Bob symmetric (same tabs) | Alice and Bob have DIFFERENT tabs |
+| **Tab count**      | 4 tabs for both                     | Alice: 3 tabs, Bob: 2 tabs        |
+| **Data type**      | Bases + bits                        | Phases + time measurements        |
+| **Key generation** | Matching bases                      | Phase inference from times        |
 
 ---
 
 ## ⏱️ Time Estimates
 
-| Phase | Estimated Time |
-|-------|----------------|
-| Phase 1: Core Simulation | 2-3 hours |
-| Phase 2: Solo Game Modal | 1-2 hours |
-| Phase 3: Solo Game Container | 1 hour |
-| Phase 4: Solo Tab Components | 4-6 hours |
-| Phase 5: Route & Navigation | 1-2 hours |
-| Phase 6: Localization & Polish | 1 hour |
-| **Total** | **10-15 hours** |
+| Phase                          | Estimated Time  |
+| ------------------------------ | --------------- |
+| Phase 1: Core Simulation       | 2-3 hours       |
+| Phase 2: Solo Game Modal       | 1-2 hours       |
+| Phase 3: Solo Game Container   | 1 hour          |
+| Phase 4: Solo Tab Components   | 4-6 hours       |
+| Phase 5: Route & Navigation    | 1-2 hours       |
+| Phase 6: Localization & Polish | 1 hour          |
+| **Total**                      | **10-15 hours** |
 
 ---
 
@@ -2949,9 +3128,513 @@ These are cosmetic/pedagogical improvements. The protocol works correctly - this
 
 **Proposed Actions:**
 - [ ] Research DPS eavesdropping detection mechanism
+
+---
+
+## 🔧 TECH DEBT & TOOLING (February 2026)
+
+**Date Added**: February 11, 2026  
+**Priority**: 🟡 MEDIUM
+
+### Issue 1: No Testing Framework
+
+**Status:** ⬜ TODO
+
+Currently the project has **zero** test infrastructure — no Jest, Vitest, Playwright, or Cypress. This means:
+- No unit tests for utility functions (e.g., `lib/bb84/utils.ts`, `lib/e91/utils.ts`)
+- No component tests for complex UI (play pages, results pages)
+- No end-to-end tests for game flows
+
+**Recommendation:** Install **Vitest** (fast, native ESM support, works great with Next.js) for unit/component tests, and optionally **Playwright** for E2E tests later.
+
+**Proposed Actions:**
+- [ ] Install Vitest + @testing-library/react
+- [ ] Write tests for critical utility functions first
+- [ ] Add component tests for key flows
+- [ ] Consider Playwright for E2E game flow tests later
+
+---
+
+### Issue 2: ESLint Version Mismatch
+
+**Status:** ⬜ TODO
+
+`eslint-config-next` is at version `14.0.4` while Next.js itself is at `14.2.33`. This won't break anything right now, but the ESLint plugin may miss new rules/fixes introduced in later 14.x versions.
+
+**Fix:** Run `npm install eslint-config-next@14.2.33 --save-dev` to align versions.
+
+**Proposed Actions:**
+- [ ] Update eslint-config-next to match Next.js version
+
+---
+
+### Issue 3: Duplicate UI Libraries (@nextui-org/react + Radix UI)
+
+**Status:** ✅ RESOLVED (February 12, 2026)
+
+The project had two UI component libraries: Radix UI (used everywhere) and @nextui-org/react (only used for `Avatar` in 3 waiting-room player-card files).
+
+**What was done:**
+- [x] Searched codebase — only `Avatar` was imported from `@nextui-org/react` (3 files)
+- [x] Replaced with Tailwind + lucide-react `User` icon (same look)
+- [x] Ran `npm uninstall @nextui-org/react` — **removed 232 packages**
+
+---
+
+### Issue 4: Player Avatar System (Future Enhancement)
+
+**Status:** ⬜ TODO — Low priority  
+**Date Added**: February 12, 2026
+
+Currently the player avatar in waiting rooms is a simple placeholder icon (User silhouette). In the future, this could be enhanced to give players a visual identity.
+
+**Options (easiest → hardest):**
+
+| Option                     | Description                                                                                                                       | Effort   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **A) Default avatar list** | Provide 8-10 pre-made avatars (quantum-themed icons/animals). Player picks one when creating/joining a game. No upload needed.    | Low      |
+| **B) Initials-based**      | Auto-generate avatar from player name initials with random background color (e.g., "AB" in a blue circle). Zero effort from user. | Very Low |
+| **C) Gravatar / DiceBear** | Use an external API like DiceBear to auto-generate unique avatars from the player name. Free, no uploads.                         | Low      |
+| **D) Image upload**        | Let users upload their own photo. Requires backend storage (S3/cloud), image resizing, moderation.                                | High     |
+
+**Recommendation:** Option **B (initials)** or **C (DiceBear API)** — both are lightweight, require no backend changes, and give players a unique visual identity without any upload complexity.
+
+**Proposed Actions:**
+- [ ] Decide on approach (A, B, C, or D)
+- [ ] Implement in `PlayerCard` component (shared across BB84, E91, DPS)
+- [ ] Optionally store avatar choice in player store (zustand)
+
+---
+
+### Issue 4: No Code Formatter (Prettier)
+
+**Status:** ⬜ TODO
+
+No Prettier or similar formatter is configured. Code formatting is inconsistent across files (mixed quote styles, inconsistent indentation in some places).
+
+**Proposed Actions:**
+- [ ] Install Prettier + eslint-config-prettier
+- [ ] Add `.prettierrc` with team preferences
+- [ ] Run initial format pass on codebase
 - [ ] Add Eve option to create-game-modal (multiplayer)
 - [ ] Add Eve option to solo-game-modal (solo)
 - [ ] Implement Eve interception logic
 - [ ] Implement Eve detection/error rate checking
 
+---
+---
+
+# 🎮 PLATFORM EVOLUTION PLAN — From "Form" to "Game"
+
+**Date Created**: February 17, 2026  
+**Context**: V3 landing page presented to students — positive visual feedback, but students noted the protocol game pages feel like "dead forms" rather than a real game. Below is the full roadmap.
+
+---
+
+## 📌 SHORT-TERM: V3 Visual Upgrade → Protocol Pages (Task 2)
+
+**Status**: ✅ DONE  
+**Goal**: Apply V3 landing page design elements to BB84/E91/DPS protocol pages  
+**Approach**: Applied directly to live pages (BB84, E91, DPS) — future sandbox routes also created
+
+### What to Apply from V3
+- ✅ Atmospheric Background (particles, grain, glow)
+- ✅ Green Neon Glow on Hover (`shadow-[0_0_30px_...]`)
+- ✅ Glassmorphism Cards (`backdrop-blur`, `bg-card/80`)
+- ✅ Section Divider Waves
+- ✅ CTA Button Style (border-primary, hover glow)
+- ⚠️ Alice/Bob Character Art (decorative, optional)
+
+### What NOT to Apply
+- ❌ Hero Section Layout (protocol pages need game form first)
+- ❌ Mission Card Grid (already have their own navigation)
+- ❌ Landing Page Typography Scale (too large for protocol context)
+
+### Implementation Steps
+- [x] Create sandbox route `/bb84_future` ✅
+- [x] Apply AtmosphericBackground to protocol pages ✅
+- [x] Apply V3 card styles to game form (glassmorphism + glow) ✅
+- [x] Apply V3 button styles to all CTAs (Jouer solo, Créer, Rejoindre) ✅
+- [x] Apply V3 styles to "How to Play" section ✅ (shared component)
+- [x] Style sidebar with V3 active glow ✅
+- [x] Verify in browser (Dark + Light mode) ✅
+- [x] Replicate for E91 and DPS ✅
+
+---
+
+## 🚀 LONG-TERM: Gamification Roadmap (Task 1)
+
+**Status**: ⬜ PLANNED (ideas phase)  
+**Goal**: Transform the platform into an engaging, competitive learning game  
+**Last Updated**: March 4, 2026
+
+---
+
+### 🧠 UNIVERSAL QUANTUM CONCEPTS → GAME MECHANICS
+
+All 3 protocols (BB84, E91, DPS) share these core quantum concepts. Each maps naturally to a game mechanic:
+
+| Quantum Concept               | Game Mechanic Analogy              | Existing Game Reference                                  |
+| ----------------------------- | ---------------------------------- | -------------------------------------------------------- |
+| **Photon travels A→B**        | Projectile / delivery              | *Angry Birds* trajectory, *Guitar Hero* note highway     |
+| **Basis selection**           | Strategic choice under uncertainty | *Rock-Paper-Scissors*, *Poker* blind bets                |
+| **Same basis = correct info** | Match = reward                     | *Memory/Concentration* card game, *Candy Crush* matching |
+| **Different basis = random**  | Miss = penalty/lost turn           | *Minesweeper* wrong click                                |
+| **Eve intercepts**            | Hidden adversary / spy             | *Among Us* impostor, *Spy vs Spy*, *Werewolf*            |
+| **Error rate reveals Eve**    | Detective / forensics              | *Clue/Cluedo*, *Papers Please* document inspection       |
+| **Key generation**            | Crafting / building                | *Minecraft* crafting from collected resources            |
+
+---
+
+### 🎮 GAME CONCEPT IDEAS (Universal — All Protocols)
+
+**Concept 1: "Photon Catcher" (Guitar Hero / Fruit Ninja style)**
+- Photons fly across the screen, you must pick the correct basis (filter) *before* they arrive
+- Speed + accuracy scoring. Wrong basis = photon lost
+- Eve photons are disguised — if you catch one, you get a warning
+- Works for all 3 protocols with different visual skins
+
+**Concept 2: "Base Match" (Memory Card Game)**
+- Cards face-down, flip pairs to find matching bases
+- Same basis pair = you keep the bit → builds your key
+- Different basis = cards flip back, you lose a turn
+- Eve cards hidden in the deck — if you flip one, she steals a matched pair
+- Difficulty: more cards, faster timer, more Eve cards
+
+**Concept 3: "Eve Hunter" (Among Us / Detective mode)**
+- After a key exchange round, you see the stats (error rates, mismatches)
+- You must decide: "Is Eve present? Yes/No"
+- Higher levels = Eve intercepts fewer photons (subtler, harder to detect)
+- Score based on correct detection + confidence threshold
+- Like *Papers Please* — inspect the data, spot the anomaly
+
+**Concept 4: "Quantum Relay" (Tower Defense)**
+- Photons travel a path from Alice to Bob
+- Player places basis filters along the channel
+- Eve tries to intercept at random points
+- Player scores by maximizing correct key bits while detecting Eve
+- Could have "shields" and "decoys" as power-ups
+
+**Concept 5: "Speed Exchange" (Typing Test / Speedrun)**
+- Complete a full key exchange as fast as possible
+- Timer + accuracy = combined score
+- Leaderboard per protocol
+- Like *TypeRacer* but for quantum operations
+
+---
+
+### 🔬 PROTOCOL-SPECIFIC GAME TWISTS
+
+| Protocol | Unique Mechanic                   | Game Twist                                                                     |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------ |
+| **BB84** | Polarization filters (↕ ↔ ↗ ↘)    | Rotate a physical filter widget to match — visual/tactile                      |
+| **E91**  | Entangled pairs, Bell inequality  | Puzzle mode: "Do these measurements violate Bell's inequality?" — logic puzzle |
+| **DPS**  | Phase differences in pulse trains | Rhythm game: detect phase shifts like beats in music (*Guitar Hero* / *osu!*)  |
+
+Each protocol gets its own "flavor" of gamification on top of the universal mechanics.
+
+---
+
+### 📊 DIFFICULTY LEVELS (Per Protocol)
+
+| Level | Name           | Description                             |
+| ----- | -------------- | --------------------------------------- |
+| 1     | **Tutorial**   | Guided walkthrough, no Eve, no timer    |
+| 2     | **Apprentice** | Solo, no Eve, scored                    |
+| 3     | **Agent**      | Solo + Eve present, must detect         |
+| 4     | **Operative**  | Multiplayer, real partner               |
+| 5     | **Master**     | Multiplayer + Eve, coordinate detection |
+
+---
+
+### 🏅 BADGE IDEAS
+
+- **"First Photon"** — Complete your first exchange
+- **"Perfect Basis"** — 100% basis match in a round
+- **"Eve Hunter"** — Correctly detect Eve 3 times
+- **"Ghost Protocol"** — Complete a round with 0 errors
+- **"Speed Demon"** — Exchange under 30 seconds
+- **"Protocol Master"** — Complete all 3 protocols
+- **"Quantum Trio"** — Play BB84 + E91 + DPS in one session
+- **"Unbreakable"** — Generate a key with 0% error rate
+
+---
+
+### 🛣️ IMPLEMENTATION PHASES
+
+**Recommended Order**: G3 → G1 → G2 → G4 → G5
+
+#### Phase G3: Progressive Unlocking 🔒→🔓 (Priority 1 — 1-2 days)
+Lock E91 and DPS until BB84 is completed. Creates an immediate learning path.
+
+- [ ] Track protocol completion in `localStorage` (`bb84_completed`, etc.)
+- [ ] Add lock overlay to E91/DPS cards on landing page
+- [ ] Show "Complete BB84 to unlock" message
+- [ ] Add progress bar showing overall completion
+- [ ] Achievement badges ("First Key Exchange", "Eve Hunter")
+
+#### Phase G1: Player Identity & Avatars 🎭 (Priority 2 — 2-3 days)
+Give users a persistent identity and visual representation.
+
+- [ ] Create `player-profile-store.ts` (Zustand)
+- [ ] Avatar selection (quantum-themed: Alice, Bob, Eve skins)
+- [ ] Persistent profile in `localStorage`
+- [ ] Display avatar in game lobby and during gameplay
+- [ ] Consider DiceBear API for auto-generated avatars
+
+#### Phase G2: Scoring & Competition 🏆 (Priority 3 — 3-5 days)
+Add stakes and competition to each game session.
+
+- [ ] Scoring formula: basis accuracy + Eve detection + speed
+- [ ] End-game score screen with breakdown
+- [ ] Local leaderboard per protocol
+- [ ] Server-side leaderboard via API
+- [ ] XP system with titles ("Quantum Apprentice" → "Cryptography Master")
+
+#### Phase G4: Interactive Tutorial / Guided Mode 📖 (Priority 4 — 5-7 days)
+Transform the linear form-filling into a guided experience with story.
+
+- [ ] `TutorialOverlay.tsx` component (contextual popups)
+- [ ] `tutorial-store.ts` (Zustand, tracks shown tips)
+- [ ] Tutorial data in JSON files (supports i18n)
+- [ ] Step-by-step highlights (glow/pulse on next action)
+- [ ] "Skip Tutorial" button for returning players
+- [ ] Animated transitions between protocol steps
+- [ ] Dramatic Eve detection reveal (screen shake, red glow)
+- [ ] Victory screen with confetti + score + "Next Protocol" CTA
+
+#### Phase G5: Visual Gameplay Enhancements 🎨 (Priority 5 — 7-10 days)
+Make the game screens visually exciting, not just functional.
+
+- [ ] Photon animations (fly from Alice to Bob with polarization)
+- [ ] Visual basis selection (clickable cards instead of dropdowns)
+- [ ] Real-time Eve indicator (flickering, interference pattern)
+- [ ] Optional sound effects (photon send/receive, Eve alert)
+- [ ] Game-specific themes beyond global dark/light
+
+---
+
+## 🃏 CARD UX REDESIGN — Multi-Scenario Form Problem
+
+**Status**: ⏸️ WAITING — Team meeting needed to pick winning design  
+**Date**: February 18, 2026  
+**Last Updated**: March 4, 2026  
+**Comparison Page**: `/bb84_card` (7 interactive options, all functional)  
+**Branch**: Merged into `ibra_development` (commit `60c682c`)  
+**Blocked By**: Team meeting to review and vote on the 7 options  
+**Problem**: The current game card tries to serve 3 different workflows with 1 form, but each needs different information:
+
+| Workflow         |     Needs Name?     |    Needs PIN?     | Role                |
+| ---------------- | :-----------------: | :---------------: | ------------------- |
+| **Jouer solo**   | ✅ (+ avatar later?) |         ❌         | Player              |
+| **Rejoindre**    |          ✅          |         ✅         | Player              |
+| **Créer un jeu** |          ✅          | ❌ (generates one) | Master (can't play) |
+
+The PIN field is useless for Solo and Create, yet always visible. The form feels confused and doesn't satisfy any scenario well.
+
+### 7 Design Options — All Built & Interactive at `/bb84_card`
+
+Ordered by quality ranking:
+
+| Rank | Option        | Name               | Key Idea                                                              |
+| ---- | ------------- | ------------------ | --------------------------------------------------------------------- |
+| 1    | **Option 1**  | Card Flip          | 3D flip animation, binary Solo/Multiplayer choice — best "wow" factor |
+| 2    | **Option 2**  | Tab-Based          | 3 tabs (Solo \| Rejoindre \| Créer), familiar pattern                 |
+| 3    | **Option 3**  | Unified Dashboard  | MOBA-style mode selector, single action button                        |
+| 4    | **Option 4**  | Progressive Reveal | Solo-first with collapsible multiplayer section                       |
+| 4b   | **Option 4b** | Always-Open        | Same as 4 but multiplayer always visible                              |
+| 5    | **Option 5**  | Two-Card Split     | Side-by-side Solo + Multiplayer cards                                 |
+| 6    | **Option 6**  | Join-First         | Jackbox-style, PIN input front and center                             |
+| 7    | **Option 7**  | Wizard / Stepper   | 3-step guided flow (Name → Mode → Action)                             |
+
+### Text Consistency (applied to all 7 cards)
+- Label: "Player Name" / Placeholder: "Alice"
+- Label: "Game PIN" / Placeholder: "62V2H" / maxLength: 5
+- Buttons: "Play Solo" / "Join Game" / "Create Game" (Title Case)
+
+### Technical Notes
+- SSR hydration fix: Card Flip uses inline `style` props (not Tailwind arbitrary)
+- SSR hydration fix: Tab-Based uses controlled Radix Tabs (`value` + `onValueChange`)
+- All cards match real BB84 page width: `w-[350px] md:w-[500px]`
+
+### Next Steps
+- [ ] **Team reviews `/bb84_card` and picks the winning design**
+- [ ] Implement chosen design in real BB84 game form
+- [ ] Replicate to E91 and DPS
+- [ ] Remove `/bb84_card` comparison page (or keep as reference)
+
+---
+
 **Priority:** LOW - Focus on solo mode first, then add Eve later
+
+
+
+
+# My quick notes
+
+## bb84 solo:
+alice: tab 1 ok, tab 2 ok, tab 3 : (Félicitations Bob a réussi à déchiffrer votre message !) + 2 buttons. we stay on the same page, very good, with message and button. but (Votre message
+
+Votre message chiffré (0 ou 1)) become empty, it should keep the information.
+
+BOB : tab 1 refresh it give same number of photo (4) but (Aléatoire
+Mesures) buttons are de-activated, we can not click on them to generate and continue.
+last tab (Félicitations Vous avez déchiffré le message d'Alice !) work good, the same problem as in alice, all text message are saved, but the new entred bits (Message d'Alice déchiffré) are not displayed, it should be displayed.
+
+---
+
+## 🔄 TASK — Harmoniser les flows solo (DPS / BB84 / E91)
+
+**Status**: 🟡 TODO — Priorité moyenne  
+**Date Added**: May 13, 2026  
+**Scope**: DPS solo ✅ (déjà stabilisé) · BB84 solo ⚠️ · E91 solo ⚠️
+
+### Contexte
+
+Après l'analyse comparative des trois protocoles, les comportements suivants ont été identifiés :
+
+| Comportement                                           | DPS solo                                 | BB84 solo        | E91 solo                      |
+| ------------------------------------------------------ | ---------------------------------------- | ---------------- | ----------------------------- |
+| HOC `isConnected`                                      | ❌ non (restaure playerData manuellement) | ✅ oui            | ✅ oui                         |
+| Gate `isHydrated` (spinner pendant restauration)       | ✅ oui                                    | ❌ non            | ❌ non                         |
+| `clearXxxLocalStorage()` avant redirect sur "Re-jouer" | ✅ oui                                    | ❌ **non**        | ❌ **N/A** (va vers résultats) |
+| Restauration `playerData` au refresh                   | ✅ manuel dans `useEffect`                | ❌ délégué au HOC | ❌ délégué au HOC              |
+| `clearXxxLocalStorage()` utilitaire dédié              | ✅ `lib/dps/utils.ts`                     | ❌ **non**        | ❌ **non**                     |
+
+### Problèmes identifiés
+
+#### BB84 solo
+- `goToBB84Page()` dans `bb84-progression.tsx` fait `router.replace('/bb84')` **sans** vider le localStorage → les données de l'ancienne partie restent jusqu'au prochain démarrage. Ce n'est pas un crash, mais c'est moins propre.
+- Pas de `clearBB84LocalStorage()` centralisé (DPS a son équivalent dans `lib/dps/utils.ts`).
+- Pas de gate `isHydrated` → le jeu peut flasher avec des valeurs par défaut pendant la restauration.
+
+#### E91 solo
+- Même absence de `clearE91LocalStorage()` centralisé.
+- Même absence de gate `isHydrated`.
+- Le "restart sans Eve" (`handleSoloRestart`) appelle `resetRoom()` + `resetProgress()` directement en Zustand **sans** vider le localStorage → `e91GameData` reste en LS (voir aussi issue #17).
+
+### Travaux suggérés
+
+1. **Créer `lib/bb84/utils.ts → clearBB84LocalStorage()`** (pattern DPS) :
+   - Lister toutes les clés BB84 : `bb84GameData`, `bb84Step`, `bb84Tab`, `bb84DisplayedLines`, `bb84PhotonNumber`, `bb84GameHasEve`, `bb84ValidationBitsLength`, et les drafts des onglets.
+
+2. **Mettre à jour `bb84-progression.tsx → goToBB84Page()`** :
+   - Ajouter `clearBB84LocalStorage()` avant `router.replace('/bb84')` (ou `window.location.replace('/bb84')` pour un hard reload propre).
+
+3. **Créer `lib/e91/utils.ts → clearE91LocalStorage()`** (si pas encore fait) :
+   - Lister toutes les clés E91.
+   - Appeler dans `handleSoloRestart()` (fix du bug #17 aussi).
+
+4. **Optionnel — Ajouter gate `isHydrated` à BB84 et E91** :
+   - Copier le pattern de `solo-game.tsx` DPS : `useState(false)` + `setIsHydrated(true)` à la fin du `useEffect` de restauration.
+   - Affiche un spinner pendant que le localStorage se charge → élimine les flashs.
+
+5. **Optionnel — Unifier l'architecture HOC vs manuel** :
+   - Soit DPS adopte `isConnected` HOC (et restaure `playerData` dedans comme BB84/E91).
+   - Soit BB84/E91 abandonnent le HOC et font une restauration manuelle comme DPS.
+   - Choix à faire en équipe.
+
+### Estimation
+~1–2h pour les points 1–3. Points 4–5 optionnels ~1h chacun.
+
+---
+
+## Design: Mascots in Solo Role Selection (BB84 & E91) ✅ DONE
+
+### Réalisé
+- Remplacé les icônes `Cat`/`Dog` (Lucide) par les vraies mascottes Alice et Bob (PNG transparent)
+- Technique : `Next.js Image` avec `fill + object-contain` dans un conteneur fixe `h-[100px]`
+- Alice : conteneur élargi à `w-[130px]` pour compenser son ratio landscape (cheveux larges)
+- Bob : conteneur `w-[100px]` standard
+- BB84 ✅ | E91 ✅ | DPS ❌ (intentionnellement conservé comme référence de comparaison)
+- Page home (`title-v3`) : mascottes SNE à fond transparent, alignement Bob `mt-[10px]`
+
+### Refactor du flow Solo (redondance UX) ✅ DONE (pour E91 uniquement)
+Cette refonte a été implémentée sur **E91** uniquement. BB84 et DPS sont conservés dans leur état d'origine pour comparaison.
+
+**Le nouveau flow (E91) :**
+1. Card front → clic "Jouer Solo" → card flip
+2. Card back → **Sélection de rôle directe** (Mascottes Alice/Bob cliquables, le champ Nom redondant a été supprimé)
+3. Clic Alice ou Bob → Ouvre le modal directement sur les **Paramètres (Nom + Photons + Eve)**
+4. Start
+
+**Bénéfices constatés :**
+- Réduction du nombre d'étapes (3 au lieu de 4+)
+- Choix du personnage immédiat et engageant
+- Plus de doublon sur la saisie du nom
+- Le composant `SoloGameModal` a été adapté en mode hybride (contrôlé via props ou autonome) pour supporter ce nouveau flow sans casser les autres appels.
+
+---
+
+## 🎯 CONSTANTS IMPLEMENTATION ROADMAP (May 19, 2026)
+
+**Status**: 🟡 IN PROGRESS - Constants pattern partially applied  
+**Date Added**: May 19, 2026  
+**Goal**: Centralize all hardcoded game configuration values (photon limits, defaults, Eve settings) into centralized `*-constants.ts` files for consistency, maintainability, and easy TEST/PRODUCTION toggling
+
+### Current State
+
+| Protocol | Solo Mode                                                        | Multiplayer Mode                         | Constants File      | Status         |
+| -------- | ---------------------------------------------------------------- | ---------------------------------------- | ------------------- | -------------- |
+| **E91**  | ✅ Constants (`E91_SOLO_PHOTON_*` + `E91_TEST_MODE`)              | ✅ Constants (`E91_MULTIPLAYER_PHOTON_*`) | `e91-constants.ts`  | ✅ **COMPLETE** |
+| **BB84** | ✅ Just added (`BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`)           | ❌ Hardcoded in `create-game-modal.tsx`   | `bb84-constants.ts` | ⚠️ **PARTIAL**  |
+| **DPS**  | ⚠️ Local constants INSIDE `solo-game-modal.tsx` (not centralized) | ❌ Hardcoded in `create-game-modal.tsx`   | `dps-constants.ts`  | ❌ **MISSING**  |
+
+### Phase 1: DONE ✅ (May 19, 2026)
+- [x] Created `/bb84-constants.ts` with `BB84_SOLO_PHOTON_*` + `BB84_TEST_MODE`
+- [x] Updated `/components/bb84/home-page/solo-game-modal.tsx` to import and use BB84 constants
+- [x] Added smart form defaults (photonNumber intelligently set, validationBits calculated as 25%)
+- [x] Auto-recalculate validation bits when Eve checkbox toggled
+
+### Phase 2: HIGH PRIORITY - Keep BB84 Multiplayer Consistent (SAFE - Minimal Change)
+**Safety Level**: 🟢 **SAFE** — This mirrors what E91 already does  
+**Files to Update**:
+- [ ] Add `BB84_MULTIPLAYER_PHOTON_MAX`, `BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE`, `BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE`, `BB84_MULTIPLAYER_PHOTON_DEFAULT` to `/bb84-constants.ts`
+- [ ] Update `/components/bb84/home-page/create-game-modal.tsx` to import and use these constants in validation schema
+
+**Why Now**: Ensures consistency between solo and multiplayer modes. Current state: BB84 solo has constants, multiplayer still hardcoded. E91 already has both.
+
+**Time Estimate**: ~15 minutes
+
+### Phase 3: MEDIUM PRIORITY - Centralize DPS Constants (MUST DO - Currently Scattered)
+**Safety Level**: 🟡 **MEDIUM** — Moving local constants to centralized file, minimal logic change  
+**Files to Update**:
+- [ ] Create game configuration section in `/dps-constants.ts`:
+  - `DPS_TEST_MODE` toggle
+  - `DPS_SOLO_PHOTON_MIN`, `DPS_SOLO_PHOTON_MAX`, `DPS_SOLO_PHOTON_DEFAULT`
+  - `DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE`, `DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE`, `DPS_MULTIPLAYER_PHOTON_DEFAULT`
+- [ ] Extract local constants from `/components/dps/home-page/solo-game-modal.tsx` (currently: `DPS_SOLO_PHOTON_MIN=4`, `MAX=20`, `DEFAULT=6`)
+- [ ] Update `/components/dps/home-page/solo-game-modal.tsx` to import from `dps-constants.ts`
+- [ ] Update `/components/dps/home-page/create-game-modal.tsx` to import and use DPS multiplayer constants
+
+**Why Now**: DPS currently has local constants scattered in components. Moving to centralized file makes it maintainable and matches E91/BB84 pattern.
+
+**Time Estimate**: ~30 minutes
+
+### Phase 4: LOW PRIORITY - E91 Validation Bits Constants (Optional - Consistency Bonus)
+**Safety Level**: 🟢 **SAFE** — E91 already has complete constants  
+**Files to Update**:
+- [ ] Consider adding `E91_VALIDATION_BITS_PERCENTAGE`, `E91_VALIDATION_BITS_MIN`, `getDefaultValidationBits()` function to `e91-constants.ts` (mirroring what BB84 just did for smart form defaults)
+
+**Why Later**: E91 forms already work. This is consistency/maintainability bonus if BB84 approach proves valuable.
+
+**Time Estimate**: ~10 minutes
+
+### Why This Matters (Future-Proofing)
+- **Prevents Bugs**: If someone updates min photon value in one place but forgets another, game breaks. Constants = single source of truth.
+- **Easy Deployment**: Flip `*_TEST_MODE = false` once before production, all limits update everywhere automatically.
+- **Readable Code**: Removes magic numbers like `20` or `16` from validation schemas. Instead: `DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE`
+- **E91 Already Proves It Works**: E91's centralized constants are used by both solo and multiplayer forms successfully.
+
+### Recommended Order
+1. ✅ **Phase 1 DONE** — BB84 solo constants (safety: low risk, already implemented)
+2. 🟢 **Phase 2 NEXT** — BB84 multiplayer constants (safety: mirrors E91 pattern)
+3. 🟡 **Phase 3 AFTER** — DPS centralized constants (safety: medium effort, high value)
+4. 🟢 **Phase 4 OPTIONAL** — E91 validation bits (safety: just polish, low risk)
+
+### Non-Breaking, Incremental Approach
+Each phase is independent:
+- Phase 1 doesn't affect Phase 2
+- Phase 2 doesn't affect Phase 3
+- Can do phases 1+2 today, Phase 3 next sprint
+- No risk of breaking existing code — just refactoring where hardcoded values live

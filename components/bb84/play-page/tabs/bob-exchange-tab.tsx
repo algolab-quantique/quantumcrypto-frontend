@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useLanguage} from '@/components/providers/language-provider';
 import {BB84GameStep, inputField} from '@/types';
 import {
@@ -63,6 +63,60 @@ const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
         return inputs;
     });
 
+    // Fix: Reset local arrays if photonNumber changes (e.g. after refresh/restore)
+    // AND hydrate from store values if Bob already completed this step.
+    // IMPORTANT: Only depend on photonNumber — NOT bobBases/bobMeasurements.
+    // Those change during normal gameplay (measure(), shareBases()) and would
+    // wipe basisInputs because bobBases isn't stored until Share is clicked.
+    useEffect(() => {
+        const currentBases = useBB84RoomStore.getState().bobBases;
+        const currentMeasurements = useBB84RoomStore.getState().bobMeasurements;
+
+        if (currentBases.length > 0 && currentBases.length === photonNumber) {
+            // Bob already shared bases — restore from store
+            setBasisInputs(currentBases.map(v => ({
+                value: v,
+                touched: true,
+                error: false,
+            })));
+        } else {
+            // Check localStorage for bases saved during measure (before share)
+            const savedBasisJSON = localStorage.getItem('bb84BobBasisInputs');
+            if (savedBasisJSON) {
+                try {
+                    const parsed: string[] = JSON.parse(savedBasisJSON);
+                    if (Array.isArray(parsed) && parsed.length === photonNumber) {
+                        setBasisInputs(parsed.map(v => ({
+                            value: v,
+                            touched: true,
+                            error: false,
+                        })));
+                    }
+                } catch { /* ignore parse errors */ }
+            } else {
+                setBasisInputs(() => {
+                    const inputs: inputField[] = [];
+                    for (let _ = 0; _ < photonNumber; _++) {
+                        inputs.push({ value: '', touched: false, error: true });
+                    }
+                    return inputs;
+                });
+            }
+        }
+        if (currentMeasurements.length > 0 && currentMeasurements.length === photonNumber) {
+            // Bob already measured — restore from store
+            setMeasurements(currentMeasurements.map(v => ({ value: v })));
+        } else {
+            setMeasurements(() => {
+                const inputs = [];
+                for (let _ = 0; _ < photonNumber; _++) {
+                    inputs.push({ value: '' });
+                }
+                return inputs;
+            });
+        }
+    }, [photonNumber]);
+
     const validateForm = !basisInputs.some(
         ({value, error}) => value === '' || error) && measured;
 
@@ -123,6 +177,9 @@ const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
                 });
             setMeasurements(updatedMeasurements);
             setBobMeasurements(updatedMeasurements.map(({value}) => value));
+            // Persist basis inputs so they survive a refresh before sharing
+            localStorage.setItem('bb84BobBasisInputs',
+                JSON.stringify(basisInputs.map(({value}) => value)));
             pushLines([
                 {
                     title: 'component.game.step2',

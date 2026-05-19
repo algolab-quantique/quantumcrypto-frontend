@@ -66,6 +66,7 @@
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -77,6 +78,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Cat, Dog } from 'lucide-react';
+import Image from 'next/image';
 import { z } from 'zod';
 import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -117,7 +119,15 @@ import {
  * Provides role selection (Alice/Bob) and game settings configuration
  * for playing E91 in solo mode against a simulated partner.
  */
-const SoloGameModal = () => {
+const SoloGameModal = ({
+    triggerClassName,
+    open,
+    onOpenChange,
+}: {
+    triggerClassName?: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -330,7 +340,14 @@ const SoloGameModal = () => {
                         setFormStep(1);
                     }}
                 >
-                    <Cat size={50} />
+                    <div className="relative h-[100px] w-[130px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
+                            alt="Alice"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Alice</p>
                 </div>
                 {/* Bob Selection */}
@@ -343,7 +360,14 @@ const SoloGameModal = () => {
                         setFormStep(1);
                     }}
                 >
-                    <Dog size={50} />
+                    <div className="relative h-[100px] w-[100px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
+                            alt="Bob"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Bob</p>
                 </div>
             </div>
@@ -468,35 +492,41 @@ const SoloGameModal = () => {
 
     return (
         <Dialog
-            onOpenChange={(open) => {
-                if (!open) setFormStep(0);
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) setFormStep(0);
+                onOpenChange?.(isOpen);
             }}
         >
-            <DialogTrigger asChild>
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className="text-md mt-2 w-[50%] p-2"
-                >
-                    {localize('component.e91.playSolo')}
-                </Button>
-            </DialogTrigger>
+            {/* Only show trigger button in legacy/uncontrolled mode */}
+            {open === undefined && (
+                <DialogTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
+                    >
+                        {localize('component.e91.playSolo')}
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="border-secondary w-[90%] md:w-full rounded-lg">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
                         {localize('component.e91.startSolo')}
                     </DialogTitle>
                 </DialogHeader>
-                {(() => {
-                    switch (formStep) {
-                        case 0:
-                            return roleSelection;
-                        case 1:
-                            return gameSettings;
-                        default:
-                            return null;
-                    }
-                })()}
+                {/* Controlled mode: skip role selection, go straight to settings */}
+                {open !== undefined
+                    ? gameSettings
+                    : (() => {
+                        switch (formStep) {
+                            case 0: return roleSelection;
+                            case 1: return gameSettings;
+                            default: return null;
+                        }
+                    })()
+                }
             </DialogContent>
         </Dialog>
     );

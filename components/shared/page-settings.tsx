@@ -8,7 +8,7 @@ const PageSettings = ({className}: { className?: string }) => {
 
     return (
         <div className={cn(className,
-            'flex p-2 fixed gap-x-1 right-2 top-3')}>
+            'flex p-2 fixed gap-x-1 right-2 top-3 z-50')}>
             <LanguageToggle/>
             <ModeToggle/>
         </div>

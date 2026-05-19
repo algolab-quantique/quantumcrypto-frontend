@@ -38,7 +38,10 @@ export const useBB84ProgressStore = create<BB84ProgressStore>((set) => ({
         localStorage.setItem('bb84Tab', tab);
         set({bb84Tab: tab});
     },
-    setDisplayedLines: (lines) => set({displayedLines: lines}),
+    setDisplayedLines: (lines) => {
+        localStorage.setItem('bb84DisplayedLines', JSON.stringify(lines));
+        set({displayedLines: lines});
+    },
     pushLines: (lines) => set((state) => {
         const updatedLines = [...state.displayedLines, ...lines];
         localStorage.setItem('bb84DisplayedLines',
@@ -47,9 +50,15 @@ export const useBB84ProgressStore = create<BB84ProgressStore>((set) => ({
             displayedLines: updatedLines,
         };
     }),
-    resetProgress: () => set({
-        bb84Tab: 'exchange',
-        step: BB84GameStep.EXCHANGE,
-        displayedLines: [],
-    }),
+    resetProgress: () => {
+        // Clear localStorage to prevent old messages from being restored
+        localStorage.removeItem('bb84DisplayedLines');
+        localStorage.removeItem('bb84Tab');
+        localStorage.removeItem('bb84Step');
+        set({
+            bb84Tab: 'exchange',
+            step: BB84GameStep.EXCHANGE,
+            displayedLines: [],
+        });
+    },
 }));

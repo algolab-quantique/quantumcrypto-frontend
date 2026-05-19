@@ -53,7 +53,8 @@ const SoloResultsTable = ({
     const score = Math.max(0, Math.round((keyLength * 10) - (elapsedTime / 10)));
 
     const handleReplay = () => {
-        // Clear game state and go to E91 home
+        // Don't clear localStorage here — e91GameData.gameSuccess=true
+        // serves as a signal for the form page to clean up properly
         router.replace('/e91');
     };
 

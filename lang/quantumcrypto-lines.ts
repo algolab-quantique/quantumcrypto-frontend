@@ -9,8 +9,9 @@ export const quantumcryptoLines: LanguageItem[] = [
     {   // ... (English translations)
         'component.main.name': 'John',
         'component.header.howToPlay': 'How to play',
-        'component.header.about': 'About QuantumCrypto',
+        'component.header.about': 'About',
         'component.header.about.bb84': 'About BB84',
+        'component.sidebar.play': 'Play',
         'component.main.game': 'A Quantum Encryption Game',
         'component.main.nameRequired': 'A name is required',
         'component.main.nameMin': 'Your name should be at least 2 characters',
@@ -129,6 +130,14 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.extensibleTitle': 'Highly Extensible',
         'component.bb84.aboutTitle': 'About the protocol',
         'component.header.protocols': 'Protocols',
+        'component.header.guide': 'Guide',
+        'component.header.guide.howToPlay': 'How to Play',
+        'component.header.guide.terminology': 'Terminology',
+        'component.header.guide.context': 'Context',
+        'component.header.guide.comingSoon': 'Coming soon',
+        'component.header.guide.comingSoonDesc': 'This section is under construction. Check back soon!',
+        'component.header.guide.howToPlayDesc': 'Learn how to play each quantum cryptography protocol.',
+        'component.header.guide.terminologyDesc': 'Key definitions used across all quantum cryptography protocols.',
         'component.bb84.howToPlayTitle': 'How to play BB84',
         'component.bb84.howToPlayDescription': 'The BB84 protocol has two' +
             ' main actors: Alice and Bob, who play different roles. Here' +
@@ -464,8 +473,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         // ... (French translations)
         'component.main.name': 'Charlie',
         'component.header.howToPlay': 'Comment jouer',
-        'component.header.about': 'À propos de QuantumCrypto',
+        'component.header.about': 'À propos',
         'component.header.about.bb84': 'À propos de BB84',
+        'component.sidebar.play': 'Jouer',
         'component.main.game': 'Un jeu de chiffrement quantique',
         'component.main.nameRequired': 'Un nom est requis',
         'component.main.nameMin': 'Votre nom doit comporter au moins 2 caractères',
@@ -628,6 +638,14 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.extensibleTitle': 'Hautement extensible',
         'component.bb84.aboutTitle': 'À propos du protocole',
         'component.header.protocols': 'Protocoles',
+        'component.header.guide': 'Guide',
+        'component.header.guide.howToPlay': 'Comment jouer',
+        'component.header.guide.terminology': 'Terminologie',
+        'component.header.guide.context': 'Contexte',
+        'component.header.guide.comingSoon': 'Bientôt disponible',
+        'component.header.guide.comingSoonDesc': 'Cette section est en cours de construction. Revenez bientôt !',
+        'component.header.guide.howToPlayDesc': 'Apprenez à jouer à chaque protocole de cryptographie quantique.',
+        'component.header.guide.terminologyDesc': 'Définitions clés utilisées dans tous les protocoles de cryptographie quantique.',
         'component.bb84.howToPlayTitle': 'Comment jouer à BB84',
         'component.bb84.howToPlayDescription': 'Le protocole BB84 implique' +
             ' deux acteurs principaux : Alice et Bob, qui jouent des rôles' +
@@ -982,8 +1000,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         // ... (Spanish translations)
         'component.main.name': 'Juan',
         'component.header.howToPlay': 'Cómo jugar',
-        'component.header.about': 'Acerca de QuantumCrypto',
+        'component.header.about': 'Acerca de',
         'component.header.about.bb84': 'Acerca de BB84',
+        'component.sidebar.play': 'Jugar',
         'component.main.game': 'Un juego de cifrado cuántico',
         'component.main.nameRequired': 'Se requiere un nombre',
         'component.main.nameMin': 'Tu nombre debe tener al menos 2 caracteres',
@@ -1115,6 +1134,14 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.extensibleTitle': 'Altamente extensible',
         'component.bb84.aboutTitle': 'Acerca del protocolo',
         'component.header.protocols': 'Protocolos',
+        'component.header.guide': 'Guía',
+        'component.header.guide.howToPlay': 'Cómo jugar',
+        'component.header.guide.terminology': 'Terminología',
+        'component.header.guide.context': 'Contexto',
+        'component.header.guide.comingSoon': 'Próximamente',
+        'component.header.guide.comingSoonDesc': '¡Esta sección está en construcción. ¡Vuelve pronto!',
+        'component.header.guide.howToPlayDesc': 'Aprende a jugar cada protocolo de criptografía cuántica.',
+        'component.header.guide.terminologyDesc': 'Definiciones clave utilizadas en todos los protocolos de criptografía cuántica.',
         'component.bb84.howToPlayTitle': 'Cómo jugar BB84',
         'component.bb84.howToPlayDescription': 'El protocolo BB84 tiene dos' +
             ' actores principales: Alice y Bob, que desempeñan roles' +

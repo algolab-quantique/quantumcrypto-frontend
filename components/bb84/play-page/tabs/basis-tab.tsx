@@ -172,6 +172,8 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                         },
                     ]);
                     if (playingSolo) {
+                        // Set cipher immediately so it persists to localStorage
+                        setAliceCipher(aliceMockCrypto);
                         setTimeout(() => {
                             pushLines([
                                 {
@@ -181,7 +183,6 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                                     content: 'component.messaging.bob.decrypt',
                                 },
                             ]);
-                            setAliceCipher(aliceMockCrypto);
                         }, 2000);
                     } else {
                         if (aliceCipher.length > 0) {

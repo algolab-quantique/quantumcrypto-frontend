@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Table,
     TableBody,
@@ -22,24 +22,23 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
     photonNumber: number;
     polarIcons: any[]
 }) => {
+    const PHASE_INPUTS_KEY = 'dpsSoloAliceExchangePhaseInputs';
+    const PULSE_INPUTS_KEY = 'dpsSoloAliceExchangePulseInputs';
+
     const { localize } = useLanguage();
-    // No socket needed for solo mode
-    // const {sendPhases} = useSocket(); 
     const { pushLines, setStep, setDPSTab } = useDPSProgressStore();
     const {
         alicePhotons,
         alicePhases,
-
         setAlicePhotons,
         setAlicePhases,
-        setBobTimeMeasurements, // Needed to store simulated Bob's results
+        setBobTimeMeasurements,
     } = useDPSRoomStore();
 
     const possiblePhases = ['0', 'π'];
     const photonsSent = alicePhotons.length > 0;
 
-    // Initialize inputs
-    const [phaseInputs, setPhaseInputs] = useState(() => {
+    const buildEmptyInputRows = () => {
         const inputs: inputPhaseField[] = [];
         for (let _ = 0; _ < photonNumber; _++) {
             inputs.push({
@@ -49,19 +48,40 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
             });
         }
         return inputs;
+    };
+
+    const getStoredDraft = (key: string): inputPhaseField[] | null => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        try {
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed) || parsed.length !== photonNumber) return null;
+            return parsed;
+        } catch {
+            return null;
+        }
+    };
+
+    // Initialize inputs
+    const [phaseInputs, setPhaseInputs] = useState(() => {
+        const draft = getStoredDraft(PHASE_INPUTS_KEY);
+        return draft ?? buildEmptyInputRows();
     });
 
     const [pulseInputs, setPulseInputs] = useState(() => {
-        const inputs: inputPhaseField[] = [];
-        for (let _ = 0; _ < photonNumber; _++) {
-            inputs.push({
-                values: ['-', '-', '-'],
-                touched: [false, false, false],
-                error: [true, true, true],
-            });
-        }
-        return inputs;
+        const draft = getStoredDraft(PULSE_INPUTS_KEY);
+        return draft ?? buildEmptyInputRows();
     });
+
+    useEffect(() => {
+        if (photonsSent) {
+            localStorage.removeItem(PHASE_INPUTS_KEY);
+            localStorage.removeItem(PULSE_INPUTS_KEY);
+            return;
+        }
+        localStorage.setItem(PHASE_INPUTS_KEY, JSON.stringify(phaseInputs));
+        localStorage.setItem(PULSE_INPUTS_KEY, JSON.stringify(pulseInputs));
+    }, [phaseInputs, pulseInputs, photonsSent]);
 
     // Randomizes all inputs
     const randomize = () => {
@@ -187,12 +207,25 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
         return arePhasesValid && arePulsesValid && areErrorsAbsent;
     });
 
+    const getSentPhaseValue = (rowIndex: number, buttonIndex: number) => {
+        return alicePhases[rowIndex]?.[buttonIndex] ?? phaseInputs[rowIndex]?.values[buttonIndex] ?? '-';
+    };
+
+    const getSentPulseIcon = (rowIndex: number, buttonIndex: number) => {
+        const sentValue = alicePhotons[rowIndex]?.[buttonIndex] ?? pulseInputs[rowIndex]?.values[buttonIndex];
+        if (sentValue === '1') return polarIcons[1];
+        if (sentValue === '2') return polarIcons[2];
+        return polarIcons[0];
+    };
+
     // ═══════════════════════════════════════════════════════════════════════
     // SOLO MODE ACTION: Send Pulses (and Simulate Bob)
     // ═══════════════════════════════════════════════════════════════════════
     const onSendPulsePhotons = () => {
 
         if (validateForm && !photonsSent) {
+            localStorage.removeItem(PHASE_INPUTS_KEY);
+            localStorage.removeItem(PULSE_INPUTS_KEY);
 
             const photonsToSend = pulseInputs.map(({ values }) => values);
             const phasesToSend = phaseInputs.map(({ values }) => values);
@@ -298,7 +331,7 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
                                             className={cn('disabled:opacity-100')}
                                             onClick={() => onPhaseClick(i, buttonIndex)}
                                             size="icon"
-                                        > {photonsSent ? alicePhases[i][buttonIndex] : value}
+                                        > {photonsSent ? getSentPhaseValue(i, buttonIndex) : value}
                                         </Button>
                                     ))}
                                 </div>
@@ -320,9 +353,7 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
                                             size="icon"
                                         >
                                             {photonsSent
-                                                ? (alicePhotons[i][buttonIndex] === '1'
-                                                    ? polarIcons[1]
-                                                    : polarIcons[2])
+                                                ? getSentPulseIcon(i, buttonIndex)
                                                 : (value === '1'
                                                     ? polarIcons[1]
                                                     : value === '2'

@@ -30,6 +30,7 @@
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 import {
     Dialog,
@@ -60,13 +61,14 @@ import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { useRouter } from 'next/navigation';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import {
+    DPS_SOLO_PHOTON_MIN,
+    DPS_SOLO_PHOTON_MAX,
+    DPS_SOLO_PHOTON_DEFAULT,
+    DPS_SOLO_PHOTON_DRAFT_KEY,
+} from '@/dps-constants';
 
-// DPS Solo Mode Constants
-const DPS_SOLO_PHOTON_MIN = 4;
-const DPS_SOLO_PHOTON_MAX = 20;
-const DPS_SOLO_PHOTON_DEFAULT = 6;
-
-const SoloGameModal = () => {
+const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -123,13 +125,30 @@ const SoloGameModal = () => {
         }),
     });
 
+    const getDraftPhotonNumber = () => {
+        if (typeof window === 'undefined') return DPS_SOLO_PHOTON_DEFAULT;
+        const draftPhotonNumber = localStorage.getItem(DPS_SOLO_PHOTON_DRAFT_KEY);
+        if (!draftPhotonNumber) return DPS_SOLO_PHOTON_DEFAULT;
+
+        try {
+            const parsedPhotonNumber = Number(JSON.parse(draftPhotonNumber));
+            return Number.isNaN(parsedPhotonNumber)
+                ? DPS_SOLO_PHOTON_DEFAULT
+                : parsedPhotonNumber;
+        } catch {
+            return DPS_SOLO_PHOTON_DEFAULT;
+        }
+    };
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: DPS_SOLO_PHOTON_DEFAULT,
+            photonNumber: getDraftPhotonNumber(),
             playerName: '',
         },
     });
+
+    
 
     // ═══════════════════════════════════════════════════════════════════════
     // HANDLERS
@@ -162,6 +181,7 @@ const SoloGameModal = () => {
 
         // Save to localStorage for page refresh persistence
         localStorage.setItem('dpsPhotonNumber', JSON.stringify(photonNumber));
+        localStorage.setItem(DPS_SOLO_PHOTON_DRAFT_KEY, JSON.stringify(photonNumber));
         localStorage.setItem('dpsPlayerData', JSON.stringify({
             playerName,
             role: playerRole,
@@ -282,16 +302,12 @@ const SoloGameModal = () => {
     // ═══════════════════════════════════════════════════════════════════════
 
     return (
-        <Dialog
-            onOpenChange={(open) => {
-                if (!open) setFormStep(0);
-            }}
-        >
+        <Dialog onOpenChange={(isOpen) => { if (!isOpen) setFormStep(0); }}>
             <DialogTrigger asChild>
                 <Button
                     type="button"
                     variant="secondary"
-                    className="text-md mt-2 w-[50%] p-2"
+                    className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
                 >
                     {localize('component.e91.playSolo')}
                 </Button>
