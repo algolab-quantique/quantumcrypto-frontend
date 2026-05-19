@@ -27,6 +27,12 @@ import {
 } from '@/components/ui/form';
 import { TailSpin } from 'react-loading-icons';
 import { CheckedState } from '@radix-ui/react-checkbox';
+import {
+    BB84_MULTIPLAYER_PHOTON_MAX,
+    BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+    BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE,
+    BB84_MULTIPLAYER_PHOTON_DEFAULT,
+} from '@/bb84-constants';
 
 const CreateGameModal = ({
     connecting,
@@ -49,7 +55,7 @@ const CreateGameModal = ({
             invalid_type_error: localize('component.createGame.keyError'),
         })
             .int()
-            .max(30, {
+            .max(BB84_MULTIPLAYER_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),
             }),
         eve: z.boolean({
@@ -77,9 +83,9 @@ const CreateGameModal = ({
             }),
     }).refine(schema =>
         (schema.eve &&
-            (schema.photonNumber >= 4 && schema.photonNumber <= 30)) ||  // 🧪 TEST: Changed from 16 to 4
+            (schema.photonNumber >= BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE && schema.photonNumber <= BB84_MULTIPLAYER_PHOTON_MAX)) ||
         (!schema.eve &&
-            (schema.photonNumber >= 4 && schema.photonNumber <= 30)),  // 🧪 TEST: Changed from 10 to 4
+            (schema.photonNumber >= BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= BB84_MULTIPLAYER_PHOTON_MAX)),
         {
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
@@ -94,7 +100,7 @@ const CreateGameModal = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            photonNumber: 4,  // 🧪 TEST: Changed from 10 to 4 for quick testing
+            photonNumber: BB84_MULTIPLAYER_PHOTON_DEFAULT,
             eve: false,
             validationBits: 0,
             evePercentage: 0.5,

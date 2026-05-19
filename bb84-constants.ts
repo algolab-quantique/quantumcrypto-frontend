@@ -91,3 +91,24 @@ export const getDefaultValidationBits = (photonCount: number): number => {
         Math.floor(photonCount * BB84_VALIDATION_BITS_PERCENTAGE)
     );
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Photon Number Limits - MULTIPLAYER MODE
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠️  WARNING: BACKEND SYNC REQUIRED!
+// ⚠️  These values MUST match the backend validation in consumers.py
+// ⚠️  If you change these values, update the backend as well or the game
+// ⚠️  will fail with validation errors from the server.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Maximum number of photons allowed (multiplayer) */
+export const BB84_MULTIPLAYER_PHOTON_MAX = 30;
+
+/** Minimum photons when Eve is enabled (multiplayer) */
+export const BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE = 16;
+
+/** Minimum photons when Eve is disabled (multiplayer) */
+export const BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE = 10;
+
+/** Default photon number for new multiplayer games */
+export const BB84_MULTIPLAYER_PHOTON_DEFAULT = 10;
