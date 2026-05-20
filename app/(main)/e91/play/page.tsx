@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import Game from '@/components/e91/play-page/game';
 import SoloGame from '@/components/e91/play-page/solo-game';
 import E91ProgressionSidebar from '@/components/shared/e91-progression-sidebar';
 import E91Button from '@/components/e91/play-page/e91-button';
 import usePlayerStore from '@/store/player-store';
+import useE91RoomStore from '@/store/e91/e91-room-store';
+import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
+import { clearE91LocalStorage } from '@/lib/e91/utils';
 
 /**
  * E91 Play Page
@@ -19,6 +22,16 @@ import usePlayerStore from '@/store/player-store';
  */
 const PlayPage = () => {
     const { playingSolo } = usePlayerStore();
+    const { gameSuccess } = useE91RoomStore();
+
+    const handleNavCleanup = useCallback(() => {
+        clearE91LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
+    }, []);
+
+    // Prevent navigation mid-game (warn user on browser back/close/refresh)
+    usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     return (
         <div className="flex flex-col h-full max-h-full">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect} from 'react';
+import React, {useEffect, useCallback} from 'react';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab
     from '@/components/dps/play-page/tabs/alice-exchange-tab';
@@ -23,6 +23,9 @@ import Image from 'next/image';
 import {cn} from '@/lib/utils';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
 import { useTheme } from "next-themes";
+import useDPSRoomStore from '@/store/dps/dps-room-store';
+import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
+import { clearDPSLocalStorage } from '@/lib/dps/utils';
 
 
 
@@ -65,6 +68,16 @@ const Game = () => {
     const {pushLines, setDPSTab} = useDPSProgressStore();
     const {playerRole, playerName} = usePlayerStore();
     const {photonNumber, gameHasEve} = useDPSGameStore();
+    const {gameSuccess} = useDPSRoomStore();
+
+    const handleNavCleanup = useCallback(() => {
+        clearDPSLocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
+    }, []);
+
+    // Prevent navigation mid-game (warn user on browser back/close/refresh)
+    usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     useEffect(() => {
         if (displayedLines.length === 0) {

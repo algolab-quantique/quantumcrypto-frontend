@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useCallback} from 'react';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab
     from '@/components/bb84/play-page/tabs/alice-exchange-tab';
@@ -21,6 +21,8 @@ import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import {cn} from '@/lib/utils';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
+import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
+import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 
 
 const Game = () => {
@@ -40,7 +42,16 @@ const Game = () => {
     const {pushLines, setBb84Tab, setStep, setDisplayedLines} = useBB84ProgressStore();
     const {playerRole, playerName} = usePlayerStore();
     const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength} = useBB84GameStore();
-    const {restoreGame} = useBB84RoomStore();
+    const {restoreGame, gameSuccess} = useBB84RoomStore();
+
+    const handleNavCleanup = useCallback(() => {
+        clearBB84LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
+    }, []);
+
+    // Prevent navigation mid-game (warn user on browser back/close/refresh)
+    usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     // Restore game state from localStorage on mount (for page refresh)
     // AND initialize welcome messages if no saved state exists
