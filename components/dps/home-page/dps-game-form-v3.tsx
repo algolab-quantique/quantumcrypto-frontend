@@ -60,6 +60,8 @@ const DPSMainV3: React.FC = () => {
         setPlayerRole,
         setPartner,
         setIsAdmin,
+        setPlayingSolo,
+        setPlayingMultiplayer,
     } = usePlayerStore();
     const { setDPSTab, setStep, setDisplayedLines } = useDPSProgressStore();
     const { restoreGame } = useDPSRoomStore();
@@ -134,6 +136,12 @@ const DPSMainV3: React.FC = () => {
 
     const onJoinGame = async ({ gamePIN, playerName }: z.infer<typeof formSchema>) => {
         if (isWaitingRoomConnected) return;
+
+        // Reset solo/multiplayer flags before joining a new game.
+        clearDPSLocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
+
         setGameCode(gamePIN);
         setPlayerName(playerName);
         setIsAdmin(false);
@@ -142,6 +150,12 @@ const DPSMainV3: React.FC = () => {
 
     const onCreateGame = async (photonNumber: number) => {
         if (isWaitingRoomConnected) return;
+
+        // Reset solo/multiplayer flags before creating a new game.
+        clearDPSLocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
+
         setCreatingGame(true);
         try {
             const response = await axios.post('/games/dps/', {
