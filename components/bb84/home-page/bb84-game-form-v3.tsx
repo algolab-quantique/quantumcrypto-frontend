@@ -73,6 +73,8 @@ const BB84MainV3: React.FC = () => {
         setPlayerRole,
         setPartner,
         setIsAdmin,
+        setPlayingSolo,
+        setPlayingMultiplayer,
     } = usePlayerStore();
     const {
         setBb84Tab,
@@ -184,6 +186,11 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
+        // Reset solo/multiplayer flags before joining a new game.
+        clearBB84LocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
+
         setGameCode(gamePIN);
         setPlayerName(playerName);
         setIsAdmin(false);
@@ -203,6 +210,11 @@ const BB84MainV3: React.FC = () => {
         evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
+
+        // Reset solo/multiplayer flags before creating a new game.
+        clearBB84LocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
 
         setCreatingGame(true);
 
