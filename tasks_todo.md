@@ -3653,7 +3653,7 @@ Each phase is independent:
 
 ### 21. 🔴 BUG: `playingSolo` Not Reset When Joining/Creating BB84 & DPS Multiplayer Games
 
-**Status**: 🔴 URGENT — TODO  
+**Status**: 🟢 FIXED ✅  
 **Date Added**: May 20, 2026  
 **Priority**: 🔴 CRITICAL (causes "Alice plays alone" bug)  
 **Protocols Affected**: BB84, DPS (E91 already fixed ✅)
@@ -3673,42 +3673,19 @@ Each phase is independent:
 
 **Result**: Alice's tab runs the entire game solo (simulating Bob's side with random values). The real Bob sees nothing because no WebSocket events are ever sent.
 
-**Where the fix is MISSING**:
-
-| File | Function | Line | Missing call |
-|------|----------|------|-------------|
-| `components/bb84/home-page/bb84-game-form-v3.tsx` | `onJoinGame` | ~L180 | `setPlayingSolo(false)` |
-| `components/bb84/home-page/bb84-game-form-v3.tsx` | `onCreateGame` | ~L201 | `setPlayingSolo(false)` |
-| `components/dps/home-page/dps-game-form-v3.tsx` | `onJoinGame` | ~L135 | `setPlayingSolo(false)` |
-| `components/dps/home-page/dps-game-form-v3.tsx` | `onCreateGame` | ~L143 | `setPlayingSolo(false)` |
-
-**Reference** — E91 already has the fix (pattern to copy):
-```typescript
-// e91-game-form-v3.tsx lines 158-161 (onJoinGame)
-clearE91LocalStorage();
-setPlayingMultiplayer(false);
-setPlayingSolo(false);
-
-// e91-game-form-v3.tsx lines 172-175 (onCreateGame)
-clearE91LocalStorage();
-setPlayingMultiplayer(false);
-setPlayingSolo(false);
-```
-
-**Fix Plan**:
-1. [ ] Destructure `setPlayingSolo` and `setPlayingMultiplayer` from `usePlayerStore()` in BB84 form
-2. [ ] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onJoinGame` in BB84
-3. [ ] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onCreateGame` in BB84 (before the try block)
-4. [ ] Repeat steps 1-3 for DPS form (using `clearDPSLocalStorage()`)
-5. [ ] Test: Play solo BB84 → close → create multiplayer BB84 → verify `playingSolo` is false in localStorage
-
-**Estimated Time**: ~15 minutes
+**Fix Plan / Implementation**:
+1. [x] Destructure `setPlayingSolo` and `setPlayingMultiplayer` from `usePlayerStore()` in BB84 form
+2. [x] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onJoinGame` in BB84
+3. [x] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onCreateGame` in BB84 (before the try block)
+4. [x] Repeat steps 1-3 for DPS form (using `clearDPSLocalStorage()`)
+5. [x] Added `useEffect` cleanup check on mount for BB84 & DPS home page forms to automatically clear local storage and flags if the user successfully completed a game (`gameSuccess === true`).
+6. [x] Test: Play solo BB84/DPS → click replay/menu principal → verify `localStorage` is completely cleaned.
 
 ---
 
 ### 22. 🔴 BUG: `onStartGame` Crashes Without try/catch — "Start Game" Button Does Nothing
 
-**Status**: 🔴 URGENT — TODO  
+**Status**: 🟢 FIXED ✅  
 **Date Added**: May 20, 2026  
 **Priority**: 🔴 CRITICAL (causes dead "Start Game" button on live server)  
 **Protocols Affected**: BB84, E91, DPS (all three identical pattern)
@@ -3724,50 +3701,15 @@ const onStartGame = async () => {
 };
 ```
 
-`recordGameStats` in `api.js` (lines 13-16) **re-throws** the error:
-```javascript
-} catch (error) {
-    console.error("Error recording game stats:", error);
-    throw error;  // ← Re-thrown to caller
-}
-```
+`recordGameStats` in `api.js` (lines 13-16) **re-throws** the error. If the analytics API endpoint is unreachable (network issue, backend down, CORS, etc.), the entire `onStartGame` function crashes and blocks game start.
 
-If the analytics API endpoint is unreachable (network issue, backend down, CORS, etc.), the entire `onStartGame` function crashes. `router.replace()` and `startGame()` are **never executed**. The button appears completely dead — no error shown to user, no navigation, no WebSocket event.
-
-**Affected files** (identical pattern in all 3):
-
-| File | Lines |
-|------|-------|
-| `components/bb84/waiting-room-page/waiting-room.tsx` | L39-43 |
-| `components/e91/waiting-room-page/waiting-room.tsx` | L39-43 |
-| `components/dps/waiting-room-page/waiting-room.tsx` | L39-43 |
-
-**Fix** — wrap `recordGameStats` in try/catch so game starts even if analytics fails:
-```typescript
-const onStartGame = async () => {
-    let gameId = null;
-    try {
-        const response = await recordGameStats('bb84', playerCount);
-        gameId = response.game_id;
-    } catch (error) {
-        console.error('Failed to record game stats, starting game anyway:', error);
-    }
-    router.replace(`/games/bb84/${gameCode}/results`);
-    startGame('bb84', gameId);
-};
-```
-
-**Note**: `startGame()` in `socket-provider.tsx` (L1154) sends `game_id` in the WebSocket payload. The backend should handle `null` gracefully — analytics is optional, the game itself must not be blocked by it.
-
-**Fix Plan**:
-1. [ ] Add try/catch to `onStartGame` in `bb84/waiting-room.tsx`
-2. [ ] Test BB84 multiplayer: start game with backend running → verify analytics recorded
-3. [ ] Test BB84 multiplayer: start game with backend stopped → verify game still starts
-4. [ ] Apply same fix to `e91/waiting-room.tsx`
-5. [ ] Apply same fix to `dps/waiting-room.tsx`
-6. [ ] Commit
-
-**Estimated Time**: ~10 minutes
+**Fix Plan / Implementation**:
+1. [x] Add try/catch to `onStartGame` in `bb84/waiting-room.tsx`
+2. [x] Test BB84 multiplayer: start game with backend running → verify analytics recorded
+3. [x] Test BB84 multiplayer: start game with backend stopped → verify game still starts
+4. [x] Apply same fix to `e91/waiting-room.tsx`
+5. [x] Apply same fix to `dps/waiting-room.tsx`
+6. [x] Commit
 
 ---
 

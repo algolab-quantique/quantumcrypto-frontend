@@ -86,6 +86,18 @@ const BB84MainV3: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
+        const gameDataRaw = localStorage.getItem('bb84GameData');
+        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const gameCompleted = gameData && gameData.gameSuccess === true;
+
+        // If the game was already completed, clean up stale data.
+        if (gameCompleted) {
+            clearBB84LocalStorage();
+            setPlayingSolo(false);
+            setPlayingMultiplayer(false);
+            return;
+        }
+
         if (isPlayRoomConnected) {
             router.push('/bb84/play');
             return;
