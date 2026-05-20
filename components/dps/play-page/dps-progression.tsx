@@ -56,9 +56,13 @@ const DPSProgression = () => {
         if (playingSolo) {
             // Same rationale: page reload resets stores, no Zustand calls needed.
             clearDPSLocalStorage();
+            usePlayerStore.getState().setPlayingSolo(false);
+            usePlayerStore.getState().setPlayingMultiplayer(false);
             window.location.replace('/');
         } else {
             leftGame();
+            usePlayerStore.getState().setPlayingSolo(false);
+            usePlayerStore.getState().setPlayingMultiplayer(false);
             router.replace('/');
         }
     };

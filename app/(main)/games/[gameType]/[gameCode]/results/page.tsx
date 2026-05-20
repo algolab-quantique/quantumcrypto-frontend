@@ -10,6 +10,9 @@ import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Home, RotateCcw } from 'lucide-react';
+import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import { clearE91LocalStorage } from '@/lib/e91/utils';
 
 
 interface ResultsTableProps {
@@ -158,6 +161,16 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
 
     // Navigate to main home page
     const handleHomeMenu = () => {
+        // Clean up the completed game's localStorage based on protocol
+        if (params.gameType === 'bb84') {
+            clearBB84LocalStorage();
+        } else if (params.gameType === 'dps') {
+            clearDPSLocalStorage();
+        } else if (params.gameType === 'e91') {
+            clearE91LocalStorage();
+        }
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
         router.replace('/');
     };
 

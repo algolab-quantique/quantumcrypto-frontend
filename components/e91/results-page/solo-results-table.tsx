@@ -20,6 +20,8 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Home, RotateCcw } from 'lucide-react';
+import { clearE91LocalStorage } from '@/lib/e91/utils';
+import usePlayerStore from '@/store/player-store';
 
 interface SoloResultsTableProps {
     playerName: string;
@@ -59,6 +61,9 @@ const SoloResultsTable = ({
     };
 
     const handleHomeMenu = () => {
+        clearE91LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
         router.replace('/');
     };
 
