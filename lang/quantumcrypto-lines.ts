@@ -79,6 +79,7 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' allowing parties to exchange unbreakable cryptographic keys.',
         'component.homePage.title.description': 'Learn and practice quantum' +
             ' cryptography protocols',
+        'component.homePage.title.narrative': 'Alice and Bob are on a mission to secure their communications. Follow their journey through the universe\'s most advanced cryptographic protocols!',
         'component.homePage.aboutSection': 'QuantumCrypto is a web platform' +
             ' for quantum cryptography education. It offers a growing' +
             ' number of interactive experiences for playing with different' +
@@ -559,6 +560,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.homePage.title.description': 'Apprenez et pratiquez les protocoles' +
             ' de cryptographie quantique',
+        'component.homePage.title.narrative': 'Alice et Bob ont une mission : sécuriser leurs communications. Suivez leur aventure à travers les protocoles cryptographiques les plus avancés de l\'univers !',
         'component.homePage.aboutSection': 'QuantumCrypto est une' +
             ' plateforme web dédiée à l\'éducation à la cryptographie' +
             ' quantique. Elle propose des expériences' +
@@ -1093,6 +1095,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.protocolsSection.dps.description': 'El protocolo DPS utiliza los principios de superposición e interferencia para establecer una clave de cifrado compartida entre Alice y Bob.',
         'component.homePage.title.description': 'Aprende y practica' +
             ' protocolos de criptografía cuántica',
+        'component.homePage.title.narrative': 'Alice y Bob tienen una misión: asegurar sus comunicaciones. ¡Sigue su aventura a través de los protocolos criptográficos más avanzados del universo!',
         'component.homePage.aboutSection': 'QuantumCrypto es una plataforma' +
             ' web para la educación en criptografía cuántica. Ofrece un' +
             ' número creciente de experiencias interactivas para jugar con' +
