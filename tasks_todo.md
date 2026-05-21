@@ -359,25 +359,14 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 ---
 
 ### 5. 🔀 Wrong Dialog Import in Multiplayer Tabs
-**Status**: 🟡 Bug  
+**Status**: ✅ RESOLVED (December 12, 2025)  
 **Issue**: Multiplayer tabs import `GameRestartDialog` from BB84 folder instead of E91  
-**Files**:
-- `components/e91/play-page/tabs/basis-tab.tsx` - imports from `@/components/bb84/...`
-- `components/e91/play-page/tabs/CHSH-tab.tsx` - imports from `@/components/bb84/...`
-
-**Impact**: Wrong localization keys used for restart dialog
-
-**Fix**: Change imports to `@/components/e91/play-page/game-restart-dialog`
 
 ---
 
 ### 6. 🔢 Missing Key Length Check in Multiplayer
-**Status**: 🟡 Bug  
+**Status**: ✅ RESOLVED (December 12, 2025)  
 **Issue**: Multiplayer `onMoveToMessaging()` doesn't validate `E91_MIN_KEY_LENGTH` before proceeding  
-**File**: `components/e91/play-page/tabs/basis-tab.tsx`  
-**Solo version**: Has this check ✅
-
-**Fix**: Add key length validation in multiplayer basis-tab.tsx `onMoveToMessaging()`
 
 ---
 
@@ -393,7 +382,7 @@ const connected = playingSolo || isWaitingRoomConnected || isPlayRoomConnected;
 ---
 
 ### 8. 📊 Hardcoded photonNumber in Store
-**Status**: 🟡 Consistency  
+**Status**: ✅ RESOLVED (December 12, 2025)  
 **Issue**: `e91-game-store.ts` has hardcoded default `photonNumber: 20`  
 **File**: `store/e91/e91-game-store.ts`
 
