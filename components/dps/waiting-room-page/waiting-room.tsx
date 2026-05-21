@@ -37,9 +37,15 @@ const WaitingRoom: React.FC = () => {
     const [copied, setCopied] = useState(false);
 
     const onStartGame = async () => {
-        const response = await recordGameStats('dps', playerCount);
+        let gameId = null;
+        try {
+            const response = await recordGameStats('dps', playerCount);
+            gameId = response.game_id;
+        } catch (error) {
+            console.error('Failed to record game stats, starting game anyway:', error);
+        }
         router.replace(`/games/dps/${gameCode}/results`);
-        startGame('dps', response.game_id);
+        startGame('dps', gameId);
     };
 
     useEffect(() => {

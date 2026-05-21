@@ -104,7 +104,7 @@ const TitleV3 = () => {
                         transition={{ delay: 0.4 }}
                         className="mt-4 text-foreground/70 text-sm md:text-base italic"
                     >
-                        {`"Alice et Bob doivent sécuriser leurs communications. Suivez leurs aventures à travers les protocoles cryptographiques les plus avancés de l'univers."`}
+                        {localize('component.homePage.title.narrative')}
                     </motion.p>
 
                     {/* CTA — small, non-intrusive, easy to remove */}

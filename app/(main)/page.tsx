@@ -7,12 +7,56 @@ import ProtocolsSectionV3 from '@/components/home-page/v3/protocols-section-v3';
 import AboutSectionV3 from '@/components/home-page/v3/about-section-v3';
 import AtmosphericBackground from '@/components/home-page/v3/atmospheric-background';
 import Image from 'next/image';
+import { useEffect } from 'react';
+import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import { clearE91LocalStorage } from '@/lib/e91/utils';
+import usePlayerStore from '@/store/player-store';
 
 /**
  * Landing Page - V3 Futuristic Experience
  * Main landing page with atmospheric background and glassmorphism.
  */
 export default function LandingPageV3() {
+    useEffect(() => {
+        // 1. Reset player active game flags
+        const { setPlayingSolo, setPlayingMultiplayer } = usePlayerStore.getState();
+        setPlayingSolo(false);
+        setPlayingMultiplayer(false);
+
+        // 2. Check and clean up completed BB84 game data
+        try {
+            const bb84GameRaw = localStorage.getItem('bb84GameData');
+            const bb84Game = bb84GameRaw ? JSON.parse(bb84GameRaw) : null;
+            if (bb84Game?.gameSuccess === true) {
+                clearBB84LocalStorage();
+            }
+        } catch (e) {
+            console.error('Error cleaning BB84 storage on landing mount:', e);
+        }
+
+        // 3. Check and clean up completed DPS game data
+        try {
+            const dpsGameRaw = localStorage.getItem('dpsGameData');
+            const dpsGame = dpsGameRaw ? JSON.parse(dpsGameRaw) : null;
+            if (dpsGame?.gameSuccess === true) {
+                clearDPSLocalStorage();
+            }
+        } catch (e) {
+            console.error('Error cleaning DPS storage on landing mount:', e);
+        }
+
+        // 4. Check and clean up completed E91 game data
+        try {
+            const e91GameRaw = localStorage.getItem('e91GameData');
+            const e91Game = e91GameRaw ? JSON.parse(e91GameRaw) : null;
+            if (e91Game?.gameSuccess === true) {
+                clearE91LocalStorage();
+            }
+        } catch (e) {
+            console.error('Error cleaning E91 storage on landing mount:', e);
+        }
+    }, []);
 
     return (
         <div className="v2-theme-root min-h-screen relative">

@@ -73,6 +73,8 @@ const BB84MainV3: React.FC = () => {
         setPlayerRole,
         setPartner,
         setIsAdmin,
+        setPlayingSolo,
+        setPlayingMultiplayer,
     } = usePlayerStore();
     const {
         setBb84Tab,
@@ -84,6 +86,18 @@ const BB84MainV3: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
+        const gameDataRaw = localStorage.getItem('bb84GameData');
+        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const gameCompleted = gameData && gameData.gameSuccess === true;
+
+        // If the game was already completed, clean up stale data.
+        if (gameCompleted) {
+            clearBB84LocalStorage();
+            setPlayingSolo(false);
+            setPlayingMultiplayer(false);
+            return;
+        }
+
         if (isPlayRoomConnected) {
             router.push('/bb84/play');
             return;
@@ -184,6 +198,11 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
+        // Reset solo/multiplayer flags before joining a new game.
+        clearBB84LocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
+
         setGameCode(gamePIN);
         setPlayerName(playerName);
         setIsAdmin(false);
@@ -203,6 +222,11 @@ const BB84MainV3: React.FC = () => {
         evePercentage: number) => {
 
         if (isWaitingRoomConnected) return;
+
+        // Reset solo/multiplayer flags before creating a new game.
+        clearBB84LocalStorage();
+        setPlayingMultiplayer(false);
+        setPlayingSolo(false);
 
         setCreatingGame(true);
 
@@ -303,7 +327,7 @@ const BB84MainV3: React.FC = () => {
                             style={{ backfaceVisibility: 'hidden' }}>
                             <CardContent className="h-full flex flex-col items-center justify-center space-y-4 p-6">
                                 <h3 className="text-xl font-bold text-muted-foreground mb-2">
-                                    Commencer une partie
+                                    {localize('component.main.startGame')}
                                 </h3>
                                 <Button
                                     type="button"
@@ -313,7 +337,7 @@ const BB84MainV3: React.FC = () => {
                                         transition-all flex justify-between px-8 group cursor-pointer">
                                     <div className="flex items-center">
                                         <Gamepad2 className="w-6 h-6 mr-4 text-primary group-hover:drop-shadow-[0_0_8px_hsl(152,100%,33%,0.8)] transition-all" />
-                                        Jouer Solo
+                                        {localize('component.main.playSoloBtn')}
                                     </div>
                                     <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </Button>
@@ -325,7 +349,7 @@ const BB84MainV3: React.FC = () => {
                                         transition-all flex justify-between px-8 group cursor-pointer">
                                     <div className="flex items-center">
                                         <Users className="w-6 h-6 mr-4 text-primary group-hover:drop-shadow-[0_0_8px_hsl(152,100%,33%,0.8)] transition-all" />
-                                        Multijoueur
+                                        {localize('component.main.multiplayer')}
                                     </div>
                                     <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </Button>
@@ -347,14 +371,14 @@ const BB84MainV3: React.FC = () => {
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xl font-bold text-primary flex items-center">
                                         {flipFace === 'multi'
-                                            ? <><Users className="w-5 h-5 mr-2" /> Multijoueur</>
-                                            : <><Gamepad2 className="w-5 h-5 mr-2" /> Jouer Solo</>}
+                                            ? <><Users className="w-5 h-5 mr-2" /> {localize('component.main.multiplayer')}</>
+                                            : <><Gamepad2 className="w-5 h-5 mr-2" /> {localize('component.main.playSoloBtn')}</>}
                                     </h3>
                                     <button
                                         type="button"
                                         onClick={() => setFlipFace('front')}
                                         className="text-sm text-muted-foreground hover:text-foreground cursor-pointer flex items-center">
-                                        <ArrowRight className="w-4 h-4 mr-1 rotate-180" /> Retour
+                                        <ArrowRight className="w-4 h-4 mr-1 rotate-180" /> {localize('component.main.back')}
                                     </button>
                                 </div>
 
@@ -362,7 +386,7 @@ const BB84MainV3: React.FC = () => {
                                 {flipFace === 'solo' && (
                                     <div className="flex-grow flex flex-col justify-center space-y-3">
                                         <p className="text-sm text-center text-muted-foreground font-medium">
-                                            Choisissez votre rôle
+                                            {localize('component.main.chooseRole')}
                                         </p>
                                         <div className="flex gap-x-4 justify-center">
                                             {/* Alice */}
@@ -454,7 +478,7 @@ const BB84MainV3: React.FC = () => {
                                             <div className="space-y-2 flex-[1] flex flex-col">
                                                 <div className="flex-1 flex items-center justify-center rounded-md border border-dashed border-border/50 bg-background/20 text-xs text-muted-foreground p-2 text-center h-10">
                                                     {/* i18n: component.main.createHint → "Create a new game" (en/fr/es) */}
-                                                    Create a new game
+                                                    {localize('component.main.createHint')}
                                                 </div>
                                                 <CreateGameModal
                                                     connecting={waitingRoomConnecting}

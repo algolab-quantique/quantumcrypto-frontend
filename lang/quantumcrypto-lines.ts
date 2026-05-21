@@ -79,6 +79,7 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' allowing parties to exchange unbreakable cryptographic keys.',
         'component.homePage.title.description': 'Learn and practice quantum' +
             ' cryptography protocols',
+        'component.homePage.title.narrative': 'Alice and Bob are on a mission to secure their communications. Follow their journey through the universe\'s most advanced cryptographic protocols!',
         'component.homePage.aboutSection': 'QuantumCrypto is a web platform' +
             ' for quantum cryptography education. It offers a growing' +
             ' number of interactive experiences for playing with different' +
@@ -468,6 +469,12 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part59': ' that interfered. Since the phase difference is π between these 2 pulses, Alice records the bit 1 for her key. For photon 3, Bob announced time ',
         'component.dps.about.part60': 'so it was the pulses modulated by bits ',
         'component.dps.about.part61': ' that interfered. Since no phase shift was applied to these pulses, Alice records the bit 0 for her key. You can do the exercise with photons 4 and 6.',
+        'component.main.startGame': 'Start a game',
+        'component.main.playSoloBtn': 'Play Solo',
+        'component.main.multiplayer': 'Multiplayer',
+        'component.main.back': 'Back',
+        'component.main.chooseRole': 'Choose your role',
+        'component.main.createHint': 'Create a new game',
     },
     {
         // ... (French translations)
@@ -551,6 +558,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         'component.homePage.title.description': 'Apprenez et pratiquez les protocoles' +
             ' de cryptographie quantique',
+        'component.homePage.title.narrative': 'Alice et Bob ont une mission : sécuriser leurs communications. Suivez leur aventure à travers les protocoles cryptographiques les plus avancés de l\'univers !',
         'component.homePage.aboutSection': 'QuantumCrypto est une' +
             ' plateforme web dédiée à l\'éducation à la cryptographie' +
             ' quantique. Elle propose des expériences' +
@@ -995,6 +1003,12 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part59': ' qui ont interférées. Puisque la différence de phase est de π entre ces 2 impulsions, Alice enregistre le bit 1 pour sa clé. Pour le photon 3, Bob a annoncé le temps ',
         'component.dps.about.part60': 'ce sont donc les impulsions modulées par les bits ',
         'component.dps.about.part61': ' qui ont interférées. Puisqu\'aucun déphasage a été appliqué à ces impulsions, Alice enregistre le bit 0 pour sa clé. Vous pouvez faire l\'exercice avec les photons 4 et 6.',
+        'component.main.startGame': 'Commencer une partie',
+        'component.main.playSoloBtn': 'Jouer Solo',
+        'component.main.multiplayer': 'Multijoueur',
+        'component.main.back': 'Retour',
+        'component.main.chooseRole': 'Choisissez votre rôle',
+        'component.main.createHint': 'Créer une nouvelle partie',
     },
     {
         // ... (Spanish translations)
@@ -1078,6 +1092,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.homePage.protocolsSection.dps.description': 'El protocolo DPS utiliza los principios de superposición e interferencia para establecer una clave de cifrado compartida entre Alice y Bob.',
         'component.homePage.title.description': 'Aprende y practica' +
             ' protocolos de criptografía cuántica',
+        'component.homePage.title.narrative': 'Alice y Bob tienen una misión: asegurar sus comunicaciones. ¡Sigue su aventura a través de los protocolos criptográficos más avanzados del universo!',
         'component.homePage.aboutSection': 'QuantumCrypto es una plataforma' +
             ' web para la educación en criptografía cuántica. Ofrece un' +
             ' número creciente de experiencias interactivas para jugar con' +
@@ -1475,5 +1490,11 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.dps.about.part59': ' los que han interferido. Como la diferencia de fase es de π entre estos 2 pulsos, Alice registra el bit 1 para su clave. Para el fotón 3, Bob anunció el tiempo ',
         'component.dps.about.part60': 'por lo que son los pulsos modulados por los bits ',
         'component.dps.about.part61': ' los que han interferido. Como no se aplicó ningún desfase a estos pulsos, Alice registra el bit 0 para su clave. Pueden hacer el ejercicio con los fotones 4 y 6.',
+        'component.main.startGame': 'Comenzar una partida',
+        'component.main.playSoloBtn': 'Jugar Solo',
+        'component.main.multiplayer': 'Multijugador',
+        'component.main.back': 'Volver',
+        'component.main.chooseRole': 'Elige tu rol',
+        'component.main.createHint': 'Crear una partida nueva',
     },
 ];

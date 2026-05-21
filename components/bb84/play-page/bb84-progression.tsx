@@ -11,7 +11,7 @@ import {useSocket} from '@/components/providers/socket-provider';
 import {RESTART_WITHOUT_EVE_EVENT} from '@/bb84-constants';
 import {useRouter} from 'next/navigation';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
-import {restartWithoutEve} from '@/lib/bb84/utils';
+import {restartWithoutEve, clearBB84LocalStorage} from '@/lib/bb84/utils';
 import {toast} from 'sonner';
 import {
     generateAliceBases,
@@ -96,6 +96,9 @@ const Bb84Progression = () => {
     };
 
     const goToMainMenu = () => {
+        clearBB84LocalStorage();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
         router.replace('/');
     };
 

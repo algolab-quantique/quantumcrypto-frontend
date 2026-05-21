@@ -3638,3 +3638,179 @@ Each phase is independent:
 - Phase 2 doesn't affect Phase 3
 - Can do phases 1+2 today, Phase 3 next sprint
 - No risk of breaking existing code — just refactoring where hardcoded values live
+
+---
+
+## 🔴 NEW ISSUES FOUND (May 20, 2026) — Multiplayer Game Bugs
+
+> **Context**: Multiplayer games are broken in two environments:
+> - **Local**: Alice plays the entire game alone; Bob stays blocked.
+> - **Live (AWS)**: "Start Game" button does nothing in the waiting room.
+>
+> Root causes are independent bugs that compound each other.
+
+---
+
+### 21. 🔴 BUG: `playingSolo` Not Reset When Joining/Creating BB84 & DPS Multiplayer Games
+
+**Status**: 🟢 FIXED ✅  
+**Date Added**: May 20, 2026  
+**Priority**: 🔴 CRITICAL (causes "Alice plays alone" bug)  
+**Protocols Affected**: BB84, DPS (E91 already fixed ✅)
+
+**Root Cause**: When a user previously played a solo game, `playingSolo = true` gets persisted into `localStorage` via Zustand `persist` middleware in `player-store.ts` (key: `player-storage`). When that user later joins or creates a **multiplayer** BB84 or DPS game, `playingSolo` is never flipped back to `false`.
+
+**Impact** — the `playingSolo` flag is checked in **every gameplay tab**:
+
+| File | Line | What happens when `playingSolo = true` |
+|------|------|----------------------------------------|
+| `bb84/tabs/alice-exchange-tab.tsx` | L163 | Alice simulates Bob locally, never calls `sendPhotons()` via WebSocket |
+| `bb84/tabs/bob-exchange-tab.tsx` | L126 | Bob skips `shareBases()` WebSocket call |
+| `bb84/tabs/basis-tab.tsx` | L120 | Skips `shareKey()` — key exchange never reaches server |
+| `bb84/tabs/basis-tab.tsx` | L124 | Generates fake partner bits and validation indices locally |
+| `bb84/tabs/messaging-tab.tsx` | L145 | Alice encrypts/decrypts locally, never sends to Bob |
+| `bb84/play-page/bb84-progression.tsx` | L60 | Shows solo UI elements instead of multiplayer |
+
+**Result**: Alice's tab runs the entire game solo (simulating Bob's side with random values). The real Bob sees nothing because no WebSocket events are ever sent.
+
+**Fix Plan / Implementation**:
+1. [x] Destructure `setPlayingSolo` and `setPlayingMultiplayer` from `usePlayerStore()` in BB84 form
+2. [x] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onJoinGame` in BB84
+3. [x] Add `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);` to `onCreateGame` in BB84 (before the try block)
+4. [x] Repeat steps 1-3 for DPS form (using `clearDPSLocalStorage()`)
+5. [x] Added `useEffect` cleanup check on mount for BB84 & DPS home page forms to automatically clear local storage and flags if the user successfully completed a game (`gameSuccess === true`).
+6. [x] Test: Play solo BB84/DPS → click replay/menu principal → verify `localStorage` is completely cleaned.
+
+---
+
+### 22. 🔴 BUG: `onStartGame` Crashes Without try/catch — "Start Game" Button Does Nothing
+
+**Status**: 🟢 FIXED ✅  
+**Date Added**: May 20, 2026  
+**Priority**: 🔴 CRITICAL (causes dead "Start Game" button on live server)  
+**Protocols Affected**: BB84, E91, DPS (all three identical pattern)
+
+**Root Cause**: In all 3 waiting rooms, `onStartGame` calls `recordGameStats()` as the **first line** without a try/catch:
+
+```typescript
+// bb84/waiting-room.tsx lines 39-43 (identical in e91/dps)
+const onStartGame = async () => {
+    const response = await recordGameStats('bb84', playerCount);  // ← CRASHES HERE
+    router.replace(`/games/bb84/${gameCode}/results`);             // ← NEVER REACHED
+    startGame('bb84', response.game_id);                           // ← NEVER REACHED
+};
+```
+
+`recordGameStats` in `api.js` (lines 13-16) **re-throws** the error. If the analytics API endpoint is unreachable (network issue, backend down, CORS, etc.), the entire `onStartGame` function crashes and blocks game start.
+
+**Fix Plan / Implementation**:
+1. [x] Add try/catch to `onStartGame` in `bb84/waiting-room.tsx`
+2. [x] Test BB84 multiplayer: start game with backend running → verify analytics recorded
+3. [x] Test BB84 multiplayer: start game with backend stopped → verify game still starts
+4. [x] Apply same fix to `e91/waiting-room.tsx`
+5. [x] Apply same fix to `dps/waiting-room.tsx`
+6. [x] Commit
+
+---
+
+### 23. 🟡 INFRA: Verify Backend Connectivity After VM Migration
+
+**Status**: 🟡 INVESTIGATION — TODO  
+**Date Added**: May 20, 2026  
+**Priority**: 🟡 MEDIUM (may already be resolved — domain was re-pointed)
+
+**Context**: The backend VM was physically changed, but the public domain name (e.g. `bb84.physc...`) was re-pointed to the new VM. Since the same domain is used, AWS Amplify environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`) should still be correct — no change needed in Amplify Console.
+
+**However**, even though the domain is the same, the new VM may have:
+- Different firewall/security group rules blocking ports
+- Missing CORS configuration for the frontend origin
+- Backend service not running or not auto-started after migration
+- SSL certificate issues if the domain verification changed
+- WebSocket upgrade not allowed by new VM's reverse proxy config
+
+**Investigation Steps**:
+1. [ ] Open browser DevTools (Network tab) on the live deployed app
+2. [ ] Click "Start Game" and check the failed request to `/record_game_statistic/`
+3. [ ] Note the exact error: `ERR_CONNECTION_REFUSED`? `CORS`? `502`? `timeout`?
+4. [ ] SSH into the new VM and verify the backend process is running (`systemctl status` or `docker ps`)
+5. [ ] Test the API directly: `curl -X POST https://bb84.physc.../record_game_statistic/`
+6. [ ] Test WebSocket: `wscat -c wss://bb84.physc.../ws/games/bb84/TEST/`
+7. [ ] Once Bug #22 fix is deployed, the game will start regardless — but analytics will still fail silently until the backend is verified
+
+**Note**: Even after fixing Bug #22 (try/catch), we should verify the backend is fully operational. Bug #22 makes the game resilient, but analytics and IP recording will be lost until the backend API is confirmed working.
+
+**Estimated Time**: ~30 minutes investigation
+
+---
+
+### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
+
+**Not a code bug** — this is a testing methodology issue.
+
+All Chrome tabs on the same origin share the exact same `localStorage`. The Zustand persist store (`player-storage`) writes `playerRole`, `playerId`, `playingSolo`, etc. When 3 tabs (Master, Alice, Bob) all write to the same key, they overwrite each other's state.
+
+**Proper local multiplayer testing**:
+- Tab 1: Normal Chrome window (Master)
+- Tab 2: Chrome Incognito window (Alice) — separate localStorage
+- Tab 3: Firefox or Safari (Bob) — separate localStorage
+
+This is expected browser behavior, not a bug to fix.
+
+---
+
+## 📋 MULTIPLAYER BUG FIX — EXECUTION PLAN (May 20, 2026)
+
+> **Philosophy**: One bug per commit. Test after each step. Never touch multiple files for different bugs at the same time.
+
+### Commit 1: Fix `playingSolo` reset in BB84 game form (Bug #21a)
+**Files**: `components/bb84/home-page/bb84-game-form-v3.tsx` (1 file only)  
+**Changes**:
+- Destructure `setPlayingSolo`, `setPlayingMultiplayer` from `usePlayerStore()`
+- Add 3 lines to `onJoinGame`: `clearBB84LocalStorage(); setPlayingMultiplayer(false); setPlayingSolo(false);`
+- Add 3 lines to `onCreateGame`: same, before the try block
+
+**Test**: Play solo BB84 → close → create multiplayer → check `localStorage` → `playingSolo` should be `false`  
+**Commit message**: `fix(bb84): reset playingSolo flag when joining/creating multiplayer game`
+
+---
+
+### Commit 2: Fix `playingSolo` reset in DPS game form (Bug #21b)
+**Files**: `components/dps/home-page/dps-game-form-v3.tsx` (1 file only)  
+**Changes**: Identical to Commit 1 but for DPS (using `clearDPSLocalStorage()`)
+
+**Test**: Play solo DPS → close → create multiplayer → check `localStorage` → `playingSolo` should be `false`  
+**Commit message**: `fix(dps): reset playingSolo flag when joining/creating multiplayer game`
+
+---
+
+### Commit 3: Add try/catch to `onStartGame` in BB84 waiting room (Bug #22a)
+**Files**: `components/bb84/waiting-room-page/waiting-room.tsx` (1 file only)  
+**Changes**: Wrap `recordGameStats` call in try/catch, allow game to start with `gameId = null` if analytics fails
+
+**Test**: Start BB84 multiplayer game with backend stopped → game should still navigate and trigger WebSocket  
+**Commit message**: `fix(bb84): prevent analytics failure from blocking game start`
+
+---
+
+### Commit 4: Add try/catch to `onStartGame` in E91 waiting room (Bug #22b)
+**Files**: `components/e91/waiting-room-page/waiting-room.tsx` (1 file only)  
+**Changes**: Same pattern as Commit 3
+
+**Test**: Same test with E91  
+**Commit message**: `fix(e91): prevent analytics failure from blocking game start`
+
+---
+
+### Commit 5: Add try/catch to `onStartGame` in DPS waiting room (Bug #22c)
+**Files**: `components/dps/waiting-room-page/waiting-room.tsx` (1 file only)  
+**Changes**: Same pattern as Commit 3
+
+**Test**: Same test with DPS  
+**Commit message**: `fix(dps): prevent analytics failure from blocking game start`
+
+---
+
+### After all commits: Investigate backend connectivity (Bug #23)
+**No code changes** — purely investigation on the new VM.
+
+---

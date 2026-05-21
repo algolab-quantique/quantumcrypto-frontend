@@ -37,3 +37,4 @@ yarn-error.log*
 next-env.d.ts
 
 # tasks_todo.md # we need to track our tasks and what we have done
+DEPLOYMENT_GUIDE.md
