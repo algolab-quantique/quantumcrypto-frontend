@@ -58,9 +58,6 @@ export const E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE = 20;
 /** Minimum photons when Eve is disabled (multiplayer) */
 export const E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE = 10;
 
-/** Default photon number for new multiplayer games */
-export const E91_MULTIPLAYER_PHOTON_DEFAULT = 10;
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Eve Configuration (shared between solo and multiplayer)
 // ─────────────────────────────────────────────────────────────────────────────
