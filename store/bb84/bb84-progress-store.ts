@@ -30,16 +30,11 @@ const STORAGE_KEYS = {
 type StorageKey = keyof typeof STORAGE_KEYS;
 
 // =========================================================================
-// Typed tab union — typos in tab names become compile errors.
-// =========================================================================
-type BB84Tab = 'exchange' | 'basis' | 'validation' | 'messaging';
-
-// =========================================================================
 // State shape and initial values.
 // =========================================================================
 const initialProgressState = {
     step:           BB84GameStep.EXCHANGE,
-    bb84Tab:        'exchange' as BB84Tab,
+    bb84Tab:        'exchange',
     displayedLines: [] as Line[],
 };
 
@@ -47,7 +42,7 @@ type BB84ProgressState = typeof initialProgressState;
 
 interface BB84ProgressStore extends BB84ProgressState {
     setStep:            (step: BB84GameStep) => void;
-    setBb84Tab:         (tab: BB84Tab) => void;
+    setBb84Tab:         (tab: string) => void;
     setDisplayedLines:  (lines: Line[]) => void;
     pushLines:          (lines: Line[]) => void;
     hydrateFromStorage: () => void;
@@ -90,10 +85,6 @@ const readPersistedValue = <K extends StorageKey>(key: K): BB84ProgressState[K] 
     }
 };
 
-const isBb84Tab = (value: unknown): value is BB84Tab =>
-    value === 'exchange' || value === 'basis' ||
-    value === 'validation' || value === 'messaging';
-
 // =========================================================================
 // Store implementation.
 // =========================================================================
@@ -129,7 +120,7 @@ export const useBB84ProgressStore = create<BB84ProgressStore>((set, get) => ({
 
         const next: Partial<BB84ProgressState> = {};
         if (typeof maybeStep === 'number') next.step           = maybeStep;
-        if (isBb84Tab(maybeTab))           next.bb84Tab        = maybeTab;
+        if (typeof maybeTab === 'string')   next.bb84Tab        = maybeTab;
         if (Array.isArray(maybeLines))     next.displayedLines = maybeLines;
 
         if (Object.keys(next).length > 0) set(next);
@@ -150,4 +141,3 @@ export const hydrateBB84ProgressStore = () => {
 };
 
 export const BB84_PROGRESS_INITIAL_STATE = initialProgressState;
-export type {BB84Tab};

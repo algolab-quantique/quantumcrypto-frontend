@@ -29,17 +29,11 @@ const STORAGE_KEYS = {
 type StorageKey = keyof typeof STORAGE_KEYS;
 
 // =========================================================================
-// Typed tab union — typos in tab names become compile errors.
-// Update this union if you add or rename a tab.
-// =========================================================================
-type DPSTab = 'exchange' | 'inference' | 'validation' | 'messaging';
-
-// =========================================================================
 // State shape and initial values.
 // =========================================================================
 const initialProgressState = {
     step:           DPSGameStep.EXCHANGE,
-    dpsTab:         'exchange' as DPSTab,
+    dpsTab:         'exchange',
     displayedLines: [] as Line[],
 };
 
@@ -47,7 +41,7 @@ type DPSProgressState = typeof initialProgressState;
 
 interface DPSProgressStore extends DPSProgressState {
     setStep:            (step: DPSGameStep) => void;
-    setDPSTab:          (tab: DPSTab) => void;
+    setDPSTab:          (tab: string) => void;
     setDisplayedLines:  (lines: Line[]) => void;
     pushLines:          (lines: Line[]) => void;
     hydrateFromStorage: () => void;
@@ -90,10 +84,6 @@ const readPersistedValue = <K extends StorageKey>(key: K): DPSProgressState[K] |
     }
 };
 
-const isDPSTab = (value: unknown): value is DPSTab =>
-    value === 'exchange'   || value === 'inference' ||
-    value === 'validation' || value === 'messaging';
-
 // =========================================================================
 // Store implementation.
 // =========================================================================
@@ -130,7 +120,7 @@ export const useDPSProgressStore = create<DPSProgressStore>((set, get) => ({
 
         const next: Partial<DPSProgressState> = {};
         if (typeof maybeStep === 'number') next.step           = maybeStep;
-        if (isDPSTab(maybeTab))            next.dpsTab         = maybeTab;
+        if (typeof maybeTab === 'string')   next.dpsTab         = maybeTab;
         if (Array.isArray(maybeLines))     next.displayedLines = maybeLines;
 
         if (Object.keys(next).length > 0) set(next);
@@ -151,4 +141,3 @@ export const hydrateDPSProgressStore = () => {
 };
 
 export const DPS_PROGRESS_INITIAL_STATE = initialProgressState;
-export type {DPSTab};

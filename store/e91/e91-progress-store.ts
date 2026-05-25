@@ -26,17 +26,11 @@ const STORAGE_KEYS = {
 type StorageKey = keyof typeof STORAGE_KEYS;
 
 // =========================================================================
-// Typed tab union — typos in tab names become compile errors.
-// Update this union if you add or rename a tab.
-// =========================================================================
-type E91Tab = 'measurement' | 'bases' | 'validation' | 'messaging';
-
-// =========================================================================
 // State shape and initial values.
 // =========================================================================
 const initialProgressState = {
     step:           E91GameStep.MEASUREMENT,
-    e91Tab:         'measurement' as E91Tab,
+    e91Tab:         'measurement',
     displayedLines: [] as Line[],
 };
 
@@ -44,7 +38,7 @@ type E91ProgressState = typeof initialProgressState;
 
 interface E91ProgressStore extends E91ProgressState {
     setStep:            (step: E91GameStep) => void;
-    setE91Tab:          (tab: E91Tab) => void;
+    setE91Tab:          (tab: string) => void;
     setDisplayedLines:  (lines: Line[]) => void;
     pushLines:          (lines: Line[]) => void;
     hydrateFromStorage: () => void;
@@ -87,9 +81,6 @@ const readPersistedValue = <K extends StorageKey>(key: K): E91ProgressState[K] |
     }
 };
 
-const isE91Tab = (value: unknown): value is E91Tab =>
-    value === 'measurement' || value === 'bases' ||
-    value === 'validation'  || value === 'messaging';
 
 // =========================================================================
 // Store implementation.
@@ -126,7 +117,7 @@ export const useE91ProgressStore = create<E91ProgressStore>((set, get) => ({
 
         const next: Partial<E91ProgressState> = {};
         if (typeof maybeStep === 'number') next.step           = maybeStep;
-        if (isE91Tab(maybeTab))            next.e91Tab         = maybeTab;
+        if (typeof maybeTab === 'string')   next.e91Tab         = maybeTab;
         if (Array.isArray(maybeLines))     next.displayedLines = maybeLines;
 
         if (Object.keys(next).length > 0) set(next);
@@ -147,4 +138,3 @@ export const hydrateE91ProgressStore = () => {
 };
 
 export const E91_PROGRESS_INITIAL_STATE = initialProgressState;
-export type {E91Tab};
