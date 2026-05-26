@@ -80,7 +80,16 @@ const updateAndStore = (
     if (!isBrowser()) return;
 
     const stored = localStorage.getItem('dpsGameData');
-    const next   = stored ? {...JSON.parse(stored), [key]: value} : {[key]: value};
+    let existing: Record<string, unknown> = {};
+    if (stored) {
+        try {
+            existing = JSON.parse(stored);
+        } catch {
+            // Corrupted snapshot — discard and start fresh
+            localStorage.removeItem('dpsGameData');
+        }
+    }
+    const next = {...existing, [key]: value};
     localStorage.setItem('dpsGameData', JSON.stringify(next));
 };
 

@@ -86,7 +86,16 @@ const updateAndStore = (
     if (!isBrowser()) return;
 
     const stored = localStorage.getItem('bb84GameData');
-    const next   = stored ? {...JSON.parse(stored), [key]: value} : {[key]: value};
+    let existing: Record<string, unknown> = {};
+    if (stored) {
+        try {
+            existing = JSON.parse(stored);
+        } catch {
+            // Corrupted snapshot — discard and start fresh
+            localStorage.removeItem('bb84GameData');
+        }
+    }
+    const next = {...existing, [key]: value};
     localStorage.setItem('bb84GameData', JSON.stringify(next));
 };
 

@@ -3803,3 +3803,46 @@ This is expected browser behavior, not a bug to fix.
 **No code changes** — purely investigation on the new VM.
 
 ---
+
+### 24. 🟡 Wire `hydrateFromStorage()` in game.tsx (BB84 / E91 / DPS)
+**Status**: 🟡 TODO  
+**Date Added**: May 26, 2026  
+**Priority**: 🟡 MEDIUM  
+**Context**: Solo mode restoration works fine. Multiplayer restoration is not fully functional yet.
+
+**Issue**: All three progress stores (`bb84-progress-store.ts`, `e91-progress-store.ts`, `dps-progress-store.ts`) export `hydrateFromStorage()` / `hydrate*ProgressStore()` functions, but none of them are actually called. Each `game.tsx` either duplicates the logic manually or skips it entirely.
+
+**Current State per Protocol**:
+
+| Protocol | Hydration function exported? | Called? | game.tsx restoration |
+|----------|------------------------------|---------|---------------------|
+| **BB84** | ✅ `hydrateBB84ProgressStore()` | ❌ | Manual inline reads for step/tab/lines (duplicated logic) |
+| **E91** | ✅ `hydrateE91ProgressStore()` | ❌ | Manual reads only inside `playingMultiplayer && !isPlayRoomConnected` branch. Solo refresh has NO progress restore. |
+| **DPS** | ✅ `hydrateDPSProgressStore()` | ❌ | **No restoration at all** — no `hasInitialized` ref, no room restore, no step/tab/lines reads. Worst off. |
+
+**What to do**:
+
+#### Sub-task A: BB84 (Safe dedup — identical behaviour)
+- [ ] Replace manual `bb84Step`/`bb84Tab`/`bb84DisplayedLines` reads in `components/bb84/play-page/game.tsx` (lines ~74-111) with `hydrateBB84ProgressStore()`
+- [ ] Keep `restoreGame(gameData)` and config restores (`photonNumber`, `gameHasEve`, `validationBitsLength`) as-is — they belong to different stores
+- [ ] The `hasInitialized` ref stays since it guards all five operations
+
+#### Sub-task B: E91 (Dedup + fix solo gap)
+- [ ] Replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads in `components/e91/play-page/game.tsx` (lines ~84-99) with `hydrateE91ProgressStore()`
+- [ ] Also call `hydrateE91ProgressStore()` in the non-multiplayer path (currently only pushes welcome lines, never restores progress for solo)
+
+#### Sub-task C: DPS (Net-new restore logic — needs testing)
+- [ ] Add `hasInitialized` ref to `components/dps/play-page/game.tsx`
+- [ ] Add `restoreGame(gameData)` call for `dpsGameData`
+- [ ] Call `hydrateDPSProgressStore()` for step/tab/lines
+- [ ] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
+- [ ] **Test carefully**: This changes observable behaviour — DPS will start restoring state on refresh where it didn't before
+
+**Important Notes**:
+- Solo mode restoration already works fine for BB84 and E91 (this task just deduplicates the code)
+- DPS has NO restoration today — this is the only sub-task that actually changes user-visible behaviour
+- Multiplayer restoration is known to be incomplete across all protocols — this task is about progress store hydration only, not full multiplayer reconnection
+
+**Estimated Time**: ~45 min (A: 10 min, B: 15 min, C: 20 min)
+
+---
