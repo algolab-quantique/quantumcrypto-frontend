@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import Game from '@/components/e91/play-page/game';
+import MultiGame from '@/components/e91/play-page/multi-game';
 import SoloGame from '@/components/e91/play-page/solo-game';
 import E91ProgressionSidebar from '@/components/shared/e91-progression-sidebar';
 import E91Button from '@/components/e91/play-page/e91-button';
@@ -40,7 +40,7 @@ const PlayPage = () => {
                 <E91Button />
                 <E91ProgressionSidebar />
             </div>
-            {playingSolo ? <SoloGame /> : <Game />}
+            {playingSolo ? <SoloGame /> : <MultiGame />}
         </div>
     );
 };

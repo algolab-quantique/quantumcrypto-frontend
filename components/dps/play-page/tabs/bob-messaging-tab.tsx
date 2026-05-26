@@ -56,7 +56,7 @@ const BobMessagingTab = () => {
 
     // NEW CODE: Explicitly filter for T1 or T2 (the only valid interference times)
     const validEntries = alicePhases.map((phase, index) => ({
-        phase: Array.isArray(phase) ? phase : phase.split(""),
+        phase: Array.isArray(phase) ? phase : (phase as any).split(""),
         time: bobTimeMeasurements[index] ?? "",
     })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
 

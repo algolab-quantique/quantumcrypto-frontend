@@ -1,5 +1,5 @@
 import React from 'react';
-import Game from '@/components/dps/play-page/game';
+import MultiGame from '@/components/dps/play-page/multi-game';
 import DPSProgressionSidebar from '@/components/shared/dps-progression-sidebar';
 
 const PlayPage = () => {
@@ -9,7 +9,7 @@ const PlayPage = () => {
             <div className="flex w-full gap-x-3 px-6 pt-5">
                 <DPSProgressionSidebar/>
             </div>
-            <Game/>
+            <MultiGame/>
         </div>
     );
 };

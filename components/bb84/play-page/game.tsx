@@ -1,5 +1,18 @@
 'use client';
 
+/**
+ * BB84 Game Container
+ * 
+ * NOTE: Unlike E91 and DPS, this single component handles both solo and multiplayer modes.
+ * The child tab components (e.g. AliceExchangeTab, BobExchangeTab) conditionally branch
+ * based on the `playingSolo` flag.
+ * 
+ * TODO: In the future, this file should be split into `solo-game.tsx` and `multi-game.tsx`
+ * to align with the E91 and DPS protocols, separating concerns and lifecycles cleanly.
+ * (See Task 25 in tasks_todo.md)
+ */
+
+
 import React, {useEffect, useRef, useCallback} from 'react';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab

@@ -10,8 +10,8 @@ import {create} from 'zustand';
 const initialState = {
     evePresent:          false,
     validationIndices:   [] as number[],
-    alicePhotons:        [] as string[],   // was wrongly typed string[][] in original
-    alicePhases:         [] as string[],   // was wrongly typed string[][] in original
+    alicePhotons:        [] as string[][],
+    alicePhases:         [] as string[][],
     bobTimeMeasurements: [] as string[],
     inferredPhases:      [] as string[],
     keyBits:             [] as string[],
@@ -35,8 +35,8 @@ const initialState = {
 type DPSRoomStateSchema = typeof initialState;
 
 interface DPSActions {
-    setAlicePhotons:        (photons: string[]) => void;
-    setAlicePhases:         (phases: string[]) => void;
+    setAlicePhotons:        (photons: string[][]) => void;
+    setAlicePhases:         (phases: string[][]) => void;
     setBobTimeMeasurements: (measurements: string[]) => void;
     setInferredPhases:      (bits: string[]) => void;
     setKeyBits:             (bits: string[]) => void;

@@ -53,7 +53,7 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         .filter(index => index !== null);
 
     const validEntries = validIndices.map(index => ({
-        phase: Array.isArray(alicePhases[index]) ? alicePhases[index] : alicePhases[index].split(""),
+        phase: Array.isArray(alicePhases[index]) ? alicePhases[index] : (alicePhases[index] as any).split(""),
         time: bobTimeMeasurements[index],
         photon: alicePhotons[index] || '-',
     }));

@@ -55,7 +55,7 @@ const SoloAliceMessagingTab = () => {
 
             // 1. Calculate Bob's Key from measurements
             const validEntries = alicePhases.map((phase, index) => ({
-                phase: Array.isArray(phase) ? phase : phase.split(""),
+                phase: Array.isArray(phase) ? phase : (phase as any).split(""),
                 time: bobTimeMeasurements[index] ?? "",
             })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
 

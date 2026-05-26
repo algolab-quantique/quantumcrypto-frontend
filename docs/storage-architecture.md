@@ -31,16 +31,16 @@ That means solo mode should:
 2. restore from `localStorage` on mount,
 3. clear its own keys when starting a fresh run or leaving the game.
 
-### Multiplayer mode
-Multiplayer mode has a backend room and WebSocket connection, so the server should remain the truth for the live game. `localStorage` should only help the client recover after refresh or reconnect.
+### Component File Separation (Solo vs. Multiplayer)
 
-That means multiplayer should:
+To keep concerns clearly separated, we split solo play and multiplayer play into distinct files where appropriate:
 
-1. save enough client-side state to reconnect,
-2. restore identity and room context after refresh,
-3. reconnect to the play room if the game is still active,
-4. avoid over-clearing state before the restore path has a chance to run,
-5. clean stale completed-game storage once the result is acknowledged.
+*   **Solo mode** uses `solo-game.tsx`. Since it runs entirely locally, it executes synchronous, immediate state mutations.
+*   **Multiplayer mode** uses `multi-game.tsx` (previously `game.tsx`). It is asynchronous and event-driven, mutating state in response to WebSocket messages broadcast by the server.
+
+Having separate files avoids wrapping every state update and UI render block in complex `if (playingSolo)` conditions, resulting in cleaner, more maintainable code.
+
+*   *Note: BB84 currently still uses a unified `game.tsx` for both modes. Splitting BB84 into `solo-game.tsx` and `multi-game.tsx` is planned for future cleanup (see Task 25 in tasks_todo.md).*
 
 ## Shared Storage Layers
 
@@ -127,7 +127,7 @@ E91 solo is a valid localStorage-first implementation.
 Relevant files:
 
 - [components/e91/home-page/e91-game-form-v3.tsx](components/e91/home-page/e91-game-form-v3.tsx)
-- [components/e91/play-page/game.tsx](components/e91/play-page/game.tsx)
+- [components/e91/play-page/multi-game.tsx](components/e91/play-page/multi-game.tsx)
 - [store/e91/e91-room-store.ts](store/e91/e91-room-store.ts)
 - [store/e91/e91-progress-store.ts](store/e91/e91-progress-store.ts)
 - [lib/e91/utils.ts](lib/e91/utils.ts)
@@ -181,7 +181,7 @@ DPS solo is the most defensive hydration implementation in the repo.
 Relevant files:
 
 - [components/dps/home-page/dps-game-form-v3.tsx](components/dps/home-page/dps-game-form-v3.tsx)
-- [components/dps/play-page/game.tsx](components/dps/play-page/game.tsx)
+- [components/dps/play-page/multi-game.tsx](components/dps/play-page/multi-game.tsx)
 - [store/dps/dps-room-store.ts](store/dps/dps-room-store.ts)
 - [store/dps/dps-progress-store.ts](store/dps/dps-progress-store.ts)
 - [lib/dps/utils.ts](lib/dps/utils.ts)
