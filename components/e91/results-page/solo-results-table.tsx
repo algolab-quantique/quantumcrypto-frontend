@@ -62,8 +62,6 @@ const SoloResultsTable = ({
 
     const handleHomeMenu = () => {
         clearE91LocalStorage();
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
         router.replace('/');
     };
 

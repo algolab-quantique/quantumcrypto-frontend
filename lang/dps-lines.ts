@@ -79,6 +79,7 @@ export const dpsLines: LanguageItem[] = [
         'component.results.seeResults': 'See Results',
         'component.game.leftGame' : 'Left Game',
         'component.gameRestart.playAgain': 'Play again',
+        'component.return.returnToMain': 'Return to main menu',
     },
     {
         // ... (French translations)
@@ -150,6 +151,7 @@ export const dpsLines: LanguageItem[] = [
         'component.results.seeResults': 'Voir les résultats',
         'component.game.leftGame' : 'Quitter le jeux',
         'component.gameRestart.playAgain': 'Rejouer',
+        'component.return.returnToMain': 'Retour au menu principal',
     },
     {
         // ... (Spanish translations)
@@ -225,5 +227,6 @@ export const dpsLines: LanguageItem[] = [
         'component.results.seeResults': 'Ver resultados',
         'component.game.leftGame' : 'Abandonar el juego',
         'component.gameRestart.playAgain': 'Jugar de nuevo',
+        'component.return.returnToMain': 'Regresar al menú principal',
     }
 ];

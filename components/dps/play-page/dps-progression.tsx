@@ -86,7 +86,11 @@ const DPSProgression = () => {
                     <Button onClick={restartWithSwappedRoles}>
                         {localize('component.gameRestart.playAgain')}
                     </Button>
-                    <Button onClick={goToMainMenu}>{localize('component.game.leftGame')}</Button>
+                    <Button onClick={goToMainMenu}>
+                        {playingSolo 
+                            ? localize('component.return.returnToMain') 
+                            : localize('component.game.leftGame')}
+                    </Button>
                 </div>
             </div>}
         </GameProgression>
