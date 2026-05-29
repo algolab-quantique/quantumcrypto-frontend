@@ -35,27 +35,39 @@
 
 ---
 
-### 24. 🟡 Wire `hydrateFromStorage()` in Game Containers (BB84 / E91 / DPS)
+### 24. 🟡 Multiplayer Refresh / Reconnect Recovery (BB84 / E91 / DPS)
 
 **Status**: 🟡 TODO  
 **Date Added**: May 26, 2026  
 **Priority**: 🟡 MEDIUM  
-**Context**: Solo mode restoration works fine (handles its own store hydration). Multiplayer modes run through the `multi-game.tsx` (E91 / DPS) and `game.tsx` (BB84) containers, which either duplicate hydration logic manually or skip it entirely.
+**Context**: Solo mode restoration works well and is intentionally `localStorage`-first. Multiplayer should use a different rule: the backend room is the source of truth for shared protocol facts, while `localStorage` is only a recovery cache for identity, local UI checkpoint, transcript, and drafts.
+
+For this educational app, refresh must not blindly jump a player to the most advanced backend state. Multiplayer recovery should be **backend-authoritative but player-paced**:
+- reconnect to the backend room first,
+- get a room snapshot or ordered event history from the backend when available,
+- compare it with the local player's last UI checkpoint,
+- guide the player through any missed protocol steps in order,
+- disable multiplayer actions while disconnected,
+- if reconnect fails, offer retry / exit / continue locally as a solo-style simulation.
+
+Short term, the frontend may keep using the existing local snapshot fallback where the backend does not yet provide a reconnect snapshot. Long term, BB84/E91/DPS should all converge on backend snapshot recovery.
 
 **Current State per Protocol**:
 
-| Protocol | Component File | Hydration function exported? | game.tsx/multi-game.tsx restoration |
+| Protocol | Component File | Hydration function exported? | Current restoration |
 |----------|----------------|------------------------------|-------------------------------------|
-| **BB84** | `components/bb84/play-page/game.tsx` (Shared) | ✅ `hydrateBB84ProgressStore()` | Manual inline reads for step/tab/lines (duplicated logic) |
+| **BB84** | `components/bb84/play-page/multi-game.tsx` | ✅ `hydrateBB84ProgressStore()` | Manual inline reads for step/tab/lines; restores local room snapshot and reconnects. Needs strategy cleanup and `playingMultiplayer` check. |
 | **E91** | `components/e91/play-page/multi-game.tsx` | ✅ `hydrateE91ProgressStore()` | Manual reads only inside `playingMultiplayer && !isPlayRoomConnected` branch. |
 | **DPS** | `components/dps/play-page/multi-game.tsx` | ✅ `hydrateDPSProgressStore()` | **No restoration at all** — needs `hasInitialized` ref, room restore, step/tab/lines reads. |
 
 **What to do**:
 
-#### Sub-task A: BB84 (Safe dedup — identical behaviour)
-- [ ] Replace manual `bb84Step`/`bb84Tab`/`bb84DisplayedLines` reads in `components/bb84/play-page/game.tsx` (lines ~74-111) with `hydrateBB84ProgressStore()`
-- [ ] Keep `restoreGame(gameData)` and config restores (`photonNumber`, `gameHasEve`, `validationBitsLength`) as-is — they belong to different stores
-- [ ] The `hasInitialized` ref stays since it guards all operations
+#### Sub-task A: BB84 (Clarify and harden current frontend recovery)
+- [ ] Confirm/set `playingMultiplayer: true` for BB84 when roles are assigned so refresh enters the multiplayer recovery branch.
+- [ ] Replace manual `bb84Step`/`bb84Tab`/`bb84DisplayedLines` reads in `components/bb84/play-page/multi-game.tsx` with `hydrateBB84ProgressStore()`.
+- [ ] Keep `restoreGame(gameData)` and config restores (`photonNumber`, `gameHasEve`, `validationBitsLength`) as the current local fallback until backend snapshots exist.
+- [ ] Keep the `hasInitialized` ref since it guards all mount-time recovery operations.
+- [ ] Document the backend requirement: on reconnect, BB84 should eventually receive a room snapshot or ordered event history instead of trusting only `localStorage`.
 
 #### Sub-task B: E91 (Dedup & clean up)
 - [ ] Replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads in `components/e91/play-page/multi-game.tsx` with `hydrateE91ProgressStore()`
@@ -71,21 +83,24 @@
 
 ---
 
-### 25. 🟢 Architecture: Split BB84 `game.tsx` into `solo-game.tsx` and `multi-game.tsx`
+### 25. ✅ Architecture: Split BB84 `game.tsx` into `solo-game.tsx` and `multi-game.tsx`
 
-**Status**: 🟢 FUTURE TODO  
+**Status**: ✅ COMPLETED / DOCS UPDATED  
 **Date Added**: May 26, 2026  
-**Priority**: 🟢 LOW (For Code Cleanliness)
+**Priority**: ✅ DONE
 
-**Context**: In E91 and DPS, solo and multiplayer games are split into separate components (`solo-game.tsx` vs `multi-game.tsx`), keeping their concerns and lifecycles decoupled. In BB84, they are combined in `components/bb84/play-page/game.tsx`.
+**Context**: This task is no longer a future TODO. BB84 now follows the same top-level file split as E91 and DPS:
+- Solo container: `components/bb84/play-page/solo-game.tsx`
+- Multiplayer container: `components/bb84/play-page/multi-game.tsx`
+- Route switch: `app/(main)/bb84/play/page.tsx` chooses between them based on `playingSolo`.
 
 **Task**:
-- [ ] Extract the solo play code from `components/bb84/play-page/game.tsx` into a new `components/bb84/play-page/solo-game.tsx` file.
-- [ ] Rename the multiplayer-only container to `components/bb84/play-page/multi-game.tsx`.
-- [ ] Update `app/(main)/bb84/play/page.tsx` to route between them based on `playingSolo`.
-- [ ] Remove `playingSolo` checking complexity from BB84's tabs.
+- [x] Extract the solo play code into `components/bb84/play-page/solo-game.tsx`.
+- [x] Create the multiplayer-only container at `components/bb84/play-page/multi-game.tsx`.
+- [x] Update `app/(main)/bb84/play/page.tsx` to route between them based on `playingSolo`.
+- [ ] Future cleanup: BB84 still shares several tab components between solo and multiplayer, so some internal `playingSolo` branching remains.
 
-**Estimated Time**: ~1.5 hours
+**Note**: Keep this task as historical context only. New work should happen under Task 24 and protocol-specific cleanup tasks.
 
 ---
 
