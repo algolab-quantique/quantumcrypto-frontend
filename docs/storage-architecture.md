@@ -74,6 +74,19 @@ Having separate files avoids wrapping every state update and UI render block in 
 
 *   *Note: BB84 has now been split into `solo-game.tsx` and `multi-game.tsx`. Some BB84 tab components are still shared between both modes and may still branch internally on `playingSolo`.*
 
+### Completed Multiplayer Games
+
+A completed multiplayer game has two separate states:
+
+- completed play state: stored locally so refresh restores the felicitation screen
+- results state: loaded by the results page from the backend
+
+Refresh on the completed play page should not automatically open the results page.
+It should restore the completed play screen and keep the user in control.
+
+When the user clicks "Voir les résultats", the app navigates to the results route.
+That route opens its own results WebSocket and fetches player data from the backend.
+
 ## Shared Storage Layers
 
 Across all three protocols, the persistence model is usually split into three layers:
