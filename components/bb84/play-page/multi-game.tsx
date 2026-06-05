@@ -11,7 +11,8 @@
  * - Show role-appropriate welcome messages on a fresh session.
  * - On page refresh mid-game: detect a disconnected WebSocket and attempt to
  *   reconnect using the player session saved in `bb84PlayerData`.
- * - Redirect to the results page if the game was already completed before refresh.
+ * - On completed game refresh: restore the félicitations screen locally
+ *   (no auto-redirect to results; the user navigates there explicitly).
  *
  * NOTE: Unlike E91 and DPS, BB84 does not have separate multiplayer tab components.
  * The shared tab components (AliceExchangeTab, BobExchangeTab, etc.) branch
@@ -19,7 +20,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab from '@/components/bb84/play-page/tabs/alice-exchange-tab';
 import BobExchangeTab from '@/components/bb84/play-page/tabs/bob-exchange-tab';
@@ -44,7 +45,7 @@ const MultiGame = () => {
     // Guard against React StrictMode double-invocation
     const hasInitialized = useRef(false);
 
-    const router = useRouter();
+
 
     const polarIcons = [
         // eslint-disable-next-line react/jsx-key
@@ -81,22 +82,11 @@ const MultiGame = () => {
         };
 
         if (playingMultiplayer && !isPlayRoomConnected) {
-            // ── Page refresh mid-game: restore state and reconnect ──────────
+            // ── Page refresh: restore state and reconnect if needed ─────────
 
             const gameData = getItem('bb84GameData');
 
-            // If the game was already completed before the refresh, skip
-            // restoration and send the player straight to the results page.
-            if (gameData?.gameSuccess) {
-                const playerData = getItem('bb84PlayerData');
-                if (playerData?.gameCode) {
-                    setPlayingMultiplayer(false);
-                    router.replace(`/games/bb84/${playerData.gameCode}/results`);
-                    return;
-                }
-            }
-
-            // Restore room state (bases, bits, cipher, etc.)
+            // Restore room state (bases, bits, cipher, gameSuccess, etc.)
             if (gameData) restoreGame(gameData);
 
             // Restore local UI checkpoint: step, active tab, narrative lines.
@@ -112,7 +102,7 @@ const MultiGame = () => {
             const savedValidationBitsLength = getItem('bb84ValidationBitsLength');
             if (savedValidationBitsLength) setValidationBitsLength(savedValidationBitsLength);
 
-            // Attempt WebSocket reconnection using the saved player session
+            // Restore player identity from saved session
             const playerData = getItem('bb84PlayerData');
             if (playerData?.gameCode && playerData?.role && playerData?.room) {
                 setGameCode(playerData.gameCode);
@@ -120,7 +110,13 @@ const MultiGame = () => {
                 if (playerData.partner) usePlayerStore.getState().setPartner(playerData.partner);
                 if (playerData.playerName) usePlayerStore.getState().setPlayerName(playerData.playerName);
                 if (playerData.gameHasEve !== undefined) setGameHasEve(playerData.gameHasEve);
-                connectToPlayRoom('bb84', playerData.gameCode, playerData.role, playerData.room);
+
+                // Only reconnect WebSocket if game is still in progress.
+                // Completed games restore the félicitations screen locally —
+                // the user navigates to results explicitly via "Voir les résultats".
+                if (!gameData?.gameSuccess) {
+                    connectToPlayRoom('bb84', playerData.gameCode, playerData.role, playerData.room);
+                }
             } else {
                 // No valid session data — cannot reconnect, reset multiplayer flag
                 setPlayingMultiplayer(false);

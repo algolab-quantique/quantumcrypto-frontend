@@ -18,13 +18,13 @@ import {
     Minus,
     Tally1, Tally2, Tally3, Tally4,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
 import { useEffect, useRef } from 'react';
 import CHSHTab from './tabs/CHSH-tab';
 
 
 const Game = () => {
-    const router = useRouter();
+
     const hasInitialized = useRef(false);
 
     const polarIcons =
@@ -66,17 +66,6 @@ const Game = () => {
             // Restore E91 game data
             const gameData = getItem('e91GameData');
 
-            // Check if game was already completed - redirect to results
-            if (gameData && gameData.gameSuccess) {
-                const playerData = getItem('e91PlayerData');
-                if (playerData && playerData.gameCode) {
-                    // Clear multiplayer flag and redirect to results
-                    setPlayingMultiplayer(false);
-                    router.replace(`/games/e91/${playerData.gameCode}/results`);
-                    return;
-                }
-            }
-
             if (gameData) {
                 restoreGame(gameData);
             }
@@ -104,7 +93,7 @@ const Game = () => {
                 setPhotonNumber(savedPhotonNumber);
             }
 
-            // Try to reconnect WebSocket
+            // Restore player identity and reconnect WebSocket if needed
             const playerData = getItem('e91PlayerData');
             if (playerData && playerData.gameCode && playerData.role && playerData.room) {
                 setGameCode(playerData.gameCode);
@@ -121,8 +110,13 @@ const Game = () => {
                 if (playerData.gameHasEve !== undefined) {
                     setGameHasEve(playerData.gameHasEve);
                 }
-                // Attempt to reconnect to play room
-                connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
+
+                // Only reconnect WebSocket if game is still in progress.
+                // Completed games restore the félicitations screen locally —
+                // the user navigates to results explicitly via "Voir les résultats".
+                if (!gameData?.gameSuccess) {
+                    connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
+                }
             } else {
                 // No valid session data, reset multiplayer flag
                 setPlayingMultiplayer(false);
