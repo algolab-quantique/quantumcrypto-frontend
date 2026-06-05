@@ -71,6 +71,21 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
         return inputs;
     });
 
+    // Fix: Reset basisInputs if photonNumber changes (e.g. after refresh/restore)
+    useEffect(() => {
+        setBasisInputs(() => {
+            const inputs: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                inputs.push({
+                    value: '0',
+                    touched: false,
+                    error: true,
+                });
+            }
+            return inputs;
+        });
+    }, [photonNumber]);
+
     const onPolarClick = (index: number) => {
         const newPolarList = [...basisInputs];
         const currentIconValue = newPolarList[index].value;

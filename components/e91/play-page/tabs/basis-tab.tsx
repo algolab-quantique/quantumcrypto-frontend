@@ -168,6 +168,29 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
         return categories;
     });
 
+    /**
+     * Reset local state when store is reset (after restartGame).
+     * When aliceBases becomes empty, it means resetRoom() was called.
+     * We need to reinitialize categoryList and validatedBits for the new game.
+     */
+    useEffect(() => {
+        if (aliceBases.length === 0) {
+            // Reset categoryList
+            const newCategories: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                newCategories.push({
+                    value: '0',
+                    touched: false,
+                    error: true,
+                });
+            }
+            setCategoryList(newCategories);
+
+            // Reset validatedBits (will be empty since bits are empty)
+            setValidatedBits([]);
+        }
+    }, [aliceBases.length, photonNumber]);
+
     const onCategoryClick = (index: number) => {
         const newCategoryList = [...categoryList];
         const newCategory = { ...newCategoryList[index] };
@@ -364,9 +387,9 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
                                             ' border-secondary' +
                                             ' w-10 text-lg text-center' +
                                             ' m-auto align-center pt-1.5 ',
-                                            validatedBits[i].error ?
+                                            validatedBits[i]?.error ?
                                                 'border-red' : '')}>
-                                        <p>{validatedBits[i].value}</p>
+                                        <p>{validatedBits[i]?.value}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell>
