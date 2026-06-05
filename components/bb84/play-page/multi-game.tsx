@@ -27,7 +27,7 @@ import BasisTab from '@/components/bb84/play-page/tabs/basis-tab';
 import MessagingTab from '@/components/bb84/play-page/tabs/messaging-tab';
 import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
-import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
+import { hydrateBB84ProgressStore, useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
@@ -55,7 +55,7 @@ const MultiGame = () => {
 
     const { localize } = useLanguage();
     const { step, displayedLines, bb84Tab } = useBB84ProgressStore();
-    const { pushLines, setBb84Tab, setStep, setDisplayedLines } = useBB84ProgressStore();
+    const { pushLines, setBb84Tab } = useBB84ProgressStore();
     const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
     const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength, setGameCode } = useBB84GameStore();
     const { restoreGame, gameSuccess } = useBB84RoomStore();
@@ -99,15 +99,8 @@ const MultiGame = () => {
             // Restore room state (bases, bits, cipher, etc.)
             if (gameData) restoreGame(gameData);
 
-            // Restore progress: step, active tab, narrative lines
-            const savedStep = getItem('bb84Step');
-            if (savedStep !== null) setStep(savedStep);
-
-            const savedTab = localStorage.getItem('bb84Tab');
-            if (savedTab) setBb84Tab(savedTab);
-
-            const savedLines = getItem('bb84DisplayedLines');
-            if (savedLines && savedLines.length > 0) setDisplayedLines(savedLines);
+            // Restore local UI checkpoint: step, active tab, narrative lines.
+            hydrateBB84ProgressStore();
 
             // Restore game config (set by the lobby before entering this page)
             const savedPhotonNumber = getItem('bb84PhotonNumber');

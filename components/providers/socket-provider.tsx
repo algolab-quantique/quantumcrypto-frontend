@@ -20,7 +20,7 @@ import {
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-import { clearBB84LocalStorage, restartWithoutEve } from '@/lib/bb84/utils';
+import { restartWithoutEve } from '@/lib/bb84/utils';
 import {
     A_BASES_EVENT,
     A_CIPHER_EVENT,
@@ -373,6 +373,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             };
                             useBB84GameStore.setState({ gameHasEve: gameHasEve });
                             useBB84RoomStore.setState({ evePresent });
+                            // Persist the multiplayer session flag so /bb84/play can recover
+                            // directly after a browser refresh instead of bouncing to landing.
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });
 
                             localStorage.setItem('bb84PlayerData', JSON.stringify(playerData));
                             localStorage.setItem('bb84Step', JSON.stringify(useBB84ProgressStore.getState().step));
@@ -1027,7 +1030,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useBB84RoomStore.getState().setGameSuccess(true);
-                        clearBB84LocalStorage();
+                        // Keep completed-game recovery data so a refresh can redirect
+                        // to the results page. Cleanup happens from results/home flows.
                     } else if (gameType === 'dps') {
                         if (usePlayerStore.getState().playerRole === 'B') {
                             useDPSProgressStore.getState().pushLines([

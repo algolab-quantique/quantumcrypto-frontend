@@ -131,6 +131,12 @@ const BB84MainV3: React.FC = () => {
             setPartner(partner);
             setPlayerRole(role);
             setPlayerName(playerName);
+            if (role && previousGame.room) {
+                // bb84PlayerData is written only for multiplayer rooms. Restoring
+                // these flags lets the next /bb84/play refresh recover in place.
+                setPlayingMultiplayer(true);
+                setPlayingSolo(false);
+            }
         }
 
         const stepJSON = getItem('bb84Step');
