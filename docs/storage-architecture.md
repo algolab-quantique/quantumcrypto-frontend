@@ -1,5 +1,11 @@
 # Storage, Hydration, and Reconnection Plan
 
+> [!NOTE]
+> This document currently contains both the previous storage/reconnect thinking
+> and the new target architecture direction. Keep all previous text for now.
+> Once the shared protocol lifecycle architecture is implemented and validated,
+> rewrite this document completely so it describes only the final architecture.
+
 ## Goal
 
 Make BB84, E91, and DPS behave with the same mental model:
@@ -13,6 +19,183 @@ The app should feel consistent across protocols:
 - back navigation should be guarded only when it is actually needed,
 - completed games should cleanly exit and clear stale data,
 - restore logic should be explicit, predictable, protocol-specific, and paced for learning.
+
+## Target Architecture: Shared Lifecycle, Protocol-Specific State
+
+The important distinction is this:
+
+- protocol data stays protocol-specific,
+- session lifecycle becomes shared and standard.
+
+BB84, E91, and DPS do not need to have the same room state shape. Each protocol
+has different scientific steps and therefore different fields:
+
+- BB84 has photons, Alice/Bob bases, key bits, validation bits, cipher data.
+- E91 has measurements, entangled-pair classifications, valid/invalid bit
+  partitions, CHSH decisions, preferences, dice state, and cipher data.
+- DPS has phases, arrival times, inference state, validation state, and cipher
+  data.
+
+Those protocol-specific room definitions should remain protocol-specific.
+The architecture problem is not that the room states are different. The problem
+is that starting, restoring, reconnecting, completing, replaying, and clearing
+are currently implemented as separate habits per protocol.
+
+### How the Target Model Maps to the Current Code
+
+The app already has the pieces of a session. They are just not governed by one
+shared lifecycle contract yet.
+
+| Concept | Current implementation |
+| --- | --- |
+| Player identity and mode | `store/player-store.ts` |
+| Game configuration | `store/bb84/bb84-game-store.ts`, `store/e91/e91-game-store.ts`, `store/dps/dps-game-store.ts` |
+| Protocol room state | `store/bb84/bb84-room-store.ts`, `store/e91/e91-room-store.ts`, `store/dps/dps-room-store.ts` |
+| UI progress checkpoint | `store/bb84/bb84-progress-store.ts`, `store/e91/e91-progress-store.ts`, `store/dps/dps-progress-store.ts` |
+| Recovery snapshot | protocol keys in `localStorage`, such as `bb84GameData`, `e91GameData`, `bb84Step`, `e91Step` |
+| Multiplayer events | `components/providers/socket-provider.tsx` |
+| Play-page recovery | `components/*/play-page/solo-game.tsx` and `components/*/play-page/multi-game.tsx` |
+
+So a `ProtocolSession` is not a replacement for all stores. It is a mental model
+and future helper layer that coordinates the stores already in the app:
+
+```ts
+ProtocolSession =
+  player-store
+  + protocol game-store
+  + protocol room-store
+  + protocol progress-store
+  + protocol localStorage snapshot
+```
+
+A `ProtocolCheckpoint` is the durable point the app can restore from:
+
+```ts
+ProtocolCheckpoint =
+  player identity
+  + mode
+  + game config
+  + room-store snapshot
+  + progress-store snapshot
+  + displayed transcript lines
+```
+
+The checkpoint should represent the last completed, committed protocol action.
+It should not represent every temporary UI interaction. For example, a half-filled
+form, an in-progress drag action, or a not-yet-submitted answer is usually a
+draft, not a protocol checkpoint.
+
+### Shared Lifecycle Helpers
+
+The long-term architecture should introduce a small shared lifecycle layer with
+functions shaped like this:
+
+```ts
+type Protocol = 'bb84' | 'e91' | 'dps';
+type GameMode = 'solo' | 'multiplayer';
+
+startFreshProtocolSession(protocol: Protocol, mode: GameMode): void;
+saveProtocolCheckpoint(protocol: Protocol): void;
+restoreProtocolCheckpoint(protocol: Protocol): void;
+completeProtocolSession(protocol: Protocol): void;
+abandonProtocolSession(protocol: Protocol): void;
+clearProtocolStorage(protocol: Protocol): void;
+```
+
+These helpers should not erase protocol-specific room definitions. Instead, each
+protocol supplies its own adapter:
+
+```ts
+interface ProtocolLifecycleAdapter<TGameState, TRoomState, TProgressState> {
+  storageKeys: string[];
+  getGameState(): TGameState;
+  restoreGameState(state: Partial<TGameState>): void;
+  getRoomState(): TRoomState;
+  restoreRoomState(state: Partial<TRoomState>): void;
+  resetRoomState(): void;
+  getProgressState(): TProgressState;
+  hydrateProgressState(): void;
+  resetProgressState(): void;
+}
+```
+
+This gives the app one lifecycle and many protocol implementations.
+
+### Lifecycle Rules
+
+#### First protocol card click
+
+1. Check whether the selected protocol has a recoverable active session.
+2. If yes, offer rejoin/resume.
+3. If no, create a completely empty protocol session.
+4. Clear only stale keys for that protocol, not unrelated protocols or global settings.
+5. Show solo/multiplayer choices.
+
+#### Start solo
+
+1. Clear the selected protocol namespace.
+2. Reset that protocol's room and progress stores.
+3. Set `playingSolo=true` and `playingMultiplayer=false`.
+4. Save fresh config and an initial room snapshot.
+5. Navigate to the play page.
+6. Commit a checkpoint after every completed protocol action.
+
+#### Start multiplayer
+
+1. Clear the selected protocol namespace before create/join.
+2. While in the lobby, avoid pretending the play session is active.
+3. When the server assigns roles, save player identity, room, role, partner,
+   game config, and the initial room facts such as `evePresent`.
+4. Set `playingMultiplayer=true` and `playingSolo=false`.
+5. Connect to the play room.
+6. Commit checkpoints only after local action or server event confirmation.
+
+#### Refresh / reconnect
+
+1. Read `player-storage` to know whether the user was in solo or multiplayer.
+2. Read the selected protocol's player/session data.
+3. Read the selected protocol's checkpoint.
+4. Restore only if the session belongs to the selected protocol and mode.
+5. If `gameSuccess=true`, do not reconnect the play socket; restore the completed
+   play screen and let the user choose results/home/replay.
+6. If multiplayer is active, reconnect to the play room.
+7. When backend snapshot/event-history support exists, backend truth wins for
+   shared protocol facts.
+8. Until backend snapshot support exists, use the local checkpoint as a temporary
+   frontend fallback.
+9. Never infer the current step only from array lengths. Use the explicit
+   progress checkpoint.
+
+#### Completed game
+
+1. Set `gameSuccess=true`.
+2. Keep the completed local snapshot so refresh restores the felicitation screen.
+3. Do not automatically navigate to results on refresh.
+4. "View results" opens the results route.
+5. "Home" clears the protocol session.
+6. "Replay" starts a fresh empty session intentionally.
+
+### Recommended Migration Order
+
+Do not start with the big shared lifecycle refactor.
+
+Recommended order:
+
+1. Make E91 multiplayer follow the current BB84 multiplayer recovery behavior.
+2. Commit that stable E91/BB84 parity point.
+3. Write or finalize the shared lifecycle contract.
+4. Build lifecycle helpers/adapters.
+5. Migrate BB84 first because it is the current working multiplayer reference.
+6. Migrate E91 second because it has the more complex protocol state.
+7. Migrate DPS after BB84 and E91 are stable.
+
+This order gives a known-good commit before the architecture refactor. If the
+refactor breaks behavior, the app can return to a stable point.
+
+### Diagrams
+
+See [Protocol Session Lifecycle Diagrams](protocol-session-lifecycle-diagrams.md)
+for Mermaid class and sequence diagrams describing the target lifecycle.
 
 ## Core Design Rule
 

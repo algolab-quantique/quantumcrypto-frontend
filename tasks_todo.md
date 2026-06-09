@@ -56,21 +56,25 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 
 | Protocol | Component File | Hydration function exported? | Current restoration |
 |----------|----------------|------------------------------|-------------------------------------|
-| **BB84** | `components/bb84/play-page/multi-game.tsx` | ✅ `hydrateBB84ProgressStore()` | Manual inline reads for step/tab/lines; restores local room snapshot and reconnects. Needs strategy cleanup and `playingMultiplayer` check. |
+| **BB84** | `components/bb84/play-page/multi-game.tsx` | ✅ `hydrateBB84ProgressStore()` | Uses the progress hydrator, restores local room snapshot/config, and reconnects. Current working multiplayer reference. |
 | **E91** | `components/e91/play-page/multi-game.tsx` | ✅ `hydrateE91ProgressStore()` | Manual reads only inside `playingMultiplayer && !isPlayRoomConnected` branch. |
 | **DPS** | `components/dps/play-page/multi-game.tsx` | ✅ `hydrateDPSProgressStore()` | **No restoration at all** — needs `hasInitialized` ref, room restore, step/tab/lines reads. |
 
 **What to do**:
 
 #### Sub-task A: BB84 (Clarify and harden current frontend recovery)
-- [ ] Confirm/set `playingMultiplayer: true` for BB84 when roles are assigned so refresh enters the multiplayer recovery branch.
-- [ ] Replace manual `bb84Step`/`bb84Tab`/`bb84DisplayedLines` reads in `components/bb84/play-page/multi-game.tsx` with `hydrateBB84ProgressStore()`.
+- [ ] Verify BB84 role assignment still sets `playingMultiplayer: true` and `playingSolo: false` so refresh enters the multiplayer recovery branch.
+- [x] Use `hydrateBB84ProgressStore()` in `components/bb84/play-page/multi-game.tsx` for step/tab/line recovery.
 - [ ] Keep `restoreGame(gameData)` and config restores (`photonNumber`, `gameHasEve`, `validationBitsLength`) as the current local fallback until backend snapshots exist.
 - [ ] Keep the `hasInitialized` ref since it guards all mount-time recovery operations.
 - [ ] Document the backend requirement: on reconnect, BB84 should eventually receive a room snapshot or ordered event history instead of trusting only `localStorage`.
 
 #### Sub-task B: E91 (Dedup & clean up)
-- [ ] Replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads in `components/e91/play-page/multi-game.tsx` with `hydrateE91ProgressStore()`
+- [ ] Replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads in `components/e91/play-page/multi-game.tsx` with `hydrateE91ProgressStore()`.
+- [ ] Restore E91 multiplayer config with the same shape as BB84: `e91PhotonNumber`, `e91GameHasEve`, and `e91ValidationBitsLength`.
+- [ ] On E91 role assignment, set `playingMultiplayer: true` and `playingSolo: false`.
+- [ ] On E91 rejoin, reassert `playingMultiplayer: true` and `playingSolo: false` before reconnecting.
+- [ ] Confirm completed-game refresh restores the felicitation screen without reconnecting the play socket.
 
 #### Sub-task C: DPS (Net-new restore logic for multiplayer — needs testing)
 - [ ] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`
@@ -101,6 +105,57 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 - [ ] Future cleanup: BB84 still shares several tab components between solo and multiplayer, so some internal `playingSolo` branching remains.
 
 **Note**: Keep this task as historical context only. New work should happen under Task 24 and protocol-specific cleanup tasks.
+
+---
+
+### 26. 🟡 Architecture: Shared Protocol Session Lifecycle
+
+**Status**: 🟡 DESIGN / TODO  
+**Date Added**: June 9, 2026  
+**Priority**: 🟡 MEDIUM-HIGH  
+**Depends On**: Task 24 E91 stabilization should be completed and committed first.
+
+**Context**: The current app already has the correct building blocks:
+- `player-store` for identity and solo/multiplayer flags
+- protocol `game-store` files for configuration
+- protocol `room-store` files for protocol-specific state
+- protocol `progress-store` files for current step/tab/transcript
+- protocol-specific `localStorage` keys for recovery
+
+The missing piece is a shared lifecycle contract. Protocol room state should stay protocol-specific, but starting, saving, restoring, completing, replaying, and clearing should follow one standard lifecycle across BB84, E91, DPS, and future protocols.
+
+**Reference Docs**:
+- Main architecture notes: `docs/storage-architecture.md`
+- Diagrams: `docs/protocol-session-lifecycle-diagrams.md`
+
+**Target Rule**:
+
+Protocol data stays protocol-specific. Session lifecycle becomes shared and standard.
+
+**Recommended Order**:
+1. [ ] Finish E91 multiplayer parity with BB84 under Task 24.
+2. [ ] Commit the stable E91/BB84 recovery state.
+3. [ ] Finalize the shared lifecycle contract in docs.
+4. [ ] Create shared lifecycle helper/adapters:
+   - `startFreshProtocolSession(protocol, mode)`
+   - `saveProtocolCheckpoint(protocol)`
+   - `restoreProtocolCheckpoint(protocol)`
+   - `completeProtocolSession(protocol)`
+   - `abandonProtocolSession(protocol)`
+   - `clearProtocolStorage(protocol)`
+5. [ ] Create protocol adapters for BB84, E91, and DPS.
+6. [ ] Migrate BB84 first because it is the current working multiplayer reference.
+7. [ ] Migrate E91 second because it has the more complex protocol state.
+8. [ ] Migrate DPS after BB84 and E91 are stable.
+
+**Design Notes**:
+- A `ProtocolSession` is not a replacement for existing stores. It coordinates `player-store`, protocol game store, protocol room store, protocol progress store, and localStorage snapshot.
+- A `ProtocolCheckpoint` is the last completed, committed protocol action.
+- Temporary UI input is a draft, not necessarily a checkpoint.
+- Completed games should keep their local snapshot so refresh restores the felicitation screen.
+- Home/replay should intentionally clear the protocol session and start fresh.
+
+**Estimated Time**: 1-2 days depending on how much adapter code is introduced.
 
 ---
 
