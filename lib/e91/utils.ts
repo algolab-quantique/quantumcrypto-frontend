@@ -1,3 +1,6 @@
+import useE91RoomStore from '@/store/e91/e91-room-store';
+import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
+
 export const clearE91LocalStorage = () => {
     localStorage.removeItem('e91PlayerData');
     localStorage.removeItem('e91PhotonNumber');
@@ -10,4 +13,9 @@ export const clearE91LocalStorage = () => {
     localStorage.removeItem('e91GameStartTime'); // Clear game timer for new games
     localStorage.removeItem('e91OriginalEvePresent'); // Clear original Eve state
     localStorage.removeItem('e91EveWasDetected'); // Clear Eve detection flag
+
+    if (typeof window !== 'undefined') {
+        useE91RoomStore.getState().resetRoom();
+        useE91ProgressStore.getState().resetProgress();
+    }
 }

@@ -1,3 +1,6 @@
+import useDPSRoomStore from '@/store/dps/dps-room-store';
+import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
+
 export const clearDPSLocalStorage = () => {
     localStorage.removeItem('dpsPlayerData');
     localStorage.removeItem('dpsPhotonNumber');
@@ -16,4 +19,9 @@ export const clearDPSLocalStorage = () => {
     localStorage.removeItem('dpsSoloAliceMessagingDecryptDraft');
     localStorage.removeItem('dpsSoloBobMessagingMessageDraft');
     localStorage.removeItem('dpsSoloBobMessagingCryptoDraft');
+
+    if (typeof window !== 'undefined') {
+        useDPSRoomStore.getState().resetRoom();
+        useDPSProgressStore.getState().resetProgress();
+    }
 };

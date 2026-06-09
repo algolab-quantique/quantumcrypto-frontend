@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 // @ts-ignore
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
@@ -86,6 +86,7 @@ type SocketContextType = {
     playRoomConnecting: boolean;
     connectToWaitingRoom: (data: { gameType: string, gameCode: string, playerName: string, admin: number }) => void;
     connectToPlayRoom: (gameType: string, gameCode: string, role: string, room: string) => void;
+    disconnectPlayRoom: () => void;
     startGame: (gameType: string, id: number) => void;
     sendEvent: (event: string, message?: any) => void;
     measurePhotons: (bases: string[]) => void;
@@ -125,6 +126,8 @@ const SocketContext = createContext<SocketContextType>({
     connectToWaitingRoom: () => {
     },
     connectToPlayRoom: () => {
+    },
+    disconnectPlayRoom: () => {
     },
     startGame: () => {
     },
@@ -395,7 +398,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             };
                             useE91GameStore.setState({ gameHasEve: gameHasEve });
                             useE91RoomStore.setState({ evePresent });
-                            usePlayerStore.setState({ playingMultiplayer: true });  // Mark as playing multiplayer for page refresh
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });  // Mark as playing multiplayer for page refresh
 
                             localStorage.setItem('e91PlayerData', JSON.stringify(playerData));
                             localStorage.setItem('e91Step', JSON.stringify(useE91ProgressStore.getState().step));
@@ -486,12 +489,17 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 case CONNECTED_EVENT:
                     setIsPlayRoomConnected(true);
                     setPlayRoomConnecting(false);
+                    const navigateToPlayPage = (playPath: string) => {
+                        if (window.location.pathname !== playPath) {
+                            router.replace(playPath);
+                        }
+                    };
                     if (gameType === 'bb84') {
-                        router.replace('/bb84/play');
+                        navigateToPlayPage('/bb84/play');
                     } else if (gameType === 'e91') {
-                        router.replace('/e91/play')
+                        navigateToPlayPage('/e91/play');
                     } else if (gameType === 'dps') {
-                        router.replace('/dps/play')
+                        navigateToPlayPage('/dps/play');
                     }
 
                     break;
@@ -1155,6 +1163,23 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         };
     };
 
+    const disconnectPlayRoom = useCallback(() => {
+        setPlayRoomSocket((currentSocket) => {
+            if (!currentSocket) {
+                return null;
+            }
+            try {
+                (currentSocket as any).close();
+            } catch (error) {
+                console.warn('Unable to close play room socket', error);
+            }
+            return null;
+        });
+        setIsPlayRoomConnected(false);
+        setPlayRoomConnecting(false);
+        setPlayRoomError(false);
+    }, []);
+
     const startGame = (gameType: string, id: number) => {
         if (gameType === 'bb84') {
             const payload = {
@@ -1209,6 +1234,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         };
         if (message) {
             payload.message = { ...message };
+        }
+        if (!playRoomSocket) {
+            console.error("WebSocket is null. Cannot send event:", event);
+            return;
         }
         if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
             console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
@@ -1445,6 +1474,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 playRoomConnecting,
                 connectToWaitingRoom,
                 connectToPlayRoom: connectToPlayRoom,
+                disconnectPlayRoom,
                 startGame,
                 sendEvent,
                 measurePhotons,

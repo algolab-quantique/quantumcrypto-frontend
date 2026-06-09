@@ -39,7 +39,7 @@
 
 **Status**: 🟡 TODO  
 **Date Added**: May 26, 2026  
-**Priority**: 🟡 MEDIUM  
+**Priority**: 🟠 HIGH for E91 multiplayer stabilization; 🟡 MEDIUM for BB84/DPS parity work  
 **Context**: Solo mode restoration works well and is intentionally `localStorage`-first. Multiplayer should use a different rule: the backend room is the source of truth for shared protocol facts, while `localStorage` is only a recovery cache for identity, local UI checkpoint, transcript, and drafts.
 
 For this educational app, refresh must not blindly jump a player to the most advanced backend state. Multiplayer recovery should be **backend-authoritative but player-paced**:
@@ -69,21 +69,110 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 - [ ] Keep the `hasInitialized` ref since it guards all mount-time recovery operations.
 - [ ] Document the backend requirement: on reconnect, BB84 should eventually receive a room snapshot or ordered event history instead of trusting only `localStorage`.
 
-#### Sub-task B: E91 (Dedup & clean up)
-- [ ] Replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads in `components/e91/play-page/multi-game.tsx` with `hydrateE91ProgressStore()`.
-- [ ] Restore E91 multiplayer config with the same shape as BB84: `e91PhotonNumber`, `e91GameHasEve`, and `e91ValidationBitsLength`.
-- [ ] On E91 role assignment, set `playingMultiplayer: true` and `playingSolo: false`.
-- [ ] On E91 rejoin, reassert `playingMultiplayer: true` and `playingSolo: false` before reconnecting.
-- [ ] Confirm completed-game refresh restores the felicitation screen without reconnecting the play socket.
+#### Sub-task B: E91 Multiplayer Stabilization
 
-#### Sub-task C: DPS (Net-new restore logic for multiplayer — needs testing)
+**Goal**: Make E91 multiplayer follow the current BB84 multiplayer recovery contract before starting the shared lifecycle refactor.
+
+**Validated findings from review**:
+- E91 already has `hydrateE91ProgressStore()`, but `components/e91/play-page/multi-game.tsx` still reads progress keys manually.
+- E91 role assignment already sets `playingMultiplayer: true`, but does not explicitly set `playingSolo: false`.
+- E91 `multi-game.tsx` restores `e91GameData` before validating `e91PlayerData`, so stale room state can be applied before the code knows whether the saved multiplayer session is valid.
+- E91 rejoin restores and reconnects from the form page, while `multi-game.tsx` can also restore/reconnect on mount. This creates a timing-sensitive double-restore/double-connect risk.
+- Completed-game refresh should restore the felicitation screen and skip play-socket reconnect. It should not automatically clear storage; clearing belongs to Home, Replay, or starting a fresh session.
+
+**Urgent: fix first**
+- [x] In `components/e91/play-page/multi-game.tsx`, validate `e91PlayerData` before calling `restoreGame(gameData)`.
+  - Required valid fields: `gameCode`, `role`, and `room`.
+  - If `e91PlayerData` is missing/invalid, reset `playingMultiplayer` to `false`, skip room restore, and initialize fresh welcome lines if needed.
+- [x] In the E91 role-assignment branch in `components/providers/socket-provider.tsx`, set both mode flags: `playingMultiplayer: true` and `playingSolo: false`.
+- [x] In `components/e91/home-page/e91-game-form-v3.tsx` rejoin flow, reassert `playingMultiplayer: true` and `playingSolo: false` before reconnecting.
+- [x] In `components/e91/play-page/multi-game.tsx`, replace manual `e91Step`/`e91Tab`/`e91DisplayedLines` reads with `hydrateE91ProgressStore()`.
+- [x] In `components/e91/play-page/multi-game.tsx`, restore E91 multiplayer config with BB84 parity:
+  - `e91PhotonNumber`
+  - `e91GameHasEve`
+  - `e91ValidationBitsLength`
+
+**Medium: harden after urgent fixes**
+- [ ] Decide one owner for E91 rejoin restore/reconnect:
+  - Option A: form page restores identity only, then `multi-game.tsx` owns restore/reconnect.
+  - Option B: form page restores/reconnects, and `multi-game.tsx` detects that rejoin is already in progress.
+- [ ] Use socket `playRoomConnecting` state, or an equivalent local guard, to prevent duplicate reconnect attempts during rejoin.
+- [ ] Add orphan-data handling on the E91 form page:
+  - If `e91GameData` exists but `e91PlayerData` does not, treat it as stale/orphaned multiplayer data and clear E91 storage.
+  - Preserve valid interrupted sessions by showing the rejoin dialog.
+- [ ] Verify completed E91 game refresh on `/e91/play`:
+  - `gameSuccess=true` restores the felicitation screen.
+  - The play socket is not reconnected.
+  - Home/Replay/fresh start clears the old protocol data intentionally.
+
+**Low: cleanup later**
+- [ ] Remove or reactivate the dead `GameRestartDialog` path in `components/e91/play-page/tabs/solo-CHSH-tab.tsx`.
+- [ ] Make `components/e91/play-page/graphPopup.tsx` theme-aware by replacing hardcoded white SVG text/dots with foreground-aware styling.
+- [ ] Consolidate duplicated E91 `moveToExchangeTab` helpers into one helper that accepts the correct displayed step number.
+- [ ] Keep `clearE91LocalStorage()` as the single cleanup entry point; do not add duplicate `resetRoom()` / `resetProgress()` calls next to it unless the helper is changed.
+
+#### Sub-task C: E91 Active-Game Leave / Navigation Lifecycle
+
+**Status**: ✅ URGENT FRONTEND WORK COMPLETE — partner-left behavior moved to future backend/frontend contract  
+**Context**: The E91 refresh path now works well when Alice/Bob/Admin refresh each step. In-app active-game leave is handled by the E91 play page. Browser Back/Forward intentionally follows normal browser history and relies on saved-state recovery instead of fragile fake-history trapping.
+
+**Observed tests**:
+- [x] Refreshing each step across Admin + Alice private window + Bob separate browser restores correctly.
+- [x] Clicking the `E91` title during an active game now shows a leave confirmation.
+- [x] Clicking `Cancel` in the `E91` title leave confirmation stays in the same active game/step.
+- [x] Clicking `OK` in the `E91` title leave confirmation clears the active session and navigates to `/e91`.
+- [x] E91 in-app title exit now uses the page-level custom dialog flow (`Rester dans la partie` / `Quitter la partie`) instead of `window.confirm`.
+- [x] The brief wrong render of empty step 1 during confirmed leave was replaced with a neutral `Déconnexion...` transition state.
+- [x] Browser Back fake-history trapping was removed from the E91 play route. E91 now relies on in-app leave controls plus saved-state recovery.
+- [x] Native browser unload warning was removed from E91 active play because refresh restore works and the browser cannot cleanly warn for close/change-URL while allowing refresh silently.
+- [x] Accepted E91 browser Back/Forward behavior:
+  - Back follows normal browser history instead of showing a custom warning.
+  - Returning Forward to `/e91/play` restores the saved active game state.
+  - In completed games, Forward can briefly visit `/e91/play` then continue according to browser history; this is acceptable for now because the game is already complete.
+- [x] Partner-left behavior is intentionally not solved in this urgent pass; it is tracked as Task 27 because it needs a backend/frontend event contract.
+
+**Resolved root causes**:
+- `components/e91/play-page/e91-button.tsx` was a direct `Link` to `/e91` and closed `playRoomSocket` directly. It now delegates leave requests to the E91 play page.
+- `usePreventNavigation`'s fake `popstate` trap proved fragile after refresh. E91 no longer uses it.
+- `components/e91/home-page/e91-game-form-v3.tsx` redirected to `/e91/play` when `isPlayRoomConnected` was true, even if the local active session had just been cleared. It now requires a valid active session.
+
+**Urgent next implementation**:
+- [x] Add a socket-provider action such as `disconnectPlayRoom()` or `leavePlayRoom()` that closes the play socket and resets play-room connection flags.
+- [x] Use a single E91 active-game leave handler that, after confirmation:
+  - closes/leaves the play room,
+  - clears E91 storage through `clearE91LocalStorage()`,
+  - sets `playingSolo=false` and `playingMultiplayer=false`,
+  - navigates to the intended destination (`/e91` for E91 title, `/` for main home/back exit).
+- [x] Update `components/e91/play-page/e91-button.tsx` to show the same leave confirmation instead of using a raw `Link`.
+- [x] Harden `components/e91/home-page/e91-game-form-v3.tsx` so `isPlayRoomConnected` alone cannot redirect to `/e91/play`; require a valid active E91 session too.
+- [x] Add a page-level leaving state so cleanup does not briefly render an empty/fresh multiplayer step before route navigation completes.
+- [x] Centralize E91 in-app leave behavior in `app/(main)/e91/play/page.tsx`; `components/e91/play-page/e91-button.tsx` now only requests leave and does not own cleanup/navigation.
+- [x] Remove E91 native unload warning so refresh restores directly without an extra browser popup.
+- [x] Remove E91's dependency on `usePreventNavigation()` / fake `popstate` browser-back trapping.
+- [x] Avoid redundant play-page `router.replace()` on socket reconnect when the browser is already on the correct play page.
+- [x] Document that E91 browser Back/Forward is now normal browser history, not an app-controlled leave flow. The supported clean leave path is the in-app `E91` title button.
+- [x] Move partner-left notification / computer fallback to Task 27.
+- [x] Re-test:
+  - [x] click `E91` title and cancel => remains in same game/step,
+  - [x] click `E91` title and confirm => reaches `/e91`, old game is cleared,
+  - [x] refresh during active E91 play => no warning, state restores from saved snapshot,
+  - [x] browser Back/Forward is no longer custom-trapped for E91; saved session/rejoin handles recovery if the route returns to `/e91/play`,
+
+**Follow-up notes**:
+- [ ] Add defensive parsing for corrupted `e91PlayerData` / `e91GameData` in `components/e91/home-page/e91-game-form-v3.tsx` and E91 multiplayer restore helpers.
+- [ ] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
+
+#### Sub-task D: DPS (Net-new restore logic for multiplayer — needs testing)
 - [ ] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`
 - [ ] Add `restoreGame(gameData)` call for `dpsGameData`
 - [ ] Call `hydrateDPSProgressStore()` for step/tab/lines
 - [ ] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
 - [ ] **Test carefully**: This changes observable behaviour — DPS multiplayer will start restoring state on refresh.
 
-**Estimated Time**: ~45 min
+**Estimated Time**:
+- E91 urgent stabilization: ~1 focused session
+- E91 medium hardening: ~1 additional session after urgent fixes are verified
+- DPS multiplayer parity: separate follow-up task/session
 
 ---
 
@@ -156,6 +245,46 @@ Protocol data stays protocol-specific. Session lifecycle becomes shared and stan
 - Home/replay should intentionally clear the protocol session and start fresh.
 
 **Estimated Time**: 1-2 days depending on how much adapter code is introduced.
+
+---
+
+### 27. 🟡 E91 Multiplayer: Partner Disconnected Computer Fallback
+
+**Status**: 🟡 TODO / FUTURE UX  
+**Date Added**: June 9, 2026  
+**Priority**: 🟡 LOW for now  
+**Depends On**: E91 active-game leave lifecycle and backend/player-left contract.
+
+**Context**: If one human player leaves an E91 multiplayer room, the remaining player should not remain blocked forever. Eventually, the UI should explain that the human partner disconnected and offer to continue with a computer-controlled partner.
+
+This is intentionally future work. It should not be guessed in the frontend only. The correct implementation needs a small backend/frontend contract:
+- Frontend sends an explicit leave/abandon event when a player intentionally quits an E91 play room.
+- Backend marks the player as left and broadcasts a partner-left event to the remaining player.
+- Frontend receives that event and moves into a clear "partner disconnected" UI state.
+- Computer fallback is added only after the event contract and scoring semantics are decided.
+
+**Desired UX**:
+- Bob/Alice receives a clear message such as: "Your human partner disconnected."
+- The player can choose:
+  - leave the game,
+  - wait/retry if reconnect is possible,
+  - continue with a computer partner.
+- If continuing with the computer, the app converts the remaining flow into a solo-style simulation from the last safe checkpoint.
+
+**Open questions**:
+- Does the backend currently emit a reliable player-left event for E91 play rooms?
+- What should the frontend send on intentional leave: existing `PLAYER_LEFT`, a new `LEAVE_ROOM`, or a protocol-specific `E91_PLAYER_LEFT` event?
+- What payload should the backend broadcast: leaver role, remaining role, room id, game code, reconnect timeout, last safe checkpoint?
+- What protocol state is required to convert an active E91 multiplayer game into a solo continuation?
+- Should the converted game be scored as multiplayer, solo, or a separate "continued with computer" mode?
+
+**Task**:
+- [ ] Define the E91 backend leave event sent by the quitting player.
+- [ ] Define the E91 backend partner-left event broadcast to the remaining player.
+- [ ] Add frontend receive-handler for the E91 partner-left event.
+- [ ] Add frontend "partner disconnected" state with leave/wait options.
+- [ ] Add "continue with computer" transition only after the backend event contract is stable.
+- [ ] Document scoring/result semantics before implementation.
 
 ---
 

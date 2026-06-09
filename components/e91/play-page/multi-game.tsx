@@ -11,7 +11,7 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
-import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
+import { hydrateE91ProgressStore, useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
 import {
@@ -43,9 +43,9 @@ const Game = () => {
 
     const { localize } = useLanguage();
     const { step, displayedLines, e91Tab } = useE91ProgressStore();
-    const { pushLines, setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
+    const { pushLines, setE91Tab } = useE91ProgressStore();
     const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode } = useE91GameStore();
+    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode, setValidationBitsLength } = useE91GameStore();
     const { utilizeValidBits, restoreGame } = useE91RoomStore();
     const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
 
@@ -63,6 +63,25 @@ const Game = () => {
 
         // If we have a multiplayer session but WebSocket is disconnected, try to restore
         if (playingMultiplayer && !isPlayRoomConnected) {
+            const playerData = getItem('e91PlayerData');
+
+            if (!playerData?.gameCode || !playerData?.role || !playerData?.room) {
+                setPlayingMultiplayer(false);
+
+                if (displayedLines.length === 0 && (playerRole === 'A' || playerRole === 'B')) {
+                    pushLines([
+                        {
+                            title: 'component.e91.measurement.welcome',
+                        },
+                        {
+                            title: 'component.game.step1',
+                            content: 'component.e91.measurement.start',
+                        },
+                    ]);
+                }
+                return;
+            }
+
             // Restore E91 game data
             const gameData = getItem('e91GameData');
 
@@ -70,22 +89,7 @@ const Game = () => {
                 restoreGame(gameData);
             }
 
-            // Restore progress (step, tab)
-            const savedStep = getItem('e91Step');
-            if (savedStep !== null) {
-                setStep(savedStep);
-            }
-
-            const savedTab = localStorage.getItem('e91Tab');
-            if (savedTab) {
-                setE91Tab(savedTab);
-            }
-
-            // Restore displayed lines
-            const savedLines = getItem('e91DisplayedLines');
-            if (savedLines && savedLines.length > 0) {
-                setDisplayedLines(savedLines);
-            }
+            hydrateE91ProgressStore();
 
             // Restore game config
             const savedPhotonNumber = getItem('e91PhotonNumber');
@@ -93,33 +97,37 @@ const Game = () => {
                 setPhotonNumber(savedPhotonNumber);
             }
 
-            // Restore player identity and reconnect WebSocket if needed
-            const playerData = getItem('e91PlayerData');
-            if (playerData && playerData.gameCode && playerData.role && playerData.room) {
-                setGameCode(playerData.gameCode);
-                // Restore player role and partner from saved data
-                if (playerData.role) {
-                    usePlayerStore.getState().setPlayerRole(playerData.role);
-                }
-                if (playerData.partner) {
-                    usePlayerStore.getState().setPartner(playerData.partner);
-                }
-                if (playerData.playerName) {
-                    usePlayerStore.getState().setPlayerName(playerData.playerName);
-                }
-                if (playerData.gameHasEve !== undefined) {
-                    setGameHasEve(playerData.gameHasEve);
-                }
+            const savedGameHasEve = getItem('e91GameHasEve');
+            if (savedGameHasEve !== null) {
+                setGameHasEve(savedGameHasEve);
+            }
 
-                // Only reconnect WebSocket if game is still in progress.
-                // Completed games restore the félicitations screen locally —
-                // the user navigates to results explicitly via "Voir les résultats".
-                if (!gameData?.gameSuccess) {
-                    connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
-                }
-            } else {
-                // No valid session data, reset multiplayer flag
-                setPlayingMultiplayer(false);
+            const savedValidationBitsLength = getItem('e91ValidationBitsLength');
+            if (savedValidationBitsLength) {
+                setValidationBitsLength(savedValidationBitsLength);
+            }
+
+            // Restore player identity and reconnect WebSocket if needed
+            setGameCode(playerData.gameCode);
+            // Restore player role and partner from saved data
+            if (playerData.role) {
+                usePlayerStore.getState().setPlayerRole(playerData.role);
+            }
+            if (playerData.partner) {
+                usePlayerStore.getState().setPartner(playerData.partner);
+            }
+            if (playerData.playerName) {
+                usePlayerStore.getState().setPlayerName(playerData.playerName);
+            }
+            if (playerData.gameHasEve !== undefined) {
+                setGameHasEve(playerData.gameHasEve);
+            }
+
+            // Only reconnect WebSocket if game is still in progress.
+            // Completed games restore the félicitations screen locally —
+            // the user navigates to results explicitly via "Voir les résultats".
+            if (!gameData?.gameSuccess) {
+                connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
             }
         } else if (displayedLines.length === 0) {
             // Normal initialization - show welcome messages

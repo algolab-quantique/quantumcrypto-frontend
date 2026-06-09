@@ -45,6 +45,7 @@ const E91MainV3: React.FC = () => {
         waitingRoomConnecting,
         isPlayRoomConnected,
         connectToPlayRoom,
+        disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
@@ -71,9 +72,16 @@ const E91MainV3: React.FC = () => {
 
     useEffect(() => {
         const previousGame = localStorage.getItem('e91PlayerData');
+        const parsedPreviousGame = previousGame ? JSON.parse(previousGame) : null;
         const gameDataRaw = localStorage.getItem('e91GameData');
         const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
         const gameCompleted = gameData && gameData.gameSuccess === true;
+        const hasActiveSession = Boolean(
+            parsedPreviousGame?.gameCode &&
+            parsedPreviousGame?.role &&
+            parsedPreviousGame?.room &&
+            usePlayerStore.getState().playingMultiplayer
+        );
 
         // If the game was already completed, clean up stale data.
         // Do NOT redirect to play page — there's nothing to resume.
@@ -86,8 +94,13 @@ const E91MainV3: React.FC = () => {
 
         // If WebSocket is still connected AND game is NOT completed,
         // redirect to the play page (active game still in progress).
-        if (isPlayRoomConnected) {
+        if (isPlayRoomConnected && hasActiveSession) {
             router.push('/e91/play');
+            return;
+        }
+
+        if (isPlayRoomConnected && !hasActiveSession) {
+            disconnectPlayRoom();
             return;
         }
 
@@ -111,6 +124,10 @@ const E91MainV3: React.FC = () => {
             setPartner(partner);
             setPlayerRole(role);
             setPlayerName(playerName);
+            if (role && previousGame.room) {
+                setPlayingMultiplayer(true);
+                setPlayingSolo(false);
+            }
         }
 
         const stepJSON = getItem('e91Step');

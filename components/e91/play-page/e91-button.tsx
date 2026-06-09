@@ -1,18 +1,16 @@
 'use client';
 
 import React from 'react';
-import {useSocket} from '@/components/providers/socket-provider';
-import Link from 'next/link';
 
-const E91Button = () => {
+type E91ButtonProps = {
+    onRequestLeave: () => void;
+};
 
-    const {playRoomSocket} = useSocket();
-
+const E91Button = ({ onRequestLeave }: E91ButtonProps) => {
     return (
-        <Link href={'/e91'}>
-            <h1 className="font-bold text-4xl text-primary"
-                onClick={() => playRoomSocket.close()}>E91</h1>
-        </Link>
+        <button type="button" onClick={onRequestLeave} className="text-left">
+            <h1 className="font-bold text-4xl text-primary">E91</h1>
+        </button>
     );
 };
 
