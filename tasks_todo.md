@@ -93,14 +93,15 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
   - `e91ValidationBitsLength`
 
 **Medium: harden after urgent fixes**
-- [ ] Decide one owner for E91 rejoin restore/reconnect:
+- [x] Decide one owner for E91 rejoin restore/reconnect:
   - Option A: form page restores identity only, then `multi-game.tsx` owns restore/reconnect.
   - Option B: form page restores/reconnects, and `multi-game.tsx` detects that rejoin is already in progress.
-- [ ] Use socket `playRoomConnecting` state, or an equivalent local guard, to prevent duplicate reconnect attempts during rejoin.
+  - Decision: do not refactor this now. The app is working well after the reconnect guard, and the clean one-owner lifecycle should be solved by the planned shared multiplayer architecture instead of another E91-only intermediate refactor.
+- [x] Use socket `playRoomConnecting` state, or an equivalent local guard, to prevent duplicate reconnect attempts during rejoin.
 - [x] Add orphan-data handling on the E91 form page:
   - If `e91GameData` exists but `e91PlayerData` does not, treat it as stale/orphaned multiplayer data and clear E91 storage.
   - Preserve valid interrupted sessions by showing the rejoin dialog.
-- [ ] Verify completed E91 game refresh on `/e91/play`:
+- [x] Verify completed E91 game refresh on `/e91/play`:
   - `gameSuccess=true` restores the felicitation screen.
   - The play socket is not reconnected.
   - Home/Replay/fresh start clears the old protocol data intentionally.

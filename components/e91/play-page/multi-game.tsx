@@ -47,7 +47,7 @@ const Game = () => {
     const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
     const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode, setValidationBitsLength } = useE91GameStore();
     const { utilizeValidBits, restoreGame } = useE91RoomStore();
-    const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
+    const { isPlayRoomConnected, playRoomConnecting, connectToPlayRoom } = useSocket();
 
     // Restore game state from localStorage on mount (for page refresh)
     // AND reconnect WebSocket if needed
@@ -126,7 +126,7 @@ const Game = () => {
             // Only reconnect WebSocket if game is still in progress.
             // Completed games restore the félicitations screen locally —
             // the user navigates to results explicitly via "Voir les résultats".
-            if (!gameData?.gameSuccess) {
+            if (!gameData?.gameSuccess && !playRoomConnecting) {
                 connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
             }
         } else if (displayedLines.length === 0) {
