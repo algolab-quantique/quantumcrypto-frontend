@@ -88,12 +88,12 @@ type SocketContextType = {
     connectToPlayRoom: (gameType: string, gameCode: string, role: string, room: string) => void;
     disconnectPlayRoom: () => void;
     startGame: (gameType: string, id: number) => void;
-    sendEvent: (event: string, message?: any) => void;
+    sendEvent: (event: string, message?: any) => boolean;
     measurePhotons: (bases: string[]) => void;
     sendPhotons: (photons: number[]) => void;
     sendPhases: (photons: string[][], phases: string[][]) => void;
     sendArrivalTimes: (times: string[]) => void;
-    sendCipher: (cipher: string[]) => void;
+    sendCipher: (cipher: string[]) => boolean;
     shareBases: (bases: string[], event: string, socket?: any) => void;
     shareBits: (bits: string[], event: string, socket?: any) => void;
     shareKey: (key: string[]) => void;
@@ -132,6 +132,7 @@ const SocketContext = createContext<SocketContextType>({
     startGame: () => {
     },
     sendEvent: () => {
+        return false;
     },
     measurePhotons: () => {
     },
@@ -142,6 +143,7 @@ const SocketContext = createContext<SocketContextType>({
     sendArrivalTimes: () => {
     },
     sendCipher: () => {
+        return false;
     },
     shareBases: () => {
     },
@@ -949,6 +951,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                     if (gameType === 'e91') {
                         useE91RoomStore.getState().setAliceCipher(message.cipher);
                         if (usePlayerStore.getState().playerRole === 'A') {
+                            useE91RoomStore.getState().setAliceCipherSent(true);
                             useE91ProgressStore.getState().pushLines([
                                 {
                                     content: 'component.messaging.alice.sent',
@@ -1237,15 +1240,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         }
         if (!playRoomSocket) {
             console.error("WebSocket is null. Cannot send event:", event);
-            return;
+            return false;
         }
         if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
             console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
-        } else {
-            console.log("WebSocket is open, sending message.");
+            return false;
         }
 
-        (playRoomSocket as any).send(JSON.stringify(payload));
+        try {
+            (playRoomSocket as any).send(JSON.stringify(payload));
+            return true;
+        } catch (error) {
+            console.error("Unable to send event:", event, error);
+            return false;
+        }
     };
 
     const measurePhotons = (bases: string[]) => {
@@ -1275,9 +1283,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         sendEvent(B_TIMES_EVENT, { times });
     };
 
-    const sendCipher = (cipher: string[]) => {
-        sendEvent(A_CIPHER_EVENT, { cipher });
-    };
+    const sendCipher = (cipher: string[]) => sendEvent(A_CIPHER_EVENT, { cipher });
 
     const sendEveSpotted = () => {
         sendEvent(EVE_SPOTTED_EVENT);

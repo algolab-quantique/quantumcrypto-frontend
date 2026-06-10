@@ -35,7 +35,6 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
         crypto: persistedCrypto,
     } = useE91RoomStore();
     const {
-        setAliceCipherSent,
         setMessage: setPersistedMessage,
         setCrypto: setPersistedCrypto,
     } = useE91RoomStore();
@@ -178,9 +177,14 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 sendBobSuccess('e91');
             } else {
                 const payload = crypto.map(({value}) => value);
-                sendCipher(payload);
+                const sent = sendCipher(payload);
+                if (!sent) {
+                    toast.error(localize('component.waitingRoom.connectionLostTitle'), {
+                        description: localize('component.waitingRoom.connectionLostDescription'),
+                    });
+                    return false;
+                }
                 toast.success(localize('component.messaging.cipherSent'));
-                setAliceCipherSent(true);
             }
         } else {
             if (playerRole === 'A') {

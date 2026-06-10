@@ -169,12 +169,17 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
     });
 
     /**
-     * Reset local state when store is reset (after restartGame).
-     * When aliceBases becomes empty, it means resetRoom() was called.
-     * We need to reinitialize categoryList and validatedBits for the new game.
+     * Reset local state only when the whole E91 room was cleared.
+     * Alice bases can be empty while Bob is legitimately waiting for Alice, so
+     * using aliceBases alone would erase Bob's displayed bits before refresh.
      */
     useEffect(() => {
-        if (aliceBases.length === 0) {
+        const roomWasCleared = aliceBases.length === 0 &&
+            bobBases.length === 0 &&
+            aliceBits.length === 0 &&
+            bobBits.length === 0;
+
+        if (roomWasCleared) {
             // Reset categoryList
             const newCategories: inputField[] = [];
             for (let _ = 0; _ < photonNumber; _++) {
@@ -189,7 +194,7 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
             // Reset validatedBits (will be empty since bits are empty)
             setValidatedBits([]);
         }
-    }, [aliceBases.length, photonNumber]);
+    }, [aliceBases.length, bobBases.length, aliceBits.length, bobBits.length, photonNumber]);
 
     const onCategoryClick = (index: number) => {
         const newCategoryList = [...categoryList];
