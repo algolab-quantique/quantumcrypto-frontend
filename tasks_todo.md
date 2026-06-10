@@ -97,7 +97,7 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
   - Option A: form page restores identity only, then `multi-game.tsx` owns restore/reconnect.
   - Option B: form page restores/reconnects, and `multi-game.tsx` detects that rejoin is already in progress.
 - [ ] Use socket `playRoomConnecting` state, or an equivalent local guard, to prevent duplicate reconnect attempts during rejoin.
-- [ ] Add orphan-data handling on the E91 form page:
+- [x] Add orphan-data handling on the E91 form page:
   - If `e91GameData` exists but `e91PlayerData` does not, treat it as stale/orphaned multiplayer data and clear E91 storage.
   - Preserve valid interrupted sessions by showing the rejoin dialog.
 - [ ] Verify completed E91 game refresh on `/e91/play`:
@@ -159,7 +159,8 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
   - [x] browser Back/Forward is no longer custom-trapped for E91; saved session/rejoin handles recovery if the route returns to `/e91/play`,
 
 **Follow-up notes**:
-- [ ] Add defensive parsing for corrupted `e91PlayerData` / `e91GameData` in `components/e91/home-page/e91-game-form-v3.tsx` and E91 multiplayer restore helpers.
+- [x] Add defensive parsing for corrupted `e91PlayerData` / `e91GameData` in `components/e91/home-page/e91-game-form-v3.tsx`.
+- [ ] Add defensive parsing inside E91 multiplayer restore helpers if future tests expose corrupt storage on direct `/e91/play` refresh.
 - [ ] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
 
 #### Sub-task D: DPS (Net-new restore logic for multiplayer — needs testing)
@@ -285,6 +286,46 @@ This is intentionally future work. It should not be guessed in the frontend only
 - [ ] Add frontend "partner disconnected" state with leave/wait options.
 - [ ] Add "continue with computer" transition only after the backend event contract is stable.
 - [ ] Document scoring/result semantics before implementation.
+
+---
+
+### 28. 🔴 E91 Multiplayer: Short-Key Restart Must Be Synchronized
+
+**Status**: 🔴 TODO / BUG — DO NOT FIX IN THE CURRENT SMALL HARDENING PASS  
+**Date Added**: June 10, 2026  
+**Priority**: 🔴 HIGH  
+**Depends On**: E91 multiplayer backend event contract / room-level restart semantics.
+
+**Context**: In E91 multiplayer, if the valid shared key is too short after basis classification, one player can see the "key too small, restart" flow before the other player reaches the same checkpoint. The restart is currently too local/client-driven, so Alice and Bob can diverge.
+
+**Observed broken scenarios**:
+- Scenario 1: Alice reaches the short-key condition first and restarts while Bob is still waiting for Alice/Bob data from the previous step. Bob later reaches a different state and can trigger another restart.
+- Scenario 2: Alice restarts first and sends new-game data. Bob is still in the old game state, receives new data, and becomes inconsistent: old step + new key/data. Alice can then be blocked waiting for Bob in the restarted game.
+
+**Why this is a real multiplayer bug**:
+- Short-key restart is a room-level protocol transition, not a local UI action.
+- Both players must reset from the same backend event.
+- Old messages from the previous round must not be accepted after a restart.
+
+**Desired contract**:
+- Frontend sends a room-level event such as `SHORT_KEY_DETECTED` / `RESTART_REQUESTED`.
+- Backend decides and broadcasts one restart event to both Alice and Bob.
+- Both clients reset only when receiving the backend restart event.
+- The restart event should include enough information to reset deterministically:
+  - game code / room id,
+  - restart round id or epoch,
+  - roles if roles change,
+  - Eve state,
+  - photon/config values.
+- Protocol messages should include a round id / restart epoch so stale messages from the previous round can be ignored.
+
+**Task**:
+- [ ] Define backend event names and payloads for E91 short-key restart.
+- [ ] Add a frontend "waiting for synchronized restart" state after short key is detected.
+- [ ] Disable protocol actions while waiting for the synchronized restart event.
+- [ ] Reset both clients only from the backend broadcast.
+- [ ] Add/verify round id or restart epoch so stale old-round messages are ignored.
+- [ ] Test Alice-first and Bob-first short-key detection flows.
 
 ---
 

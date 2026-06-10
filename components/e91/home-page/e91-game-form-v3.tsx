@@ -70,25 +70,57 @@ const E91MainV3: React.FC = () => {
     const { restoreGame } = useE91RoomStore();
     const router = useRouter();
 
+    const getSavedItem = (key: string) => {
+        const item = localStorage.getItem(key);
+        if (!item) return null;
+
+        try {
+            return JSON.parse(item);
+        } catch {
+            return null;
+        }
+    };
+
+    const clearSavedSession = () => {
+        clearE91LocalStorage();
+        setPlayingSolo(false);
+        setPlayingMultiplayer(false);
+    };
+
     useEffect(() => {
-        const previousGame = localStorage.getItem('e91PlayerData');
-        const parsedPreviousGame = previousGame ? JSON.parse(previousGame) : null;
+        const previousGameRaw = localStorage.getItem('e91PlayerData');
         const gameDataRaw = localStorage.getItem('e91GameData');
-        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const previousGame = getSavedItem('e91PlayerData');
+        const gameData = getSavedItem('e91GameData');
+        const hasCorruptSavedSession = Boolean(
+            (previousGameRaw && !previousGame) ||
+            (gameDataRaw && !gameData)
+        );
+        const hasInvalidPlayerData = Boolean(
+            previousGame && (
+                !previousGame.gameCode ||
+                !previousGame.role ||
+                !previousGame.room
+            )
+        );
+        const hasOrphanGameData = Boolean(gameData && !previousGame);
         const gameCompleted = gameData && gameData.gameSuccess === true;
         const hasActiveSession = Boolean(
-            parsedPreviousGame?.gameCode &&
-            parsedPreviousGame?.role &&
-            parsedPreviousGame?.room &&
+            previousGame?.gameCode &&
+            previousGame?.role &&
+            previousGame?.room &&
             usePlayerStore.getState().playingMultiplayer
         );
+
+        if (hasCorruptSavedSession || hasInvalidPlayerData || hasOrphanGameData) {
+            clearSavedSession();
+            return;
+        }
 
         // If the game was already completed, clean up stale data.
         // Do NOT redirect to play page — there's nothing to resume.
         if (gameCompleted) {
-            clearE91LocalStorage();
-            setPlayingSolo(false);
-            setPlayingMultiplayer(false);
+            clearSavedSession();
             return;
         }
 
@@ -105,18 +137,13 @@ const E91MainV3: React.FC = () => {
         }
 
         // If there's player data from an interrupted game, offer to rejoin.
-        if (previousGame) {
+        if (previousGameRaw) {
             setRejoinDialogOpen(true);
         }
     }, [isPlayRoomConnected]);
 
     const getGameProgress = () => {
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
-
-        const previousGame = getItem('e91PlayerData');
+        const previousGame = getSavedItem('e91PlayerData');
         if (previousGame) {
             const { gameCode, role, partner, gameHasEve, playerName } = previousGame;
             setGameHasEve(gameHasEve);
@@ -130,22 +157,22 @@ const E91MainV3: React.FC = () => {
             }
         }
 
-        const stepJSON = getItem('e91Step');
+        const stepJSON = getSavedItem('e91Step');
         if (stepJSON) setStep(stepJSON);
 
         const tab = localStorage.getItem('e91Tab');
         if (tab) setE91Tab(tab);
 
-        const photonNumber = getItem('e91PhotonNumber');
+        const photonNumber = getSavedItem('e91PhotonNumber');
         if (photonNumber) setPhotonNumber(photonNumber);
 
-        const validationBitsLength = getItem('e91ValidationBitsLength');
+        const validationBitsLength = getSavedItem('e91ValidationBitsLength');
         if (validationBitsLength) setValidationBitsLength(validationBitsLength);
 
-        const previousDisplayedLines = getItem('e91DisplayedLines');
+        const previousDisplayedLines = getSavedItem('e91DisplayedLines');
         if (previousDisplayedLines) setDisplayedLines(previousDisplayedLines);
 
-        const gameDataJSON = getItem('e91GameData');
+        const gameDataJSON = getSavedItem('e91GameData');
         if (gameDataJSON) restoreGame(gameDataJSON);
 
         if (previousGame && previousGame.role && previousGame.room) {
