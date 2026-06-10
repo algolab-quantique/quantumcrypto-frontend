@@ -107,6 +107,8 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
   - Home/Replay/fresh start clears the old protocol data intentionally.
 
 **Low: cleanup later**
+> Deferred: keep these as optional follow-up tasks if the shared multiplayer architecture is not implemented soon. Do not prioritize them before deployment unless a visible bug appears.
+
 - [ ] Remove or reactivate the dead `GameRestartDialog` path in `components/e91/play-page/tabs/solo-CHSH-tab.tsx`.
 - [ ] Make `components/e91/play-page/graphPopup.tsx` theme-aware by replacing hardcoded white SVG text/dots with foreground-aware styling.
 - [ ] Consolidate duplicated E91 `moveToExchangeTab` helpers into one helper that accepts the correct displayed step number.
@@ -162,7 +164,7 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 **Follow-up notes**:
 - [x] Add defensive parsing for corrupted `e91PlayerData` / `e91GameData` in `components/e91/home-page/e91-game-form-v3.tsx`.
 - [ ] Add defensive parsing inside E91 multiplayer restore helpers if future tests expose corrupt storage on direct `/e91/play` refresh.
-- [ ] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
+- [x] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
 
 #### Sub-task D: DPS (Net-new restore logic for multiplayer — needs testing)
 - [ ] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`

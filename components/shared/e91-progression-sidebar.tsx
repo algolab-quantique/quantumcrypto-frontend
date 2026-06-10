@@ -7,15 +7,14 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import {MessageCircle} from 'lucide-react';
-import GameProgression from '@/components/shared/game-progression';
 import React, {useEffect, useState} from 'react';
-import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
+import {useE91ProgressStore} from '@/store/e91/e91-progress-store';
 import E91Progression from '@/components/e91/play-page/e91-progression';
 
 const E91ProgressionSidebar = () => {
 
     const [newMessage, setNewMessage] = useState(false);
-    const displayedLinesLength = useBB84ProgressStore(
+    const displayedLinesLength = useE91ProgressStore(
         state => state.displayedLines).length;
 
     useEffect(() => {
