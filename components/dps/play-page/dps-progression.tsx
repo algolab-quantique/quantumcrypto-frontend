@@ -9,12 +9,12 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
-import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import { clearDPSStorageKeys } from '@/lib/dps/utils';
 
 const DPSProgression = () => {
 
     const { localize } = useLanguage();
-    const { restartGameAndSwappedRoles, leftGame } = useSocket();
+    const { disconnectPlayRoom } = useSocket();
     const router = useRouter();
 
 
@@ -40,31 +40,18 @@ const DPSProgression = () => {
         );
     });
 
-    const restartWithSwappedRoles = () => {
-        if (playingSolo) {
-            // Clear all DPS state then hard redirect.
-            // window.location.replace = full page reload → Zustand stores reset automatically.
-            clearDPSLocalStorage();
-            window.location.replace('/dps');
-        } else {
-            restartGameAndSwappedRoles();
-            router.replace(`/dps/play`);
-        }
+    const replayFromStart = () => {
+        disconnectPlayRoom();
+        sessionStorage.setItem('dpsReplayCleanupPending', 'true');
+        window.location.replace('/dps');
     };
 
     const goToMainMenu = () => {
-        if (playingSolo) {
-            // Same rationale: page reload resets stores, no Zustand calls needed.
-            clearDPSLocalStorage();
-            usePlayerStore.getState().setPlayingSolo(false);
-            usePlayerStore.getState().setPlayingMultiplayer(false);
-            window.location.replace('/');
-        } else {
-            leftGame();
-            usePlayerStore.getState().setPlayingSolo(false);
-            usePlayerStore.getState().setPlayingMultiplayer(false);
-            router.replace('/');
-        }
+        disconnectPlayRoom();
+        clearDPSStorageKeys();
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayingMultiplayer(false);
+        router.replace('/');
     };
 
     return (
@@ -83,7 +70,7 @@ const DPSProgression = () => {
                         className="font-bold text-highlight"> {partnerName}</span>
                 </p>
                 <div className="w-full h-fit mb-1 flex justify-center space-x-4">
-                    <Button onClick={restartWithSwappedRoles}>
+                    <Button onClick={replayFromStart}>
                         {localize('component.gameRestart.playAgain')}
                     </Button>
                     <Button onClick={goToMainMenu}>

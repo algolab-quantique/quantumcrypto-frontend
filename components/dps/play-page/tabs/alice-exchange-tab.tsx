@@ -33,6 +33,9 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
     photonNumber: number;
     polarIcons: any[]
 }) => {
+    const PHASE_INPUTS_KEY = 'dpsMultiAliceExchangePhaseInputs';
+    const PULSE_INPUTS_KEY = 'dpsMultiAliceExchangePulseInputs';
+
     const {localize} = useLanguage();
     const {sendPhases} = useSocket();
     const {pushLines, setDPSTab, setStep} = useDPSProgressStore();
@@ -46,7 +49,8 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
     } = useDPSRoomStore();
     const possiblePhases = ['0', 'π'];
     const photonsSent = alicePhotons.length > 0;
-    const [phaseInputs, setPhaseInputs] = useState(() => {
+
+    const buildEmptyInputRows = () => {
         const inputs: inputPhaseField[] = [];
         for (let _ = 0; _ < photonNumber; _++) {
             inputs.push({
@@ -56,19 +60,40 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
             });
         }
         return inputs;
+    };
+
+    const getStoredDraft = (key: string): inputPhaseField[] | null => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        try {
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed) || parsed.length !== photonNumber) return null;
+            return parsed;
+        } catch {
+            return null;
+        }
+    };
+
+    const [phaseInputs, setPhaseInputs] = useState(() => {
+        const draft = getStoredDraft(PHASE_INPUTS_KEY);
+        return draft ?? buildEmptyInputRows();
     });
 
     const [pulseInputs, setPulseInputs] = useState(() => {
-        const inputs: inputPhaseField[] = [];
-        for (let _ = 0; _ < photonNumber; _++) {
-            inputs.push({
-                values: ['-', '-', '-'],
-                touched: [false, false, false],
-                error: [true, true, true],
-            });
-        }
-        return inputs;
+        const draft = getStoredDraft(PULSE_INPUTS_KEY);
+        return draft ?? buildEmptyInputRows();
     });
+
+    useEffect(() => {
+        if (photonsSent) {
+            localStorage.removeItem(PHASE_INPUTS_KEY);
+            localStorage.removeItem(PULSE_INPUTS_KEY);
+            return;
+        }
+
+        localStorage.setItem(PHASE_INPUTS_KEY, JSON.stringify(phaseInputs));
+        localStorage.setItem(PULSE_INPUTS_KEY, JSON.stringify(pulseInputs));
+    }, [phaseInputs, pulseInputs, photonsSent]);
 
     const randomize = () => {
         const newList = phaseInputs.map(item => {
@@ -204,6 +229,8 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
   
           setAlicePhotons(photonsToSend);
           setAlicePhases(phasesToSend);
+          localStorage.removeItem(PHASE_INPUTS_KEY);
+          localStorage.removeItem(PULSE_INPUTS_KEY);
   
           console.log("alicePhotons après mise à jour:", photonsToSend);
           console.log("alicePhases après mise à jour:", phasesToSend);

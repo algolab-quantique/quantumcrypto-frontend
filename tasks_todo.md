@@ -167,11 +167,13 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 - [x] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
 
 #### Sub-task D: DPS (Net-new restore logic for multiplayer — needs testing)
-- [ ] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`
-- [ ] Add `restoreGame(gameData)` call for `dpsGameData`
-- [ ] Call `hydrateDPSProgressStore()` for step/tab/lines
-- [ ] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
-- [ ] **Test carefully**: This changes observable behaviour — DPS multiplayer will start restoring state on refresh.
+- [x] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`
+- [x] Add `restoreGame(gameData)` call for `dpsGameData`
+- [x] Call `hydrateDPSProgressStore()` for step/tab/lines
+- [x] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
+- [x] Set DPS multiplayer role assignment to persist `playingMultiplayer: true` and `playingSolo: false`.
+- [x] **Test carefully**: DPS multiplayer refresh, completed-game refresh, replay to `/dps`, and quit-to-home behavior are stable enough for the current deploy revision.
+- [ ] Follow-up: DPS master results page can still remain on “waiting”; inspect the results websocket payload in the next round before changing frontend/backend behavior.
 
 **Estimated Time**:
 - E91 urgent stabilization: ~1 focused session

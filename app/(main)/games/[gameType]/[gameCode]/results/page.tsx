@@ -193,47 +193,41 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
                 {localize('component.results.title') || 'Results for game'}{' '}
                 <span className="text-highlight">{params.gameCode}</span>
             </h1>
-            {gameType === 'dps' && isAdmin ? (
-                <h1 className="text-3xl font-bold text-center mt-10">
-                    La partie est en cours...
-                </h1>
-            ) : (
-                <>
-                    <ResultsTable gameType={gameType} rooms={rooms} players={players} />
+            <>
+                <ResultsTable gameType={gameType} rooms={rooms} players={players} />
 
-                    {/* Admin (Game Monitor) View - Show waiting message when no results yet */}
-                    {isAdmin && !hasFinishedRooms && (
-                        <div className="text-center">
-                            <p className="text-xl text-yellow-500 font-bold">
-                                {localize('component.results.waiting') || '⏳ Waiting for players to finish their games...'}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Success Message - Only show when games are finished */}
-                    {hasFinishedRooms && (
-                        <div className="text-center">
-                            <p className="text-xl text-green-500 font-bold">
-                                {isAdmin
-                                    ? (localize('component.results.gamesFinished') || '✅ Some games have finished!')
-                                    : (localize('component.e91.results.success') || '🎉 Congratulations! Game completed successfully!')}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="flex justify-center gap-4">
-                        <Button variant="outline" onClick={handleReplay}>
-                            <RotateCcw className="mr-2 h-4 w-4" />
-                            {localize('component.e91.results.replay') || 'Play Again'}
-                        </Button>
-                        <Button onClick={handleHomeMenu}>
-                            <Home className="mr-2 h-4 w-4" />
-                            {localize('component.e91.results.home') || 'Main Menu'}
-                        </Button>
+                {/* Admin (Game Monitor) View - Show waiting message when no results yet */}
+                {isAdmin && !hasFinishedRooms && (
+                    <div className="text-center">
+                        <p className="text-xl text-yellow-500 font-bold">
+                            {localize('component.results.waiting') || '⏳ Waiting for players to finish their games...'}
+                        </p>
                     </div>
-                </>
-            )}
+                )}
+
+                {/* Success Message - Only show when games are finished */}
+                {hasFinishedRooms && (
+                    <div className="text-center">
+                        <p className="text-xl text-green-500 font-bold">
+                            {isAdmin
+                                ? (localize('component.results.gamesFinished') || '✅ Some games have finished!')
+                                : (localize('component.e91.results.success') || '🎉 Congratulations! Game completed successfully!')}
+                        </p>
+                    </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-center gap-4">
+                    <Button variant="outline" onClick={handleReplay}>
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        {localize('component.e91.results.replay') || 'Play Again'}
+                    </Button>
+                    <Button onClick={handleHomeMenu}>
+                        <Home className="mr-2 h-4 w-4" />
+                        {localize('component.e91.results.home') || 'Main Menu'}
+                    </Button>
+                </div>
+            </>
         </div>
     );
 

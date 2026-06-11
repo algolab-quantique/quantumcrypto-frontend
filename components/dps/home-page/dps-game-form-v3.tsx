@@ -44,6 +44,7 @@ const DPSMainV3: React.FC = () => {
         waitingRoomConnecting,
         isPlayRoomConnected,
         connectToPlayRoom,
+        disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
@@ -67,10 +68,37 @@ const DPSMainV3: React.FC = () => {
     const { restoreGame } = useDPSRoomStore();
     const router = useRouter();
 
+    const getSavedItem = (key: string) => {
+        const item = localStorage.getItem(key);
+        if (!item) return null;
+
+        try {
+            return JSON.parse(item);
+        } catch {
+            return null;
+        }
+    };
+
     useEffect(() => {
-        const gameDataRaw = localStorage.getItem('dpsGameData');
-        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const replayCleanupPending = sessionStorage.getItem('dpsReplayCleanupPending') === 'true';
+        if (replayCleanupPending) {
+            sessionStorage.removeItem('dpsReplayCleanupPending');
+            disconnectPlayRoom();
+            clearDPSLocalStorage();
+            setPlayingSolo(false);
+            setPlayingMultiplayer(false);
+            return;
+        }
+
+        const previousGame = getSavedItem('dpsPlayerData');
+        const gameData = getSavedItem('dpsGameData');
         const gameCompleted = gameData && gameData.gameSuccess === true;
+        const hasActiveSession = Boolean(
+            previousGame?.gameCode &&
+            previousGame?.role &&
+            previousGame?.room &&
+            usePlayerStore.getState().playingMultiplayer
+        );
 
         // If the game was already completed, clean up stale data.
         if (gameCompleted) {
@@ -80,16 +108,21 @@ const DPSMainV3: React.FC = () => {
             return;
         }
 
-        if (isPlayRoomConnected) {
+        if (isPlayRoomConnected && hasActiveSession) {
             router.push('/dps/play');
             return;
         }
-        const previousGame = localStorage.getItem('dpsPlayerData');
+
+        if (isPlayRoomConnected && !hasActiveSession) {
+            disconnectPlayRoom();
+            return;
+        }
+
         if (previousGame) {
             // Rejoin dialog intentionally disabled for DPS for now.
             //setRejoinDialogOpen(true);
         }
-    }, [isPlayRoomConnected]);
+    }, [isPlayRoomConnected, disconnectPlayRoom]);
 
     const getGameProgress = () => {
         const getItem = (key: string) => {

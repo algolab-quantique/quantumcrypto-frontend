@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useRef, useState} from 'react';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab
     from '@/components/dps/play-page/tabs/alice-exchange-tab';
@@ -12,7 +12,7 @@ import {
     Minus,
     MoveHorizontal, MoveVertical,
 } from 'lucide-react';
-import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
+import {hydrateDPSProgressStore, useDPSProgressStore} from '@/store/dps/dps-progress-store';
 // import BasisTab from '@/components/dps/play-page/tabs/basis-tab';
 import BobMessagingTab from '@/components/dps/play-page/tabs/bob-messaging-tab';
 import AliceMessagingTab from '@/components/dps/play-page/tabs/alice-messaging-tab';
@@ -26,10 +26,14 @@ import { useTheme } from "next-themes";
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import { useSocket } from '@/components/providers/socket-provider';
 
 
 
 const Game = () => {
+
+    const hasInitialized = useRef(false);
+    const [isHydrated, setIsHydrated] = useState(false);
 
     const { theme } = useTheme();
     const isDark = theme === "dark";
@@ -66,9 +70,10 @@ const Game = () => {
     const {localize} = useLanguage();
     const {step, displayedLines, dpsTab} = useDPSProgressStore();
     const {pushLines, setDPSTab} = useDPSProgressStore();
-    const {playerRole, playerName} = usePlayerStore();
-    const {photonNumber, gameHasEve} = useDPSGameStore();
-    const {gameSuccess} = useDPSRoomStore();
+    const {playerRole, playerName, playingMultiplayer, setPlayingMultiplayer} = usePlayerStore();
+    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode, setValidationBitsLength} = useDPSGameStore();
+    const {gameSuccess, restoreGame} = useDPSRoomStore();
+    const {isPlayRoomConnected, playRoomConnecting, connectToPlayRoom} = useSocket();
 
     const handleNavCleanup = useCallback(() => {
         clearDPSLocalStorage();
@@ -80,7 +85,92 @@ const Game = () => {
     usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     useEffect(() => {
-        if (displayedLines.length === 0) {
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
+        const getItem = (key: string) => {
+            const item = localStorage.getItem(key);
+            if (!item) return null;
+
+            try {
+                return JSON.parse(item);
+            } catch {
+                localStorage.removeItem(key);
+                return null;
+            }
+        };
+
+        const playerData = getItem('dpsPlayerData');
+        const hasSavedMultiplayerSession = Boolean(
+            playerData?.gameCode &&
+            playerData?.role &&
+            playerData?.room
+        );
+
+        if ((playingMultiplayer || hasSavedMultiplayerSession) && !isPlayRoomConnected) {
+            if (!playerData?.gameCode || !playerData?.role || !playerData?.room) {
+                setPlayingMultiplayer(false);
+
+                if (displayedLines.length === 0 && (playerRole === 'A' || playerRole === 'B')) {
+                    pushLines([
+                        {
+                            title: 'component.dps.exchange.welcome',
+                        },
+                        {
+                            title: 'component.game.step1',
+                            content: playerRole === 'A'
+                                ? 'component.aliceExchange.start'
+                                : 'component.bobExchange.waiting',
+                        },
+                    ]);
+                }
+                setIsHydrated(true);
+                return;
+            }
+
+            usePlayerStore.getState().setPlayingMultiplayer(true);
+            usePlayerStore.getState().setPlayingSolo(false);
+
+            const gameData = getItem('dpsGameData');
+            if (gameData) {
+                restoreGame(gameData);
+            }
+
+            hydrateDPSProgressStore();
+
+            const savedPhotonNumber = getItem('dpsPhotonNumber');
+            if (savedPhotonNumber) {
+                setPhotonNumber(savedPhotonNumber);
+            }
+
+            const savedGameHasEve = getItem('dpsGameHasEve');
+            if (savedGameHasEve !== null) {
+                setGameHasEve(savedGameHasEve);
+            }
+
+            const savedValidationBitsLength = getItem('dpsValidationBitsLength');
+            if (savedValidationBitsLength) {
+                setValidationBitsLength(savedValidationBitsLength);
+            }
+
+            setGameCode(playerData.gameCode);
+            if (playerData.role) {
+                usePlayerStore.getState().setPlayerRole(playerData.role);
+            }
+            if (playerData.partner) {
+                usePlayerStore.getState().setPartner(playerData.partner);
+            }
+            if (playerData.playerName) {
+                usePlayerStore.getState().setPlayerName(playerData.playerName);
+            }
+            if (playerData.gameHasEve !== undefined) {
+                setGameHasEve(playerData.gameHasEve);
+            }
+
+            if (!gameData?.gameSuccess && !playRoomConnecting) {
+                connectToPlayRoom('dps', playerData.gameCode, playerData.role, playerData.room);
+            }
+        } else if (displayedLines.length === 0) {
             if (playerRole === 'A') {
                 pushLines([
                     {
@@ -102,7 +192,17 @@ const Game = () => {
                 ]);
             }
         }
+
+        setIsHydrated(true);
     }, []);
+
+    if (!isHydrated) {
+        return (
+            <div className="flex h-full w-full items-center justify-center p-6">
+                <p className="text-lg font-medium text-foreground">Loading DPS multiplayer game...</p>
+            </div>
+        );
+    }
 
     return (
         <div

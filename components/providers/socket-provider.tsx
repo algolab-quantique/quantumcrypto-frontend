@@ -64,7 +64,6 @@ import {
     DPS_GAME_ID_EVENT,
     DPS_CONNECTED_EVENT,
     DPS_END_EVENT,
-    A_SUCCESS_EVENT,
     A_PHASES_EVENT,
     B_TIMES_EVENT,
     SWAP_ROLES_AND_RESTART_EVENT,
@@ -198,6 +197,24 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isPlayRoomConnected, setIsPlayRoomConnected] = useState(false);
     const [playRoomError, setPlayRoomError] = useState(false);
     const [playRoomConnecting, setPlayRoomConnecting] = useState(false);
+
+    const getSavedDPSGameCode = () => {
+        if (typeof window === 'undefined') return '';
+
+        try {
+            const rawPlayerData = localStorage.getItem('dpsPlayerData');
+            if (!rawPlayerData) return '';
+
+            const playerData = JSON.parse(rawPlayerData);
+            return playerData?.gameCode || '';
+        } catch {
+            return '';
+        }
+    };
+
+    const getDPSGameCode = () => {
+        return useDPSGameStore.getState().gameCode || getSavedDPSGameCode();
+    };
 
     const connectToWaitingRoom = ({
         gameType,
@@ -420,10 +437,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             };
                             useDPSGameStore.setState({ gameHasEve: gameHasEve });
                             useDPSRoomStore.setState({ evePresent });
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });
 
                             localStorage.setItem('dpsPlayerData', JSON.stringify(playerData));
                             localStorage.setItem('dpsStep', JSON.stringify(useDPSProgressStore.getState().step));
                             localStorage.setItem('dpsTab', useDPSProgressStore.getState().dpsTab);
+                            localStorage.setItem('dpsGameHasEve', JSON.stringify(gameHasEve));
                             localStorage.setItem('dpsGameData', JSON.stringify({ evePresent }));
 
                             connectToPlayRoom(gameType, playerData.gameCode, role, room);
@@ -1053,7 +1072,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useDPSRoomStore.getState().setGameSuccess(true);
-                        clearDPSLocalStorage();
                     }
 
                     break;
@@ -1306,7 +1324,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     const sendAliceSuccess = () => {
         sendEvent(B_SUCCESS_EVENT, {
-            game_code: useDPSGameStore.getState().gameCode,
+            game_code: getDPSGameCode(),
             player_name: usePlayerStore.getState().playerName
         });
     };
