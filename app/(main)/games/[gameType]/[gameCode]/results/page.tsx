@@ -6,6 +6,7 @@ import Bb84ResultsTable
 import axios from '@/commons/http';
 import { useRouter } from 'next/navigation';
 import E91ResultsTable from '@/components/e91/results-page/e91-results-table';
+import DPSResultsTable from '@/components/dps/results-page/dps-results-table';
 import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
@@ -67,6 +68,22 @@ const ResultsTable = ({
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
             return <E91ResultsTable rooms={filteredE91Rooms}
+                players={players} {...props} />;
+            break;
+        case 'dps':
+            const filteredDPSRooms = rooms.filter(room => {
+                const hasFinishedIteration = room.iterations.some(
+                    (iter: any) => iter.elapsed_time > 0);
+                console.log(`Room [${room.player1}-${room.player2}]:`,
+                    hasFinishedIteration ? '✅ FINISHED' : '❌ NOT FINISHED',
+                    `(${room.iterations.length} iterations)`);
+                return hasFinishedIteration;
+            });
+
+            console.log('Rooms After Filter:', filteredDPSRooms.length);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+            return <DPSResultsTable rooms={filteredDPSRooms}
                 players={players} {...props} />;
             break;
         default:
@@ -151,6 +168,13 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
         [ReadyState.CLOSED]: 'Closed',
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
+    const shouldRedirectHome = error || readyState === ReadyState.CLOSED;
+
+    useEffect(() => {
+        if (shouldRedirectHome) {
+            router.replace('/');
+        }
+    }, [shouldRedirectHome, router]);
 
     // Navigate to game home page (e91, bb84, etc.)
     const handleReplay = () => {
@@ -181,9 +205,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
 
     if (connectionStatus === 'Connecting') return null;
 
-    if (error || connectionStatus === 'Closed') {
-        router.replace('/');
-    }
+    if (shouldRedirectHome) return null;
 
     if (!gameType) return null;
 

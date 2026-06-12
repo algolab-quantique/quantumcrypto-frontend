@@ -310,6 +310,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Multiplayer Results Page
         'component.results.title': 'Results for game',
+        'component.results.iteration': 'Iteration',
         'component.results.waiting': '⏳ Waiting for players to finish their games...',
         'component.results.gamesFinished': 'Some games have finished!',
 
@@ -842,6 +843,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Multiplayer Results Page FR
         'component.results.title': 'Résultats de la partie',
+        'component.results.iteration': 'Itération',
         'component.results.waiting': '⏳ En attente que les joueurs terminent leurs parties...',
         'component.results.gamesFinished': 'Des parties sont terminées !',
 
@@ -1335,6 +1337,7 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Multiplayer Results Page ES
         'component.results.title': 'Resultados del juego',
+        'component.results.iteration': 'Iteración',
         'component.results.waiting': '⏳ Esperando a que los jugadores terminen sus partidas...',
         'component.results.gamesFinished': '¡Algunas partidas han terminado!',
 

@@ -173,7 +173,7 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 - [x] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
 - [x] Set DPS multiplayer role assignment to persist `playingMultiplayer: true` and `playingSolo: false`.
 - [x] **Test carefully**: DPS multiplayer refresh, completed-game refresh, replay to `/dps`, and quit-to-home behavior are stable enough for the current deploy revision.
-- [ ] Follow-up: DPS master results page can still remain on “waiting”; inspect the results websocket payload in the next round before changing frontend/backend behavior.
+- [x] Follow-up: DPS master results page now behaves like BB84/E91 after Task 29 frontend wiring; no backend change was needed.
 
 **Estimated Time**:
 - E91 urgent stabilization: ~1 focused session
@@ -331,6 +331,93 @@ This is intentionally future work. It should not be guessed in the frontend only
 - [ ] Reset both clients only from the backend broadcast.
 - [ ] Add/verify round id or restart epoch so stale old-round messages are ignored.
 - [ ] Test Alice-first and Bob-first short-key detection flows.
+
+---
+
+### 29. ✅ DPS Multiplayer: Results Page, Live Updates, and Results Table
+
+**Status**: ✅ DONE
+**Date Added**: June 11, 2026
+**Priority**: 🔴 HIGH before final DPS deployment polish
+**Depends On**: Stable DPS multiplayer refresh/save from Task 24.
+
+**Context**: DPS multiplayer can now complete and refresh safely. The missing piece was frontend results parity: unlike BB84 and E91, DPS had no dedicated rich results table and the success screen did not route players to the shared results page.
+
+**Final state**:
+- Frontend shared results route listens to `/games/<protocol>/<gameCode>/results/`.
+- The shared results page marks rooms as finished when an iteration has `elapsed_time > 0`.
+- BB84, E91, and DPS now have protocol-specific table components.
+- Backend DPS has `DPSIteration.elapsed_time`, and the model computes it when status becomes `FINISHED`.
+- Tested with 4 DPS players / 2 pairs: the master page updates like BB84/E91 when finished players click "Voir les résultats".
+- No backend change was needed.
+
+**Goal**: DPS master results should behave like BB84/E91:
+- show each finished room/pair as soon as it completes,
+- identify Alice/Bob/player pair cleanly,
+- show elapsed game time,
+- keep waiting state only for rooms that have not finished,
+- avoid guessing in the frontend if the backend result payload is stale.
+
+**Step-by-step plan**:
+1. [x] Test BB84 and E91 result pages with multiple pairs and document the expected behavior:
+   - when each pair appears,
+   - whether the master page updates live without refresh,
+   - exact `Rooms Data` payload shape in the browser console,
+   - how unfinished versus finished rooms are represented.
+2. [x] Test DPS result page with multiple pairs and confirm the master page updates after pairs finish.
+3. [x] Compare backend consumers for BB84, E91, and DPS:
+   - play-room `B_SUCCESS` handling,
+   - `update_iterations_status_to_finished`,
+   - results-room `GAME_RESULTS` payload,
+   - whether fresh results are broadcast after a room finishes.
+4. [x] Decide the smallest correct backend/frontend contract:
+   - prefer backend broadcasting fresh `GAME_RESULTS` after DPS `B_SUCCESS` if the payload is stale,
+   - do not change socket event names unless backend and frontend are changed together,
+   - keep BB84/E91 untouched unless tests prove they need the same live-update hardening.
+5. [x] Backend live-results update not needed after frontend parity test passed.
+6. [x] Add a frontend `DPSResultsTable` component:
+   - start from BB84/E91 table patterns,
+   - show player pair / room,
+   - show iteration number,
+   - show elapsed time,
+   - include DPS-specific fields only if useful and present in payload, for example Eve state or detected times.
+7. [x] Wire `DPSResultsTable` into the shared results route switch.
+8. [x] Re-test:
+   - one pair,
+   - multiple pairs,
+   - first pair finished while other pairs are still playing,
+   - page refresh on master results,
+   - replay/home buttons from the results page.
+
+**Safety notes**:
+- Do not fake completion in the frontend from Alice/Bob local success state; the backend owns room completion truth.
+- Do not change DPS success event names. The current backend-supported completion event is `B_SUCCESS`.
+- Backend changes should be DPS-only first, and only after observing the actual DPS result payload.
+
+---
+
+### 30. 🟡 BB84: Stale Session Redirect After Returning From Results/Home
+
+**Status**: 🟡 TODO / BUG
+**Date Added**: June 12, 2026
+**Priority**: 🟡 MEDIUM
+**Depends On**: Current deploy polish; can be fixed after DPS results work if needed.
+
+**Context**: After completing an E91 multiplayer test and clicking "Menu Principal" from the results page, clicking the BB84 card can sometimes go directly to BB84 step 1 instead of showing the BB84 solo/multiplayer choice page.
+
+**Likely cause**: `components/bb84/home-page/bb84-game-form-v3.tsx` redirects to `/bb84/play` whenever `isPlayRoomConnected` is true. It does not first verify that the current socket/session belongs to a valid active BB84 session. This is similar to the stale redirect issue already hardened for E91/DPS.
+
+**Expected behavior**:
+- Clicking BB84 from the landing page should show the BB84 protocol home/choice UI.
+- Auto-redirect to `/bb84/play` should happen only when there is a valid active BB84 play session.
+- Completed or stale protocol data should be cleared intentionally.
+
+**Task**:
+- [ ] Reproduce after returning from a multiplayer results page.
+- [ ] Harden BB84 home redirect guard so `isPlayRoomConnected` alone is not enough.
+- [ ] Require valid `bb84PlayerData` and active `playingMultiplayer` session before redirecting to `/bb84/play`.
+- [ ] Clear stale completed BB84 data safely without causing a step-1 flash.
+- [ ] Re-test BB84 landing, solo choice, multiplayer join/create, refresh restore, and results/home flows.
 
 ---
 
