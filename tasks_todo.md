@@ -398,7 +398,7 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ### 30. 🟡 BB84: Stale Session Redirect After Returning From Results/Home
 
-**Status**: 🟡 TODO / BUG
+**Status**: ✅ DONE
 **Date Added**: June 12, 2026
 **Priority**: 🟡 MEDIUM
 **Depends On**: Current deploy polish; can be fixed after DPS results work if needed.
@@ -413,11 +413,12 @@ This is intentionally future work. It should not be guessed in the frontend only
 - Completed or stale protocol data should be cleared intentionally.
 
 **Task**:
-- [ ] Reproduce after returning from a multiplayer results page.
-- [ ] Harden BB84 home redirect guard so `isPlayRoomConnected` alone is not enough.
-- [ ] Require valid `bb84PlayerData` and active `playingMultiplayer` session before redirecting to `/bb84/play`.
-- [ ] Clear stale completed BB84 data safely without causing a step-1 flash.
-- [ ] Re-test BB84 landing, solo choice, multiplayer join/create, refresh restore, and results/home flows.
+- [x] Reproduce after returning from a multiplayer results page.
+- [x] Harden BB84 home redirect guard so `isPlayRoomConnected` alone is not enough.
+- [x] Require valid `bb84PlayerData` and active `playingMultiplayer` session before redirecting to `/bb84/play`.
+- [x] Clear stale completed BB84 data safely without causing a step-1 flash.
+- [x] Disconnect stale play socket when BB84 has no valid active session.
+- [x] Re-test BB84 landing, solo choice, multiplayer join/create, refresh restore, and results/home flows.
 
 ---
 
