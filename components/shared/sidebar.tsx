@@ -7,10 +7,19 @@ import Image from 'next/image';
 import { useLanguage } from '@/components/providers/language-provider';
 import Link from 'next/link';
 import { protocols } from '@/components/shared/protocol-data';
+import { getLanguageCode } from '@/lib/utils';
 
 const Sidebar = () => {
 
-    const { localize } = useLanguage();
+    const { localize, language } = useLanguage();
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const langCode = getLanguageCode(language);
+    const logoLang = isClient ? (langCode === 'es' ? 'en' : langCode) : 'en';
 
     return (
         <Sheet>
@@ -22,10 +31,11 @@ const Sidebar = () => {
             </SheetTrigger>
             <SheetContent className="bg-primary" side={'left'}>
                 <div className="flex flex-col gap-y-4 h-full">
-                    <Image priority={true} src={'/institut-quantique.svg'}
-                        alt={'Institut' +
-                            ' Quantique Logo'}
-                        width={250} height={79} />
+                    <div className="flex items-center gap-2 mb-4">
+                        <Image priority={true} src={`/images/QuantumCrypto_white-text_transp-cadna_${logoLang}.png`}
+                            alt={'QuantumCrypto'}
+                            width={200} height={50} className="h-10 w-auto object-contain" />
+                    </div>
 
                     {/* Protocoles section */}
                     <div>

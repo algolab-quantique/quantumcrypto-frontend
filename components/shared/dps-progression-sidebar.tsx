@@ -8,13 +8,13 @@ import {
 } from '@/components/ui/sheet';
 import {MessageCircle} from 'lucide-react';
 import React, {useEffect, useState} from 'react';
-import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
+import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
 import DPSProgression from '@/components/dps/play-page/dps-progression';
 
 const DPSProgressionSidebar = () => {
 
     const [newMessage, setNewMessage] = useState(false);
-    const displayedLinesLength = useBB84ProgressStore(
+    const displayedLinesLength = useDPSProgressStore(
         state => state.displayedLines).length;
 
     useEffect(() => {

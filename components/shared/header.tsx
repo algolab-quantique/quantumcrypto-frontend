@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/components/providers/language-provider';
 import Image from 'next/image';
 import ProtocolNavigationMenu
@@ -8,32 +8,39 @@ import GuideNavigationMenu
     from '@/components/shared/guide-navigation-menu';
 import Sidebar from '@/components/shared/sidebar';
 import Link from 'next/link';
+import { getLanguageCode } from '@/lib/utils';
 
 const Header = () => {
 
-    const { localize, setLanguage } = useLanguage();
+    const { localize, setLanguage, language } = useLanguage();
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        const language = localStorage.getItem('language');
-        if (language) {
+        setIsClient(true);
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) {
             // @ts-ignore
-            setLanguage(JSON.parse(language));
+            setLanguage(JSON.parse(savedLanguage));
         }
     }, [])
+
+    const langCode = getLanguageCode(language);
+    const logoLang = isClient ? (langCode === 'es' ? 'en' : langCode) : 'en';
 
     return (
         <>
             <div
-                className="hidden md:block h-fit bg-primary px-6 py-1
+                className="hidden md:block h-fit bg-primary px-6 py-0.5
             text-primary-foreground">
                 <div className="flex gap-x-11 items-center">
-                    <Link href={'/'}>
-                        <Image className="my-2" priority={true}
-                            src={'/institut-quantique.svg'}
-                            alt={'Institut' +
-                                ' Quantique Logo'}
-                            width={250} height={79} />
-                    </Link>
+                    <div className="w-[250px] flex items-center">
+                        <Link href={'/'}>
+                            <Image className="my-1 h-12 w-auto object-contain" priority={true}
+                                src={`/images/QuantumCrypto_white-text_transp-cadna_${logoLang}.png`}
+                                alt={'QuantumCrypto'}
+                                width={250} height={60} />
+                        </Link>
+                    </div>
                     <ProtocolNavigationMenu />
                     <GuideNavigationMenu />
                     <Link href="/#about">

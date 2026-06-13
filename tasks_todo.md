@@ -422,6 +422,51 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ---
 
+### 31. 🟡 Aligner l’interface DPS avec BB84/E91
+
+**Status**: ✅ DONE
+**Date Added**: June 13, 2026
+**Priority**: 🟡 MEDIUM before deploy
+**Depends On**: DPS refresh/save and DPS results table stabilization.
+
+**Context**: DPS now works much better in multiplayer, but a review against BB84/E91 found several UI consistency gaps. These are not new protocol features; they are polish and alignment items before deployment.
+
+**Problems found**:
+1. **DPS play page is missing the protocol button/title**
+   - BB84 play page shows a `BB84` title/button at the top-left of the game area.
+   - E91 play page shows an `E91` title/button with leave confirmation.
+   - DPS play pages only show the mobile progression/sidebar button.
+   - Affected pages:
+     - `app/(main)/dps/play/page.tsx`
+     - `app/(main)/dps/solo/page.tsx`
+
+2. **DPS mobile progression notification watches the wrong store**
+   - `components/shared/dps-progression-sidebar.tsx` imports `useBB84ProgressStore`.
+   - It should use `useDPSProgressStore`.
+   - Current risk: the red mobile notification dot can react to BB84 progression instead of DPS progression.
+
+3. **Old shared header/sidebar still use the Institut Quantique logo**
+   - Protocol home pages use `HeaderV3`, which already shows the QuantumCrypto logo.
+   - Waiting rooms, shared results page, and guide page still use `components/shared/header.tsx`.
+   - `components/shared/header.tsx` and `components/shared/sidebar.tsx` still show `/institut-quantique.svg` in the top-left/mobile menu.
+   - Expected: QuantumCrypto logo in the top-left header; Institut Quantique can remain in footer/partner placement.
+
+4. **DPS has weaker in-game leave UX than E91**
+   - E91 has a protocol title button that asks for leave confirmation before cleaning the active game.
+   - BB84 has a simpler protocol title link.
+   - DPS currently has no protocol title/button in the play-page header.
+   - First step: add the missing DPS title/button. Then decide whether to copy E91’s leave confirmation behavior for DPS.
+
+**Task**:
+- [x] Fix old shared `Header` and mobile `Sidebar` to show the QuantumCrypto logo.
+- [x] Add a `DPS` protocol title/button to DPS multiplayer play page.
+- [x] Add a `DPS` protocol title/button to DPS solo play page.
+- [x] Fix `DPSProgressionSidebar` to use `useDPSProgressStore`.
+- [x] Decide whether DPS should get the same leave confirmation as E91, or keep a simple protocol-home button for now. Decision: align DPS with E91 and ask for confirmation before leaving an unfinished game.
+- [x] Re-test DPS solo, DPS multiplayer, waiting-room header, results header, and mobile progression notification.
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
 **Not a code bug** — this is a testing methodology issue.
