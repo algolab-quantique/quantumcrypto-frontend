@@ -14,6 +14,7 @@ import { Home, RotateCcw } from 'lucide-react';
 import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { useSocket } from '@/components/providers/socket-provider';
 
 
 interface ResultsTableProps {
@@ -107,6 +108,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
     const router = useRouter();
     const { playerName, isAdmin } = usePlayerStore();
     const { localize } = useLanguage();
+    const { disconnectPlayRoom } = useSocket();
 
 
     const { lastMessage, readyState } = useWebSocket(
@@ -178,6 +180,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
 
     // Navigate to game home page (e91, bb84, etc.)
     const handleReplay = () => {
+        disconnectPlayRoom();
         // Don't clear localStorage here — e91GameData.gameSuccess=true
         // serves as a signal for the form page to clean up properly
         router.replace(`/${params.gameType}`);
@@ -185,6 +188,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
 
     // Navigate to main home page
     const handleHomeMenu = () => {
+        disconnectPlayRoom();
         // Clean up the completed game's localStorage based on protocol
         if (params.gameType === 'bb84') {
             clearBB84LocalStorage();

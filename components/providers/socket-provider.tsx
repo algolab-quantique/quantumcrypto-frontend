@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 // @ts-ignore
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
@@ -190,6 +190,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const [waitingRoomSocket, setWaitingRoomSocket] = useState(null);
     const [playRoomSocket, setPlayRoomSocket] = useState(null);
+    const playRoomSocketRef = useRef<any | null>(null);
     const [isWaitingRoomConnected, setIsWaitingRoomConnected] = useState(
         false);
     const [waitingRoomError, setWaitingRoomError] = useState(false);
@@ -481,9 +482,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
         setPlayRoomConnecting(true);
 
+        const previousSocket = playRoomSocketRef.current;
+        playRoomSocketRef.current = null;
+        if (previousSocket) {
+            try {
+                previousSocket.close();
+            } catch (error) {
+                console.warn('Unable to close previous play room socket', error);
+            }
+        }
 
         const socketInstance = new W3CWebSocket(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/rooms/${room}/`);
 
+        playRoomSocketRef.current = socketInstance;
         setPlayRoomSocket(socketInstance);
 
         (socketInstance as any).onerror = (error: any) => {
@@ -494,8 +505,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
         socketInstance.onclose = (event: any) => {
             console.log(event);
-            setIsPlayRoomConnected(false);
-            setPlayRoomConnecting(false);
+            if (playRoomSocketRef.current === socketInstance) {
+                playRoomSocketRef.current = null;
+                setPlayRoomSocket(null);
+                setIsPlayRoomConnected(false);
+                setPlayRoomConnecting(false);
+            }
         };
 
         socketInstance.onmessage = async (json: any) => {
@@ -1185,17 +1200,16 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const disconnectPlayRoom = useCallback(() => {
-        setPlayRoomSocket((currentSocket) => {
-            if (!currentSocket) {
-                return null;
-            }
+        const currentSocket = playRoomSocketRef.current;
+        playRoomSocketRef.current = null;
+        if (currentSocket) {
             try {
                 (currentSocket as any).close();
             } catch (error) {
                 console.warn('Unable to close play room socket', error);
             }
-            return null;
-        });
+        }
+        setPlayRoomSocket(null);
         setIsPlayRoomConnected(false);
         setPlayRoomConnecting(false);
         setPlayRoomError(false);
@@ -1256,17 +1270,18 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         if (message) {
             payload.message = { ...message };
         }
-        if (!playRoomSocket) {
+        const activePlayRoomSocket = playRoomSocketRef.current || playRoomSocket;
+        if (!activePlayRoomSocket) {
             console.error("WebSocket is null. Cannot send event:", event);
             return false;
         }
-        if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
-            console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
+        if ((activePlayRoomSocket as any).readyState !== WebSocket.OPEN) {
+            console.error("WebSocket is not open. Current state:", (activePlayRoomSocket as any).readyState);
             return false;
         }
 
         try {
-            (playRoomSocket as any).send(JSON.stringify(payload));
+            (activePlayRoomSocket as any).send(JSON.stringify(payload));
             return true;
         } catch (error) {
             console.error("Unable to send event:", event, error);
