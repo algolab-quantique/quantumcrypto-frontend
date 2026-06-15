@@ -499,9 +499,9 @@ components/dps/play-page/tabs/alice-exchange-tab.tsx
 
 ---
 
-### 33. 🟠 BB84 Play Page: Add the Same Leave Guard as E91/DPS
+### 33. ✅ BB84 Play Page: Add the Same Leave Guard as E91/DPS
 
-**Status**: ⏳ TODO
+**Status**: ✅ DONE
 **Date Added**: June 15, 2026
 **Priority**: 🟠 HIGH before deploy polish
 **Depends On**: Task 30.
@@ -517,10 +517,10 @@ components/dps/play-page/tabs/alice-exchange-tab.tsx
 - After success, leaving can go directly to `/bb84`, like E91/DPS.
 
 **Fix plan**:
-- [ ] Add a BB84 play-page shell or equivalent page-level guard.
-- [ ] Convert `Bb84Button` from raw `Link` to `onRequestLeave`.
-- [ ] Reuse the same cleanup pattern as E91/DPS with `clearBB84LocalStorage()` and `disconnectPlayRoom()`.
-- [ ] Re-test BB84 solo Alice/Bob, BB84 multi Alice/Bob, unfinished game, and success screen.
+- [x] Add a BB84 play-page shell or equivalent page-level guard.
+- [x] Convert `Bb84Button` from raw `Link` to `onRequestLeave`.
+- [x] Reuse the same cleanup pattern as E91/DPS with `clearBB84LocalStorage()` and `disconnectPlayRoom()`.
+- [x] Re-test BB84 solo Alice/Bob, BB84 multi Alice/Bob, unfinished game, and success screen.
 
 ---
 
