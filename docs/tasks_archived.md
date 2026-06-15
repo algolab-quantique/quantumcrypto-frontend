@@ -3701,3 +3701,296 @@ const onStartGame = async () => {
 6. [x] Commit
 
 ---
+
+## Archived Active-Tracker Tasks (June 15, 2026)
+
+> Moved from `tasks_todo.md` to keep the active tracker focused on open work.
+
+### 25. ✅ Architecture: Split BB84 `game.tsx` into `solo-game.tsx` and `multi-game.tsx`
+
+**Status**: ✅ COMPLETED / DOCS UPDATED
+**Date Added**: May 26, 2026
+**Priority**: ✅ DONE
+
+**Context**: This task is no longer a future TODO. BB84 now follows the same top-level file split as E91 and DPS:
+- Solo container: `components/bb84/play-page/solo-game.tsx`
+- Multiplayer container: `components/bb84/play-page/multi-game.tsx`
+- Route switch: `app/(main)/bb84/play/page.tsx` chooses between them based on `playingSolo`.
+
+**Task**:
+- [x] Extract the solo play code into `components/bb84/play-page/solo-game.tsx`.
+- [x] Create the multiplayer-only container at `components/bb84/play-page/multi-game.tsx`.
+- [x] Update `app/(main)/bb84/play/page.tsx` to route between them based on `playingSolo`.
+- [ ] Future cleanup: BB84 still shares several tab components between solo and multiplayer, so some internal `playingSolo` branching remains.
+
+**Note**: Keep this task as historical context only. New work should happen under Task 24 and protocol-specific cleanup tasks.
+
+---
+
+### 29. ✅ DPS Multiplayer: Results Page, Live Updates, and Results Table
+
+**Status**: ✅ DONE
+**Date Added**: June 11, 2026
+**Priority**: 🔴 HIGH before final DPS deployment polish
+**Depends On**: Stable DPS multiplayer refresh/save from Task 24.
+
+**Context**: DPS multiplayer can now complete and refresh safely. The missing piece was frontend results parity: unlike BB84 and E91, DPS had no dedicated rich results table and the success screen did not route players to the shared results page.
+
+**Final state**:
+- Frontend shared results route listens to `/games/<protocol>/<gameCode>/results/`.
+- The shared results page marks rooms as finished when an iteration has `elapsed_time > 0`.
+- BB84, E91, and DPS now have protocol-specific table components.
+- Backend DPS has `DPSIteration.elapsed_time`, and the model computes it when status becomes `FINISHED`.
+- Tested with 4 DPS players / 2 pairs: the master page updates like BB84/E91 when finished players click "Voir les résultats".
+- No backend change was needed.
+
+**Goal**: DPS master results should behave like BB84/E91:
+- show each finished room/pair as soon as it completes,
+- identify Alice/Bob/player pair cleanly,
+- show elapsed game time,
+- keep waiting state only for rooms that have not finished,
+- avoid guessing in the frontend if the backend result payload is stale.
+
+**Step-by-step plan**:
+1. [x] Test BB84 and E91 result pages with multiple pairs and document the expected behavior:
+   - when each pair appears,
+   - whether the master page updates live without refresh,
+   - exact `Rooms Data` payload shape in the browser console,
+   - how unfinished versus finished rooms are represented.
+2. [x] Test DPS result page with multiple pairs and confirm the master page updates after pairs finish.
+3. [x] Compare backend consumers for BB84, E91, and DPS:
+   - play-room `B_SUCCESS` handling,
+   - `update_iterations_status_to_finished`,
+   - results-room `GAME_RESULTS` payload,
+   - whether fresh results are broadcast after a room finishes.
+4. [x] Decide the smallest correct backend/frontend contract:
+   - prefer backend broadcasting fresh `GAME_RESULTS` after DPS `B_SUCCESS` if the payload is stale,
+   - do not change socket event names unless backend and frontend are changed together,
+   - keep BB84/E91 untouched unless tests prove they need the same live-update hardening.
+5. [x] Backend live-results update not needed after frontend parity test passed.
+6. [x] Add a frontend `DPSResultsTable` component:
+   - start from BB84/E91 table patterns,
+   - show player pair / room,
+   - show iteration number,
+   - show elapsed time,
+   - include DPS-specific fields only if useful and present in payload, for example Eve state or detected times.
+7. [x] Wire `DPSResultsTable` into the shared results route switch.
+8. [x] Re-test:
+   - one pair,
+   - multiple pairs,
+   - first pair finished while other pairs are still playing,
+   - page refresh on master results,
+   - replay/home buttons from the results page.
+
+**Safety notes**:
+- Do not fake completion in the frontend from Alice/Bob local success state; the backend owns room completion truth.
+- Do not change DPS success event names. The current backend-supported completion event is `B_SUCCESS`.
+- Backend changes should be DPS-only first, and only after observing the actual DPS result payload.
+
+---
+
+### 30. 🟡 BB84: Stale Session Redirect After Returning From Results/Home
+
+**Status**: ✅ DONE
+**Date Added**: June 12, 2026
+**Priority**: 🟡 MEDIUM
+**Depends On**: Current deploy polish; can be fixed after DPS results work if needed.
+
+**Context**: After completing an E91 multiplayer test and clicking "Menu Principal" from the results page, clicking the BB84 card can sometimes go directly to BB84 step 1 instead of showing the BB84 solo/multiplayer choice page.
+
+**Likely cause**: `components/bb84/home-page/bb84-game-form-v3.tsx` redirects to `/bb84/play` whenever `isPlayRoomConnected` is true. It does not first verify that the current socket/session belongs to a valid active BB84 session. This is similar to the stale redirect issue already hardened for E91/DPS.
+
+**Expected behavior**:
+- Clicking BB84 from the landing page should show the BB84 protocol home/choice UI.
+- Auto-redirect to `/bb84/play` should happen only when there is a valid active BB84 play session.
+- Completed or stale protocol data should be cleared intentionally.
+
+**Task**:
+- [x] Reproduce after returning from a multiplayer results page.
+- [x] Harden BB84 home redirect guard so `isPlayRoomConnected` alone is not enough.
+- [x] Require valid `bb84PlayerData` and active `playingMultiplayer` session before redirecting to `/bb84/play`.
+- [x] Clear stale completed BB84 data safely without causing a step-1 flash.
+- [x] Disconnect stale play socket when BB84 has no valid active session.
+- [x] Re-test BB84 landing, solo choice, multiplayer join/create, refresh restore, and results/home flows.
+
+---
+
+### 31. 🟡 Aligner l’interface DPS avec BB84/E91
+
+**Status**: ✅ DONE
+**Date Added**: June 13, 2026
+**Priority**: 🟡 MEDIUM before deploy
+**Depends On**: DPS refresh/save and DPS results table stabilization.
+
+**Context**: DPS now works much better in multiplayer, but a review against BB84/E91 found several UI consistency gaps. These are not new protocol features; they are polish and alignment items before deployment.
+
+**Problems found**:
+1. **DPS play page is missing the protocol button/title**
+   - BB84 play page shows a `BB84` title/button at the top-left of the game area.
+   - E91 play page shows an `E91` title/button with leave confirmation.
+   - DPS play pages only show the mobile progression/sidebar button.
+   - Affected pages:
+     - `app/(main)/dps/play/page.tsx`
+     - `app/(main)/dps/solo/page.tsx`
+
+2. **DPS mobile progression notification watches the wrong store**
+   - `components/shared/dps-progression-sidebar.tsx` imports `useBB84ProgressStore`.
+   - It should use `useDPSProgressStore`.
+   - Current risk: the red mobile notification dot can react to BB84 progression instead of DPS progression.
+
+3. **Old shared header/sidebar still use the Institut Quantique logo**
+   - Protocol home pages use `HeaderV3`, which already shows the QuantumCrypto logo.
+   - Waiting rooms, shared results page, and guide page still use `components/shared/header.tsx`.
+   - `components/shared/header.tsx` and `components/shared/sidebar.tsx` still show `/institut-quantique.svg` in the top-left/mobile menu.
+   - Expected: QuantumCrypto logo in the top-left header; Institut Quantique can remain in footer/partner placement.
+
+4. **DPS has weaker in-game leave UX than E91**
+   - E91 has a protocol title button that asks for leave confirmation before cleaning the active game.
+   - BB84 has a simpler protocol title link.
+   - DPS currently has no protocol title/button in the play-page header.
+   - First step: add the missing DPS title/button. Then decide whether to copy E91’s leave confirmation behavior for DPS.
+
+**Task**:
+- [x] Fix old shared `Header` and mobile `Sidebar` to show the QuantumCrypto logo.
+- [x] Add a `DPS` protocol title/button to DPS multiplayer play page.
+- [x] Add a `DPS` protocol title/button to DPS solo play page.
+- [x] Fix `DPSProgressionSidebar` to use `useDPSProgressStore`.
+- [x] Decide whether DPS should get the same leave confirmation as E91, or keep a simple protocol-home button for now. Decision: align DPS with E91 and ask for confirmation before leaving an unfinished game.
+- [x] Re-test DPS solo, DPS multiplayer, waiting-room header, results header, and mobile progression notification.
+
+---
+
+### 32. ✅ DPS Multiplayer: Alice Refresh Crash During Step 1
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🔴 HIGH / deployment blocker
+**Depends On**: Task 24 and Task 31.
+
+**Observed test**: In DPS multiplayer as Alice, fill step 1, refresh the page, then the app can crash with:
+
+```text
+TypeError: Cannot read properties of undefined (reading '0')
+components/dps/play-page/tabs/alice-exchange-tab.tsx
+```
+
+**Likely cause**: `AliceExchangeTab` decides that photons were sent with `alicePhotons.length > 0`, then renders `alicePhases[i][buttonIndex]`. After refresh, the restored snapshot can be partial or temporarily inconsistent: `alicePhotons` exists, but `alicePhases[i]` is missing for at least one row.
+
+**Expected behavior**:
+- Refresh during DPS Alice step 1 must never crash.
+- If a full sent snapshot exists, show the sent phases and photons.
+- If only a draft exists, restore the editable form.
+- If saved data is partial/corrupted, ignore the bad snapshot and fall back to the last safe editable state.
+
+**Fix plan**:
+- [x] Replace `photonsSent = alicePhotons.length > 0` with a full shape check for both `alicePhotons` and `alicePhases`.
+- [x] Use safe row fallbacks when rendering phase/photon rows.
+- [x] Sanitize restored `dpsGameData` so partial `alicePhotons` / `alicePhases` cannot put the tab in a half-sent state.
+- [x] Store Alice photons/phases atomically through `setAliceExchangeData`.
+- [x] Re-test Alice refresh before sending, after sending, and with Bob connected.
+- [x] Re-test DPS solo main-menu return so it does not flash the empty step 1 screen.
+
+---
+
+### 33. ✅ BB84 Play Page: Add the Same Leave Guard as E91/DPS
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🟠 HIGH before deploy polish
+**Depends On**: Task 30.
+
+**Observed test**: In BB84 solo and multiplayer, clicking the top-left `BB84` title during an active game does not ask whether the user wants to leave. In multiplayer, it can feel like a refresh/stay action instead of a clear navigation action.
+
+**Current code**: `components/bb84/play-page/bb84-button.tsx` is still a raw link to `/bb84`. E91 and DPS use a play-page shell that asks for confirmation, disconnects, clears local protocol storage, then navigates to the protocol page.
+
+**Expected behavior**:
+- During an unfinished BB84 game, clicking `BB84` should ask: stay or quit.
+- If the user stays, nothing changes.
+- If the user quits, disconnect/clear BB84 state and go to `/bb84`.
+- After success, leaving can go directly to `/bb84`, like E91/DPS.
+
+**Fix plan**:
+- [x] Add a BB84 play-page shell or equivalent page-level guard.
+- [x] Convert `Bb84Button` from raw `Link` to `onRequestLeave`.
+- [x] Reuse the same cleanup pattern as E91/DPS with `clearBB84LocalStorage()` and `disconnectPlayRoom()`.
+- [x] Re-test BB84 solo Alice/Bob, BB84 multi Alice/Bob, unfinished game, and success screen.
+
+---
+
+### 34. ✅ DPS Home Page: Align Entry Flow With BB84/E91
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🟠 HIGH before deploy polish
+**Depends On**: Task 31.
+
+**Observed test**: After clicking the DPS card, DPS still has a different intermediate card/role flow, including the older Alice/Bob choice with Cat/Dog icons. This was kept temporarily as a comparison point, but now DPS should match the current BB84/E91 experience.
+
+**Expected behavior**:
+- DPS protocol page should feel like BB84/E91.
+- Same visible solo/multiplayer choice pattern.
+- Same role-selection style where possible.
+- No extra intermediate click that only DPS has.
+
+**Fix plan**:
+- [x] Compare `DPSMainV3` against `BB84MainV3` and `E91MainV3`.
+- [x] Remove the old DPS-only solo intermediate flow from the active UI.
+- [x] Align DPS solo role selection UI with the current BB84/E91 character-card style.
+- [x] Route DPS solo and multiplayer through shared `/dps/play`, like BB84/E91.
+- [x] Redirect legacy `/dps/solo` to `/dps/play` so old links/history do not break.
+- [x] Re-test DPS solo start and DPS multiplayer create/join.
+
+---
+
+### 35. ✅ E91: Missing Localization Keys in Eve/Validation UI
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🟡 MEDIUM / quick visible fix
+
+**Observed test**:
+- French E91 Eve/validation UI can show raw key `component.game.tabValidation`.
+- French E91 CHSH table can show raw key `component.e91.text.values`.
+
+**Current code**:
+- `components/e91/play-page/multi-game.tsx` and `solo-game.tsx` call `localize('component.game.tabValidation')`.
+- `components/e91/play-page/tabs/CHSH-tab.tsx` calls `localize('component.e91.text.values')`.
+- `lang/e91-lines.ts` has `component.e91.text.values` in English/Spanish, but not French.
+- `lang/e91-lines.ts` does not define `component.game.tabValidation`.
+
+**Fix plan**:
+- [x] Add `component.game.tabValidation` to E91 translations.
+- [x] Add French `component.e91.text.values`.
+- [x] Audit E91 Eve/CHSH visible keys in French.
+- [x] Re-test E91 with Eve enabled in French.
+
+---
+
+### 36. ✅ E91: Controlled Input Warning in Measurement Tab
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🟡 MEDIUM / console cleanup
+
+**Observed test**: Browser console shows:
+
+```text
+Warning: A component is changing a controlled input to be uncontrolled
+components/e91/play-page/tabs/measurement-tab.tsx
+```
+
+Follow-up test also showed the same warning in solo mode from
+`components/e91/play-page/tabs/solo-measurement-tab.tsx`.
+
+**Likely cause**: The disabled photon/bit input renders `value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]}`. During restore or reveal transitions, `bits[i]` can temporarily be `undefined`, so React sees the input value change from defined to undefined.
+
+**Expected behavior**:
+- No controlled/uncontrolled input warning.
+- Refresh/restore and photon reveal should keep a stable string value.
+
+**Fix plan**:
+- [x] Ensure the rendered input value is always a string, with `'*'` as fallback while restored bits settle.
+- [x] Apply the same fallback to E91 multiplayer and solo measurement tabs.
+- [x] Re-test E91 refresh during/after measurement: only the normal React DevTools development message remains.
+
+---
