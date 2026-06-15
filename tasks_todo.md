@@ -547,9 +547,9 @@ components/dps/play-page/tabs/alice-exchange-tab.tsx
 
 ---
 
-### 35. 🟡 E91: Missing Localization Keys in Eve/Validation UI
+### 35. ✅ E91: Missing Localization Keys in Eve/Validation UI
 
-**Status**: ⏳ TODO
+**Status**: ✅ DONE
 **Date Added**: June 15, 2026
 **Priority**: 🟡 MEDIUM / quick visible fix
 
@@ -564,10 +564,10 @@ components/dps/play-page/tabs/alice-exchange-tab.tsx
 - `lang/e91-lines.ts` does not define `component.game.tabValidation`.
 
 **Fix plan**:
-- [ ] Add `component.game.tabValidation` to E91 translations.
-- [ ] Add French `component.e91.text.values`.
-- [ ] Audit E91 Eve/CHSH visible keys in French.
-- [ ] Re-test E91 with Eve enabled in French.
+- [x] Add `component.game.tabValidation` to E91 translations.
+- [x] Add French `component.e91.text.values`.
+- [x] Audit E91 Eve/CHSH visible keys in French.
+- [x] Re-test E91 with Eve enabled in French.
 
 ---
 
