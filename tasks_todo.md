@@ -571,9 +571,9 @@ components/dps/play-page/tabs/alice-exchange-tab.tsx
 
 ---
 
-### 36. 🟡 E91: Controlled Input Warning in Measurement Tab
+### 36. ✅ E91: Controlled Input Warning in Measurement Tab
 
-**Status**: ⏳ TODO
+**Status**: ✅ DONE
 **Date Added**: June 15, 2026
 **Priority**: 🟡 MEDIUM / console cleanup
 
@@ -584,6 +584,9 @@ Warning: A component is changing a controlled input to be uncontrolled
 components/e91/play-page/tabs/measurement-tab.tsx
 ```
 
+Follow-up test also showed the same warning in solo mode from
+`components/e91/play-page/tabs/solo-measurement-tab.tsx`.
+
 **Likely cause**: The disabled photon/bit input renders `value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]}`. During restore or reveal transitions, `bits[i]` can temporarily be `undefined`, so React sees the input value change from defined to undefined.
 
 **Expected behavior**:
@@ -591,9 +594,9 @@ components/e91/play-page/tabs/measurement-tab.tsx
 - Refresh/restore and photon reveal should keep a stable string value.
 
 **Fix plan**:
-- [ ] Ensure the rendered input value is always a string, for example with a fallback.
-- [ ] Check the revealed bits length when restored data arrives.
-- [ ] Re-test E91 refresh during/after measurement.
+- [x] Ensure the rendered input value is always a string, with `'*'` as fallback while restored bits settle.
+- [x] Apply the same fallback to E91 multiplayer and solo measurement tabs.
+- [x] Re-test E91 refresh during/after measurement: only the normal React DevTools development message remains.
 
 ---
 

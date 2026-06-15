@@ -169,7 +169,11 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
         }
     }, [photonsMeasured]);
     
-    
+    // Keep the disabled photon input controlled while restored bits settle.
+    const getDisplayedBit = (index: number) => (
+        !photonsRevealed ? revealedBits[index] || '*' : bits[index] ?? '*'
+    );
+
 
     return (
         <div
@@ -252,13 +256,13 @@ const MeasurementTab = ({photonNumber, polarIcons, playerRole}: {
                                 <Input
                                     disabled={true}
                                     style={{
-                                        borderColor: highlightedIndex === i ? 'rgba(0, 255, 0, 0.6)' : undefined,   
-                                        transition: 'border-color 0.5s easeOut'                             
+                                        borderColor: highlightedIndex === i ? 'rgba(0, 255, 0, 0.6)' : undefined,
+                                        transition: 'border-color 0.5s easeOut'
                                     }}
                                     // type="number"
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
-                                    value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]} 
+                                    value={getDisplayedBit(i)}
                                     className={cn('w-10 text-lg text-center' +
                                         ' mx-auto disabled:opacity-100' +
                                         ' disabled:bg-background' +

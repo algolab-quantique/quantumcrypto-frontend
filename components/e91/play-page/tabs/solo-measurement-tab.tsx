@@ -275,6 +275,11 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
         }
     }, [photonsMeasured]);
 
+    // Keep the disabled photon input controlled while restored bits settle.
+    const getDisplayedBit = (index: number) => (
+        !photonsRevealed ? revealedBits[index] || '*' : bits[index] ?? '*'
+    );
+
     // ═══════════════════════════════════════════════════════════════════════
     // RENDER - Identical to multiplayer measurement-tab.tsx
     // ═══════════════════════════════════════════════════════════════════════
@@ -365,7 +370,7 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
                                     }}
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
-                                    value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]}
+                                    value={getDisplayedBit(i)}
                                     className={cn('w-10 text-lg text-center' +
                                         ' mx-auto disabled:opacity-100' +
                                         ' disabled:bg-background' +
