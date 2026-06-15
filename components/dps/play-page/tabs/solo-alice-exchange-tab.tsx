@@ -30,8 +30,7 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
     const {
         alicePhotons,
         alicePhases,
-        setAlicePhotons,
-        setAlicePhases,
+        setAliceExchangeData,
         setBobTimeMeasurements,
     } = useDPSRoomStore();
 
@@ -230,8 +229,7 @@ const SoloAliceExchangeTab = ({ photonNumber, polarIcons }: {
             const photonsToSend = pulseInputs.map(({ values }) => values);
             const phasesToSend = phaseInputs.map(({ values }) => values);
 
-            setAlicePhotons(photonsToSend);
-            setAlicePhases(phasesToSend);
+            setAliceExchangeData(photonsToSend, phasesToSend);
 
             // In Solo Mode: Simulate Bob's reception and measurement
             // 1. Notify user that pulses are sent

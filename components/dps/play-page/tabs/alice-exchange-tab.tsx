@@ -10,21 +10,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {cn, forbiddenSymbols} from '@/lib/utils';
+import {cn} from '@/lib/utils';
 import {useLanguage} from '@/components/providers/language-provider';
 import {useSocket} from '@/components/providers/socket-provider';
-import {DPSGameStep, inputPhaseField } from '@/types';
-import { log } from 'console';
+import {inputPhaseField } from '@/types';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import {useDPSProgressStore} from '@/store/dps/dps-progress-store';
-import {CheckCircle2, Info} from 'lucide-react';
+import {CheckCircle2} from 'lucide-react';
 
 
 
@@ -35,20 +27,35 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
 }) => {
     const PHASE_INPUTS_KEY = 'dpsMultiAliceExchangePhaseInputs';
     const PULSE_INPUTS_KEY = 'dpsMultiAliceExchangePulseInputs';
+    const ROW_SIZE = 3;
 
     const {localize} = useLanguage();
     const {sendPhases} = useSocket();
-    const {pushLines, setDPSTab, setStep} = useDPSProgressStore();
+    const {pushLines} = useDPSProgressStore();
     const {
         alicePhotons,
         alicePhases,
     } = useDPSRoomStore();
     const {
-        setAlicePhotons,
-        setAlicePhases,
+        setAliceExchangeData,
     } = useDPSRoomStore();
     const possiblePhases = ['0', 'π'];
-    const photonsSent = alicePhotons.length > 0;
+
+    const hasCompleteRows = (rows: string[][]) => (
+        Array.isArray(rows) &&
+        rows.length > 0 &&
+        rows.every(row => (
+            Array.isArray(row) &&
+            row.length === ROW_SIZE &&
+            row.every(value => typeof value === 'string')
+        ))
+    );
+
+    const photonsSent = (
+        hasCompleteRows(alicePhotons) &&
+        hasCompleteRows(alicePhases) &&
+        alicePhotons.length === alicePhases.length
+    );
 
     const buildEmptyInputRows = () => {
         const inputs: inputPhaseField[] = [];
@@ -210,12 +217,33 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
 
    
     const validateForm = phaseInputs.every((phaseRow, rowIndex) => {
+        const pulseRow = pulseInputs[rowIndex];
+        if (!phaseRow?.values || !pulseRow?.values || !pulseRow?.error) {
+            return false;
+        }
+
         const arePhasesValid = phaseRow.values.every((phase) => phase === '0' || phase === 'π');
-        const arePulsesValid = pulseInputs[rowIndex].values.every((pulse) => pulse === '1' || pulse === '2');
-        const areErrorsAbsent = pulseInputs[rowIndex].error.every((error) => !error);
+        const arePulsesValid = pulseRow.values.every((pulse) => pulse === '1' || pulse === '2');
+        const areErrorsAbsent = pulseRow.error.every((error) => !error);
 
         return arePhasesValid && arePulsesValid && areErrorsAbsent;
     });
+
+    const displayedPhaseInputs = photonsSent
+        ? alicePhases.map(values => ({
+            values,
+            touched: [true, true, true],
+            error: [false, false, false],
+        }))
+        : phaseInputs;
+
+    const displayedPulseInputs = photonsSent
+        ? alicePhotons.map(values => ({
+            values,
+            touched: [true, true, true],
+            error: [false, false, false],
+        }))
+        : pulseInputs;
 
 
     const onSendPulsePhotons = () => {
@@ -227,8 +255,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
           const photonsToSend = pulseInputs.map(({ values }) => values);
           const phasesToSend = phaseInputs.map(({ values }) => values);
   
-          setAlicePhotons(photonsToSend);
-          setAlicePhases(phasesToSend);
+          setAliceExchangeData(photonsToSend, phasesToSend);
           localStorage.removeItem(PHASE_INPUTS_KEY);
           localStorage.removeItem(PULSE_INPUTS_KEY);
   
@@ -290,7 +317,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                     </TableRow>
                 </TableHeader>
                 <TableBody className="h-full overflow-y-auto">
-                    {phaseInputs.map((_, i) => (
+                    {displayedPhaseInputs.map((_, i) => (
                         <TableRow key={i}
                             className="text-center border-secondary">
                             <TableCell>
@@ -305,54 +332,57 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                                         </Button>
                                     ))}
                                 </div>
-                            </TableCell>     
+                            </TableCell>
                             <TableCell className="w-[200px]">
                                 <div className="gaussian-container">
-                                    {phaseInputs[i].values.map((value, buttonIndex) => (
-                                    
+                                    {displayedPhaseInputs[i].values.map((value, buttonIndex) => (
+
                                         <Button
+                                            disabled={photonsSent}
                                             key={buttonIndex}
                                             variant="outline"
                                             className={cn('disabled:opacity-100')}
                                             onClick={() => onPhaseClick(i, buttonIndex)}
                                             size="icon"
-                                        > {photonsSent ? alicePhases[i][buttonIndex]: value}
+                                        > {photonsSent ? alicePhases[i]?.[buttonIndex] ?? value : value}
                                         </Button>
                                     ))}
                                 </div>
-                                
-                            </TableCell>  
+
+                            </TableCell>
                             <TableCell className="w-[200px]">
                                 <div className="gaussian-container">
-                                    {pulseInputs[i].values.map((value, buttonIndex) => (
-                                        <Button
-                                            disabled={photonsSent}
-                                            key={buttonIndex}
-                                            variant="outline"
-                                            className={cn(
-                                                'disabled:opacity-100',
-                                                'flex items-center justify-center', 
-                                                pulseInputs[i].error[buttonIndex] && pulseInputs[i].touched[buttonIndex] ? 'border border-red' : ''
-                                            )}
-                                            onClick={() => onModulatedClick(i, buttonIndex)}
-                                            size="icon"
-                                        >
-                                            {photonsSent 
-                                                ? (alicePhotons[i][buttonIndex] === '1' 
-                                                    ? polarIcons[1] 
-                                                    : polarIcons[2]) 
-                                                : (value === '1' 
-                                                    ? polarIcons[1] 
-                                                    : value === '2' 
-                                                        ? polarIcons[2] 
-                                                        : polarIcons[0])
-                                            }
-                                        </Button>
-                                    ))}
+                                    {(displayedPulseInputs[i]?.values ?? ['-', '-', '-']).map((value, buttonIndex) => {
+                                        const displayPhoton = photonsSent
+                                            ? alicePhotons[i]?.[buttonIndex]
+                                            : value;
+
+                                        return (
+                                            <Button
+                                                disabled={photonsSent}
+                                                key={buttonIndex}
+                                                variant="outline"
+                                                className={cn(
+                                                    'disabled:opacity-100',
+                                                    'flex items-center justify-center',
+                                                    displayedPulseInputs[i]?.error?.[buttonIndex] && displayedPulseInputs[i]?.touched?.[buttonIndex] ? 'border border-red' : ''
+                                                )}
+                                                onClick={() => onModulatedClick(i, buttonIndex)}
+                                                size="icon"
+                                            >
+                                                {displayPhoton === '1'
+                                                    ? polarIcons[1]
+                                                    : displayPhoton === '2'
+                                                        ? polarIcons[2]
+                                                        : polarIcons[0]
+                                                }
+                                            </Button>
+                                        );
+                                    })}
                                 </div>
-                                
-                            </TableCell>  
-                             
+
+                            </TableCell>
+
                         </TableRow>
                     ))}
                     

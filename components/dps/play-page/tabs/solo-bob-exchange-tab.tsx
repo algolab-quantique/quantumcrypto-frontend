@@ -49,8 +49,7 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
         alicePhases,
         bobTimeMeasurements,
 
-        setAlicePhotons,
-        setAlicePhases,
+        setAliceExchangeData,
         setBobTimeMeasurements
     } = useDPSRoomStore();
 
@@ -109,8 +108,7 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
                 const phases = generateRandomPhases(photonNumber);
                 const photons = generatePulseTrains(phases);
 
-                setAlicePhases(phases);
-                setAlicePhotons(photons);
+                setAliceExchangeData(photons, phases);
 
                 pushLines([{ content: 'component.bobExchange.photonsArrived' }]);
                 pushLines([{
@@ -119,7 +117,7 @@ const SoloBobExchangeTab = ({ photonNumber, polarIcons }: {
                 }]);
             }, 2000);
         }
-    }, [alicePhotons.length, photonNumber, setAlicePhases, setAlicePhotons, pushLines]);
+    }, [alicePhotons.length, photonNumber, setAliceExchangeData, pushLines]);
 
     useEffect(() => {
         if (arrivalTimesSent) {

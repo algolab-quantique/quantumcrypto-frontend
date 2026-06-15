@@ -467,6 +467,194 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ---
 
+### 32. ✅ DPS Multiplayer: Alice Refresh Crash During Step 1
+
+**Status**: ✅ DONE
+**Date Added**: June 15, 2026
+**Priority**: 🔴 HIGH / deployment blocker
+**Depends On**: Task 24 and Task 31.
+
+**Observed test**: In DPS multiplayer as Alice, fill step 1, refresh the page, then the app can crash with:
+
+```text
+TypeError: Cannot read properties of undefined (reading '0')
+components/dps/play-page/tabs/alice-exchange-tab.tsx
+```
+
+**Likely cause**: `AliceExchangeTab` decides that photons were sent with `alicePhotons.length > 0`, then renders `alicePhases[i][buttonIndex]`. After refresh, the restored snapshot can be partial or temporarily inconsistent: `alicePhotons` exists, but `alicePhases[i]` is missing for at least one row.
+
+**Expected behavior**:
+- Refresh during DPS Alice step 1 must never crash.
+- If a full sent snapshot exists, show the sent phases and photons.
+- If only a draft exists, restore the editable form.
+- If saved data is partial/corrupted, ignore the bad snapshot and fall back to the last safe editable state.
+
+**Fix plan**:
+- [x] Replace `photonsSent = alicePhotons.length > 0` with a full shape check for both `alicePhotons` and `alicePhases`.
+- [x] Use safe row fallbacks when rendering phase/photon rows.
+- [x] Sanitize restored `dpsGameData` so partial `alicePhotons` / `alicePhases` cannot put the tab in a half-sent state.
+- [x] Store Alice photons/phases atomically through `setAliceExchangeData`.
+- [x] Re-test Alice refresh before sending, after sending, and with Bob connected.
+- [x] Re-test DPS solo main-menu return so it does not flash the empty step 1 screen.
+
+---
+
+### 33. 🟠 BB84 Play Page: Add the Same Leave Guard as E91/DPS
+
+**Status**: ⏳ TODO
+**Date Added**: June 15, 2026
+**Priority**: 🟠 HIGH before deploy polish
+**Depends On**: Task 30.
+
+**Observed test**: In BB84 solo and multiplayer, clicking the top-left `BB84` title during an active game does not ask whether the user wants to leave. In multiplayer, it can feel like a refresh/stay action instead of a clear navigation action.
+
+**Current code**: `components/bb84/play-page/bb84-button.tsx` is still a raw link to `/bb84`. E91 and DPS use a play-page shell that asks for confirmation, disconnects, clears local protocol storage, then navigates to the protocol page.
+
+**Expected behavior**:
+- During an unfinished BB84 game, clicking `BB84` should ask: stay or quit.
+- If the user stays, nothing changes.
+- If the user quits, disconnect/clear BB84 state and go to `/bb84`.
+- After success, leaving can go directly to `/bb84`, like E91/DPS.
+
+**Fix plan**:
+- [ ] Add a BB84 play-page shell or equivalent page-level guard.
+- [ ] Convert `Bb84Button` from raw `Link` to `onRequestLeave`.
+- [ ] Reuse the same cleanup pattern as E91/DPS with `clearBB84LocalStorage()` and `disconnectPlayRoom()`.
+- [ ] Re-test BB84 solo Alice/Bob, BB84 multi Alice/Bob, unfinished game, and success screen.
+
+---
+
+### 34. 🟠 DPS Home Page: Align Entry Flow With BB84/E91
+
+**Status**: ⏳ TODO
+**Date Added**: June 15, 2026
+**Priority**: 🟠 HIGH before deploy polish
+**Depends On**: Task 31.
+
+**Observed test**: After clicking the DPS card, DPS still has a different intermediate card/role flow, including the older Alice/Bob choice with Cat/Dog icons. This was kept temporarily as a comparison point, but now DPS should match the current BB84/E91 experience.
+
+**Expected behavior**:
+- DPS protocol page should feel like BB84/E91.
+- Same visible solo/multiplayer choice pattern.
+- Same role-selection style where possible.
+- No extra intermediate click that only DPS has.
+
+**Fix plan**:
+- [ ] Compare `DPSMainV3` against `BB84MainV3` and `E91MainV3`.
+- [ ] Remove or replace the old DPS-only intermediate flow.
+- [ ] Align solo role selection UI with the current BB84/E91 style.
+- [ ] Re-test DPS solo start, DPS multiplayer create/join, and stale-session cleanup.
+
+---
+
+### 35. 🟡 E91: Missing Localization Keys in Eve/Validation UI
+
+**Status**: ⏳ TODO
+**Date Added**: June 15, 2026
+**Priority**: 🟡 MEDIUM / quick visible fix
+
+**Observed test**:
+- French E91 Eve/validation UI can show raw key `component.game.tabValidation`.
+- French E91 CHSH table can show raw key `component.e91.text.values`.
+
+**Current code**:
+- `components/e91/play-page/multi-game.tsx` and `solo-game.tsx` call `localize('component.game.tabValidation')`.
+- `components/e91/play-page/tabs/CHSH-tab.tsx` calls `localize('component.e91.text.values')`.
+- `lang/e91-lines.ts` has `component.e91.text.values` in English/Spanish, but not French.
+- `lang/e91-lines.ts` does not define `component.game.tabValidation`.
+
+**Fix plan**:
+- [ ] Add `component.game.tabValidation` to E91 translations.
+- [ ] Add French `component.e91.text.values`.
+- [ ] Audit E91 Eve/CHSH visible keys in French.
+- [ ] Re-test E91 with Eve enabled in French.
+
+---
+
+### 36. 🟡 E91: Controlled Input Warning in Measurement Tab
+
+**Status**: ⏳ TODO
+**Date Added**: June 15, 2026
+**Priority**: 🟡 MEDIUM / console cleanup
+
+**Observed test**: Browser console shows:
+
+```text
+Warning: A component is changing a controlled input to be uncontrolled
+components/e91/play-page/tabs/measurement-tab.tsx
+```
+
+**Likely cause**: The disabled photon/bit input renders `value={!photonsRevealed ? revealedBits[i] || '*' : bits[i]}`. During restore or reveal transitions, `bits[i]` can temporarily be `undefined`, so React sees the input value change from defined to undefined.
+
+**Expected behavior**:
+- No controlled/uncontrolled input warning.
+- Refresh/restore and photon reveal should keep a stable string value.
+
+**Fix plan**:
+- [ ] Ensure the rendered input value is always a string, for example with a fallback.
+- [ ] Check the revealed bits length when restored data arrives.
+- [ ] Re-test E91 refresh during/after measurement.
+
+---
+
+### 37. 🟡 DPS: Remove Remaining Fragile Browser Navigation Guard
+
+**Status**: ⏳ TODO
+**Date Added**: June 15, 2026
+**Priority**: 🟡 MEDIUM after DPS crash fix
+
+**Context**: Earlier E91 work showed that custom browser back/refresh trapping was fragile. DPS multiplayer still calls `usePreventNavigation(!gameSuccess, handleNavCleanup)` inside `components/dps/play-page/multi-game.tsx`.
+
+**Expected direction**:
+- Keep strong in-app leave confirmation on the DPS title button.
+- Let browser refresh restore the saved snapshot without an extra warning.
+- Avoid browser-back hacks that can produce inconsistent history behavior.
+
+**Fix plan**:
+- [ ] Re-check DPS refresh/back behavior after fixing the Alice refresh crash.
+- [ ] Decide whether to remove `usePreventNavigation` from DPS multi.
+- [ ] If removed, rely on restore/cleanup logic and the in-app `DPS` leave guard.
+
+---
+
+### 38. ⚪ DPS: Eve Mode Support
+
+**Status**: ⏳ FUTURE
+**Date Added**: June 15, 2026
+**Priority**: ⚪ VERY LOW / after new architecture
+
+**Context**: DPS currently has no real Eve flow. The solo modal explicitly notes that Eve is not implemented yet, and the DPS validation tab is effectively empty.
+
+**Future task**:
+- [ ] Define DPS Eve rules and UI.
+- [ ] Add backend/frontend payload support if needed.
+- [ ] Implement DPS validation tab.
+- [ ] Add DPS Eve results fields only after the gameplay exists.
+
+---
+
+### 39. ⚪ DPS Solo: Add Results Table Like E91 Solo / DPS Multiplayer
+
+**Status**: ⏳ FUTURE
+**Date Added**: June 15, 2026
+**Priority**: ⚪ LOW / after deployment-critical DPS polish
+
+**Context**: DPS multiplayer now has a shared results table, and E91 solo has a dedicated `/e91/solo-results` route. DPS solo currently ends with local replay/main-menu buttons only; there is no DPS solo results page/table.
+
+**Expected future behavior**:
+- DPS solo success should offer a real results screen instead of only local end buttons.
+- The UI should be aligned with E91 solo and DPS multiplayer where possible.
+- Results should include at least player role/pair, elapsed time if available, and useful DPS-specific values such as photon count or final key length if already stored.
+
+**Task**:
+- [ ] Design the DPS solo result payload from existing local DPS stores.
+- [ ] Add a DPS solo results route.
+- [ ] Add a DPS solo results table component.
+- [ ] Update DPS solo progression to navigate to the solo results page.
+- [ ] Keep replay/main-menu cleanup behavior consistent with E91 solo and DPS multiplayer.
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
 **Not a code bug** — this is a testing methodology issue.

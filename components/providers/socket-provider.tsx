@@ -640,8 +640,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                     break;
                 case A_PHASES_EVENT:
                     if (usePlayerStore.getState().playerRole === 'B') {
-                        useDPSRoomStore.getState().setAlicePhotons(message.photons);
-                        useDPSRoomStore.getState().setAlicePhases(message.phases);
+                        useDPSRoomStore.getState().setAliceExchangeData(message.photons, message.phases);
 
                         useDPSProgressStore.getState().pushLines([
                             {

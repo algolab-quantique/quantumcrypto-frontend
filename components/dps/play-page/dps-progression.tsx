@@ -10,7 +10,6 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
-import { clearDPSStorageKeys } from '@/lib/dps/utils';
 
 const DPSProgression = () => {
 
@@ -50,10 +49,7 @@ const DPSProgression = () => {
 
     const goToMainMenu = () => {
         disconnectPlayRoom();
-        clearDPSStorageKeys();
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
-        router.replace('/');
+        window.location.replace('/');
     };
 
     const goToResultsPage = () => {

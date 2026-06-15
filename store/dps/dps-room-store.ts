@@ -37,6 +37,7 @@ type DPSRoomStateSchema = typeof initialState;
 interface DPSActions {
     setAlicePhotons:        (photons: string[][]) => void;
     setAlicePhases:         (phases: string[][]) => void;
+    setAliceExchangeData:   (photons: string[][], phases: string[][]) => void;
     setBobTimeMeasurements: (measurements: string[]) => void;
     setInferredPhases:      (bits: string[]) => void;
     setKeyBits:             (bits: string[]) => void;
@@ -70,6 +71,25 @@ type DPSRoomStore = DPSRoomStateSchema & DPSActions;
 // =========================================================================
 const isBrowser = () => typeof window !== 'undefined';
 
+const isThreeValueMatrix = (value: unknown): value is string[][] => (
+    Array.isArray(value) &&
+    value.every(row => (
+        Array.isArray(row) &&
+        row.length === 3 &&
+        row.every(item => typeof item === 'string')
+    ))
+);
+
+const hasValidAliceExchangeData = (
+    photons: unknown,
+    phases: unknown,
+) => (
+    isThreeValueMatrix(photons) &&
+    isThreeValueMatrix(phases) &&
+    photons.length > 0 &&
+    photons.length === phases.length
+);
+
 const updateAndStore = (
     key: keyof DPSRoomStateSchema,
     value: DPSRoomStateSchema[keyof DPSRoomStateSchema],
@@ -93,6 +113,29 @@ const updateAndStore = (
     localStorage.setItem('dpsGameData', JSON.stringify(next));
 };
 
+const updateManyAndStore = (
+    updates: Partial<DPSRoomStateSchema>,
+    set: (state: Partial<DPSRoomStore>) => void,
+) => {
+    set(updates as Partial<DPSRoomStore>);
+
+    if (!isBrowser()) return;
+
+    const stored = localStorage.getItem('dpsGameData');
+    let existing: Record<string, unknown> = {};
+    if (stored) {
+        try {
+            existing = JSON.parse(stored);
+        } catch {
+            localStorage.removeItem('dpsGameData');
+        }
+    }
+    localStorage.setItem('dpsGameData', JSON.stringify({
+        ...existing,
+        ...updates,
+    }));
+};
+
 // =========================================================================
 // STEP 4: Store implementation.
 // =========================================================================
@@ -102,6 +145,10 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
     // --- Setters ---
     setAlicePhotons:        photons            => updateAndStore('alicePhotons',        photons,            set),
     setAlicePhases:         phases             => updateAndStore('alicePhases',         phases,             set),
+    setAliceExchangeData:   (photons, phases)  => updateManyAndStore({
+        alicePhotons: photons,
+        alicePhases: phases,
+    }, set),
     setBobTimeMeasurements: measurements       => updateAndStore('bobTimeMeasurements', measurements,       set),
     setInferredPhases:      bits               => updateAndStore('inferredPhases',      bits,               set),
     setKeyBits:             bits               => updateAndStore('keyBits',             bits,               set),
@@ -136,6 +183,21 @@ const useDPSRoomStore = create<DPSRoomStore>(set => ({
                 (validated as any)[key] = gameData[key as keyof DPSRoomStateSchema];
             }
         }
+
+        const hasAliceExchangeSnapshot = (
+            Array.isArray(validated.alicePhotons) && validated.alicePhotons.length > 0
+        ) || (
+            Array.isArray(validated.alicePhases) && validated.alicePhases.length > 0
+        );
+
+        if (
+            hasAliceExchangeSnapshot &&
+            !hasValidAliceExchangeData(validated.alicePhotons, validated.alicePhases)
+        ) {
+            delete validated.alicePhotons;
+            delete validated.alicePhases;
+        }
+
         set(validated as Partial<DPSRoomStore>);
     },
 }));
