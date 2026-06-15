@@ -1,16 +1,7 @@
-'use client';
-
-import React from 'react';
-import SoloGame from '@/components/dps/play-page/solo-game';
-import DPSPlayShell from '@/components/dps/play-page/dps-play-shell';
+import { redirect } from 'next/navigation';
 
 const PlayPage = () => {
-
-    return (
-        <DPSPlayShell>
-            <SoloGame />
-        </DPSPlayShell>
-    );
+    redirect('/dps/play');
 };
 
 export default PlayPage;
