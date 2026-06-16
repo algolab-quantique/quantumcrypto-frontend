@@ -37,9 +37,9 @@
 
 ### 24. 🟡 Multiplayer Refresh / Reconnect Recovery (BB84 / E91 / DPS)
 
-**Status**: 🟡 TODO  
+**Status**: ✅ SHORT-TERM FRONTEND PARITY COMPLETE / 🟡 LONG-TERM BACKEND SNAPSHOT TODO
 **Date Added**: May 26, 2026  
-**Priority**: 🟠 HIGH for E91 multiplayer stabilization; 🟡 MEDIUM for BB84/DPS parity work  
+**Priority**: 🟡 MEDIUM — keep as backend-snapshot architecture reference
 **Context**: Solo mode restoration works well and is intentionally `localStorage`-first. Multiplayer should use a different rule: the backend room is the source of truth for shared protocol facts, while `localStorage` is only a recovery cache for identity, local UI checkpoint, transcript, and drafts.
 
 For this educational app, refresh must not blindly jump a player to the most advanced backend state. Multiplayer recovery should be **backend-authoritative but player-paced**:
@@ -57,8 +57,8 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 | Protocol | Component File | Hydration function exported? | Current restoration |
 |----------|----------------|------------------------------|-------------------------------------|
 | **BB84** | `components/bb84/play-page/multi-game.tsx` | ✅ `hydrateBB84ProgressStore()` | Uses the progress hydrator, restores local room snapshot/config, and reconnects. Current working multiplayer reference. |
-| **E91** | `components/e91/play-page/multi-game.tsx` | ✅ `hydrateE91ProgressStore()` | Manual reads only inside `playingMultiplayer && !isPlayRoomConnected` branch. |
-| **DPS** | `components/dps/play-page/multi-game.tsx` | ✅ `hydrateDPSProgressStore()` | **No restoration at all** — needs `hasInitialized` ref, room restore, step/tab/lines reads. |
+| **E91** | `components/e91/play-page/multi-game.tsx` | ✅ `hydrateE91ProgressStore()` | Validates saved player identity before restoring room data, restores progress/config, and guards duplicate reconnect attempts. |
+| **DPS** | `components/dps/play-page/multi-game.tsx` | ✅ `hydrateDPSProgressStore()` | Restores player identity, room snapshot, progress, and config. DPS also persists photon config in player recovery data so refresh does not fall back to the default 20 rows. |
 
 **What to do**:
 
@@ -166,12 +166,14 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 - [ ] Add defensive parsing inside E91 multiplayer restore helpers if future tests expose corrupt storage on direct `/e91/play` refresh.
 - [x] Fix `components/shared/e91-progression-sidebar.tsx` notification badge to observe `useE91ProgressStore()` instead of `useBB84ProgressStore()`.
 
-#### Sub-task D: DPS (Net-new restore logic for multiplayer — needs testing)
+#### Sub-task D: DPS (Net-new restore logic for multiplayer)
 - [x] Add `hasInitialized` ref to `components/dps/play-page/multi-game.tsx`
 - [x] Add `restoreGame(gameData)` call for `dpsGameData`
 - [x] Call `hydrateDPSProgressStore()` for step/tab/lines
 - [x] Add config restoration for `dpsPhotonNumber`, `dpsGameHasEve`
 - [x] Set DPS multiplayer role assignment to persist `playingMultiplayer: true` and `playingSolo: false`.
+- [x] Persist DPS `photonNumber` and `validationBitsLength` in `dpsPlayerData` during role assignment, and restore them from `dpsPlayerData` as fallback on `/dps/play` refresh.
+- [x] Harden DPS Alice inference so missing/partial `alicePhases[index]` cannot crash the UI while waiting for a complete saved snapshot.
 - [x] **Test carefully**: DPS multiplayer refresh, completed-game refresh, replay to `/dps`, and quit-to-home behavior are stable enough for the current deploy revision.
 - [x] Follow-up: DPS master results page now behaves like BB84/E91 after Task 29 frontend wiring; no backend change was needed.
 
@@ -187,7 +189,7 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 **Status**: 🟡 DESIGN / TODO  
 **Date Added**: June 9, 2026  
 **Priority**: 🟡 MEDIUM-HIGH  
-**Depends On**: Task 24 E91 stabilization should be completed and committed first.
+**Depends On**: Task 24 short-term frontend parity is complete. Long-term backend snapshot recovery remains part of this architecture work.
 
 **Context**: The current app already has the correct building blocks:
 - `player-store` for identity and solo/multiplayer flags
@@ -207,8 +209,8 @@ The missing piece is a shared lifecycle contract. Protocol room state should sta
 Protocol data stays protocol-specific. Session lifecycle becomes shared and standard.
 
 **Recommended Order**:
-1. [ ] Finish E91 multiplayer parity with BB84 under Task 24.
-2. [ ] Commit the stable E91/BB84 recovery state.
+1. [x] Finish short-term BB84/E91/DPS frontend recovery parity under Task 24.
+2. [x] Commit the stable recovery state before architecture work.
 3. [ ] Finalize the shared lifecycle contract in docs.
 4. [ ] Create shared lifecycle helper/adapters:
    - `startFreshProtocolSession(protocol, mode)`
