@@ -138,9 +138,10 @@ const Game = () => {
 
             hydrateDPSProgressStore();
 
-            const savedPhotonNumber = getItem('dpsPhotonNumber');
-            if (savedPhotonNumber) {
+            const savedPhotonNumber = getItem('dpsPhotonNumber') ?? playerData.photonNumber;
+            if (typeof savedPhotonNumber === 'number') {
                 setPhotonNumber(savedPhotonNumber);
+                localStorage.setItem('dpsPhotonNumber', JSON.stringify(savedPhotonNumber));
             }
 
             const savedGameHasEve = getItem('dpsGameHasEve');
@@ -148,9 +149,10 @@ const Game = () => {
                 setGameHasEve(savedGameHasEve);
             }
 
-            const savedValidationBitsLength = getItem('dpsValidationBitsLength');
-            if (savedValidationBitsLength) {
+            const savedValidationBitsLength = getItem('dpsValidationBitsLength') ?? playerData.validationBitsLength;
+            if (typeof savedValidationBitsLength === 'number') {
                 setValidationBitsLength(savedValidationBitsLength);
+                localStorage.setItem('dpsValidationBitsLength', JSON.stringify(savedValidationBitsLength));
             }
 
             setGameCode(playerData.gameCode);

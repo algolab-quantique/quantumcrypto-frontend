@@ -315,11 +315,17 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ### 37. 🟡 DPS: Remove Remaining Fragile Browser Navigation Guard
 
-**Status**: ⏳ TODO
+**Status**: 🟡 BLOCKED AFTER MANUAL TEST — keep current guard for now
 **Date Added**: June 15, 2026
 **Priority**: 🟡 MEDIUM after DPS crash fix
 
-**Context**: Earlier E91 work showed that custom browser back/refresh trapping was fragile. DPS multiplayer still calls `usePreventNavigation(!gameSuccess, handleNavCleanup)` inside `components/dps/play-page/multi-game.tsx`.
+**Context**: Earlier E91 work showed that custom browser back/refresh trapping was fragile. DPS multiplayer still uses `usePreventNavigation(!gameSuccess, handleNavCleanup)` inside `components/dps/play-page/multi-game.tsx`.
+
+**Manual test result**: Removing the guard was attempted and then reverted. The test exposed hidden DPS crashes when the browser Back button was allowed to follow normal history:
+- Bob Back path: navigating back to `/dps` can crash `better-react-mathjax` with `Cannot read properties of null (reading 'nextSibling')`.
+- Alice path after Bob sends times: `components/dps/play-page/tabs/alice-inference-tab.tsx` can crash at `(alicePhases[index] as any).split("")` when a valid `T1/T2` index has no matching `alicePhases[index]`.
+
+**Decision**: Do not remove the DPS browser guard yet. The guard is ugly, but it currently masks real route/state crashes. Fix the crashes first, then retry this cleanup.
 
 **Expected direction**:
 - Keep strong in-app leave confirmation on the DPS title button.
@@ -327,9 +333,17 @@ This is intentionally future work. It should not be guessed in the frontend only
 - Avoid browser-back hacks that can produce inconsistent history behavior.
 
 **Fix plan**:
-- [ ] Re-check DPS refresh/back behavior after fixing the Alice refresh crash.
-- [ ] Decide whether to remove `usePreventNavigation` from DPS multi.
-- [ ] If removed, rely on restore/cleanup logic and the in-app `DPS` leave guard.
+- [x] Re-check current DPS/E91/BB84 navigation patterns before changing code.
+- [x] Attempt removing `usePreventNavigation` from DPS multiplayer only.
+- [x] Manual test DPS multiplayer refresh/back behavior with Alice + Bob.
+- [x] Revert the removal after the manual test exposed hidden crashes.
+- [ ] Fix or isolate the DPS `/dps` MathJax crash on browser Back before retrying normal browser history.
+- [x] Harden `AliceInferenceTab` so missing/partial `alicePhases[index]` cannot crash the UI.
+- [ ] Retry removing `usePreventNavigation` only after both blockers are fixed.
+
+**Implementation note**:
+- E91 already removed this fake browser-history trap.
+- BB84 still uses `usePreventNavigation` in solo/multi; decide separately whether to clean BB84 after DPS is verified.
 
 ---
 

@@ -428,12 +428,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             connectToPlayRoom(gameType, playerData.gameCode, role, room);
 
                         } else if (gameType === 'dps') {
+                            const {
+                                gameCode,
+                                photonNumber,
+                                validationBitsLength,
+                            } = useDPSGameStore.getState();
                             const playerData = {
-                                gameCode: useDPSGameStore.getState().gameCode,  // FIX: Use DPS store!
+                                gameCode,
                                 role,
                                 room,
                                 partner,
                                 gameHasEve,
+                                photonNumber,
+                                validationBitsLength,
                                 playerName: usePlayerStore.getState().playerName,
                             };
                             useDPSGameStore.setState({ gameHasEve: gameHasEve });
@@ -444,6 +451,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             localStorage.setItem('dpsStep', JSON.stringify(useDPSProgressStore.getState().step));
                             localStorage.setItem('dpsTab', useDPSProgressStore.getState().dpsTab);
                             localStorage.setItem('dpsGameHasEve', JSON.stringify(gameHasEve));
+                            localStorage.setItem('dpsPhotonNumber', JSON.stringify(photonNumber));
+                            localStorage.setItem('dpsValidationBitsLength', JSON.stringify(validationBitsLength));
                             localStorage.setItem('dpsGameData', JSON.stringify({ evePresent }));
 
                             connectToPlayRoom(gameType, playerData.gameCode, role, room);
