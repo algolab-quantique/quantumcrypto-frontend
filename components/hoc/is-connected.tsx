@@ -12,8 +12,31 @@ const checkLocalStorageForSession = (): boolean => {
         if (playerStorage) {
             const data = JSON.parse(playerStorage);
             // Zustand persist stores state under 'state' key
-            return data?.state?.playingMultiplayer === true || data?.state?.playingSolo === true;
+            if (data?.state?.playingMultiplayer === true || data?.state?.playingSolo === true) {
+                return true;
+            }
         }
+
+        const path = window.location.pathname;
+        const protocol = path.startsWith('/bb84/play')
+            ? 'bb84'
+            : path.startsWith('/e91/play')
+                ? 'e91'
+                : path.startsWith('/dps/play')
+                    ? 'dps'
+                    : null;
+
+        if (!protocol) return false;
+
+        const rawProtocolPlayerData = localStorage.getItem(`${protocol}PlayerData`);
+        if (!rawProtocolPlayerData) return false;
+
+        const protocolPlayerData = JSON.parse(rawProtocolPlayerData);
+        return Boolean(
+            protocolPlayerData?.gameCode &&
+            protocolPlayerData?.role &&
+            protocolPlayerData?.room
+        );
     } catch {
         return false;
     }

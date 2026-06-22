@@ -168,6 +168,34 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
         return categories;
     });
 
+    /**
+     * Reset local state only when the whole E91 room was cleared.
+     * Alice bases can be empty while Bob is legitimately waiting for Alice, so
+     * using aliceBases alone would erase Bob's displayed bits before refresh.
+     */
+    useEffect(() => {
+        const roomWasCleared = aliceBases.length === 0 &&
+            bobBases.length === 0 &&
+            aliceBits.length === 0 &&
+            bobBits.length === 0;
+
+        if (roomWasCleared) {
+            // Reset categoryList
+            const newCategories: inputField[] = [];
+            for (let _ = 0; _ < photonNumber; _++) {
+                newCategories.push({
+                    value: '0',
+                    touched: false,
+                    error: true,
+                });
+            }
+            setCategoryList(newCategories);
+
+            // Reset validatedBits (will be empty since bits are empty)
+            setValidatedBits([]);
+        }
+    }, [aliceBases.length, bobBases.length, aliceBits.length, bobBits.length, photonNumber]);
+
     const onCategoryClick = (index: number) => {
         const newCategoryList = [...categoryList];
         const newCategory = { ...newCategoryList[index] };
@@ -364,9 +392,9 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
                                             ' border-secondary' +
                                             ' w-10 text-lg text-center' +
                                             ' m-auto align-center pt-1.5 ',
-                                            validatedBits[i].error ?
+                                            validatedBits[i]?.error ?
                                                 'border-red' : '')}>
-                                        <p>{validatedBits[i].value}</p>
+                                        <p>{validatedBits[i]?.value}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell>

@@ -25,7 +25,7 @@
  * Step 1: Game Settings
  *   - Player name (required)
  *   - Photon number (number of wagons)
- *   → Navigate to /dps/solo
+ *   → Navigate to /dps/play
  */
 
 'use client';
@@ -41,7 +41,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Cat, Dog } from 'lucide-react';
+import Image from 'next/image';
 import { z } from 'zod';
 import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -68,7 +68,15 @@ import {
     DPS_SOLO_PHOTON_DRAFT_KEY,
 } from '@/dps-constants';
 
-const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
+const SoloGameModal = ({
+    triggerClassName,
+    open,
+    onOpenChange,
+}: {
+    triggerClassName?: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}) => {
     // ═══════════════════════════════════════════════════════════════════════
     // STORE HOOKS
     // ═══════════════════════════════════════════════════════════════════════
@@ -77,6 +85,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
         playerRole,
         setPlayerRole,
         setPlayingSolo,
+        setPlayingMultiplayer,
         setPlayerName,
         setPartner,
     } = usePlayerStore();
@@ -157,7 +166,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     /**
      * Starts the solo game with the given configuration.
      * 
-     * Sets game configuration and navigates to /dps/solo.
+     * Sets game configuration and navigates to /dps/play.
      * Actual gameplay data is generated on-demand in solo tabs.
      */
     const onStartSoloGame = (
@@ -175,6 +184,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
         // Set game configuration
         setPlayerName(playerName);
         setPlayingSolo(true);
+        setPlayingMultiplayer(false);
         setPartner('QuantumCrypto');  // Partner name for solo mode
         setGameCode(soloGameCode);
         setPhotonNumber(photonNumber);
@@ -189,8 +199,8 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
             gameCode: soloGameCode,
         }));
 
-        // Navigate to solo play page
-        router.replace('/dps/solo');
+        // Navigate to the shared DPS play page; it chooses solo/multi from the player store.
+        router.replace('/dps/play');
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -199,7 +209,7 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
 
     const roleSelection = (
         <div className="flex flex-col gap-y-4 w-full items-center">
-            <p className="text-lg">{localize('component.e91.soloRoleSelect')}</p>
+            <p className="text-lg">{localize('component.main.chooseRole')}</p>
             <div className="flex w-full gap-x-6 justify-center">
                 {/* Alice Selection */}
                 <div
@@ -211,7 +221,15 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
                         setFormStep(1);
                     }}
                 >
-                    <Cat size={50} />
+                    <div className="relative h-[100px] w-[130px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
+                            alt="Alice"
+                            sizes="130px"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Alice</p>
                 </div>
                 {/* Bob Selection */}
@@ -224,7 +242,15 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
                         setFormStep(1);
                     }}
                 >
-                    <Dog size={50} />
+                    <div className="relative h-[100px] w-[100px]">
+                        <Image
+                            fill
+                            src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
+                            alt="Bob"
+                            sizes="100px"
+                            className="object-contain"
+                        />
+                    </div>
                     <p>Bob</p>
                 </div>
             </div>
@@ -302,32 +328,43 @@ const SoloGameModal = ({ triggerClassName }: { triggerClassName?: string }) => {
     // ═══════════════════════════════════════════════════════════════════════
 
     return (
-        <Dialog onOpenChange={(isOpen) => { if (!isOpen) setFormStep(0); }}>
-            <DialogTrigger asChild>
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
-                >
-                    {localize('component.e91.playSolo')}
-                </Button>
-            </DialogTrigger>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) setFormStep(0);
+                onOpenChange?.(isOpen);
+            }}
+        >
+            {open === undefined && (
+                <DialogTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        className={cn("text-md mt-2 w-[50%] p-2", triggerClassName)}
+                    >
+                        {localize('component.main.playSoloBtn')}
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="border-secondary w-[90%] md:w-full rounded-lg">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
-                        {localize('component.e91.startSolo')}
+                        {localize('component.main.playSoloBtn')}
                     </DialogTitle>
                 </DialogHeader>
-                {(() => {
-                    switch (formStep) {
-                        case 0:
-                            return roleSelection;
-                        case 1:
-                            return gameSettings;
-                        default:
-                            return null;
-                    }
-                })()}
+                {open !== undefined
+                    ? gameSettings
+                    : (() => {
+                        switch (formStep) {
+                            case 0:
+                                return roleSelection;
+                            case 1:
+                                return gameSettings;
+                            default:
+                                return null;
+                        }
+                    })()
+                }
             </DialogContent>
         </Dialog>
     );

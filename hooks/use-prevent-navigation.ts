@@ -16,12 +16,16 @@ export const usePreventNavigation = (shouldBlock: boolean, onConfirmCleanup?: ()
     useEffect(() => {
         if (!shouldBlock) return;
 
-        // 1. Intercept page refresh, close tab, typing new URL in address bar
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-            e.returnValue = ''; // Chrome & other browsers require this
-            return '';
-        };
+        // 1. [DISABLED] Intercept page refresh, close tab, typing new URL in address bar
+        // Currently not needed because localStorage saves and restores game state on refresh.
+        // In the future, consider re-enabling selectively for:
+        //   - Close tab (game progress lost if user never returns)
+        //   - Typing a new URL (unexpected navigation away)
+        // const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        //     e.preventDefault();
+        //     e.returnValue = ''; // Chrome & other browsers require this
+        //     return '';
+        // };
 
         // 2. Intercept browser back button
         // Push a dummy history entry so the first back click pops this entry instead of leaving
@@ -42,11 +46,11 @@ export const usePreventNavigation = (shouldBlock: boolean, onConfirmCleanup?: ()
             }
         };
 
-        window.addEventListener('beforeunload', handleBeforeUnload);
+        // window.addEventListener('beforeunload', handleBeforeUnload);
         window.addEventListener('popstate', handlePopState);
 
         return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // window.removeEventListener('beforeunload', handleBeforeUnload);
             window.removeEventListener('popstate', handlePopState);
         };
     }, [shouldBlock, onConfirmCleanup, router]);

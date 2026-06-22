@@ -5,17 +5,18 @@ import GameProgression from '@/components/shared/game-progression';
 import usePlayerStore from '@/store/player-store';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
+import useDPSGameStore from '@/store/dps/dps-game-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
-import { clearDPSLocalStorage } from '@/lib/dps/utils';
 
 const DPSProgression = () => {
 
     const { localize } = useLanguage();
-    const { restartGameAndSwappedRoles, leftGame } = useSocket();
+    const { disconnectPlayRoom } = useSocket();
     const router = useRouter();
+    const { gameCode } = useDPSGameStore();
 
 
     const { playerRole, partner: partnerName, playingSolo } = usePlayerStore();
@@ -40,30 +41,31 @@ const DPSProgression = () => {
         );
     });
 
-    const restartWithSwappedRoles = () => {
-        if (playingSolo) {
-            // Clear all DPS state then hard redirect.
-            // window.location.replace = full page reload → Zustand stores reset automatically.
-            clearDPSLocalStorage();
-            window.location.replace('/dps');
-        } else {
-            restartGameAndSwappedRoles();
-            router.replace(`/dps/play`);
-        }
+    const replayFromStart = () => {
+        disconnectPlayRoom();
+        sessionStorage.setItem('dpsReplayCleanupPending', 'true');
+        window.location.replace('/dps');
     };
 
     const goToMainMenu = () => {
-        if (playingSolo) {
-            // Same rationale: page reload resets stores, no Zustand calls needed.
-            clearDPSLocalStorage();
-            usePlayerStore.getState().setPlayingSolo(false);
-            usePlayerStore.getState().setPlayingMultiplayer(false);
-            window.location.replace('/');
-        } else {
-            leftGame();
-            usePlayerStore.getState().setPlayingSolo(false);
-            usePlayerStore.getState().setPlayingMultiplayer(false);
-            router.replace('/');
+        disconnectPlayRoom();
+        window.location.replace('/');
+    };
+
+    const goToResultsPage = () => {
+        let code = gameCode;
+        if (!code) {
+            try {
+                const playerDataRaw = localStorage.getItem('dpsPlayerData');
+                const playerData = playerDataRaw ? JSON.parse(playerDataRaw) : null;
+                code = playerData?.gameCode || '';
+            } catch {
+                code = '';
+            }
+        }
+
+        if (code) {
+            router.replace(`/games/dps/${code}/results`);
         }
     };
 
@@ -82,12 +84,17 @@ const DPSProgression = () => {
                     <span
                         className="font-bold text-highlight"> {partnerName}</span>
                 </p>
-                <div className="w-full h-fit mb-1 flex justify-center space-x-4">
-                    <Button onClick={restartWithSwappedRoles}>
+                {!playingSolo && <div className="w-full h-fit mb-1 flex justify-center">
+                    <Button onClick={goToResultsPage}>{localize('component.results.seeResults')}</Button>
+                </div>}
+                {playingSolo && <div className="w-full h-fit mb-1 flex justify-center space-x-4">
+                    <Button onClick={replayFromStart}>
                         {localize('component.gameRestart.playAgain')}
                     </Button>
-                    <Button onClick={goToMainMenu}>{localize('component.game.leftGame')}</Button>
-                </div>
+                    <Button onClick={goToMainMenu}>
+                        {localize('component.return.returnToMain')}
+                    </Button>
+                </div>}
             </div>}
         </GameProgression>
 

@@ -32,6 +32,10 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     photonNumber: number,
     polarIcons: any[]
 }) => {
+    const MEASUREMENTS_KEY = 'dpsMultiBobExchangeMeasurements';
+    const VALIDATED_TIMES_KEY = 'dpsMultiBobExchangeValidatedTimes';
+    const IS_VALIDATED_KEY = 'dpsMultiBobExchangeIsValidated';
+
     const { localize } = useLanguage();
     const { sendArrivalTimes } = useSocket();
 
@@ -46,18 +50,66 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
     const alicePhasesArrived = alicePhases.length > 0;
 
 
-    const [showSendButton, setShowSendButton] = useState(false);
-    const [showValidateButton, setShowValidateButton] = useState(true);
-    const [isValidated, setIsValidated] = useState(false);
+    const [showSendButton, setShowSendButton] = useState(() => {
+        if (arrivalTimesSent) return false;
+        return localStorage.getItem(IS_VALIDATED_KEY) === 'true';
+    });
+    const [showValidateButton, setShowValidateButton] = useState(() => {
+        if (arrivalTimesSent) return false;
+        return localStorage.getItem(IS_VALIDATED_KEY) !== 'true';
+    });
+    const [isValidated, setIsValidated] = useState(() => {
+        if (arrivalTimesSent) return true;
+        return localStorage.getItem(IS_VALIDATED_KEY) === 'true';
+    });
 
-    const [measurements, setMeasurements] = useState<(string | null)[]>(Array(photonNumber).fill(null));
+    const [measurements, setMeasurements] = useState<(string | null)[]>(() => {
+        const draft = localStorage.getItem(MEASUREMENTS_KEY);
+        if (!draft) return Array(photonNumber).fill(null);
+        try {
+            const parsed = JSON.parse(draft);
+            return Array.isArray(parsed) && parsed.length === photonNumber
+                ? parsed
+                : Array(photonNumber).fill(null);
+        } catch {
+            return Array(photonNumber).fill(null);
+        }
+    });
     const [validatedTimes, setValidatedTimes] = useState<{
         value: string | null;
         error: boolean;
         discarded: boolean;
-    }[]>([]);
+    }[]>(() => {
+        if (arrivalTimesSent) {
+            return bobTimeMeasurements.map(value => ({ value, error: false, discarded: false }));
+        }
+        const draft = localStorage.getItem(VALIDATED_TIMES_KEY);
+        if (!draft) return [];
+        try {
+            const parsed = JSON.parse(draft);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
 
     const measured = measurements.some(time => time !== null);
+
+    useEffect(() => {
+        if (arrivalTimesSent) {
+            localStorage.removeItem(MEASUREMENTS_KEY);
+            localStorage.removeItem(VALIDATED_TIMES_KEY);
+            localStorage.removeItem(IS_VALIDATED_KEY);
+            setIsValidated(true);
+            setShowValidateButton(false);
+            setShowSendButton(false);
+            return;
+        }
+
+        localStorage.setItem(MEASUREMENTS_KEY, JSON.stringify(measurements));
+        localStorage.setItem(VALIDATED_TIMES_KEY, JSON.stringify(validatedTimes));
+        localStorage.setItem(IS_VALIDATED_KEY, isValidated ? 'true' : 'false');
+    }, [measurements, validatedTimes, isValidated, arrivalTimesSent]);
 
 
     const measureArrivalTime = () => {
@@ -134,6 +186,9 @@ const BobExchangeTab = ({ photonNumber, polarIcons }: {
 
         console.log("allTimes: ", allTimes);
         setBobTimeMeasurements(allTimes as string[]);
+        localStorage.removeItem(MEASUREMENTS_KEY);
+        localStorage.removeItem(VALIDATED_TIMES_KEY);
+        localStorage.removeItem(IS_VALIDATED_KEY);
 
         toast.success(localize('component.bobExchange.timesSent'));
         pushLines([{ content: 'component.bobExchange.sentTimes' }]);

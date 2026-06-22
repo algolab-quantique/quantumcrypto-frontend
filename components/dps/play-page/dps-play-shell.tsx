@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
-import MultiGame from '@/components/bb84/play-page/multi-game';
-import SoloGame from '@/components/bb84/play-page/solo-game';
-import BB84ProgressionSidebar from '@/components/shared/bb84-progression-sidebar';
-import Bb84Button from '@/components/bb84/play-page/bb84-button';
-import usePlayerStore from '@/store/player-store';
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
-import { useSocket } from '@/components/providers/socket-provider';
+import React, { ReactNode, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import DPSButton from '@/components/dps/play-page/dps-button';
+import DPSProgressionSidebar from '@/components/shared/dps-progression-sidebar';
+import useDPSRoomStore from '@/store/dps/dps-room-store';
+import { useSocket } from '@/components/providers/socket-provider';
+import { clearDPSLocalStorage } from '@/lib/dps/utils';
+import usePlayerStore from '@/store/player-store';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,20 +19,23 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const PlayPage = () => {
-    const { playingSolo } = usePlayerStore();
-    const { gameSuccess } = useBB84RoomStore();
+type DPSPlayShellProps = {
+    children: ReactNode;
+};
+
+const DPSPlayShell = ({ children }: DPSPlayShellProps) => {
+    const { gameSuccess } = useDPSRoomStore();
     const { disconnectPlayRoom } = useSocket();
     const router = useRouter();
     const [isLeaving, setIsLeaving] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-    const [pendingDestination, setPendingDestination] = useState('/bb84');
+    const [pendingDestination, setPendingDestination] = useState('/dps');
 
     const cleanupActiveGame = useCallback(() => {
         setIsLeaving(true);
         setLeaveDialogOpen(false);
         disconnectPlayRoom();
-        clearBB84LocalStorage();
+        clearDPSLocalStorage();
         usePlayerStore.getState().setPlayingSolo(false);
         usePlayerStore.getState().setPlayingMultiplayer(false);
     }, [disconnectPlayRoom]);
@@ -84,18 +85,18 @@ const PlayPage = () => {
             </AlertDialog>
 
             <div className="flex w-full gap-x-3 px-6 pt-5">
-                <Bb84Button onRequestLeave={() => requestLeave('/bb84')} />
-                <BB84ProgressionSidebar />
+                <DPSButton onRequestLeave={() => requestLeave('/dps')} />
+                <DPSProgressionSidebar />
             </div>
             {isLeaving ? (
                 <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
                     Déconnexion...
                 </div>
             ) : (
-                playingSolo ? <SoloGame /> : <MultiGame />
+                children
             )}
         </div>
     );
 };
 
-export default PlayPage;
+export default DPSPlayShell;

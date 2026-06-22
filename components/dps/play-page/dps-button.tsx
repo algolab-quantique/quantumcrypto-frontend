@@ -2,16 +2,16 @@
 
 import React from 'react';
 
-type E91ButtonProps = {
+type DPSButtonProps = {
     onRequestLeave: () => void;
 };
 
-const E91Button = ({ onRequestLeave }: E91ButtonProps) => {
+const DPSButton = ({ onRequestLeave }: DPSButtonProps) => {
     return (
         <button type="button" onClick={onRequestLeave} className="text-left">
-            <h1 className="font-bold text-4xl text-primary">E91</h1>
+            <h1 className="font-bold text-4xl text-primary">DPS</h1>
         </button>
     );
 };
 
-export default E91Button;
+export default DPSButton;

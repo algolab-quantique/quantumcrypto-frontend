@@ -11,20 +11,20 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
-import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
+import { hydrateE91ProgressStore, useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
 import {
     Minus,
     Tally1, Tally2, Tally3, Tally4,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
 import { useEffect, useRef } from 'react';
 import CHSHTab from './tabs/CHSH-tab';
 
 
 const Game = () => {
-    const router = useRouter();
+
     const hasInitialized = useRef(false);
 
     const polarIcons =
@@ -43,11 +43,11 @@ const Game = () => {
 
     const { localize } = useLanguage();
     const { step, displayedLines, e91Tab } = useE91ProgressStore();
-    const { pushLines, setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
+    const { pushLines, setE91Tab } = useE91ProgressStore();
     const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode } = useE91GameStore();
+    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode, setValidationBitsLength } = useE91GameStore();
     const { utilizeValidBits, restoreGame } = useE91RoomStore();
-    const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
+    const { isPlayRoomConnected, playRoomConnecting, connectToPlayRoom } = useSocket();
 
     // Restore game state from localStorage on mount (for page refresh)
     // AND reconnect WebSocket if needed
@@ -63,40 +63,33 @@ const Game = () => {
 
         // If we have a multiplayer session but WebSocket is disconnected, try to restore
         if (playingMultiplayer && !isPlayRoomConnected) {
+            const playerData = getItem('e91PlayerData');
+
+            if (!playerData?.gameCode || !playerData?.role || !playerData?.room) {
+                setPlayingMultiplayer(false);
+
+                if (displayedLines.length === 0 && (playerRole === 'A' || playerRole === 'B')) {
+                    pushLines([
+                        {
+                            title: 'component.e91.measurement.welcome',
+                        },
+                        {
+                            title: 'component.game.step1',
+                            content: 'component.e91.measurement.start',
+                        },
+                    ]);
+                }
+                return;
+            }
+
             // Restore E91 game data
             const gameData = getItem('e91GameData');
-
-            // Check if game was already completed - redirect to results
-            if (gameData && gameData.gameSuccess) {
-                const playerData = getItem('e91PlayerData');
-                if (playerData && playerData.gameCode) {
-                    // Clear multiplayer flag and redirect to results
-                    setPlayingMultiplayer(false);
-                    router.replace(`/games/e91/${playerData.gameCode}/results`);
-                    return;
-                }
-            }
 
             if (gameData) {
                 restoreGame(gameData);
             }
 
-            // Restore progress (step, tab)
-            const savedStep = getItem('e91Step');
-            if (savedStep !== null) {
-                setStep(savedStep);
-            }
-
-            const savedTab = localStorage.getItem('e91Tab');
-            if (savedTab) {
-                setE91Tab(savedTab);
-            }
-
-            // Restore displayed lines
-            const savedLines = getItem('e91DisplayedLines');
-            if (savedLines && savedLines.length > 0) {
-                setDisplayedLines(savedLines);
-            }
+            hydrateE91ProgressStore();
 
             // Restore game config
             const savedPhotonNumber = getItem('e91PhotonNumber');
@@ -104,28 +97,37 @@ const Game = () => {
                 setPhotonNumber(savedPhotonNumber);
             }
 
-            // Try to reconnect WebSocket
-            const playerData = getItem('e91PlayerData');
-            if (playerData && playerData.gameCode && playerData.role && playerData.room) {
-                setGameCode(playerData.gameCode);
-                // Restore player role and partner from saved data
-                if (playerData.role) {
-                    usePlayerStore.getState().setPlayerRole(playerData.role);
-                }
-                if (playerData.partner) {
-                    usePlayerStore.getState().setPartner(playerData.partner);
-                }
-                if (playerData.playerName) {
-                    usePlayerStore.getState().setPlayerName(playerData.playerName);
-                }
-                if (playerData.gameHasEve !== undefined) {
-                    setGameHasEve(playerData.gameHasEve);
-                }
-                // Attempt to reconnect to play room
+            const savedGameHasEve = getItem('e91GameHasEve');
+            if (savedGameHasEve !== null) {
+                setGameHasEve(savedGameHasEve);
+            }
+
+            const savedValidationBitsLength = getItem('e91ValidationBitsLength');
+            if (savedValidationBitsLength) {
+                setValidationBitsLength(savedValidationBitsLength);
+            }
+
+            // Restore player identity and reconnect WebSocket if needed
+            setGameCode(playerData.gameCode);
+            // Restore player role and partner from saved data
+            if (playerData.role) {
+                usePlayerStore.getState().setPlayerRole(playerData.role);
+            }
+            if (playerData.partner) {
+                usePlayerStore.getState().setPartner(playerData.partner);
+            }
+            if (playerData.playerName) {
+                usePlayerStore.getState().setPlayerName(playerData.playerName);
+            }
+            if (playerData.gameHasEve !== undefined) {
+                setGameHasEve(playerData.gameHasEve);
+            }
+
+            // Only reconnect WebSocket if game is still in progress.
+            // Completed games restore the félicitations screen locally —
+            // the user navigates to results explicitly via "Voir les résultats".
+            if (!gameData?.gameSuccess && !playRoomConnecting) {
                 connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
-            } else {
-                // No valid session data, reset multiplayer flag
-                setPlayingMultiplayer(false);
             }
         } else if (displayedLines.length === 0) {
             // Normal initialization - show welcome messages

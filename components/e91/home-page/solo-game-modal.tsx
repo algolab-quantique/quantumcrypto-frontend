@@ -77,7 +77,6 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Cat, Dog } from 'lucide-react';
 import Image from 'next/image';
 import { z } from 'zod';
 import usePlayerStore from '@/store/player-store';
@@ -277,7 +276,7 @@ const SoloGameModal = ({
         playerName: string,
     ) => {
         // Record game stats for analytics
-        recordGameStats('e91', 1);
+        void recordGameStats('e91', 1, { silent: true });
 
         // Clear previous game state
         clearE91LocalStorage();

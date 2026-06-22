@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 const MessagingTab = ({playerRole}: { playerRole: string }) => {
 
     const {localize} = useLanguage();
-    const {sendCipher, sendBobSuccess, saveScore} = useSocket();
+    const {sendCipher, sendBobSuccess, saveScore, isPlayRoomConnected} = useSocket();
 
     const {pushLines} = useE91ProgressStore();
 
@@ -35,7 +35,6 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
         crypto: persistedCrypto,
     } = useE91RoomStore();
     const {
-        setAliceCipherSent,
         setMessage: setPersistedMessage,
         setCrypto: setPersistedCrypto,
     } = useE91RoomStore();
@@ -43,6 +42,13 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     const keyBits = aliceValidBits;
 
     const [message, setMessage] = useState(() => {
+        if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
+            return persistedMessage.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
         return [...keyBits].map(_ => ({
             value: '',
             touched: false,
@@ -51,6 +57,13 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     });
 
     const [crypto, setCrypto] = useState(() => {
+        if ((aliceCipherSent || gameSuccess) && persistedCrypto.length > 0) {
+            return persistedCrypto.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            }));
+        }
         return [...keyBits].map(_ => ({
             value: '',
             touched: false,
@@ -59,7 +72,24 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     });
 
     useEffect(() => {
-        if (gameSuccess) {
+        if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0 && message.length === 0) {
+            setMessage(persistedMessage.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            })));
+        }
+        if ((aliceCipherSent || gameSuccess) && persistedCrypto.length > 0 && crypto.length === 0) {
+            setCrypto(persistedCrypto.map(v => ({
+                value: v ?? '',
+                touched: true,
+                error: false,
+            })));
+        }
+    }, [keyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
+
+    useEffect(() => {
+        if (gameSuccess && isPlayRoomConnected) {
             if (evePresent && eveReadCount > 0) {
                 pushLines([
                     {
@@ -72,7 +102,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
             saveScore(calculateScore());
 
         }
-    }, [gameSuccess]);
+    }, [gameSuccess, isPlayRoomConnected]);
 
     const calculateScore = () => {
         let score = 0;
@@ -147,9 +177,14 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 sendBobSuccess('e91');
             } else {
                 const payload = crypto.map(({value}) => value);
-                sendCipher(payload);
+                const sent = sendCipher(payload);
+                if (!sent) {
+                    toast.error(localize('component.waitingRoom.connectionLostTitle'), {
+                        description: localize('component.waitingRoom.connectionLostDescription'),
+                    });
+                    return false;
+                }
                 toast.success(localize('component.messaging.cipherSent'));
-                setAliceCipherSent(true);
             }
         } else {
             if (playerRole === 'A') {
@@ -205,7 +240,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                            aliceCipher[i] ?? '' :
                                            aliceCipherSent || gameSuccess ?
                                                persistedMessage[i] :
-                                               message[i].value}
+                                               message[i]?.value}
                                        onChange={(event) => onMessageInput(
                                            event, i)}
                                        className={cn(
@@ -214,8 +249,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                            ' disabled:bg-background' +
                                            ' disabled:cursor-default' +
                                            ' mx-auto', playerRole === 'A' &&
-                                           message[i].error &&
-                                           message[i].touched ? 'border-red' :
+                                           message[i]?.error &&
+                                           message[i]?.touched ? 'border-red' :
                                                '')}/>
                             </TableCell>
                             <TableCell>
@@ -223,10 +258,10 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                     value={playerRole === 'A' ?
                                         (aliceCipherSent || gameSuccess ?
                                             persistedCrypto[i] :
-                                            crypto[i].value) :
+                                            crypto[i]?.value) :
                                         (gameSuccess ?
                                             persistedCrypto[i] :
-                                            crypto[i].value)}
+                                            crypto[i]?.value)}
                                     // type="number"
                                     onKeyDown={e => forbiddenSymbols.includes(
                                         e.key) && e.preventDefault()}
@@ -238,8 +273,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                                         ' disabled:bg-background' +
                                         ' disabled:cursor-default' +
                                         ' mx-auto',
-                                        crypto[i].error &&
-                                        crypto[i].touched ? 'border-red' :
+                                        crypto[i]?.error &&
+                                        crypto[i]?.touched ? 'border-red' :
                                             '')}/>
                             </TableCell>
                         </TableRow>

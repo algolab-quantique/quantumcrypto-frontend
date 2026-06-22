@@ -56,7 +56,7 @@ const BobMessagingTab = () => {
 
     // NEW CODE: Explicitly filter for T1 or T2 (the only valid interference times)
     const validEntries = alicePhases.map((phase, index) => ({
-        phase: Array.isArray(phase) ? phase : phase.split(""),
+        phase: Array.isArray(phase) ? phase : (phase as any).split(""),
         time: bobTimeMeasurements[index] ?? "",
     })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
 
@@ -77,6 +77,7 @@ const BobMessagingTab = () => {
     });
 
     const [detectorValues, setDetectorValues] = useState<string[]>([]);
+    const displayedDetectorValues = bobKeyBitsOn ? bobKeyBits : detectorValues;
 
     const revealDetectorValues = (entries: { phase: string[]; time: string }[]) => {
         entries.forEach((entry, i) => {
@@ -196,7 +197,7 @@ const BobMessagingTab = () => {
                             <TableCell>
                                 <Input
                                     disabled={true}
-                                    value={detectorValues[index]}
+                                    value={displayedDetectorValues[index] ?? ''}
                                     className={cn('w-10 text-lg text-center' +
                                         ' mx-auto disabled:opacity-100' +
                                         ' disabled:bg-background' +

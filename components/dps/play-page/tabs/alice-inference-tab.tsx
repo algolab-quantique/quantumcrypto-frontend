@@ -6,18 +6,36 @@ import {
     TableBody,
     TableCell
 } from '@/components/ui/table';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DPSGameStep, inputPhaseField } from '@/types';
+import { DPSGameStep } from '@/types';
 import { useLanguage } from '@/components/providers/language-provider';
 import useDPSRoomStore from '@/store/dps/dps-room-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useDPSProgressStore } from '@/store/dps/dps-progress-store';
-import { CheckCircle2, Info } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
+const emptyInference = () => ({
+    value: '',
+    touched: false,
+    error: true,
+});
 
+const isPhaseValue = (value: unknown) => value === '0' || value === 'π';
+
+const normalizePhaseRow = (row: unknown): string[] | null => {
+    if (Array.isArray(row) && row.length === 3 && row.every(isPhaseValue)) {
+        return row;
+    }
+
+    if (typeof row === 'string') {
+        const values = row.split('');
+        return values.length === 3 && values.every(isPhaseValue) ? values : null;
+    }
+
+    return null;
+};
 
 const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     const { localize } = useLanguage();
@@ -32,7 +50,6 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
         alicePhases,
         bobTimeMeasurements,
         alicePhotons,
-        gameSuccess,
         bobCipher,
     } = useDPSRoomStore();
 
@@ -40,35 +57,41 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     const phaseInferred = inferredPhases.length > 0;
 
 
-    // OPTION B REFACTOR: Check for valid times (T1/T2) directly instead of empty string
-    // This is more pedagogical - shows exactly which times we use for key generation
-    // OLD CODE (commented for safety):
-    // const validIndices = bobTimeMeasurements
-    //     .map((time, index) => time !== "" ? index : null)
-    //     .filter(index => index !== null);
+    const validTimeCount = bobTimeMeasurements.filter(time => time === 'T1' || time === 'T2').length;
 
-    // NEW CODE: Explicitly check for T1 or T2 (the only valid interference times)
-    const validIndices = bobTimeMeasurements
-        .map((time, index) => (time === 'T1' || time === 'T2') ? index : null)
-        .filter(index => index !== null);
+    // Only infer rows that have both Bob's valid time and Alice's saved phases.
+    const validEntries = bobTimeMeasurements.flatMap((time, index) => {
+        if (time !== 'T1' && time !== 'T2') return [];
 
-    const validEntries = validIndices.map(index => ({
-        phase: Array.isArray(alicePhases[index]) ? alicePhases[index] : alicePhases[index].split(""),
-        time: bobTimeMeasurements[index],
-        photon: alicePhotons[index] || '-',
-    }));
+        const phase = normalizePhaseRow(alicePhases[index]);
+        if (!phase) return [];
+
+        return [{
+            phase,
+            time,
+            photon: alicePhotons[index] || '-',
+        }];
+    });
+    const hasCompleteInferenceData = validEntries.length > 0 && validEntries.length === validTimeCount;
 
 
     const [inferences, setInferences] = useState(() => {
-        return validEntries.map(() => ({
-            value: '',
-            touched: false,
-            error: true,
-        }));
+        return validEntries.map(() => emptyInference());
     });
+
+    useEffect(() => {
+        if (phaseInferred) return;
+
+        setInferences(previous => {
+            if (previous.length === validEntries.length) return previous;
+            return validEntries.map((_, index) => previous[index] ?? emptyInference());
+        });
+    }, [phaseInferred, validEntries.length]);
 
     const onInferenceClick = (index: number) => {
         const updatedInferences = [...inferences];
+        if (!updatedInferences[index]) return;
+
         const updatedInference = { ...updatedInferences[index] };
 
         updatedInference.value = updatedInference.value === '0' ? 'π' : '0';
@@ -96,11 +119,16 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
     };
 
     const onValidateInference = () => {
+        if (!hasCompleteInferenceData) {
+            toast.error(localize('component.aliceInference.error'));
+            return;
+        }
+
         const expectedValues = DetectorPhase(validEntries);
 
-        const validatedInferences = inferences.map((inference, index) => ({
-            ...inference,
-            error: inference.value !== expectedValues[index],
+        const validatedInferences = validEntries.map((_, index) => ({
+            ...(inferences[index] ?? emptyInference()),
+            error: (inferences[index]?.value ?? '') !== expectedValues[index],
         }));
 
         setInferences(validatedInferences);
@@ -145,7 +173,7 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody className="h-full overflow-y-auto">
-                    {validEntries.map(({ phase, time, photon }, index) => (
+                    {validEntries.map(({ time, photon }, index) => (
                         <TableRow key={index} className="text-center border-secondary">
                             <TableCell>{time}</TableCell>
                             <TableCell>
@@ -199,12 +227,12 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
                                         ' disabled:bg-background' +
                                         ' disabled:cursor-default' +
                                         ' mx-auto',
-                                        inferences[index].error &&
-                                            inferences[index].touched ? "border-red" :
+                                        inferences[index]?.error &&
+                                            inferences[index]?.touched ? "border-red" :
                                             '')}
                                     onClick={() => onInferenceClick(index)}
                                 >
-                                    {phaseInferred ? inferredPhases[index] : inferences[index].value}
+                                    {phaseInferred ? inferredPhases[index] ?? '' : inferences[index]?.value ?? ''}
                                 </Button>
                             </TableCell>
                         </TableRow>
@@ -215,13 +243,13 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
                 className="fixed bottom-3 right-3 md:hidden">
                 <Button onClick={onValidateInference}
                     size={'icon'}
-                    disabled={phaseInferred}>
+                    disabled={phaseInferred || !hasCompleteInferenceData}>
                     <CheckCircle2 />
                 </Button>
             </div>
             <div className="hidden md:block fixed right-6 bottom-6 shadow-xl">
                 <Button size="lg"
-                    disabled={phaseInferred}
+                    disabled={phaseInferred || !hasCompleteInferenceData}
                     onClick={onValidateInference} className="text-lg font-bold">
                     {localize('component.dps.validateBtn')}
                 </Button>
@@ -232,4 +260,3 @@ const AliceInferenceTab = ({ polarIcons }: { polarIcons: any[] }) => {
 
 
 export default AliceInferenceTab;
-

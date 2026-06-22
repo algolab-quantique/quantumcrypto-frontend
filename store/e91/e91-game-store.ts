@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {Player} from '@/types';
+import { E91_MULTIPLAYER_PHOTON_DEFAULT } from '@/e91-constants';
 
 interface E91GameStore {
     gameCode: string;
@@ -18,7 +19,7 @@ interface E91GameStore {
 
 const useE91GameStore = create<E91GameStore>((set) => ({
     gameCode: '',
-    photonNumber: 20,
+    photonNumber: E91_MULTIPLAYER_PHOTON_DEFAULT,
     validationBitsLength: 0,
     playerCount: 0,
     players: [],

@@ -56,6 +56,7 @@ const BB84MainV3: React.FC = () => {
         waitingRoomConnecting,
         isPlayRoomConnected,
         connectToPlayRoom,
+        disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
@@ -85,37 +86,75 @@ const BB84MainV3: React.FC = () => {
     const { restoreGame, resetRoom } = useBB84RoomStore();
     const router = useRouter();
 
+    const getSavedItem = (key: string) => {
+        const item = localStorage.getItem(key);
+        if (!item) return null;
+
+        try {
+            return JSON.parse(item);
+        } catch {
+            return null;
+        }
+    };
+
+    const clearSavedSession = () => {
+        clearBB84LocalStorage();
+        setPlayingSolo(false);
+        setPlayingMultiplayer(false);
+    };
+
     useEffect(() => {
+        const previousGameRaw = localStorage.getItem('bb84PlayerData');
         const gameDataRaw = localStorage.getItem('bb84GameData');
-        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const previousGame = getSavedItem('bb84PlayerData');
+        const gameData = getSavedItem('bb84GameData');
+        const hasCorruptSavedSession = Boolean(
+            (previousGameRaw && !previousGame) ||
+            (gameDataRaw && !gameData)
+        );
+        const hasInvalidPlayerData = Boolean(
+            previousGame && (
+                !previousGame.gameCode ||
+                !previousGame.role ||
+                !previousGame.room
+            )
+        );
         const gameCompleted = gameData && gameData.gameSuccess === true;
+        const hasActiveSession = Boolean(
+            previousGame?.gameCode &&
+            previousGame?.role &&
+            previousGame?.room &&
+            usePlayerStore.getState().playingMultiplayer
+        );
+
+        if (hasCorruptSavedSession || hasInvalidPlayerData) {
+            clearSavedSession();
+            return;
+        }
 
         // If the game was already completed, clean up stale data.
         if (gameCompleted) {
-            clearBB84LocalStorage();
-            setPlayingSolo(false);
-            setPlayingMultiplayer(false);
+            clearSavedSession();
             return;
         }
 
-        if (isPlayRoomConnected) {
+        if (isPlayRoomConnected && hasActiveSession) {
             router.push('/bb84/play');
             return;
         }
-        const previousGame = localStorage.getItem('bb84PlayerData');
-        if (previousGame) {
+
+        if (isPlayRoomConnected && !hasActiveSession) {
+            disconnectPlayRoom();
+            return;
+        }
+
+        if (previousGameRaw) {
             setRejoinDialogOpen(true);
         }
-    }, [isPlayRoomConnected]);
+    }, [isPlayRoomConnected, disconnectPlayRoom]);
 
     const getGameProgress = () => {
-
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
-
-        const previousGame = getItem('bb84PlayerData');
+        const previousGame = getSavedItem('bb84PlayerData');
 
         if (previousGame) {
             const {
@@ -131,9 +170,15 @@ const BB84MainV3: React.FC = () => {
             setPartner(partner);
             setPlayerRole(role);
             setPlayerName(playerName);
+            if (role && previousGame.room) {
+                // bb84PlayerData is written only for multiplayer rooms. Restoring
+                // these flags lets the next /bb84/play refresh recover in place.
+                setPlayingMultiplayer(true);
+                setPlayingSolo(false);
+            }
         }
 
-        const stepJSON = getItem('bb84Step');
+        const stepJSON = getSavedItem('bb84Step');
         if (stepJSON) {
             setStep(stepJSON);
         }
@@ -143,22 +188,22 @@ const BB84MainV3: React.FC = () => {
             setBb84Tab(tab);
         }
 
-        const photonNumber = getItem('bb84PhotonNumber');
+        const photonNumber = getSavedItem('bb84PhotonNumber');
         if (photonNumber) {
             setPhotonNumber(photonNumber);
         }
 
-        const validationBitsLength = getItem('bb84ValidationBitsLength');
+        const validationBitsLength = getSavedItem('bb84ValidationBitsLength');
         if (validationBitsLength) {
             setValidationBitsLength(validationBitsLength);
         }
 
-        const previousDisplayedLines = getItem('bb84DisplayedLines');
+        const previousDisplayedLines = getSavedItem('bb84DisplayedLines');
         if (previousDisplayedLines) {
             setDisplayedLines(previousDisplayedLines);
         }
 
-        const gameDataJSON = getItem('bb84GameData');
+        const gameDataJSON = getSavedItem('bb84GameData');
         if (gameDataJSON) {
             restoreGame(gameDataJSON);
         }

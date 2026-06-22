@@ -52,7 +52,7 @@ const SoloBobMessagingTab = () => {
 
     // Filter valid entries (T1/T2)
     const validEntries = alicePhases.map((phase, index) => ({
-        phase: Array.isArray(phase) ? phase : phase.split(""),
+        phase: Array.isArray(phase) ? phase : (phase as any).split(""),
         time: bobTimeMeasurements[index] ?? "",
     })).filter(entry => entry.time === 'T1' || entry.time === 'T2');
 

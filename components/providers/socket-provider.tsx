@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 // @ts-ignore
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
@@ -20,7 +20,7 @@ import {
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-import { clearBB84LocalStorage, restartWithoutEve } from '@/lib/bb84/utils';
+import { restartWithoutEve } from '@/lib/bb84/utils';
 import {
     A_BASES_EVENT,
     A_CIPHER_EVENT,
@@ -64,7 +64,6 @@ import {
     DPS_GAME_ID_EVENT,
     DPS_CONNECTED_EVENT,
     DPS_END_EVENT,
-    A_SUCCESS_EVENT,
     A_PHASES_EVENT,
     B_TIMES_EVENT,
     SWAP_ROLES_AND_RESTART_EVENT,
@@ -86,13 +85,14 @@ type SocketContextType = {
     playRoomConnecting: boolean;
     connectToWaitingRoom: (data: { gameType: string, gameCode: string, playerName: string, admin: number }) => void;
     connectToPlayRoom: (gameType: string, gameCode: string, role: string, room: string) => void;
+    disconnectPlayRoom: () => void;
     startGame: (gameType: string, id: number) => void;
-    sendEvent: (event: string, message?: any) => void;
+    sendEvent: (event: string, message?: any) => boolean;
     measurePhotons: (bases: string[]) => void;
     sendPhotons: (photons: number[]) => void;
     sendPhases: (photons: string[][], phases: string[][]) => void;
     sendArrivalTimes: (times: string[]) => void;
-    sendCipher: (cipher: string[]) => void;
+    sendCipher: (cipher: string[]) => boolean;
     shareBases: (bases: string[], event: string, socket?: any) => void;
     shareBits: (bits: string[], event: string, socket?: any) => void;
     shareKey: (key: string[]) => void;
@@ -126,9 +126,12 @@ const SocketContext = createContext<SocketContextType>({
     },
     connectToPlayRoom: () => {
     },
+    disconnectPlayRoom: () => {
+    },
     startGame: () => {
     },
     sendEvent: () => {
+        return false;
     },
     measurePhotons: () => {
     },
@@ -139,6 +142,7 @@ const SocketContext = createContext<SocketContextType>({
     sendArrivalTimes: () => {
     },
     sendCipher: () => {
+        return false;
     },
     shareBases: () => {
     },
@@ -186,6 +190,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const [waitingRoomSocket, setWaitingRoomSocket] = useState(null);
     const [playRoomSocket, setPlayRoomSocket] = useState(null);
+    const playRoomSocketRef = useRef<any | null>(null);
     const [isWaitingRoomConnected, setIsWaitingRoomConnected] = useState(
         false);
     const [waitingRoomError, setWaitingRoomError] = useState(false);
@@ -193,6 +198,24 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isPlayRoomConnected, setIsPlayRoomConnected] = useState(false);
     const [playRoomError, setPlayRoomError] = useState(false);
     const [playRoomConnecting, setPlayRoomConnecting] = useState(false);
+
+    const getSavedDPSGameCode = () => {
+        if (typeof window === 'undefined') return '';
+
+        try {
+            const rawPlayerData = localStorage.getItem('dpsPlayerData');
+            if (!rawPlayerData) return '';
+
+            const playerData = JSON.parse(rawPlayerData);
+            return playerData?.gameCode || '';
+        } catch {
+            return '';
+        }
+    };
+
+    const getDPSGameCode = () => {
+        return useDPSGameStore.getState().gameCode || getSavedDPSGameCode();
+    };
 
     const connectToWaitingRoom = ({
         gameType,
@@ -373,6 +396,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             };
                             useBB84GameStore.setState({ gameHasEve: gameHasEve });
                             useBB84RoomStore.setState({ evePresent });
+                            // Persist the multiplayer session flag so /bb84/play can recover
+                            // directly after a browser refresh instead of bouncing to landing.
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });
 
                             localStorage.setItem('bb84PlayerData', JSON.stringify(playerData));
                             localStorage.setItem('bb84Step', JSON.stringify(useBB84ProgressStore.getState().step));
@@ -392,7 +418,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             };
                             useE91GameStore.setState({ gameHasEve: gameHasEve });
                             useE91RoomStore.setState({ evePresent });
-                            usePlayerStore.setState({ playingMultiplayer: true });  // Mark as playing multiplayer for page refresh
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });  // Mark as playing multiplayer for page refresh
 
                             localStorage.setItem('e91PlayerData', JSON.stringify(playerData));
                             localStorage.setItem('e91Step', JSON.stringify(useE91ProgressStore.getState().step));
@@ -402,20 +428,31 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             connectToPlayRoom(gameType, playerData.gameCode, role, room);
 
                         } else if (gameType === 'dps') {
+                            const {
+                                gameCode,
+                                photonNumber,
+                                validationBitsLength,
+                            } = useDPSGameStore.getState();
                             const playerData = {
-                                gameCode: useDPSGameStore.getState().gameCode,  // FIX: Use DPS store!
+                                gameCode,
                                 role,
                                 room,
                                 partner,
                                 gameHasEve,
+                                photonNumber,
+                                validationBitsLength,
                                 playerName: usePlayerStore.getState().playerName,
                             };
                             useDPSGameStore.setState({ gameHasEve: gameHasEve });
                             useDPSRoomStore.setState({ evePresent });
+                            usePlayerStore.setState({ playingMultiplayer: true, playingSolo: false });
 
                             localStorage.setItem('dpsPlayerData', JSON.stringify(playerData));
                             localStorage.setItem('dpsStep', JSON.stringify(useDPSProgressStore.getState().step));
                             localStorage.setItem('dpsTab', useDPSProgressStore.getState().dpsTab);
+                            localStorage.setItem('dpsGameHasEve', JSON.stringify(gameHasEve));
+                            localStorage.setItem('dpsPhotonNumber', JSON.stringify(photonNumber));
+                            localStorage.setItem('dpsValidationBitsLength', JSON.stringify(validationBitsLength));
                             localStorage.setItem('dpsGameData', JSON.stringify({ evePresent }));
 
                             connectToPlayRoom(gameType, playerData.gameCode, role, room);
@@ -454,9 +491,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
         setPlayRoomConnecting(true);
 
+        const previousSocket = playRoomSocketRef.current;
+        playRoomSocketRef.current = null;
+        if (previousSocket) {
+            try {
+                previousSocket.close();
+            } catch (error) {
+                console.warn('Unable to close previous play room socket', error);
+            }
+        }
 
         const socketInstance = new W3CWebSocket(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/games/${gameType}/${gameCode}/rooms/${room}/`);
 
+        playRoomSocketRef.current = socketInstance;
         setPlayRoomSocket(socketInstance);
 
         (socketInstance as any).onerror = (error: any) => {
@@ -467,8 +514,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
         socketInstance.onclose = (event: any) => {
             console.log(event);
-            setIsPlayRoomConnected(false);
-            setPlayRoomConnecting(false);
+            if (playRoomSocketRef.current === socketInstance) {
+                playRoomSocketRef.current = null;
+                setPlayRoomSocket(null);
+                setIsPlayRoomConnected(false);
+                setPlayRoomConnecting(false);
+            }
         };
 
         socketInstance.onmessage = async (json: any) => {
@@ -483,12 +534,17 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 case CONNECTED_EVENT:
                     setIsPlayRoomConnected(true);
                     setPlayRoomConnecting(false);
+                    const navigateToPlayPage = (playPath: string) => {
+                        if (window.location.pathname !== playPath) {
+                            router.replace(playPath);
+                        }
+                    };
                     if (gameType === 'bb84') {
-                        router.replace('/bb84/play');
+                        navigateToPlayPage('/bb84/play');
                     } else if (gameType === 'e91') {
-                        router.replace('/e91/play')
+                        navigateToPlayPage('/e91/play');
                     } else if (gameType === 'dps') {
-                        router.replace('/dps/play')
+                        navigateToPlayPage('/dps/play');
                     }
 
                     break;
@@ -593,8 +649,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                     break;
                 case A_PHASES_EVENT:
                     if (usePlayerStore.getState().playerRole === 'B') {
-                        useDPSRoomStore.getState().setAlicePhotons(message.photons);
-                        useDPSRoomStore.getState().setAlicePhases(message.phases);
+                        useDPSRoomStore.getState().setAliceExchangeData(message.photons, message.phases);
 
                         useDPSProgressStore.getState().pushLines([
                             {
@@ -938,6 +993,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                     if (gameType === 'e91') {
                         useE91RoomStore.getState().setAliceCipher(message.cipher);
                         if (usePlayerStore.getState().playerRole === 'A') {
+                            useE91RoomStore.getState().setAliceCipherSent(true);
                             useE91ProgressStore.getState().pushLines([
                                 {
                                     content: 'component.messaging.alice.sent',
@@ -1027,7 +1083,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useBB84RoomStore.getState().setGameSuccess(true);
-                        clearBB84LocalStorage();
+                        // Keep completed-game recovery data so a refresh can redirect
+                        // to the results page. Cleanup happens from results/home flows.
                     } else if (gameType === 'dps') {
                         if (usePlayerStore.getState().playerRole === 'B') {
                             useDPSProgressStore.getState().pushLines([
@@ -1038,7 +1095,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useDPSRoomStore.getState().setGameSuccess(true);
-                        clearDPSLocalStorage();
                     }
 
                     break;
@@ -1151,6 +1207,22 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         };
     };
 
+    const disconnectPlayRoom = useCallback(() => {
+        const currentSocket = playRoomSocketRef.current;
+        playRoomSocketRef.current = null;
+        if (currentSocket) {
+            try {
+                (currentSocket as any).close();
+            } catch (error) {
+                console.warn('Unable to close play room socket', error);
+            }
+        }
+        setPlayRoomSocket(null);
+        setIsPlayRoomConnected(false);
+        setPlayRoomConnecting(false);
+        setPlayRoomError(false);
+    }, []);
+
     const startGame = (gameType: string, id: number) => {
         if (gameType === 'bb84') {
             const payload = {
@@ -1206,13 +1278,23 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         if (message) {
             payload.message = { ...message };
         }
-        if ((playRoomSocket as any).readyState !== WebSocket.OPEN) {
-            console.error("WebSocket is not open. Current state:", (playRoomSocket as any).readyState);
-        } else {
-            console.log("WebSocket is open, sending message.");
+        const activePlayRoomSocket = playRoomSocketRef.current || playRoomSocket;
+        if (!activePlayRoomSocket) {
+            console.error("WebSocket is null. Cannot send event:", event);
+            return false;
+        }
+        if ((activePlayRoomSocket as any).readyState !== WebSocket.OPEN) {
+            console.error("WebSocket is not open. Current state:", (activePlayRoomSocket as any).readyState);
+            return false;
         }
 
-        (playRoomSocket as any).send(JSON.stringify(payload));
+        try {
+            (activePlayRoomSocket as any).send(JSON.stringify(payload));
+            return true;
+        } catch (error) {
+            console.error("Unable to send event:", event, error);
+            return false;
+        }
     };
 
     const measurePhotons = (bases: string[]) => {
@@ -1242,9 +1324,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         sendEvent(B_TIMES_EVENT, { times });
     };
 
-    const sendCipher = (cipher: string[]) => {
-        sendEvent(A_CIPHER_EVENT, { cipher });
-    };
+    const sendCipher = (cipher: string[]) => sendEvent(A_CIPHER_EVENT, { cipher });
 
     const sendEveSpotted = () => {
         sendEvent(EVE_SPOTTED_EVENT);
@@ -1267,7 +1347,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     const sendAliceSuccess = () => {
         sendEvent(B_SUCCESS_EVENT, {
-            game_code: useDPSGameStore.getState().gameCode,
+            game_code: getDPSGameCode(),
             player_name: usePlayerStore.getState().playerName
         });
     };
@@ -1441,6 +1521,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 playRoomConnecting,
                 connectToWaitingRoom,
                 connectToPlayRoom: connectToPlayRoom,
+                disconnectPlayRoom,
                 startGame,
                 sendEvent,
                 measurePhotons,

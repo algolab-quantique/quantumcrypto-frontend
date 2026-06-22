@@ -41,6 +41,11 @@ export const clearBB84LocalStorage = () => {
     localStorage.removeItem('bb84ValidationBitsLength')
     localStorage.removeItem('bb84GameHasEve')
     localStorage.removeItem('bb84BobBasisInputs')
+
+    if (typeof window !== 'undefined') {
+        useBB84RoomStore.getState().resetRoom();
+        useBB84ProgressStore.getState().resetProgress();
+    }
 }
 
 export const restartWithoutEve = () => {

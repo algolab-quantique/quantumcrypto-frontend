@@ -20,6 +20,7 @@ import useDPSRoomStore from '@/store/dps/dps-room-store';
 import usePlayerStore from '@/store/player-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, Gamepad2, Users } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -44,10 +45,12 @@ const DPSMainV3: React.FC = () => {
         waitingRoomConnecting,
         isPlayRoomConnected,
         connectToPlayRoom,
+        disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
     const [flipFace, setFlipFace] = useState<'front' | 'solo' | 'multi'>('front');
+    const [soloModalOpen, setSoloModalOpen] = useState(false);
     const { localize } = useLanguage();
     const {
         setGameCode,
@@ -67,10 +70,37 @@ const DPSMainV3: React.FC = () => {
     const { restoreGame } = useDPSRoomStore();
     const router = useRouter();
 
+    const getSavedItem = (key: string) => {
+        const item = localStorage.getItem(key);
+        if (!item) return null;
+
+        try {
+            return JSON.parse(item);
+        } catch {
+            return null;
+        }
+    };
+
     useEffect(() => {
-        const gameDataRaw = localStorage.getItem('dpsGameData');
-        const gameData = gameDataRaw ? JSON.parse(gameDataRaw) : null;
+        const replayCleanupPending = sessionStorage.getItem('dpsReplayCleanupPending') === 'true';
+        if (replayCleanupPending) {
+            sessionStorage.removeItem('dpsReplayCleanupPending');
+            disconnectPlayRoom();
+            clearDPSLocalStorage();
+            setPlayingSolo(false);
+            setPlayingMultiplayer(false);
+            return;
+        }
+
+        const previousGame = getSavedItem('dpsPlayerData');
+        const gameData = getSavedItem('dpsGameData');
         const gameCompleted = gameData && gameData.gameSuccess === true;
+        const hasActiveSession = Boolean(
+            previousGame?.gameCode &&
+            previousGame?.role &&
+            previousGame?.room &&
+            usePlayerStore.getState().playingMultiplayer
+        );
 
         // If the game was already completed, clean up stale data.
         if (gameCompleted) {
@@ -80,16 +110,21 @@ const DPSMainV3: React.FC = () => {
             return;
         }
 
-        if (isPlayRoomConnected) {
+        if (isPlayRoomConnected && hasActiveSession) {
             router.push('/dps/play');
             return;
         }
-        const previousGame = localStorage.getItem('dpsPlayerData');
+
+        if (isPlayRoomConnected && !hasActiveSession) {
+            disconnectPlayRoom();
+            return;
+        }
+
         if (previousGame) {
             // Rejoin dialog intentionally disabled for DPS for now.
             //setRejoinDialogOpen(true);
         }
-    }, [isPlayRoomConnected]);
+    }, [isPlayRoomConnected, disconnectPlayRoom]);
 
     const getGameProgress = () => {
         const getItem = (key: string) => {
@@ -275,19 +310,46 @@ const DPSMainV3: React.FC = () => {
 
                                 {/* Solo */}
                                 {flipFace === 'solo' && (
-                                    <div className="space-y-5 flex-grow flex flex-col justify-center">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-medium text-muted-foreground ml-1">
-                                                {localize('component.main.nameLabel')}
-                                            </label>
-                                            <Input placeholder={localize('component.main.name')}
-                                                className="bg-background/50 h-10"
-                                                {...form.register('playerName')} />
+                                    <div className="flex-grow flex flex-col justify-center space-y-3">
+                                        <p className="text-sm text-center text-muted-foreground font-medium">
+                                            {localize('component.main.chooseRole')}
+                                        </p>
+                                        <div className="flex gap-x-4 justify-center">
+                                            <div
+                                                className="flex flex-col items-center gap-y-2 p-3
+                                                    border border-border rounded-md cursor-pointer
+                                                    hover:border-primary/50 hover:bg-primary/5
+                                                    transition-all duration-200"
+                                                onClick={() => { setPlayerRole('A'); setSoloModalOpen(true); }}>
+                                                <div className="relative h-[80px] w-[110px]">
+                                                    <Image
+                                                        fill
+                                                        src="/images/SNE-EnigmesQuantiques_Personnages_Alice_head.png"
+                                                        alt="Alice"
+                                                        sizes="110px"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                                <p className="text-sm font-semibold">Alice</p>
+                                            </div>
+                                            <div
+                                                className="flex flex-col items-center gap-y-2 p-3
+                                                    border border-border rounded-md cursor-pointer
+                                                    hover:border-primary/50 hover:bg-primary/5
+                                                    transition-all duration-200"
+                                                onClick={() => { setPlayerRole('B'); setSoloModalOpen(true); }}>
+                                                <div className="relative h-[80px] w-[80px]">
+                                                    <Image
+                                                        fill
+                                                        src="/images/SNE-EnigmesQuantiques_Personnages_Bob_Head.png"
+                                                        alt="Bob"
+                                                        sizes="80px"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                                <p className="text-sm font-semibold">Bob</p>
+                                            </div>
                                         </div>
-                                        <SoloGameModal
-                                            triggerClassName="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90
-                                                text-primary-foreground shadow-[0_0_15px_hsl(152,100%,33%,0.3)]"
-                                        />
                                     </div>
                                 )}
 
@@ -351,6 +413,7 @@ const DPSMainV3: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <SoloGameModal open={soloModalOpen} onOpenChange={setSoloModalOpen} />
         </>
     );
 };

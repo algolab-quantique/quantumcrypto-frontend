@@ -1,16 +1,18 @@
+'use client';
+
 import React from 'react';
-import Game from '@/components/dps/play-page/game';
-import DPSProgressionSidebar from '@/components/shared/dps-progression-sidebar';
+import MultiGame from '@/components/dps/play-page/multi-game';
+import SoloGame from '@/components/dps/play-page/solo-game';
+import DPSPlayShell from '@/components/dps/play-page/dps-play-shell';
+import usePlayerStore from '@/store/player-store';
 
 const PlayPage = () => {
+    const { playingSolo } = usePlayerStore();
 
     return (
-        <div className="flex flex-col h-full max-h-full">
-            <div className="flex w-full gap-x-3 px-6 pt-5">
-                <DPSProgressionSidebar/>
-            </div>
-            <Game/>
-        </div>
+        <DPSPlayShell>
+            {playingSolo ? <SoloGame /> : <MultiGame />}
+        </DPSPlayShell>
     );
 };
 

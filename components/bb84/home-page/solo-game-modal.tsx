@@ -8,7 +8,6 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Cat, Dog } from 'lucide-react';
 import Image from 'next/image';
 import { z } from 'zod';
 import usePlayerStore from '@/store/player-store';
@@ -151,7 +150,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         validationBitsLength: number,
         playerName: string,
     ) => {
-        recordGameStats('bb84', 1);
+        void recordGameStats('bb84', 1, { silent: true });
         clearBB84LocalStorage();
         resetRoom();
         resetProgress();
