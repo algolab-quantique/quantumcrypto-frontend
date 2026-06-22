@@ -403,6 +403,8 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 
 **Working rules**:
 - Do not rewrite all protocols at once.
+- Keep the public lifecycle API simple; hide mode-specific details inside helpers unless callers really need them.
+- Review, discuss, and correct architecture changes before committing them.
 - Each phase must compile before commit.
 - Each protocol migration must be manually tested before moving to the next one.
 - Keep socket-provider refactor last.
@@ -417,6 +419,15 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Create `shared/protocol-lifecycle/registry.ts`.
 - [x] Build passes.
 - [x] No protocol behavior changes yet.
+
+**Phase 1b: Restore API hardening**
+- [x] Keep `restoreCheckpoint(adapter)` as the single public restore door.
+- [x] Restore local checkpoint for solo and multiplayer without requiring `playerDataKey`.
+- [x] Validate multiplayer identity internally only when `playerDataKey` exists.
+- [x] Replace nullable restore status with explicit result objects.
+- [x] Document that multiplayer restores local UI first, then reconnects/reconciles backend truth.
+- [x] Document internal restore/reconnect components so the client/server flow is discoverable.
+- [x] Build passes.
 
 **Phase 2: BB84 pilot**
 - [ ] Migrate BB84 cleanup/start/restore calls to the lifecycle helper.

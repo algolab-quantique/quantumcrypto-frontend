@@ -118,7 +118,7 @@ classDiagram
         <<module>>
         +startFresh(adapter): void
         +saveCheckpoint(adapter): void
-        +restoreCheckpoint(adapter): SessionStatus
+        +restoreCheckpoint(adapter): CheckpointRestoreResult
         +complete(adapter): void
         +abandon(adapter): void
         +clearProtocolStorage(adapter): void
@@ -190,7 +190,7 @@ stateDiagram-v2
 |-----------|-------------|
 | **startFresh** | Clear protocol storage → reset room store → reset progress store → set mode flags |
 | **saveCheckpoint** | Named entry point for persistence. Phase 1: stores already persist via `updateAndStore()`, this wraps that with a safe serializable snapshot. Future: backend sync plugs in here. |
-| **restoreCheckpoint** | Read `playerDataKey` → restore room from `gameDataKey` → hydrate progress → return status (`active` / `completed` / `null`) |
+| **restoreCheckpoint** | Public restore door for both solo and multiplayer. Restore local checkpoint from `gameDataKey` → hydrate progress → if valid multiplayer identity exists in `playerDataKey`, include it for reconnect. |
 | **complete** | Keep snapshot in localStorage (so refresh restores felicitation). Do NOT auto-navigate to results. |
 | **abandon** | Clear all protocol storage → reset stores → set `playingSolo=false`, `playingMultiplayer=false` |
 | **clearProtocolStorage** | Remove all keys listed in `adapter.storageKeys` from localStorage |
@@ -215,6 +215,48 @@ In Phase 1, `saveCheckpoint()` is a thin wrapper. It earns its place by being th
 Important boundary: `saveCheckpoint()` should not blindly persist transient
 Zustand internals. If a store ever contains non-serializable fields or actions,
 the adapter must expose an explicit serializable room snapshot.
+
+### Restore checkpoint vs multiplayer identity
+
+`restoreCheckpoint(adapter)` is the simple public API. A future developer should
+be able to call it and read the result as: "restore the last saved protocol
+context."
+
+Internally, restore has two different concerns:
+
+1. **Local checkpoint** — protocol room snapshot and UI progress. This applies to
+   solo and multiplayer.
+2. **Multiplayer session identity** — `gameCode`, `role`, and `room`. This is
+   only needed so multiplayer can reconnect to the backend.
+
+The public function stays simple, but the result is explicit:
+
+```typescript
+type CheckpointRestoreResult =
+    | {kind: 'missing'}
+    | {kind: 'corrupted'}
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue};
+```
+
+If multiplayer identity is missing or invalid, the checkpoint can still be
+restored locally. The page/socket layer simply cannot reconnect until it has a
+valid multiplayer session.
+
+### Internal restore components
+
+| Element | Visibility | Responsibility |
+|---------|------------|----------------|
+| `restoreCheckpoint(adapter)` | Public lifecycle API | Restore the saved protocol context and return the next state for the page. |
+| `readStoredObject(gameDataKey)` | Internal helper | Read and validate the local room checkpoint. |
+| `adapter.restoreRoom(snapshot)` | Adapter method | Put protocol-specific room data back into the right store. |
+| `adapter.hydrateProgress()` | Adapter method | Restore UI progress from the protocol store. |
+| `restoreMultiplayerSession(adapter)` | Internal helper | Read `playerDataKey`, validate `gameCode`, `role`, and `room`, then return `multiplayerSession` if reconnect is possible. |
+| Play page / socket layer | Caller after restore | Reconnect to the backend only when `restoreCheckpoint()` returns `multiplayerSession`. |
+
+So reconnect is part of the restore architecture, but not a separate public
+lifecycle command. The page asks to restore; the lifecycle tells it whether
+there is enough multiplayer identity to reconnect.
 
 ---
 
@@ -281,22 +323,25 @@ sequenceDiagram
 
     Browser->>Page: refresh / mount
     Page->>Lifecycle: restoreCheckpoint(adapter)
-    Lifecycle->>Lifecycle: localStorage.getItem(playerDataKey)
+    Lifecycle->>Lifecycle: localStorage.getItem(gameDataKey)
 
-    alt No saved session
-        Lifecycle-->>Page: null → redirect to protocol home
-    else Has saved session
-        Lifecycle->>Lifecycle: localStorage.getItem(gameDataKey)
+    alt No local checkpoint
+        Lifecycle-->>Page: { kind: "missing" } → redirect to protocol home
+    else Corrupted checkpoint
+        Lifecycle-->>Page: { kind: "corrupted" } → clear/restart intentionally
+    else Has local checkpoint
         Lifecycle->>Adapter: adapter.restoreRoom(snapshot)
         Lifecycle->>Adapter: adapter.hydrateProgress()
+        Lifecycle->>Lifecycle: tryReadMultiplayerIdentity(playerDataKey)
+        Note over Lifecycle: If valid multiplayer identity exists,<br/>include it in the result.
 
         alt gameSuccess === true
-            Lifecycle-->>Page: COMPLETED → show felicitation
+            Lifecycle-->>Page: { kind: "completed" } → show felicitation
         else Solo mode
-            Lifecycle-->>Page: ACTIVE → resume play
-        else Multiplayer mode
-            Lifecycle-->>Page: ACTIVE → resume play
-            Page->>Socket: reconnect play room
+            Lifecycle-->>Page: { kind: "active" } → resume play
+        else Multiplayer mode with valid identity
+            Lifecycle-->>Page: { kind: "active", multiplayerSession } → resume play
+            Page->>Socket: reconnect play room with multiplayerSession
             Socket->>Backend: reconnect with saved identity
             alt Backend has snapshot (future)
                 Backend-->>Socket: authoritative room state
@@ -304,6 +349,8 @@ sequenceDiagram
             else No backend snapshot (current)
                 Note over Page: Use local checkpoint as fallback
             end
+        else Multiplayer identity missing/invalid
+            Lifecycle-->>Page: { kind: "active" } → local checkpoint restored, no reconnect
         end
     end
 ```
@@ -357,7 +404,21 @@ sequenceDiagram
 
 type Protocol = 'bb84' | 'e91' | 'dps';
 type GameMode = 'solo' | 'multiplayer';
-type SessionStatus = 'active' | 'completed' | null;
+type MultiplayerSessionIssue = 'invalid' | 'corrupted';
+
+interface MultiplayerSession {
+    gameCode: string;
+    role: string;
+    room: string;
+    playerName?: string;
+    partner?: string;
+}
+
+type CheckpointRestoreResult =
+    | {kind: 'missing'}
+    | {kind: 'corrupted'}
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue};
 
 interface ProtocolAdapter {
     /** Protocol identifier */
@@ -369,7 +430,7 @@ interface ProtocolAdapter {
     /** Key for the full room state snapshot (e.g., 'bb84GameData') */
     gameDataKey: string;
 
-    /** Key for player identity/session data (e.g., 'bb84PlayerData') */
+    /** Key for multiplayer identity/session data (e.g., 'bb84PlayerData') */
     playerDataKey: string;
 
     /** Reset room store to initial state */
@@ -473,29 +534,22 @@ export function saveCheckpoint(adapter: ProtocolAdapter): void {
 
 export function restoreCheckpoint(
     adapter: ProtocolAdapter
-): SessionStatus {
-    if (typeof window === 'undefined') return null;
+): CheckpointRestoreResult {
+    const gameData = readStoredObject(adapter.gameDataKey);
+    if (gameData.kind === 'missing') return {kind: 'missing'};
+    if (gameData.kind === 'corrupted') return {kind: 'corrupted'};
 
-    const rawPlayerData = localStorage.getItem(adapter.playerDataKey);
-    if (!rawPlayerData) return null;
-
-    // Restore room snapshot
-    const rawGameData = localStorage.getItem(adapter.gameDataKey);
-    if (rawGameData) {
-        try {
-            adapter.restoreRoom(JSON.parse(rawGameData));
-        } catch {
-            // Corrupted data — start fresh instead
-            return null;
-        }
-    }
-
-    // Hydrate progress (step, tab, displayed lines)
+    adapter.restoreRoom(gameData.data);
     adapter.hydrateProgress();
 
-    // Check if the session was completed
-    const roomState = adapter.getRoomStore().getState() as Record<string, unknown>;
-    return roomState.gameSuccess ? 'completed' : 'active';
+    const kind = adapter.getRoomSnapshot().gameSuccess ? 'completed' : 'active';
+    const session = restoreMultiplayerSessionIfValid(adapter);
+
+    if (session) {
+        return {kind, multiplayerSession: session};
+    }
+
+    return {kind};
 }
 
 export function complete(adapter: ProtocolAdapter): void {
@@ -543,7 +597,7 @@ export function getAdapter(protocolId: Protocol): ProtocolAdapter {
 ```
 shared/
 └── protocol-lifecycle/
-    ├── types.ts              # ProtocolAdapter interface, Protocol, GameMode, SessionStatus
+    ├── types.ts              # ProtocolAdapter, ProtocolId, CheckpointRestoreResult
     ├── lifecycle.ts           # startFresh, saveCheckpoint, restoreCheckpoint, complete, abandon, clearProtocolStorage
     ├── bb84-adapter.ts        # BB84 adapter object
     ├── e91-adapter.ts         # E91 adapter object
@@ -815,8 +869,10 @@ These rules apply to the current app and the refactored architecture:
 ### Multiplayer mode
 - Source of truth for shared protocol facts: backend room + WebSocket
 - Recovery cache: `localStorage`
-- Restore from: backend room snapshot (future) or local snapshot (current fallback)
+- Restore UI first from the local checkpoint, then reconnect if valid multiplayer identity exists
+- Reconcile shared protocol facts from backend room snapshot (future) or local snapshot (current fallback)
 - UI pacing: compare backend state with local checkpoint, guide missed steps in order
+- If backend reconnect fails, the restored local checkpoint can support retry / exit / explicit solo-style continuation later
 - Clear by: `clearProtocolStorage(adapter)` after completion or explicit exit
 
 ### Practical test for future work

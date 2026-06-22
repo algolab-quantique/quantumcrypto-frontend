@@ -1,8 +1,28 @@
 export type ProtocolId = 'bb84' | 'e91' | 'dps';
 
-export type SessionStatus = 'active' | 'completed' | null;
-
 export type RoomSnapshot = Record<string, unknown>;
+
+export type MultiplayerSessionIssue = 'invalid' | 'corrupted';
+
+export interface MultiplayerSession {
+    gameCode: string;
+    role: string;
+    room: string;
+    playerName?: string;
+    partner?: string;
+    [key: string]: unknown;
+}
+
+type RestoredCheckpoint = {
+    multiplayerSession?: MultiplayerSession;
+    multiplayerSessionIssue?: MultiplayerSessionIssue;
+};
+
+export type CheckpointRestoreResult =
+    | {kind: 'missing'}
+    | {kind: 'corrupted'}
+    | ({kind: 'active'} & RestoredCheckpoint)
+    | ({kind: 'completed'} & RestoredCheckpoint);
 
 export interface ProtocolAdapter {
     protocolId: ProtocolId;
