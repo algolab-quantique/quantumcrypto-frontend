@@ -201,8 +201,8 @@ Short term, the frontend may keep using the existing local snapshot fallback whe
 The missing piece is a shared lifecycle contract. Protocol room state should stay protocol-specific, but starting, saving, restoring, completing, replaying, and clearing should follow one standard lifecycle across BB84, E91, DPS, and future protocols.
 
 **Reference Docs**:
-- Main architecture notes: `docs/storage-architecture.md`
-- Diagrams: `docs/protocol-session-lifecycle-diagrams.md`
+- Main architecture plan: `docs/shared-protocol-lifecycle-adr.md`
+- Historical context: `docs/storage-architecture.md`, `docs/protocol-session-lifecycle-diagrams.md`
 
 **Target Rule**:
 

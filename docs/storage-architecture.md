@@ -1,10 +1,14 @@
 # Storage, Hydration, and Reconnection Plan
 
 > [!NOTE]
-> This document currently contains both the previous storage/reconnect thinking
-> and the new target architecture direction. Keep all previous text for now.
-> Once the shared protocol lifecycle architecture is implemented and validated,
-> rewrite this document completely so it describes only the final architecture.
+> The shared protocol lifecycle architecture is now documented in
+> [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md).
+> That ADR is the candidate architecture reference during review.
+>
+> This document is kept as historical context. It contains the original
+> storage/reconnect thinking and per-protocol audit that led to the ADR.
+> Once the shared lifecycle is fully implemented and validated (ADR Phase 6),
+> rewrite this document to describe only the final architecture.
 
 ## Goal
 
