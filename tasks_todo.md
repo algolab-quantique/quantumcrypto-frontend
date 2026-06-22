@@ -409,14 +409,14 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - Record bugs found during the migration here instead of hiding them in memory.
 
 **Phase 1: Shared lifecycle infrastructure only**
-- [ ] Create `shared/protocol-lifecycle/types.ts`.
-- [ ] Create `shared/protocol-lifecycle/lifecycle.ts`.
-- [ ] Create `shared/protocol-lifecycle/bb84-adapter.ts`.
-- [ ] Create `shared/protocol-lifecycle/e91-adapter.ts`.
-- [ ] Create `shared/protocol-lifecycle/dps-adapter.ts`.
-- [ ] Create `shared/protocol-lifecycle/registry.ts`.
-- [ ] Build passes.
-- [ ] No protocol behavior changes yet.
+- [x] Create `shared/protocol-lifecycle/types.ts`.
+- [x] Create `shared/protocol-lifecycle/lifecycle.ts`.
+- [x] Create `shared/protocol-lifecycle/bb84-adapter.ts`.
+- [x] Create `shared/protocol-lifecycle/e91-adapter.ts`.
+- [x] Create `shared/protocol-lifecycle/dps-adapter.ts`.
+- [x] Create `shared/protocol-lifecycle/registry.ts`.
+- [x] Build passes.
+- [x] No protocol behavior changes yet.
 
 **Phase 2: BB84 pilot**
 - [ ] Migrate BB84 cleanup/start/restore calls to the lifecycle helper.
