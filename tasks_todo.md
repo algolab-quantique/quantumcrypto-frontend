@@ -387,6 +387,65 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ---
 
+### 40. 🟡 Architecture: Shared Protocol Lifecycle Implementation
+
+**Status**: 🟡 TODO / ACTIVE ARCHITECTURE BRANCH  
+**Date Added**: June 22, 2026  
+**Priority**: 🟡 MEDIUM-HIGH  
+**Branch**: `ibra_architecture`  
+**Main reference**: `docs/shared-protocol-lifecycle-adr.md`
+
+**Goal**: Implement one shared lifecycle rule for BB84, E91, DPS, and future protocols:
+
+`start -> save -> refresh/restore -> leave -> replay -> complete -> results`
+
+Protocol room data stays protocol-specific. The shared layer only owns the lifecycle operations that are currently duplicated across protocols.
+
+**Working rules**:
+- Do not rewrite all protocols at once.
+- Each phase must compile before commit.
+- Each protocol migration must be manually tested before moving to the next one.
+- Keep socket-provider refactor last.
+- Record bugs found during the migration here instead of hiding them in memory.
+
+**Phase 1: Shared lifecycle infrastructure only**
+- [ ] Create `shared/protocol-lifecycle/types.ts`.
+- [ ] Create `shared/protocol-lifecycle/lifecycle.ts`.
+- [ ] Create `shared/protocol-lifecycle/bb84-adapter.ts`.
+- [ ] Create `shared/protocol-lifecycle/e91-adapter.ts`.
+- [ ] Create `shared/protocol-lifecycle/dps-adapter.ts`.
+- [ ] Create `shared/protocol-lifecycle/registry.ts`.
+- [ ] Build passes.
+- [ ] No protocol behavior changes yet.
+
+**Phase 2: BB84 pilot**
+- [ ] Migrate BB84 cleanup/start/restore calls to the lifecycle helper.
+- [ ] Keep BB84 behavior identical to the current stable app.
+- [ ] Test BB84 solo: start, refresh, complete, replay, leave.
+- [ ] Test BB84 multiplayer: create/join, refresh, leave guard, completion, results.
+- [ ] Commit BB84 migration before touching E91.
+
+**Phase 3: E91 migration**
+- [ ] Migrate E91 cleanup/start/restore calls after BB84 is stable.
+- [ ] Preserve completed-game refresh behavior.
+- [ ] Preserve active-game leave guard.
+- [ ] Test E91 solo and multiplayer, including refresh/reconnect and results.
+
+**Phase 4: DPS migration**
+- [ ] Migrate DPS cleanup/start/restore calls after E91 is stable.
+- [ ] Preserve DPS refresh fixes and result-table behavior.
+- [ ] Test DPS solo and multiplayer, including Alice/Bob refresh edge cases.
+
+**Phase 5: Socket-provider cleanup last**
+- [ ] Extract shared waiting-room connect/disconnect/start logic only after all protocol lifecycle migrations are stable.
+- [ ] Keep protocol-specific play-room event handlers separate.
+- [ ] Test full multiplayer flows for BB84, E91, and DPS.
+
+**Bugs / decisions found during implementation**:
+- [ ] Add findings here as they appear.
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
 **Not a code bug** — this is a testing methodology issue.
