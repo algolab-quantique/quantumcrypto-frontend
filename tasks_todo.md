@@ -444,9 +444,9 @@ Safe now:
 - [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: replace stale/corrupt session cleanup and rejoin cancel cleanup with lifecycle cleanup intent.
 - [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: replace join/create pre-cleanup with `startFresh(bb84Adapter)`.
 - [ ] `components/bb84/home-page/solo-game-modal.tsx`: replace solo game start cleanup with `startFresh(bb84Adapter)`.
-- [ ] `app/(main)/bb84/play/page.tsx`: replace intentional leave cleanup with `abandon(bb84Adapter)`.
-- [ ] `components/bb84/play-page/solo-game.tsx`: replace solo navigation cleanup with `abandon(bb84Adapter)`.
-- [ ] `components/bb84/play-page/multi-game.tsx`: replace multiplayer navigation cleanup with `abandon(bb84Adapter)`.
+- [x] `app/(main)/bb84/play/page.tsx`: replace intentional leave cleanup with `abandon(bb84Adapter)`.
+- [x] `components/bb84/play-page/solo-game.tsx`: replace solo navigation cleanup with `abandon(bb84Adapter)`.
+- [x] `components/bb84/play-page/multi-game.tsx`: replace multiplayer navigation cleanup with `abandon(bb84Adapter)`.
 - [ ] `components/bb84/play-page/bb84-progression.tsx`: replace successful solo main-menu cleanup with `abandon(bb84Adapter)`.
 - [ ] `app/(main)/games/[gameType]/[gameCode]/results/page.tsx`: replace BB84 results home cleanup with lifecycle cleanup intent.
 
@@ -483,9 +483,9 @@ Special cases to leave alone:
 
 ### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
 
-**Status**: ⚪ DEFERRED  
-**Date Added**: June 23, 2026  
-**Priority**: ⚪ LOW until lifecycle migration is stable  
+**Status**: ⚪ DEFERRED
+**Date Added**: June 23, 2026
+**Priority**: ⚪ LOW until lifecycle migration is stable
 
 **Goal**: clean folder ownership so future contributors can find files by responsibility, not by history.
 
@@ -505,6 +505,27 @@ Special cases to leave alone:
 - Keep React hooks in `hooks/`.
 
 **Rule**: do this as isolated cleanup commits after BB84/E91/DPS lifecycle migration, unless a file must move for the migration itself.
+
+---
+
+### 42. ⚪ Navigation Guard Alignment After Lifecycle Migration
+
+**Status**: ⚪ DEFERRED
+**Date Added**: June 23, 2026
+**Priority**: ⚪ LOW until lifecycle migration is stable
+
+**Goal**: use the modern navigation standard consistently across BB84, E91, DPS, and future protocols.
+
+**Standard**:
+- Guard in-app protocol/title navigation with the custom `Rester dans la partie` / `Quitter la partie` dialog.
+- Do not hijack browser Back with fake `pushState` traps.
+- Trust refresh/rejoin recovery instead of trying to lock users into the page.
+
+**Future cleanup**:
+- [ ] Remove `usePreventNavigation` from BB84 solo and multiplayer after BB84 lifecycle migration is stable.
+- [ ] Remove `usePreventNavigation` from DPS multiplayer after DPS lifecycle migration is stable.
+- [ ] Keep E91 as the reference for no browser-back trap.
+- [ ] Preserve in-app leave dialogs for all protocols.
 
 ---
 

@@ -7,7 +7,8 @@ import BB84ProgressionSidebar from '@/components/shared/bb84-progression-sidebar
 import Bb84Button from '@/components/bb84/play-page/bb84-button';
 import usePlayerStore from '@/store/player-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
 import {
@@ -34,9 +35,7 @@ const PlayPage = () => {
         setIsLeaving(true);
         setLeaveDialogOpen(false);
         disconnectPlayRoom();
-        clearBB84LocalStorage();
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
+        abandon(bb84Adapter);
     }, [disconnectPlayRoom]);
 
     const leaveGame = useCallback((destination: string) => {

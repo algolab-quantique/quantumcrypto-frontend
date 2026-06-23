@@ -38,7 +38,8 @@ import { cn } from '@/lib/utils';
 import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
 const MultiGame = () => {
@@ -63,8 +64,7 @@ const MultiGame = () => {
     const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
 
     const handleNavCleanup = useCallback(() => {
-        clearBB84LocalStorage();
-        usePlayerStore.getState().setPlayingMultiplayer(false);
+        abandon(bb84Adapter);
     }, []);
 
     // Warn user on browser back / close / refresh while game is in progress
