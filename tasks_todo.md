@@ -410,6 +410,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - Keep socket-provider refactor last.
 - Record bugs found during the migration here instead of hiding them in memory.
 - Track every caution, bug, and design decision in this file or the ADR before moving on.
+- At call sites, prefer lifecycle intention names (`startFresh`, `abandon`) over repeated cleanup mechanics.
 
 **Phase 1: Shared lifecycle infrastructure only**
 - [x] Create `lib/protocol-lifecycle/types.ts`.
@@ -431,11 +432,32 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Build passes.
 
 **Phase 2: BB84 pilot**
-- [ ] Migrate BB84 cleanup/start/restore calls to the lifecycle helper.
+- [ ] Phase 2a: migrate only BB84 cleanup/start/exit calls to lifecycle helpers.
 - [ ] Keep BB84 behavior identical to the current stable app.
 - [ ] Test BB84 solo: start, refresh, complete, replay, leave.
 - [ ] Test BB84 multiplayer: create/join, refresh, leave guard, completion, results.
 - [ ] Commit BB84 migration before touching E91.
+
+**Phase 2a: BB84 safe cleanup/start mapping**
+
+Safe now:
+- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: replace stale/corrupt session cleanup and rejoin cancel cleanup with lifecycle cleanup intent.
+- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: replace join/create pre-cleanup with `startFresh(bb84Adapter)`.
+- [ ] `components/bb84/home-page/solo-game-modal.tsx`: replace solo game start cleanup with `startFresh(bb84Adapter)`.
+- [ ] `app/(main)/bb84/play/page.tsx`: replace intentional leave cleanup with `abandon(bb84Adapter)`.
+- [ ] `components/bb84/play-page/solo-game.tsx`: replace solo navigation cleanup with `abandon(bb84Adapter)`.
+- [ ] `components/bb84/play-page/multi-game.tsx`: replace multiplayer navigation cleanup with `abandon(bb84Adapter)`.
+- [ ] `components/bb84/play-page/bb84-progression.tsx`: replace successful solo main-menu cleanup with `abandon(bb84Adapter)`.
+- [ ] `app/(main)/games/[gameType]/[gameCode]/results/page.tsx`: replace BB84 results home cleanup with lifecycle cleanup intent.
+
+Do not touch yet:
+- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: keep `getGameProgress()` manual rejoin/restore flow.
+- [ ] `components/bb84/play-page/solo-game.tsx`: keep mount-time refresh restore flow.
+- [ ] `components/bb84/play-page/multi-game.tsx`: keep mount-time refresh/reconnect flow.
+
+Special cases to leave alone:
+- [ ] `lib/bb84/utils.ts`: keep `restartWithoutEve()` until we design an explicit lifecycle action for it.
+- [ ] `components/bb84/play-page/tabs/basis-tab.tsx`: keep key-too-small restart logic unchanged.
 
 **Phase 3: E91 migration**
 - [ ] Migrate E91 cleanup/start/restore calls after BB84 is stable.
