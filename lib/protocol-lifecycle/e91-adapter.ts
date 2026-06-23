@@ -4,7 +4,7 @@ import {
     useE91ProgressStore,
 } from '@/store/e91/e91-progress-store';
 
-import {toSerializableSnapshot} from './lifecycle';
+import {toSerializableSnapshot} from './snapshot';
 import type {ProtocolAdapter, RoomSnapshot} from './types';
 
 export const e91Adapter: ProtocolAdapter = {

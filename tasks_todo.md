@@ -409,6 +409,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - Each protocol migration must be manually tested before moving to the next one.
 - Keep socket-provider refactor last.
 - Record bugs found during the migration here instead of hiding them in memory.
+- Track every caution, bug, and design decision in this file or the ADR before moving on.
 
 **Phase 1: Shared lifecycle infrastructure only**
 - [x] Create `lib/protocol-lifecycle/types.ts`.
@@ -453,7 +454,8 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [ ] Test full multiplayer flows for BB84, E91, and DPS.
 
 **Bugs / decisions found during implementation**:
-- [ ] Add findings here as they appear.
+- [ ] Adapter caution: keep each `storageKeys` list complete or stale localStorage can survive abandon/replay.
+- [ ] Adapter caution: `getRoomSnapshot()` must stay JSON-safe; add explicit snapshot mappers if stores gain non-serializable values.
 
 ---
 

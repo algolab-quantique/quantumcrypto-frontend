@@ -26,6 +26,7 @@ export type CheckpointRestoreResult =
 
 export interface ProtocolAdapter {
     protocolId: ProtocolId;
+    // Keep complete: missing keys can leave stale localStorage after abandon/replay.
     storageKeys: readonly string[];
     gameDataKey: string;
     playerDataKey: string;
@@ -33,5 +34,6 @@ export interface ProtocolAdapter {
     restoreRoom: (data: RoomSnapshot) => void;
     resetProgress: () => void;
     hydrateProgress: () => void;
+    // Must return JSON-safe room data. Add an explicit snapshot mapper if a store gains non-serializable values.
     getRoomSnapshot: () => RoomSnapshot;
 }

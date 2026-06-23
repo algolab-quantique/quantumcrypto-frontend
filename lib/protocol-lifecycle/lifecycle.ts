@@ -37,18 +37,6 @@ const readStoredObject = (key: string): StoredObjectResult => {
     }
 };
 
-export const toSerializableSnapshot = (state: Record<string, unknown>): RoomSnapshot => {
-    const snapshot: RoomSnapshot = {};
-
-    Object.entries(state).forEach(([key, value]) => {
-        if (typeof value !== 'function') {
-            snapshot[key] = value;
-        }
-    });
-
-    return snapshot;
-};
-
 const resetPlayerModeFlags = () => {
     const playerStore = usePlayerStore.getState();
     playerStore.setPlayingSolo(false);

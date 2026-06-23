@@ -4,7 +4,7 @@ import {
     useBB84ProgressStore,
 } from '@/store/bb84/bb84-progress-store';
 
-import {toSerializableSnapshot} from './lifecycle';
+import {toSerializableSnapshot} from './snapshot';
 import type {ProtocolAdapter, RoomSnapshot} from './types';
 
 export const bb84Adapter: ProtocolAdapter = {

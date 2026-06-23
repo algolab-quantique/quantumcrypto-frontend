@@ -4,7 +4,7 @@ import {
     useDPSProgressStore,
 } from '@/store/dps/dps-progress-store';
 
-import {toSerializableSnapshot} from './lifecycle';
+import {toSerializableSnapshot} from './snapshot';
 import type {ProtocolAdapter, RoomSnapshot} from './types';
 
 export const dpsAdapter: ProtocolAdapter = {
