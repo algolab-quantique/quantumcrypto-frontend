@@ -453,7 +453,34 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [ ] Test full multiplayer flows for BB84, E91, and DPS.
 
 **Bugs / decisions found during implementation**:
-- [ ] Later: move protocol-specific sidebars out of `components/shared/` into their protocol folders.
+- [ ] Add findings here as they appear.
+
+---
+
+### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
+
+**Status**: ⚪ DEFERRED  
+**Date Added**: June 23, 2026  
+**Priority**: ⚪ LOW until lifecycle migration is stable  
+
+**Goal**: clean folder ownership so future contributors can find files by responsibility, not by history.
+
+**Current findings**:
+- `components/shared/` contains protocol-specific UI: `bb84-progression-sidebar.tsx`, `e91-progression-sidebar.tsx`, `dps-progression-sidebar.tsx`.
+- `components/shared/` should mean reusable UI used across protocols, not "old place for mixed components".
+- `commons/http.ts` overlaps semantically with `lib/` / service code and should be reviewed.
+- `app/(main)/services/api.js` is app-route-adjacent service code; decide if it belongs in `lib/` or a dedicated API client folder.
+- Translation/content ownership is split between `lang/` TypeScript line files and `content/` markdown files; document the rule before moving anything.
+
+**Possible target structure**:
+- Move protocol-specific UI to `components/{protocol}/...` when touched for real work.
+- Keep generic UI primitives in `components/ui/`.
+- Keep reusable cross-protocol React components in `components/shared/`.
+- Keep non-React logic in `lib/`.
+- Keep Zustand stores in `store/`.
+- Keep React hooks in `hooks/`.
+
+**Rule**: do this as isolated cleanup commits after BB84/E91/DPS lifecycle migration, unless a file must move for the migration itself.
 
 ---
 
