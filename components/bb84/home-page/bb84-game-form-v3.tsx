@@ -33,7 +33,8 @@ import {
     AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import SoloGameModal from '@/components/bb84/home-page/solo-game-modal';
 import { Gamepad2, Users, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -81,9 +82,8 @@ const BB84MainV3: React.FC = () => {
         setBb84Tab,
         setStep,
         setDisplayedLines,
-        resetProgress,
     } = useBB84ProgressStore();
-    const { restoreGame, resetRoom } = useBB84RoomStore();
+    const { restoreGame } = useBB84RoomStore();
     const router = useRouter();
 
     const getSavedItem = (key: string) => {
@@ -98,9 +98,7 @@ const BB84MainV3: React.FC = () => {
     };
 
     const clearSavedSession = () => {
-        clearBB84LocalStorage();
-        setPlayingSolo(false);
-        setPlayingMultiplayer(false);
+        abandon(bb84Adapter);
     };
 
     useEffect(() => {
@@ -243,10 +241,7 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
-        // Reset solo/multiplayer flags before joining a new game.
-        clearBB84LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        startFresh(bb84Adapter);
 
         setGameCode(gamePIN);
         setPlayerName(playerName);
@@ -268,10 +263,7 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
-        // Reset solo/multiplayer flags before creating a new game.
-        clearBB84LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        startFresh(bb84Adapter);
 
         setCreatingGame(true);
 
@@ -308,7 +300,7 @@ const BB84MainV3: React.FC = () => {
 
     const onCancelRejoin = () => {
         setRejoinDialogOpen(false);
-        clearBB84LocalStorage();
+        abandon(bb84Adapter);
     };
 
     const onRejoin = () => {

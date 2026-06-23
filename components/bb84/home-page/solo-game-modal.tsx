@@ -33,7 +33,8 @@ import {
     generateAlicePhotons, mimicEveIntercept,
 } from '@/lib/bb84/solo-player';
 import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
 import {
     BB84_TEST_MODE,
@@ -62,9 +63,8 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         setAlicePhotons,
         setAliceBits,
         setAliceBases,
-        resetRoom,
     } = useBB84RoomStore();
-    const { pushLines, resetProgress } = useBB84ProgressStore();
+    const { pushLines } = useBB84ProgressStore();
 
     const { localize } = useLanguage();
     const router = useRouter();
@@ -151,9 +151,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         playerName: string,
     ) => {
         void recordGameStats('bb84', 1, { silent: true });
-        clearBB84LocalStorage();
-        resetRoom();
-        resetProgress();
+        startFresh(bb84Adapter);
         setPlayerName(playerName);
         setPlayingSolo(true);
         setEvePresent(eve);
