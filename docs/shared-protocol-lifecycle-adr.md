@@ -400,7 +400,7 @@ sequenceDiagram
 ### Interface
 
 ```typescript
-// shared/protocol-lifecycle/types.ts
+// lib/protocol-lifecycle/types.ts
 
 type Protocol = 'bb84' | 'e91' | 'dps';
 type GameMode = 'solo' | 'multiplayer';
@@ -459,7 +459,7 @@ interface ProtocolAdapter {
 ### Example adapter (BB84)
 
 ```typescript
-// shared/protocol-lifecycle/bb84-adapter.ts
+// lib/protocol-lifecycle/bb84-adapter.ts
 
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {
@@ -496,7 +496,7 @@ export const bb84Adapter: ProtocolAdapter = {
 ### Lifecycle module
 
 ```typescript
-// shared/protocol-lifecycle/lifecycle.ts
+// lib/protocol-lifecycle/lifecycle.ts
 
 import usePlayerStore from '@/store/player-store';
 
@@ -569,7 +569,7 @@ export function abandon(adapter: ProtocolAdapter): void {
 ### Registry
 
 ```typescript
-// shared/protocol-lifecycle/registry.ts
+// lib/protocol-lifecycle/registry.ts
 
 import { bb84Adapter } from './bb84-adapter';
 import { e91Adapter } from './e91-adapter';
@@ -654,7 +654,7 @@ store/b92/
 ### Step 2: Create adapter (~25 lines)
 
 ```typescript
-// shared/protocol-lifecycle/b92-adapter.ts
+// lib/protocol-lifecycle/b92-adapter.ts
 
 import useB92RoomStore from '@/store/b92/b92-room-store';
 import { useB92ProgressStore, hydrateB92ProgressStore } from '@/store/b92/b92-progress-store';
@@ -681,7 +681,7 @@ export const b92Adapter: ProtocolAdapter = {
 ### Step 3: Register
 
 ```typescript
-// shared/protocol-lifecycle/registry.ts — add one line:
+// lib/protocol-lifecycle/registry.ts — add one line:
 import { b92Adapter } from './b92-adapter';
 // ... add to protocolAdapters object
 ```
@@ -739,12 +739,12 @@ app/(main)/b92/
 ### Phase 1: Create shared infrastructure (no behavior change yet)
 
 **Create:**
-- `shared/protocol-lifecycle/types.ts`
-- `shared/protocol-lifecycle/lifecycle.ts`
-- `shared/protocol-lifecycle/bb84-adapter.ts`
-- `shared/protocol-lifecycle/e91-adapter.ts`
-- `shared/protocol-lifecycle/dps-adapter.ts`
-- `shared/protocol-lifecycle/registry.ts`
+- `lib/protocol-lifecycle/types.ts`
+- `lib/protocol-lifecycle/lifecycle.ts`
+- `lib/protocol-lifecycle/bb84-adapter.ts`
+- `lib/protocol-lifecycle/e91-adapter.ts`
+- `lib/protocol-lifecycle/dps-adapter.ts`
+- `lib/protocol-lifecycle/registry.ts`
 
 **Checkpoint:** All files compile. Existing app behavior unchanged. Adapters
 correctly reference existing stores.

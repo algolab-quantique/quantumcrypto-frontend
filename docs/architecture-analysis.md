@@ -378,7 +378,7 @@ sequenceDiagram
 This is NOT an abstract class. It's a plain TypeScript object:
 
 ```typescript
-// === THE INTERFACE (shared/protocol-lifecycle/types.ts) ===
+// === THE INTERFACE (lib/protocol-lifecycle/types.ts) ===
 
 type Protocol = 'bb84' | 'e91' | 'dps';
 type GameMode = 'solo' | 'multiplayer';
@@ -410,7 +410,7 @@ interface ProtocolAdapter {
 ```
 
 ```typescript
-// === ONE ADAPTER (shared/protocol-lifecycle/bb84-adapter.ts) ===
+// === ONE ADAPTER (lib/protocol-lifecycle/bb84-adapter.ts) ===
 
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useBB84ProgressStore, hydrateBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
@@ -438,7 +438,7 @@ export const bb84Adapter: ProtocolAdapter = {
 Then the lifecycle service:
 
 ```typescript
-// === LIFECYCLE SERVICE (shared/protocol-lifecycle/lifecycle.ts) ===
+// === LIFECYCLE SERVICE (lib/protocol-lifecycle/lifecycle.ts) ===
 
 export function clearProtocolStorage(adapter: ProtocolAdapter): void {
     if (typeof window === 'undefined') return;
@@ -582,7 +582,7 @@ With this architecture, adding B92 would be:
    - `store/b92/b92-progress-store.ts`
 
 2. **Create adapter** (small object):
-   - `shared/protocol-lifecycle/b92-adapter.ts`
+   - `lib/protocol-lifecycle/b92-adapter.ts`
 
 3. **Register**:
    - Add to `registry.ts`
@@ -631,7 +631,7 @@ The existing room stores, progress stores, and game stores are well-structured. 
 - Agree on the file structure
 
 ### Phase 1: Create shared infrastructure (no behavior change)
-- Create `shared/protocol-lifecycle/` with types, lifecycle service, storage helpers
+- Create `lib/protocol-lifecycle/` with types, lifecycle service, storage helpers
 - Create all 3 adapters
 - Create registry
 - **Tests**: Ensure the adapters correctly wrap existing stores

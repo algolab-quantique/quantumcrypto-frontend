@@ -411,12 +411,12 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - Record bugs found during the migration here instead of hiding them in memory.
 
 **Phase 1: Shared lifecycle infrastructure only**
-- [x] Create `shared/protocol-lifecycle/types.ts`.
-- [x] Create `shared/protocol-lifecycle/lifecycle.ts`.
-- [x] Create `shared/protocol-lifecycle/bb84-adapter.ts`.
-- [x] Create `shared/protocol-lifecycle/e91-adapter.ts`.
-- [x] Create `shared/protocol-lifecycle/dps-adapter.ts`.
-- [x] Create `shared/protocol-lifecycle/registry.ts`.
+- [x] Create `lib/protocol-lifecycle/types.ts`.
+- [x] Create `lib/protocol-lifecycle/lifecycle.ts`.
+- [x] Create `lib/protocol-lifecycle/bb84-adapter.ts`.
+- [x] Create `lib/protocol-lifecycle/e91-adapter.ts`.
+- [x] Create `lib/protocol-lifecycle/dps-adapter.ts`.
+- [x] Create `lib/protocol-lifecycle/registry.ts`.
 - [x] Build passes.
 - [x] No protocol behavior changes yet.
 
@@ -453,7 +453,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [ ] Test full multiplayer flows for BB84, E91, and DPS.
 
 **Bugs / decisions found during implementation**:
-- [ ] Add findings here as they appear.
+- [ ] Later: move protocol-specific sidebars out of `components/shared/` into their protocol folders.
 
 ---
 
