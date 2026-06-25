@@ -107,6 +107,7 @@ export const restoreCheckpoint = (adapter: ProtocolAdapter): CheckpointRestoreRe
     adapter.restoreRoom(gameData.data);
 
     adapter.hydrateProgress();
+    adapter.hydrateConfig?.();
 
     const checkpointKind = adapter.getRoomSnapshot().gameSuccess === true
         ? 'completed'

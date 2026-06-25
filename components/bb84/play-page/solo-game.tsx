@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
-import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
@@ -50,11 +50,11 @@ const SoloGame = () => {
     ];
 
     const { localize } = useLanguage();
-    const { step, displayedLines, bb84Tab } = useBB84ProgressStore();
-    const { pushLines, setBb84Tab, setStep, setDisplayedLines } = useBB84ProgressStore();
+    const { step, bb84Tab } = useBB84ProgressStore();
+    const { pushLines, setBb84Tab } = useBB84ProgressStore();
     const { playerRole, playerName } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength } = useBB84GameStore();
-    const { restoreGame, gameSuccess } = useBB84RoomStore();
+    const { photonNumber, gameHasEve } = useBB84GameStore();
+    const { gameSuccess } = useBB84RoomStore();
 
     const handleNavCleanup = useCallback(() => {
         abandon(bb84Adapter);
@@ -69,26 +69,10 @@ const SoloGame = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
+        const result = restoreCheckpoint(bb84Adapter);
+        const restoredLines = useBB84ProgressStore.getState().displayedLines;
 
-        // Restore room state (bases, bits, cipher, etc.)
-        const gameData = getItem('bb84GameData');
-        if (gameData) restoreGame(gameData);
-
-        // Restore progress: step, active tab, narrative lines
-        const savedStep = getItem('bb84Step');
-        if (savedStep !== null) setStep(savedStep);
-
-        const savedTab = localStorage.getItem('bb84Tab');
-        if (savedTab) setBb84Tab(savedTab);
-
-        const savedLines = getItem('bb84DisplayedLines');
-        if (savedLines && savedLines.length > 0) {
-            setDisplayedLines(savedLines);
-        } else {
+        if (result.kind === 'missing' || result.kind === 'corrupted' || restoredLines.length === 0) {
             // Fresh session — show role-appropriate welcome messages
             if (playerRole === 'A') {
                 pushLines([
@@ -102,16 +86,6 @@ const SoloGame = () => {
                 ]);
             }
         }
-
-        // Restore game config (set by the lobby before entering this page)
-        const savedPhotonNumber = getItem('bb84PhotonNumber');
-        if (savedPhotonNumber) setPhotonNumber(savedPhotonNumber);
-
-        const savedGameHasEve = getItem('bb84GameHasEve');
-        if (savedGameHasEve !== null) setGameHasEve(savedGameHasEve);
-
-        const savedValidationBitsLength = getItem('bb84ValidationBitsLength');
-        if (savedValidationBitsLength) setValidationBitsLength(savedValidationBitsLength);
     }, []);
 
     return (

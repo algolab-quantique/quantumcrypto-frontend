@@ -432,11 +432,13 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Build passes.
 
 **Phase 2: BB84 pilot**
-- [ ] Phase 2a: migrate only BB84 cleanup/start/exit calls to lifecycle helpers.
-- [ ] Keep BB84 behavior identical to the current stable app.
-- [ ] Test BB84 solo: start, refresh, complete, replay, leave.
-- [ ] Test BB84 multiplayer: create/join, refresh, leave guard, completion, results.
-- [ ] Commit BB84 migration before touching E91.
+- [x] Phase 2a: migrate only BB84 cleanup/start/exit calls to lifecycle helpers.
+- [ ] Phase 2b: migrate BB84 solo restore to `restoreCheckpoint(bb84Adapter)`.
+- [ ] Phase 2c: migrate BB84 multiplayer restore/reconnect after solo restore is stable.
+- [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
+- [ ] Test BB84 solo restore after Phase 2b.
+- [ ] Test BB84 multiplayer restore/reconnect after Phase 2c.
+- [ ] Finish BB84 pilot before touching E91.
 
 **Phase 2a: BB84 safe cleanup/start mapping**
 
@@ -452,8 +454,15 @@ Safe now:
 
 Do not touch yet:
 - [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: keep `getGameProgress()` manual rejoin/restore flow.
-- [ ] `components/bb84/play-page/solo-game.tsx`: keep mount-time refresh restore flow.
 - [ ] `components/bb84/play-page/multi-game.tsx`: keep mount-time refresh/reconnect flow.
+
+**Phase 2b: BB84 solo restore mapping**
+- [x] Add optional `hydrateConfig()` adapter hook for setup/config state.
+- [x] Implement BB84 config hydration for photon count, Eve flag, and validation length.
+- [x] Replace BB84 solo manual room/progress/config restore with `restoreCheckpoint(bb84Adapter)`.
+- [x] Test BB84 solo refresh as Alice and Bob with custom photon count.
+- [x] Test BB84 solo refresh with Eve enabled and disabled.
+- [x] Test BB84 solo completed-game refresh.
 
 Special cases to leave alone:
 - [ ] `lib/bb84/utils.ts`: keep `restartWithoutEve()` until we design an explicit lifecycle action for it.
@@ -480,6 +489,7 @@ Special cases to leave alone:
 **Bugs / decisions found during implementation**:
 - [ ] Adapter caution: keep each `storageKeys` list complete or stale localStorage can survive abandon/replay.
 - [ ] Adapter caution: `getRoomSnapshot()` must stay JSON-safe; add explicit snapshot mappers if stores gain non-serializable values.
+- [ ] BB84 solo setup: photon minimum validation uses `BB84_TEST_MODE` values, but the translated message still says production values `16`/`10`; align copy or disable test mode before deployment.
 
 ---
 
