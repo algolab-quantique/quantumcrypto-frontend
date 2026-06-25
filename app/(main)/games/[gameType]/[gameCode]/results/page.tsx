@@ -11,10 +11,11 @@ import usePlayerStore from '@/store/player-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Home, RotateCcw } from 'lucide-react';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { useSocket } from '@/components/providers/socket-provider';
+import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
 interface ResultsTableProps {
@@ -191,14 +192,16 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
         disconnectPlayRoom();
         // Clean up the completed game's localStorage based on protocol
         if (params.gameType === 'bb84') {
-            clearBB84LocalStorage();
-        } else if (params.gameType === 'dps') {
-            clearDPSLocalStorage();
-        } else if (params.gameType === 'e91') {
-            clearE91LocalStorage();
+            abandon(bb84Adapter);
+        } else {
+            if (params.gameType === 'dps') {
+                clearDPSLocalStorage();
+            } else if (params.gameType === 'e91') {
+                clearE91LocalStorage();
+            }
+            usePlayerStore.getState().setPlayingSolo(false);
+            usePlayerStore.getState().setPlayingMultiplayer(false);
         }
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
         router.replace('/');
     };
 
