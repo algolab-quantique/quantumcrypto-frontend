@@ -502,8 +502,6 @@ Special cases to leave alone:
 - [ ] Home page/dev startup: refreshing quickly after `npm run dev` can land near `/#about` with hero/protocol sections apparently missing or mis-positioned. Likely hash/scroll restoration before the dev layout finishes loading; reproduce separately before fixing.
 - [ ] BB84 multiplayer partner-left gap: fail-closed/quit cleans Alice locally, but Bob and the master results page can remain waiting. Define a backend/frontend leave event policy before fixing.
 
----
-
 ### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
 
 **Status**: ⚪ DEFERRED
@@ -549,6 +547,34 @@ Special cases to leave alone:
 - [ ] Remove `usePreventNavigation` from DPS multiplayer after DPS lifecycle migration is stable.
 - [ ] Keep E91 as the reference for no browser-back trap.
 - [ ] Preserve in-app leave dialogs for all protocols.
+
+---
+
+### 43. 🔴 Generic Multiplayer Partner-Left Lifecycle
+
+**Status**: 🔴 OPEN
+**Priority**: 🔴 HIGH after BB84 Phase 2c restore commit
+
+**Problem**:
+- `PLAYER_LEFT_EVENT` is currently handled only for DPS in `socket-provider.tsx`.
+- BB84/E91 partners can stay blocked when the other player leaves, fails closed, or disconnects.
+- The master/results page can keep waiting forever because abandoned rooms are not represented as completed/abandoned.
+
+**Frontend plan**:
+- [ ] Refactor `PLAYER_LEFT_EVENT` to use `getProtocolAdapter(gameType)` and `abandon(adapter)`.
+- [ ] Route the remaining player to `/${gameType}` instead of `/`.
+- [ ] Remove DPS-specific `localStorage.clear()` from partner-left cleanup.
+- [ ] Preserve toast notification that the partner left.
+
+**Backend/master plan**:
+- [ ] Define an abandoned-room status/event.
+- [ ] Backend should mark abandoned rooms and notify result/master views.
+- [ ] Results page should show abandoned rooms instead of waiting forever.
+
+**Architecture docs**:
+- [ ] Add partner-left/abandon flow to the lifecycle sequence diagram.
+- [ ] Add `PLAYER_LEFT_EVENT` as a shared multiplayer lifecycle event in the ADR.
+- [ ] Document that frontend cleanup and backend abandoned-room status are separate responsibilities.
 
 ---
 
