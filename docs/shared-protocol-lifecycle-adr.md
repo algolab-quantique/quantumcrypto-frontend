@@ -109,9 +109,8 @@ classDiagram
         +restoreRoom(data): void
         +resetProgress(): void
         +hydrateProgress(): void
-        +getRoomStore(): ZustandStore
-        +getProgressStore(): ZustandStore
-        +getGameStore(): ZustandStore
+        +hydrateConfig?(): void
+        +getRoomSnapshot(): RoomSnapshot
     }
 
     class ProtocolLifecycle {
@@ -305,7 +304,7 @@ sequenceDiagram
 
     Component->>Lifecycle: saveCheckpoint(adapter)
     Note over Lifecycle: Phase 1: wraps existing<br/>store persistence
-    Lifecycle->>Adapter: adapter.getRoomStore().getState()
+    Lifecycle->>Adapter: adapter.getRoomSnapshot()
     Lifecycle->>Lifecycle: localStorage.setItem(gameDataKey, snapshot)
     Note over Lifecycle: Phase N (future):<br/>also sync to backend here
 ```
@@ -435,7 +434,7 @@ sequenceDiagram
 // lib/protocol-lifecycle/types.ts
 
 type Protocol = 'bb84' | 'e91' | 'dps';
-type GameMode = 'solo' | 'multiplayer';
+type RoomSnapshot = Record<string, unknown>;
 type MultiplayerSessionIssue = 'invalid' | 'corrupted';
 
 interface MultiplayerSession {
@@ -469,7 +468,7 @@ interface ProtocolAdapter {
     resetRoom(): void;
 
     /** Restore room store from a parsed localStorage snapshot */
-    restoreRoom(data: Record<string, unknown>): void;
+    restoreRoom(data: RoomSnapshot): void;
 
     /** Reset progress store to initial state */
     resetProgress(): void;
@@ -477,28 +476,42 @@ interface ProtocolAdapter {
     /** Hydrate progress store from localStorage */
     hydrateProgress(): void;
 
-    /** Access the Zustand room store (for reading state in lifecycle) */
-    getRoomStore(): { getState(): Record<string, unknown> };
+    /** Hydrate setup/config store values persisted outside gameDataKey */
+    hydrateConfig?(): void;
 
-    /** Access the Zustand progress store */
-    getProgressStore(): { getState(): Record<string, unknown> };
-
-    /** Access the Zustand game store */
-    getGameStore(): { getState(): Record<string, unknown> };
+    /** Return JSON-safe room data for persistence */
+    getRoomSnapshot(): RoomSnapshot;
 }
 ```
+
+Implement `hydrateConfig()` only when a protocol stores setup values outside
+`gameDataKey`, such as photon count, Eve flag, or validation-bit length.
 
 ### Example adapter (BB84)
 
 ```typescript
 // lib/protocol-lifecycle/bb84-adapter.ts
 
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
+import useBB84RoomStore, {type BB84RoomStateSchema} from '@/store/bb84/bb84-room-store';
+import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {
     useBB84ProgressStore,
     hydrateBB84ProgressStore,
 } from '@/store/bb84/bb84-progress-store';
-import useBB84GameStore from '@/store/bb84/bb84-game-store';
+import {toSerializableSnapshot} from './snapshot';
+import type {ProtocolAdapter, RoomSnapshot} from './types';
+
+const readConfigValue = (key: string): unknown => {
+    if (typeof window === 'undefined') return undefined;
+    const raw = localStorage.getItem(key);
+    if (raw === null) return undefined;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return undefined;
+    }
+};
 
 export const bb84Adapter: ProtocolAdapter = {
     protocolId: 'bb84',
@@ -515,13 +528,25 @@ export const bb84Adapter: ProtocolAdapter = {
         'bb84GameHasEve',
         'bb84BobBasisInputs',
     ],
-    getRoomStore: () => useBB84RoomStore,
-    getProgressStore: () => useBB84ProgressStore,
-    getGameStore: () => useBB84GameStore,
     resetRoom: () => useBB84RoomStore.getState().resetRoom(),
-    restoreRoom: (data) => useBB84RoomStore.getState().restoreGame(data),
+    restoreRoom: (data) => useBB84RoomStore.getState().restoreGame(data as Partial<BB84RoomStateSchema>),
     resetProgress: () => useBB84ProgressStore.getState().resetProgress(),
     hydrateProgress: () => hydrateBB84ProgressStore(),
+    hydrateConfig: () => {
+        const gameStore = useBB84GameStore.getState();
+        const photonNumber = readConfigValue('bb84PhotonNumber');
+        const gameHasEve = readConfigValue('bb84GameHasEve');
+        const validationBitsLength = readConfigValue('bb84ValidationBitsLength');
+
+        if (typeof photonNumber === 'number') gameStore.setPhotonNumber(photonNumber);
+        if (typeof gameHasEve === 'boolean') gameStore.setGameHasEve(gameHasEve);
+        if (typeof validationBitsLength === 'number') {
+            gameStore.setValidationBitsLength(validationBitsLength);
+        }
+    },
+    getRoomSnapshot: () => toSerializableSnapshot(
+        useBB84RoomStore.getState() as unknown as RoomSnapshot,
+    ),
 };
 ```
 
@@ -554,14 +579,9 @@ export function saveCheckpoint(adapter: ProtocolAdapter): void {
     if (typeof window === 'undefined') return;
 
     // Phase 1: stores already persist field-by-field via updateAndStore().
-    // This function provides a named lifecycle entry point. The room store state
-    // is acceptable only while it remains a serializable protocol snapshot.
-    // If stores gain actions/transient fields, move snapshot selection into
-    // the adapter instead of persisting raw Zustand state.
-    //
+    // This function provides a named lifecycle entry point.
     // Future (Phase N): this is where backend snapshot sync plugs in.
-    const roomState = adapter.getRoomStore().getState();
-    localStorage.setItem(adapter.gameDataKey, JSON.stringify(roomState));
+    localStorage.setItem(adapter.gameDataKey, JSON.stringify(adapter.getRoomSnapshot()));
 }
 
 export function restoreCheckpoint(
@@ -573,8 +593,9 @@ export function restoreCheckpoint(
 
     adapter.restoreRoom(gameData.data);
     adapter.hydrateProgress();
+    adapter.hydrateConfig?.();
 
-    const kind = adapter.getRoomSnapshot().gameSuccess ? 'completed' : 'active';
+    const kind = adapter.getRoomSnapshot().gameSuccess === true ? 'completed' : 'active';
     const session = restoreMultiplayerSessionIfValid(adapter);
 
     if (session) {
@@ -690,7 +711,8 @@ store/b92/
 
 import useB92RoomStore from '@/store/b92/b92-room-store';
 import { useB92ProgressStore, hydrateB92ProgressStore } from '@/store/b92/b92-progress-store';
-import useB92GameStore from '@/store/b92/b92-game-store';
+import {toSerializableSnapshot} from './snapshot';
+import type {RoomSnapshot} from './types';
 
 export const b92Adapter: ProtocolAdapter = {
     protocolId: 'b92',  // add 'b92' to Protocol type first
@@ -700,13 +722,13 @@ export const b92Adapter: ProtocolAdapter = {
         'b92PlayerData', 'b92PhotonNumber', 'b92Step', 'b92Tab',
         'b92GameData', 'b92DisplayedLines', 'b92GameHasEve',
     ],
-    getRoomStore: () => useB92RoomStore,
-    getProgressStore: () => useB92ProgressStore,
-    getGameStore: () => useB92GameStore,
     resetRoom: () => useB92RoomStore.getState().resetRoom(),
     restoreRoom: (data) => useB92RoomStore.getState().restoreGame(data),
     resetProgress: () => useB92ProgressStore.getState().resetProgress(),
     hydrateProgress: () => hydrateB92ProgressStore(),
+    getRoomSnapshot: () => toSerializableSnapshot(
+        useB92RoomStore.getState() as unknown as RoomSnapshot,
+    ),
 };
 ```
 
