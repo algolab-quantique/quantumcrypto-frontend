@@ -193,6 +193,7 @@ stateDiagram-v2
 | **restoreCheckpoint** | Public restore door for both solo and multiplayer. Restore local checkpoint from `gameDataKey` → hydrate progress → if valid multiplayer identity exists in `playerDataKey`, include it for reconnect. |
 | **complete** | Keep snapshot in localStorage (so refresh restores felicitation). Do NOT auto-navigate to results. |
 | **abandon** | Clear all protocol storage → reset stores → set `playingSolo=false`, `playingMultiplayer=false` |
+| **partnerLeave** | Triggered by `PLAYER_LEFT_EVENT` from backend. Run `abandon(adapter)` → close play socket → route back to `/${gameType}` → show notification. |
 | **clearProtocolStorage** | Remove all keys listed in `adapter.storageKeys` from localStorage |
 
 ### Why `saveCheckpoint()` is included
@@ -391,6 +392,37 @@ sequenceDiagram
         User->>Page: navigate to results route
         Note over Page: Results route loads from backend
     end
+```
+
+### 4.5 Partner Left / Room Abandoned (Multiplayer Only)
+
+This flow handles a player leaving, crashing, or failing closed during a multiplayer game.
+The frontend unblocks the partner locally; the backend owns room status and Master/results updates.
+
+```mermaid
+sequenceDiagram
+    participant Leaver as Leaving Player
+    participant Backend
+    participant Partner as Remaining Partner
+    participant Master as Master Results Page
+
+    Note over Leaver: Player leaves, crashes,<br/>or fails closed
+    Leaver->>Leaver: abandon(adapter) and route to /{gameType}
+    Leaver->>Backend: play socket closes
+
+    Note over Backend: Backend detects player disconnected
+    Backend->>Partner: PLAYER_LEFT_EVENT
+
+    Note over Partner: Generic socket handler receives event
+    Partner->>Partner: getProtocolAdapter(gameType)
+    Partner->>Partner: abandon(adapter)
+    Partner->>Backend: disconnect play room socket
+    Partner->>Partner: show partner-left notification
+    Partner->>Partner: route to /{gameType}
+
+    Backend->>Backend: mark room status as abandoned
+    Backend->>Master: broadcast room state update
+    Note over Master: Show abandoned room instead of waiting forever
 ```
 
 ---
@@ -793,6 +825,7 @@ Same pattern. DPS has the most localStorage keys (19).
 - 3 identical `disconnectXXXWaitingRoom()` → 1 generic `disconnectWaitingRoom(adapter)`
 - 3 similar `connectToWaitingRoom()` branches → 1 generic function
 - 3 similar `startGame()` branches → 1 generic function
+- `PLAYER_LEFT_EVENT` → lookup `getProtocolAdapter(gameType)`, run `abandon(adapter)`, then route to `/${gameType}`
 - Protocol-specific `onmessage` handlers → separate files per protocol
 
 **What stays in socket-provider:**
