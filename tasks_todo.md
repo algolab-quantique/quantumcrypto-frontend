@@ -438,7 +438,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
 - [x] Test BB84 solo restore after Phase 2b.
 - [x] Test BB84 multiplayer restore/reconnect after Phase 2c.
-- [ ] Finish BB84 pilot before touching E91.
+- [ ] Finish BB84 pilot before touching E91: decide whether to migrate or explicitly defer `bb84-game-form-v3.tsx#getGameProgress()`.
 
 **Phase 2a: BB84 safe cleanup/start mapping**
 
@@ -452,8 +452,8 @@ Safe now:
 - [x] `components/bb84/play-page/bb84-progression.tsx`: replace successful solo main-menu cleanup with `abandon(bb84Adapter)`.
 - [x] `app/(main)/games/[gameType]/[gameCode]/results/page.tsx`: replace BB84 results home cleanup with lifecycle cleanup intent.
 
-Do not touch yet:
-- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: keep `getGameProgress()` manual rejoin/restore flow.
+Still open:
+- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: `getGameProgress()` is the last manual BB84 rejoin/restore island. Decide whether it should call `restoreCheckpoint(bb84Adapter)` or stay manual with an explicit ADR note.
 
 **Phase 2b: BB84 solo restore mapping**
 - [x] Add optional `hydrateConfig()` adapter hook for setup/config state.
@@ -501,6 +501,7 @@ Special cases to leave alone:
 - [ ] BB84 solo setup: photon minimum validation uses `BB84_TEST_MODE` values, but the translated message still says production values `16`/`10`; align copy or disable test mode before deployment.
 - [ ] Home page/dev startup: refreshing quickly after `npm run dev` can land near `/#about` with hero/protocol sections apparently missing or mis-positioned. Likely hash/scroll restoration before the dev layout finishes loading; reproduce separately before fixing.
 - [ ] BB84 multiplayer partner-left gap: fail-closed/quit cleans Alice locally, but Bob and the master results page can remain waiting. Define a backend/frontend leave event policy before fixing.
+- [ ] DPS tiny cleanup: remove unused wrong `clearBB84LocalStorage` import from `components/dps/play-page/tabs/alice-messaging-tab.tsx`.
 
 ### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
 
@@ -572,9 +573,9 @@ Special cases to leave alone:
 - [ ] Results page should show abandoned rooms instead of waiting forever.
 
 **Architecture docs**:
-- [ ] Add partner-left/abandon flow to the lifecycle sequence diagram.
-- [ ] Add `PLAYER_LEFT_EVENT` as a shared multiplayer lifecycle event in the ADR.
-- [ ] Document that frontend cleanup and backend abandoned-room status are separate responsibilities.
+- [x] Add partner-left/abandon flow to the lifecycle sequence diagram.
+- [x] Add `PLAYER_LEFT_EVENT` as a shared multiplayer lifecycle event in the ADR.
+- [x] Document that frontend cleanup and backend abandoned-room status are separate responsibilities.
 
 ---
 
