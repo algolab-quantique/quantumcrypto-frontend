@@ -464,6 +464,14 @@ Do not touch yet:
 - [x] Test BB84 solo refresh with Eve enabled and disabled.
 - [x] Test BB84 solo completed-game refresh.
 
+**Phase 2c.1: BB84 multiplayer restore mapping**
+- [x] Document fail-closed rule before code migration.
+- [ ] If `bb84GameData` is missing/corrupt, or `bb84PlayerData` is missing/invalid, fail closed with `abandon(bb84Adapter)` and `router.replace('/bb84')`.
+- [ ] This intentionally avoids the old behavior of reconnecting with valid `bb84PlayerData` but missing room state; the play socket does not resend a full room snapshot on reconnect.
+- [ ] HOC note: `is-connected.tsx` trusts protocol player data in localStorage, so resetting only `playingMultiplayer` is not enough.
+- [ ] Code migration target: `components/bb84/play-page/multi-game.tsx` only; leave `bb84-game-form-v3.tsx#getGameProgress()` manual for this slice.
+- [ ] Tests: active refresh Alice/Bob, completed refresh with no reconnect, corrupt `bb84PlayerData`, and orphan `bb84PlayerData` without `bb84GameData`.
+
 Special cases to leave alone:
 - [ ] `lib/bb84/utils.ts`: keep `restartWithoutEve()` until we design an explicit lifecycle action for it.
 - [ ] `components/bb84/play-page/tabs/basis-tab.tsx`: keep key-too-small restart logic unchanged.
