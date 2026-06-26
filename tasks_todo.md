@@ -433,10 +433,10 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 
 **Phase 2: BB84 pilot**
 - [x] Phase 2a: migrate only BB84 cleanup/start/exit calls to lifecycle helpers.
-- [ ] Phase 2b: migrate BB84 solo restore to `restoreCheckpoint(bb84Adapter)`.
+- [x] Phase 2b: migrate BB84 solo restore to `restoreCheckpoint(bb84Adapter)`.
 - [ ] Phase 2c: migrate BB84 multiplayer restore/reconnect after solo restore is stable.
 - [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
-- [ ] Test BB84 solo restore after Phase 2b.
+- [x] Test BB84 solo restore after Phase 2b.
 - [ ] Test BB84 multiplayer restore/reconnect after Phase 2c.
 - [ ] Finish BB84 pilot before touching E91.
 
