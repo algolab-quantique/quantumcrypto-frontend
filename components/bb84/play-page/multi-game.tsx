@@ -28,17 +28,18 @@ import BasisTab from '@/components/bb84/play-page/tabs/basis-tab';
 import MessagingTab from '@/components/bb84/play-page/tabs/messaging-tab';
 import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
-import { hydrateBB84ProgressStore, useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
+import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
-import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
@@ -56,11 +57,12 @@ const MultiGame = () => {
     ];
 
     const { localize } = useLanguage();
+    const router = useRouter();
     const { step, displayedLines, bb84Tab } = useBB84ProgressStore();
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
-    const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength, setGameCode } = useBB84GameStore();
-    const { restoreGame, gameSuccess } = useBB84RoomStore();
+    const { playerRole, playerName, playingMultiplayer } = usePlayerStore();
+    const { photonNumber, gameHasEve, setGameHasEve, setGameCode } = useBB84GameStore();
+    const { gameSuccess } = useBB84RoomStore();
     const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
 
     const handleNavCleanup = useCallback(() => {
@@ -76,50 +78,29 @@ const MultiGame = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
-
         if (playingMultiplayer && !isPlayRoomConnected) {
             // ── Page refresh: restore state and reconnect if needed ─────────
+            const result = restoreCheckpoint(bb84Adapter);
+            const session = result.kind === 'active' || result.kind === 'completed'
+                ? result.multiplayerSession
+                : undefined;
 
-            const gameData = getItem('bb84GameData');
-
-            // Restore room state (bases, bits, cipher, gameSuccess, etc.)
-            if (gameData) restoreGame(gameData);
-
-            // Restore local UI checkpoint: step, active tab, narrative lines.
-            hydrateBB84ProgressStore();
-
-            // Restore game config (set by the lobby before entering this page)
-            const savedPhotonNumber = getItem('bb84PhotonNumber');
-            if (savedPhotonNumber) setPhotonNumber(savedPhotonNumber);
-
-            const savedGameHasEve = getItem('bb84GameHasEve');
-            if (savedGameHasEve !== null) setGameHasEve(savedGameHasEve);
-
-            const savedValidationBitsLength = getItem('bb84ValidationBitsLength');
-            if (savedValidationBitsLength) setValidationBitsLength(savedValidationBitsLength);
-
-            // Restore player identity from saved session
-            const playerData = getItem('bb84PlayerData');
-            if (playerData?.gameCode && playerData?.role && playerData?.room) {
-                setGameCode(playerData.gameCode);
-                if (playerData.role) usePlayerStore.getState().setPlayerRole(playerData.role);
-                if (playerData.partner) usePlayerStore.getState().setPartner(playerData.partner);
-                if (playerData.playerName) usePlayerStore.getState().setPlayerName(playerData.playerName);
-                if (playerData.gameHasEve !== undefined) setGameHasEve(playerData.gameHasEve);
+            if (session) {
+                setGameCode(session.gameCode);
+                usePlayerStore.getState().setPlayerRole(session.role);
+                if (typeof session.partner === 'string') usePlayerStore.getState().setPartner(session.partner);
+                if (typeof session.playerName === 'string') usePlayerStore.getState().setPlayerName(session.playerName);
+                if (typeof session.gameHasEve === 'boolean') setGameHasEve(session.gameHasEve);
 
                 // Only reconnect WebSocket if game is still in progress.
                 // Completed games restore the félicitations screen locally —
                 // the user navigates to results explicitly via "Voir les résultats".
-                if (!gameData?.gameSuccess) {
-                    connectToPlayRoom('bb84', playerData.gameCode, playerData.role, playerData.room);
+                if (result.kind === 'active') {
+                    connectToPlayRoom('bb84', session.gameCode, session.role, session.room);
                 }
             } else {
-                // No valid session data — cannot reconnect, reset multiplayer flag
-                setPlayingMultiplayer(false);
+                abandon(bb84Adapter);
+                router.replace('/bb84');
             }
         } else if (displayedLines.length === 0) {
             // ── Fresh session: show role-appropriate welcome messages ────────

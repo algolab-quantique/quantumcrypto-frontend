@@ -434,10 +434,10 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 **Phase 2: BB84 pilot**
 - [x] Phase 2a: migrate only BB84 cleanup/start/exit calls to lifecycle helpers.
 - [x] Phase 2b: migrate BB84 solo restore to `restoreCheckpoint(bb84Adapter)`.
-- [ ] Phase 2c: migrate BB84 multiplayer restore/reconnect after solo restore is stable.
+- [x] Phase 2c: migrate BB84 multiplayer restore/reconnect after solo restore is stable.
 - [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
 - [x] Test BB84 solo restore after Phase 2b.
-- [ ] Test BB84 multiplayer restore/reconnect after Phase 2c.
+- [x] Test BB84 multiplayer restore/reconnect after Phase 2c.
 - [ ] Finish BB84 pilot before touching E91.
 
 **Phase 2a: BB84 safe cleanup/start mapping**
@@ -454,7 +454,6 @@ Safe now:
 
 Do not touch yet:
 - [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: keep `getGameProgress()` manual rejoin/restore flow.
-- [ ] `components/bb84/play-page/multi-game.tsx`: keep mount-time refresh/reconnect flow.
 
 **Phase 2b: BB84 solo restore mapping**
 - [x] Add optional `hydrateConfig()` adapter hook for setup/config state.
@@ -466,11 +465,13 @@ Do not touch yet:
 
 **Phase 2c.1: BB84 multiplayer restore mapping**
 - [x] Document fail-closed rule before code migration.
-- [ ] If `bb84GameData` is missing/corrupt, or `bb84PlayerData` is missing/invalid, fail closed with `abandon(bb84Adapter)` and `router.replace('/bb84')`.
-- [ ] This intentionally avoids the old behavior of reconnecting with valid `bb84PlayerData` but missing room state; the play socket does not resend a full room snapshot on reconnect.
-- [ ] HOC note: `is-connected.tsx` trusts protocol player data in localStorage, so resetting only `playingMultiplayer` is not enough.
-- [ ] Code migration target: `components/bb84/play-page/multi-game.tsx` only; leave `bb84-game-form-v3.tsx#getGameProgress()` manual for this slice.
-- [ ] Tests: active refresh Alice/Bob, completed refresh with no reconnect, corrupt `bb84PlayerData`, and orphan `bb84PlayerData` without `bb84GameData`.
+- [x] If `bb84GameData` is missing/corrupt, or `bb84PlayerData` is missing/invalid, fail closed with `abandon(bb84Adapter)` and `router.replace('/bb84')`.
+- [x] This intentionally avoids the old behavior of reconnecting with valid `bb84PlayerData` but missing room state; the play socket does not resend a full room snapshot on reconnect.
+- [x] HOC note: `is-connected.tsx` trusts protocol player data in localStorage, so resetting only `playingMultiplayer` is not enough.
+
+**Phase 2c.2: BB84 multiplayer restore migration**
+- [x] Code migration target: `components/bb84/play-page/multi-game.tsx` only; leave `bb84-game-form-v3.tsx#getGameProgress()` manual for this slice.
+- [x] Tests: active refresh Alice/Bob, completed refresh with no reconnect, corrupt `bb84PlayerData`, and orphan `bb84PlayerData` without `bb84GameData`.
 
 Special cases to leave alone:
 - [ ] `lib/bb84/utils.ts`: keep `restartWithoutEve()` until we design an explicit lifecycle action for it.
@@ -498,6 +499,8 @@ Special cases to leave alone:
 - [ ] Adapter caution: keep each `storageKeys` list complete or stale localStorage can survive abandon/replay.
 - [ ] Adapter caution: `getRoomSnapshot()` must stay JSON-safe; add explicit snapshot mappers if stores gain non-serializable values.
 - [ ] BB84 solo setup: photon minimum validation uses `BB84_TEST_MODE` values, but the translated message still says production values `16`/`10`; align copy or disable test mode before deployment.
+- [ ] Home page/dev startup: refreshing quickly after `npm run dev` can land near `/#about` with hero/protocol sections apparently missing or mis-positioned. Likely hash/scroll restoration before the dev layout finishes loading; reproduce separately before fixing.
+- [ ] BB84 multiplayer partner-left gap: fail-closed/quit cleans Alice locally, but Bob and the master results page can remain waiting. Define a backend/frontend leave event policy before fixing.
 
 ---
 
