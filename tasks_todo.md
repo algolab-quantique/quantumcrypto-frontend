@@ -708,9 +708,9 @@ Special cases to leave alone:
 - Result: multi Back → `/bb84` (good, only broken by Issue 1); solo Back → `/` (skips `/bb84`).
 
 **Issues / slices**:
-- [ ] **P1 — Slice 2: connected-multiplayer auto-bounce.** `bb84-game-form-v3.tsx:164-172`: when `isPlayRoomConnected` + recoverable session, it does `router.replace('/bb84/play')` instead of showing the rejoin dialog. Causes flash-and-stay first Back, weird history, and no rejoin popup from the BB84 card. Fix: show the rejoin dialog even when the socket is alive; on decline, `disconnectPlayRoom()` + `abandon`. Solo unaffected (no socket).
+- [ ] **P1 — Slice 2b (NEXT): connected-multiplayer auto-bounce.** `bb84-game-form-v3.tsx:164-172`: when `isPlayRoomConnected` + recoverable session, it does `router.replace('/bb84/play')` instead of showing the rejoin dialog. Causes flash-and-stay first Back, weird history, and no rejoin popup from the BB84 card. Fix: show the rejoin dialog even when the socket is alive; on decline, `disconnectPlayRoom()` + `abandon`. Solo unaffected (no socket).
 - [ ] **P2 — Slice 3: MultiGame fail-close parity (Task 45 analog).** `multi-game.tsx` only fail-closes under `playingMultiplayer && !isPlayRoomConnected`; otherwise it can render an empty/fresh game. Fix: `abandon` + redirect when there is no valid multiplayer session. Reproduce first.
-- [ ] **OPEN QUESTION (under review): `replace` vs `push` for entering play.** Multi preserves `/bb84` (Back → `/bb84`, good); solo `replace` erases `/bb84` (Back → `/`). Should solo start use `push` for consistency (Back → `/bb84` → rejoin)? Keep `replace` for waiting-room→play (must not Back into a started game's lobby). Awaiting other-agent review before deciding.
+- [x] **RESOLVED & DONE — Slice 2a (commit `c23a24b`):** solo start now uses `push` (`solo-game-modal.tsx`), so solo Back → `/bb84` → rejoin (tested: Back/Forward traverse `[/, /bb84, /bb84/play]` cleanly, rejoin each time, decline clears). Kept `replace` for waiting-room→play. Rule adopted: **replace transient screens, push real destinations.** (Ibra + other agent agreed.)
 
 **Tests observed (2026-07-01)**:
 - Test A (multi, played to félicitation): Back → `/`, Forward → `/bb84/play` empty step 1. → Issue 2 (P2). The landing page clears completed data (`page.tsx:31-33`), so Forward re-enters an emptied session. Exact store/socket trigger to be reproduced.
