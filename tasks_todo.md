@@ -653,7 +653,7 @@ Special cases to leave alone:
 
 ### 45. 🟡 BB84 Solo Play-Page Restore: Fail-Close on Missing/Corrupt Checkpoint
 
-**Status**: 🟡 OPEN — fix AFTER Phase 2d is committed (do NOT bundle into the Phase 2d slice)
+**Status**: ✅ DONE — committed as `4508907` (separate slice, after Phase 2d `c894fbf`)
 **Date Added**: July 1, 2026
 **Priority**: 🟡 MEDIUM — low trigger probability, but produces a frozen screen
 **Found**: during Phase 2d manual testing (corrupt `bb84GameData` + refresh on `/bb84/play`).
@@ -679,13 +679,16 @@ Special cases to leave alone:
   fresh session would leave the same frozen-Bob defect for the `missing`+Bob case.
 
 **Fix plan**:
-- [ ] In `components/bb84/play-page/solo-game.tsx`, on `result.kind === 'missing' || 'corrupted'`:
-      `abandon(bb84Adapter)` → `router.replace('/bb84')` → `return`.
-- [ ] Keep the fresh-welcome branch only for `kind === 'active'` with empty `displayedLines`.
-- [ ] (Optional) Decide whether `restoreCheckpoint` should reset stores on `'corrupted'` so no caller
-      can be left half-restored; caller-side `abandon` already avoids the half-state.
-- [ ] Test: corrupt on `/bb84/play` → redirects to `/bb84`, no frozen screen; corrupt on `/bb84`
-      → normal form; solo Bob via `/`→BB84 rejoin still works; multi Alice/Bob `/bb84` rejoin still works.
+- [x] In `components/bb84/play-page/solo-game.tsx`, on `result.kind === 'missing' || 'corrupted'`:
+      `abandon(bb84Adapter)` → `router.replace('/')` → `return`. Target is `/`, NOT `/bb84`: `abandon`
+      flips `playingSolo` false, so the route swaps SoloGame→(guarded) MultiGame, and `is-connected`
+      finds no session and redirects to `/`. Targeting `/` matches that guard deterministically instead
+      of racing it. (The "swap" never paints MultiGame — `is-connected` renders null then redirects.)
+- [x] Keep the fresh-welcome branch only for `kind === 'active'` with empty `displayedLines`.
+- [ ] (Optional, deferred) Decide whether `restoreCheckpoint` should reset stores on `'corrupted'` so no
+      caller can be left half-restored; caller-side `abandon` already avoids the half-state.
+- [x] Tested: corrupt & missing on `/bb84/play` → redirect to `/`, no frozen screen. Normal solo refresh
+      and completed-solo refresh still restore correctly.
 
 ---
 
