@@ -191,7 +191,13 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
                 },
             ]);
         }
-        router.replace('/bb84/play');
+        // History management: use push (NOT replace) so /bb84 stays in the
+        // history stack. Browser Back from /bb84/play then returns to the
+        // protocol page (which offers rejoin), instead of skipping straight to
+        // '/'. Keep this a push unless we deliberately uniformize navigation to
+        // replace — see tasks_todo.md Task 46 (replace transient screens, push
+        // real destinations).
+        router.push('/bb84/play');
     };
 
     const roleSelection = (
