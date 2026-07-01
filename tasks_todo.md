@@ -438,7 +438,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
 - [x] Test BB84 solo restore after Phase 2b.
 - [x] Test BB84 multiplayer restore/reconnect after Phase 2c.
-- [ ] Finish BB84 pilot before touching E91. DECISION MADE (see Phase 2d): `bb84-game-form-v3.tsx#getGameProgress()` will be DELETED, not migrated — replaced by read-only detection on `/bb84` plus play-page-only restore/reconnect.
+- [ ] Finish BB84 pilot before touching E91. `bb84-game-form-v3.tsx#getGameProgress()` now DELETED (commit `c894fbf`) — replaced by read-only detection on `/bb84` plus play-page-only restore/reconnect. Remaining pilot work before E91: (1) `usePreventNavigation` removal slice + browser-Back rejoin test, (2) Task 45 solo play-page fail-close.
 
 **Phase 2a: BB84 safe cleanup/start mapping**
 
@@ -453,9 +453,10 @@ Safe now:
 - [x] `app/(main)/games/[gameType]/[gameCode]/results/page.tsx`: replace BB84 results home cleanup with lifecycle cleanup intent.
 
 Still open:
-- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: `getGameProgress()` is the last manual BB84 rejoin/restore island. DECISION: delete it in Phase 2d. Detection on `/bb84` becomes read-only; `/bb84/play` stays the sole owner of `restoreCheckpoint(bb84Adapter)` and reconnect.
+- [x] `components/bb84/home-page/bb84-game-form-v3.tsx`: `getGameProgress()` DELETED (commit `c894fbf`). Detection on `/bb84` is now read-only (`detectBB84Session()`); `/bb84/play` is the sole owner of `restoreCheckpoint(bb84Adapter)` and reconnect.
 
 **Phase 2d: BB84 rejoin design decision**
+**Status**: ✅ IMPLEMENTED & manually tested — committed as `c894fbf`. Tested: solo A/B direct `/bb84`, solo via `/`→BB84 card, rejoin cancel→cleared, completed→no dialog, multi A/B rejoin via `/bb84` and `/`. Browser-Back rejoin intentionally NOT tested here (blocked by `usePreventNavigation`; that is the next separate slice). Solo play-page corrupt/missing fail-close is deferred to Task 45.
 Context:
 - Refresh on `/bb84/play` is already handled by `restoreCheckpoint(bb84Adapter)`.
 - Rejoin is for leaving the play route and later landing on `/bb84` with a recoverable active session: browser Back, manual URL entry, closed tab reopened, or dev navigation.
@@ -469,18 +470,18 @@ Current architecture smell (confirmed LIVE, not hypothetical):
 - `getGameProgress()` does not navigate; navigation happens as a side effect when `isPlayRoomConnected` flips and the form effect re-runs. That timing coupling is the fragility to remove.
 - Solo rejoin is currently ABSENT, not imperfect: the rejoin dialog only opens when `bb84PlayerData` exists, and `bb84PlayerData` is written for multiplayer only. `getGameProgress()` never sets `playingSolo`. A solo player returning to `/bb84` gets no rejoin offer today, so Phase 2d solo detection is net-new work, not a refinement.
 
-Accepted direction:
-- [ ] Replace manual form-page rejoin restore with read-only session detection on `/bb84`.
-- [ ] Keep `/bb84/play` as the only owner of `restoreCheckpoint(bb84Adapter)` and multiplayer reconnect.
-- [ ] On rejoin accept, route to `/bb84/play` after setting the existing mode flags correctly:
+Accepted direction (IMPLEMENTED — commit `c894fbf`):
+- [x] Replace manual form-page rejoin restore with read-only session detection on `/bb84` (`detectBB84Session()`).
+- [x] Keep `/bb84/play` as the only owner of `restoreCheckpoint(bb84Adapter)` and multiplayer reconnect. Verified by grep: `connectToPlayRoom('bb84', …)` now only in `multi-game.tsx`.
+- [x] On rejoin accept, route to `/bb84/play` (via `router.replace`) after setting the existing mode flags correctly:
   - solo: `playingSolo=true`, `playingMultiplayer=false`
   - multiplayer: `playingSolo=false`, `playingMultiplayer=true`
-- [ ] On rejoin decline, call `abandon(bb84Adapter)` and stay on the BB84 form page.
-- [ ] Make the rejoin dialog require an explicit accept/decline choice; avoid outside-click/Escape dismissal.
+- [x] On rejoin decline, call `abandon(bb84Adapter)` and stay on the BB84 form page.
+- [x] Make the rejoin dialog require an explicit accept/decline choice; block Escape/outside-click dismissal.
 
 Mode detection for this slice:
 - Multiplayer candidate: valid active `bb84PlayerData` + valid active `bb84GameData`.
-- Solo candidate: `player-storage.state.playingSolo === true` + valid active `bb84GameData`.
+- Solo candidate (IMPLEMENTED, flag-independent): valid active `bb84GameData` + NO valid `bb84PlayerData`. The originally-planned `playingSolo === true` check was dropped after testing: the landing page (`app/(main)/page.tsx:24`) resets `playingSolo` on mount, which hid a recoverable solo session when the user returned through `/`. Keying on the absence of multiplayer identity is robust across that reset.
 - Completed or corrupt data: clear with `abandon(bb84Adapter)`.
 - No recoverable session: show normal BB84 form page.
 
@@ -488,7 +489,7 @@ Do not solve in this slice:
 - Do not create a generic session system yet.
 - Do not rename localStorage keys yet.
 - Do not migrate E91/DPS rejoin yet.
-- Do not remove `usePreventNavigation` until BB84 solo+multiplayer rejoin is tested.
+- Do not remove `usePreventNavigation` in THIS slice. Rejoin is now implemented and tested (except the Back path), so its removal is the NEXT separate slice, where the browser-Back rejoin path gets validated.
 
 **Phase 2b: BB84 solo restore mapping**
 - [x] Add optional `hydrateConfig()` adapter hook for setup/config state.
@@ -544,7 +545,7 @@ Special cases to leave alone:
 - [ ] `socket-provider.tsx` DPS partner-left cleanup is duplicated in `B_BASES_EVENT` and `PLAYER_LEFT_EVENT`; consolidate as part of Task 44.
 - [ ] `RESTART_WITHOUT_EVE_EVENT` manually removes protocol localStorage keys; later design an explicit lifecycle action instead of mixing it into the BB84 rejoin slice.
 - [ ] `is-connected.tsx` currently infers sessions from `player-storage` and `{protocol}PlayerData`; future adapter-based detection should consider `adapter.gameDataKey` too.
-- [ ] BB84 solo completed restore works by restored room state/lines, but `solo-game.tsx` does not explicitly branch on `result.kind === 'completed'`; clarify opportunistically if touching that file.
+- [ ] BB84 solo completed restore works by restored room state/lines, but `solo-game.tsx` does not explicitly branch on `result.kind === 'completed'`; clarify opportunistically if touching that file. Related: Task 45 (solo play-page must fail-close on `missing`/`corrupted`).
 - [ ] `multi-game.tsx` reads `session.gameHasEve` through the generic session index signature; leave for now, but avoid spreading protocol-specific fields into the generic type without a real need.
 
 ### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
@@ -647,6 +648,44 @@ Special cases to leave alone:
 - [ ] Consolidate the duplicated DPS partner-left cleanup in `B_BASES_EVENT` and `PLAYER_LEFT_EVENT` into one path.
 - [ ] Verify BB84/E91/`player-storage` survive a DPS partner-left event.
 - [ ] Align with Task 43 (generic `PLAYER_LEFT_EVENT` via `getProtocolAdapter(gameType)` + `abandon(adapter)`) so this is not implemented twice. Task 44 is the safety-critical subset that can ship now; Task 43 remains the full partner-left lifecycle that needs the backend contract.
+
+---
+
+### 45. 🟡 BB84 Solo Play-Page Restore: Fail-Close on Missing/Corrupt Checkpoint
+
+**Status**: 🟡 OPEN — fix AFTER Phase 2d is committed (do NOT bundle into the Phase 2d slice)
+**Date Added**: July 1, 2026
+**Priority**: 🟡 MEDIUM — low trigger probability, but produces a frozen screen
+**Found**: during Phase 2d manual testing (corrupt `bb84GameData` + refresh on `/bb84/play`).
+
+**Symptom**:
+- On `/bb84/play`, corrupting `bb84GameData` then reloading (as solo Bob) shows a stuck
+  "Bienvenue dans BB84 ! / En attente des photons d'Alice..." screen, with photon count reverted
+  to the store default 20. Bob waits forever because solo has no Alice/socket to send photons.
+
+**Root cause (pre-existing, NOT caused by Phase 2d — this is the play page, not the `/bb84` form)**:
+- `restoreCheckpoint(bb84Adapter)` returns `{kind:'corrupted'}` and exits early
+  (`lib/protocol-lifecycle/lifecycle.ts`), before `restoreRoom`/`hydrateProgress`/`hydrateConfig`.
+- `components/bb84/play-page/solo-game.tsx` treats `missing` and `corrupted` as a "fresh session"
+  and pushes Bob's welcome+waiting lines, but never regenerates Alice's photons or fails closed.
+- Result: empty room + default photon count (`bb84-game-store` has no persistence) + Bob stuck.
+
+**Design note — `missing` should ALSO fail-close (correction to the other agent's proposal)**:
+- A legitimate fresh solo start is NOT `missing`: the solo modal writes `bb84GameData = {evePresent}`
+  before `router.replace('/bb84/play')`, so a real fresh start restores as `active`. The fresh-Alice
+  welcome is driven by `kind === 'active' && displayedLines.length === 0`, not by `missing`.
+- Therefore, on the play page, BOTH `missing` and `corrupted` are anomalous → fail-close, mirroring
+  `multi-game.tsx` (no valid session → `abandon` + `router.replace('/bb84')`). Keeping `missing` as a
+  fresh session would leave the same frozen-Bob defect for the `missing`+Bob case.
+
+**Fix plan**:
+- [ ] In `components/bb84/play-page/solo-game.tsx`, on `result.kind === 'missing' || 'corrupted'`:
+      `abandon(bb84Adapter)` → `router.replace('/bb84')` → `return`.
+- [ ] Keep the fresh-welcome branch only for `kind === 'active'` with empty `displayedLines`.
+- [ ] (Optional) Decide whether `restoreCheckpoint` should reset stores on `'corrupted'` so no caller
+      can be left half-restored; caller-side `abandon` already avoids the half-state.
+- [ ] Test: corrupt on `/bb84/play` → redirects to `/bb84`, no frozen screen; corrupt on `/bb84`
+      → normal form; solo Bob via `/`→BB84 rejoin still works; multi Alice/Bob `/bb84` rejoin still works.
 
 ---
 
