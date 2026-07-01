@@ -692,6 +692,36 @@ Special cases to leave alone:
 
 ---
 
+### 46. 🟡 BB84 Browser-Back / Navigation Hardening (post-`usePreventNavigation` removal)
+
+**Status**: 🟡 OPEN — surfaced while testing the trap-removal slice
+**Date Added**: July 1, 2026
+**Priority**: mixed (see per-item priorities)
+
+**Prerequisite (P0)**: Slice 1 = remove `usePreventNavigation` from BB84 solo+multi. In the working tree, solo-tested; pending its own checks (in-app title dialog, mid-game refresh, completed-game refresh, old confirm never reappears) before commit.
+
+**Verified navigation model (grounded in code)**:
+- Landing card → `/bb84`: `<Link href="/bb84">` (push).
+- `/bb84` → `/bb84/waiting-room` (multi): `socket-provider.tsx:288` `router.push('bb84/waiting-room')`.
+- `/bb84/waiting-room` → `/bb84/play` (game start): `navigateToPlayPage` `router.replace` (kills the lobby; `/bb84` preserved).
+- `/bb84` → `/bb84/play` (solo start): `solo-game-modal.tsx:194` `router.replace` (overwrites `/bb84`).
+- Result: multi Back → `/bb84` (good, only broken by Issue 1); solo Back → `/` (skips `/bb84`).
+
+**Issues / slices**:
+- [ ] **P1 — Slice 2: connected-multiplayer auto-bounce.** `bb84-game-form-v3.tsx:164-172`: when `isPlayRoomConnected` + recoverable session, it does `router.replace('/bb84/play')` instead of showing the rejoin dialog. Causes flash-and-stay first Back, weird history, and no rejoin popup from the BB84 card. Fix: show the rejoin dialog even when the socket is alive; on decline, `disconnectPlayRoom()` + `abandon`. Solo unaffected (no socket).
+- [ ] **P2 — Slice 3: MultiGame fail-close parity (Task 45 analog).** `multi-game.tsx` only fail-closes under `playingMultiplayer && !isPlayRoomConnected`; otherwise it can render an empty/fresh game. Fix: `abandon` + redirect when there is no valid multiplayer session. Reproduce first.
+- [ ] **OPEN QUESTION (under review): `replace` vs `push` for entering play.** Multi preserves `/bb84` (Back → `/bb84`, good); solo `replace` erases `/bb84` (Back → `/`). Should solo start use `push` for consistency (Back → `/bb84` → rejoin)? Keep `replace` for waiting-room→play (must not Back into a started game's lobby). Awaiting other-agent review before deciding.
+
+**Tests observed (2026-07-01)**:
+- Test A (multi, played to félicitation): Back → `/`, Forward → `/bb84/play` empty step 1. → Issue 2 (P2). The landing page clears completed data (`page.tsx:31-33`), so Forward re-enters an emptied session. Exact store/socket trigger to be reproduced.
+- Test B (multi, results table): Back → `/`, Forward → results table restored. **Works, no action** — results is a backend route (`app/(main)/games/[gameType]/[gameCode]/results`).
+
+**Deeper root (deferred, already tracked)**: `is-connected.tsx` ignores `{protocol}GameData`; `/bb84/play` uses the `playingSolo ? Solo : Multi` mode smell. The explicit `mode` refactor would remove the class of these edges. Big refactor — after the pilot.
+
+**Priority order agreed with Ibra**: P0 land Slice 1 → P1 Slice 2 (auto-bounce) → P2 Slice 3 (multi fail-close) → then Task 44 (DPS `localStorage.clear()`) → deferred is-connected/mode refactor.
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
 **Not a code bug** — this is a testing methodology issue.
