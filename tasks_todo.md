@@ -591,7 +591,7 @@ Special cases to leave alone:
 - `usePreventNavigation` currently implements only the fragile `popstate` back-button trap; its `beforeunload` code is commented out.
 
 **Future cleanup**:
-- [ ] Remove BB84 `usePreventNavigation` popstate trap only after BB84 solo+multiplayer rejoin is implemented and tested.
+- [x] Removed BB84 `usePreventNavigation` popstate trap from solo+multi play (commit `042354a`, Task 46 Slice 1). Browser Back now follows normal history; refresh+rejoin handle recovery.
 - [ ] Remove `usePreventNavigation` from DPS multiplayer after DPS lifecycle migration is stable.
 - [ ] Keep E91 as the reference for no browser-back trap.
 - [ ] Preserve in-app leave dialogs for all protocols.
@@ -698,7 +698,7 @@ Special cases to leave alone:
 **Date Added**: July 1, 2026
 **Priority**: mixed (see per-item priorities)
 
-**Prerequisite (P0)**: Slice 1 = remove `usePreventNavigation` from BB84 solo+multi. In the working tree, solo-tested; pending its own checks (in-app title dialog, mid-game refresh, completed-game refresh, old confirm never reappears) before commit.
+**Prerequisite (P0)**: ✅ DONE — Slice 1 removed `usePreventNavigation` from BB84 solo+multi (commit `042354a`). Manually tested: in-app title "Quitter la partie ?" dialog (Rester/Quitter), mid-game refresh restore (solo + multi), completed-game refresh félicitation, and the old native "Quitter la partie ? Votre progression sera perdue." confirm no longer appears. Next active work: **P1 / Slice 2**.
 
 **Verified navigation model (grounded in code)**:
 - Landing card → `/bb84`: `<Link href="/bb84">` (push).
