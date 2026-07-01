@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab from '@/components/bb84/play-page/tabs/alice-exchange-tab';
 import BobExchangeTab from '@/components/bb84/play-page/tabs/bob-exchange-tab';
@@ -50,6 +51,7 @@ const SoloGame = () => {
     ];
 
     const { localize } = useLanguage();
+    const router = useRouter();
     const { step, bb84Tab } = useBB84ProgressStore();
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
     const { playerRole, playerName } = usePlayerStore();
@@ -70,10 +72,25 @@ const SoloGame = () => {
         hasInitialized.current = true;
 
         const result = restoreCheckpoint(bb84Adapter);
-        const restoredLines = useBB84ProgressStore.getState().displayedLines;
 
-        if (result.kind === 'missing' || result.kind === 'corrupted' || restoredLines.length === 0) {
-            // Fresh session — show role-appropriate welcome messages
+        // A legitimate fresh solo start restores as 'active' (the solo modal
+        // writes bb84GameData before navigating here). So 'missing' or 'corrupted'
+        // on the play page means there is nothing valid to restore — fail-close
+        // instead of rendering a half-fresh, stuck game.
+        //
+        // Target '/' (not '/bb84'): abandon() flips playingSolo false, so this
+        // route swaps SoloGame -> MultiGame, and the is-connected guard then finds
+        // no session and redirects to '/'. Matching that guard keeps the outcome
+        // deterministic instead of racing it toward '/bb84'.
+        if (result.kind === 'missing' || result.kind === 'corrupted') {
+            abandon(bb84Adapter);
+            router.replace('/');
+            return;
+        }
+
+        const restoredLines = useBB84ProgressStore.getState().displayedLines;
+        if (restoredLines.length === 0) {
+            // Fresh active session with no transcript yet (e.g. Alice) — welcome lines.
             if (playerRole === 'A') {
                 pushLines([
                     { title: 'component.exchange.welcome' },
