@@ -438,7 +438,7 @@ Protocol room data stays protocol-specific. The shared layer only owns the lifec
 - [x] Keep BB84 behavior identical for migrated cleanup/start/exit paths.
 - [x] Test BB84 solo restore after Phase 2b.
 - [x] Test BB84 multiplayer restore/reconnect after Phase 2c.
-- [ ] Finish BB84 pilot before touching E91: decide whether to migrate or explicitly defer `bb84-game-form-v3.tsx#getGameProgress()`.
+- [ ] Finish BB84 pilot before touching E91. DECISION MADE (see Phase 2d): `bb84-game-form-v3.tsx#getGameProgress()` will be DELETED, not migrated — replaced by read-only detection on `/bb84` plus play-page-only restore/reconnect.
 
 **Phase 2a: BB84 safe cleanup/start mapping**
 
@@ -453,7 +453,42 @@ Safe now:
 - [x] `app/(main)/games/[gameType]/[gameCode]/results/page.tsx`: replace BB84 results home cleanup with lifecycle cleanup intent.
 
 Still open:
-- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: `getGameProgress()` is the last manual BB84 rejoin/restore island. Decide whether it should call `restoreCheckpoint(bb84Adapter)` or stay manual with an explicit ADR note.
+- [ ] `components/bb84/home-page/bb84-game-form-v3.tsx`: `getGameProgress()` is the last manual BB84 rejoin/restore island. DECISION: delete it in Phase 2d. Detection on `/bb84` becomes read-only; `/bb84/play` stays the sole owner of `restoreCheckpoint(bb84Adapter)` and reconnect.
+
+**Phase 2d: BB84 rejoin design decision**
+Context:
+- Refresh on `/bb84/play` is already handled by `restoreCheckpoint(bb84Adapter)`.
+- Rejoin is for leaving the play route and later landing on `/bb84` with a recoverable active session: browser Back, manual URL entry, closed tab reopened, or dev navigation.
+- In-app BB84 title/protocol navigation is already guarded; if the user explicitly chooses "Quitter", `abandon(bb84Adapter)` should clear the session and no rejoin should appear.
+- Detection must be read-only. Do not call `restoreCheckpoint()` from the form page just to decide whether a dialog should appear, because it mutates stores.
+
+Current architecture smell (confirmed LIVE, not hypothetical):
+- Two restore owners already exist and already diverge:
+  - `/bb84/play` uses clean `restoreCheckpoint(bb84Adapter)` — validates corrupt `bb84GameData`, returns explicit `{kind}`.
+  - `/bb84` uses old manual `getGameProgress()` — hand-reads 7 keys, no corrupt-data validation, reconnects from the form page.
+- `getGameProgress()` does not navigate; navigation happens as a side effect when `isPlayRoomConnected` flips and the form effect re-runs. That timing coupling is the fragility to remove.
+- Solo rejoin is currently ABSENT, not imperfect: the rejoin dialog only opens when `bb84PlayerData` exists, and `bb84PlayerData` is written for multiplayer only. `getGameProgress()` never sets `playingSolo`. A solo player returning to `/bb84` gets no rejoin offer today, so Phase 2d solo detection is net-new work, not a refinement.
+
+Accepted direction:
+- [ ] Replace manual form-page rejoin restore with read-only session detection on `/bb84`.
+- [ ] Keep `/bb84/play` as the only owner of `restoreCheckpoint(bb84Adapter)` and multiplayer reconnect.
+- [ ] On rejoin accept, route to `/bb84/play` after setting the existing mode flags correctly:
+  - solo: `playingSolo=true`, `playingMultiplayer=false`
+  - multiplayer: `playingSolo=false`, `playingMultiplayer=true`
+- [ ] On rejoin decline, call `abandon(bb84Adapter)` and stay on the BB84 form page.
+- [ ] Make the rejoin dialog require an explicit accept/decline choice; avoid outside-click/Escape dismissal.
+
+Mode detection for this slice:
+- Multiplayer candidate: valid active `bb84PlayerData` + valid active `bb84GameData`.
+- Solo candidate: `player-storage.state.playingSolo === true` + valid active `bb84GameData`.
+- Completed or corrupt data: clear with `abandon(bb84Adapter)`.
+- No recoverable session: show normal BB84 form page.
+
+Do not solve in this slice:
+- Do not create a generic session system yet.
+- Do not rename localStorage keys yet.
+- Do not migrate E91/DPS rejoin yet.
+- Do not remove `usePreventNavigation` until BB84 solo+multiplayer rejoin is tested.
 
 **Phase 2b: BB84 solo restore mapping**
 - [x] Add optional `hydrateConfig()` adapter hook for setup/config state.
@@ -502,6 +537,15 @@ Special cases to leave alone:
 - [ ] Home page/dev startup: refreshing quickly after `npm run dev` can land near `/#about` with hero/protocol sections apparently missing or mis-positioned. Likely hash/scroll restoration before the dev layout finishes loading; reproduce separately before fixing.
 - [ ] BB84 multiplayer partner-left gap: fail-closed/quit cleans Alice locally, but Bob and the master results page can remain waiting. Define a backend/frontend leave event policy before fixing.
 - [ ] DPS tiny cleanup: remove unused wrong `clearBB84LocalStorage` import from `components/dps/play-page/tabs/alice-messaging-tab.tsx`.
+- [ ] Naming/design cleanup: `{protocol}PlayerData` really means `{protocol}MultiplayerSession`; document or rename later. Note: the code's own type is already named `MultiplayerSession` (`lib/protocol-lifecycle/types.ts`), so only the localStorage key string and `adapter.playerDataKey` lag behind — the rename is conceptually cheap, but still needs a storage-key migration shim on deploy.
+- [ ] Mode cleanup: `/bb84/play` currently renders `playingSolo ? <SoloGame /> : <MultiGame />`; future architecture should use an explicit session mode instead of treating "not solo" as multiplayer. GUARDRAIL: when `mode` is introduced it must REPLACE the two booleans (`playingSolo`, `playingMultiplayer`), NOT add a third field beside them — a third field triples the drift surface. This is the "bigger refactor" (touches `is-connected.tsx`, socket-provider role assignment, all three protocols); defer, do not do it in Phase 2d.
+- [ ] Protocol entry-flow target: `/protocol` -> choose mode -> create session -> `/protocol/play` -> render from explicit mode.
+- [ ] DPS safety bug — PROMOTED to Task 44 (high-priority standalone, not normal deferred cleanup): DPS partner-left paths call `localStorage.clear()`, wiping BB84/E91/player-storage too. Do as an isolated fix after BB84 Phase 2d rejoin is tested.
+- [ ] `socket-provider.tsx` DPS partner-left cleanup is duplicated in `B_BASES_EVENT` and `PLAYER_LEFT_EVENT`; consolidate as part of Task 44.
+- [ ] `RESTART_WITHOUT_EVE_EVENT` manually removes protocol localStorage keys; later design an explicit lifecycle action instead of mixing it into the BB84 rejoin slice.
+- [ ] `is-connected.tsx` currently infers sessions from `player-storage` and `{protocol}PlayerData`; future adapter-based detection should consider `adapter.gameDataKey` too.
+- [ ] BB84 solo completed restore works by restored room state/lines, but `solo-game.tsx` does not explicitly branch on `result.kind === 'completed'`; clarify opportunistically if touching that file.
+- [ ] `multi-game.tsx` reads `session.gameHasEve` through the generic session index signature; leave for now, but avoid spreading protocol-specific fields into the generic type without a real need.
 
 ### 41. ⚪ Repository Structure Cleanup After Lifecycle Migration
 
@@ -542,12 +586,15 @@ Special cases to leave alone:
 - Guard in-app protocol/title navigation with the custom `Rester dans la partie` / `Quitter la partie` dialog.
 - Do not hijack browser Back with fake `pushState` traps.
 - Trust refresh/rejoin recovery instead of trying to lock users into the page.
+- `beforeunload` is native browser behavior, but it also fires on refresh; do not re-enable it while refresh restore is expected to be silent.
+- `usePreventNavigation` currently implements only the fragile `popstate` back-button trap; its `beforeunload` code is commented out.
 
 **Future cleanup**:
-- [ ] Remove `usePreventNavigation` from BB84 solo and multiplayer after BB84 lifecycle migration is stable.
+- [ ] Remove BB84 `usePreventNavigation` popstate trap only after BB84 solo+multiplayer rejoin is implemented and tested.
 - [ ] Remove `usePreventNavigation` from DPS multiplayer after DPS lifecycle migration is stable.
 - [ ] Keep E91 as the reference for no browser-back trap.
 - [ ] Preserve in-app leave dialogs for all protocols.
+- [ ] Do not re-enable `beforeunload` unless we accept that refresh will show the native browser warning too.
 
 ---
 
@@ -576,6 +623,30 @@ Special cases to leave alone:
 - [x] Add partner-left/abandon flow to the lifecycle sequence diagram.
 - [x] Add `PLAYER_LEFT_EVENT` as a shared multiplayer lifecycle event in the ADR.
 - [x] Document that frontend cleanup and backend abandoned-room status are separate responsibilities.
+
+---
+
+### 44. 🔴 DPS Safety: Remove Cross-Protocol `localStorage.clear()` from Partner-Left Paths
+
+**Status**: 🔴 OPEN — standalone high-priority safety fix (NOT normal deferred cleanup)
+**Date Added**: July 1, 2026
+**Priority**: 🔴 HIGH
+**Ordering**: Small isolated fix AFTER BB84 Phase 2d rejoin is tested. Do not mix into Phase 2d.
+
+**Why this is not ordinary cleanup**:
+- This is a data-safety bug, not a naming/refactor smell. Its blast radius does not respect the BB84 pilot ordering.
+- DPS socket partner-left paths call `localStorage.clear()`, which wipes ALL app storage — BB84, E91, and `player-storage` — not just DPS keys.
+- A DPS multiplayer partner leaving can therefore destroy an unrelated protocol's saved session.
+
+**Findings**:
+- `localStorage.clear()` appears in DPS socket partner-left handling in `components/providers/socket-provider.tsx`.
+- The DPS partner-left cleanup is duplicated across `B_BASES_EVENT` and `PLAYER_LEFT_EVENT`; both must be fixed and ideally consolidated.
+
+**Fix plan**:
+- [ ] Replace `localStorage.clear()` with `abandon(dpsAdapter)` (clears only DPS keys via `adapter.storageKeys`) in DPS partner-left paths.
+- [ ] Consolidate the duplicated DPS partner-left cleanup in `B_BASES_EVENT` and `PLAYER_LEFT_EVENT` into one path.
+- [ ] Verify BB84/E91/`player-storage` survive a DPS partner-left event.
+- [ ] Align with Task 43 (generic `PLAYER_LEFT_EVENT` via `getProtocolAdapter(gameType)` + `abandon(adapter)`) so this is not implemented twice. Task 44 is the safety-critical subset that can ship now; Task 43 remains the full partner-left lifecycle that needs the backend contract.
 
 ---
 
