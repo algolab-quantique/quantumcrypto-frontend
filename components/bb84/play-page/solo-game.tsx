@@ -16,7 +16,7 @@
  * internally on the `playingSolo` flag from the player store.
  */
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab from '@/components/bb84/play-page/tabs/alice-exchange-tab';
@@ -26,14 +26,12 @@ import MessagingTab from '@/components/bb84/play-page/tabs/messaging-tab';
 import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
-import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
 import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
@@ -56,14 +54,6 @@ const SoloGame = () => {
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
     const { playerRole, playerName } = usePlayerStore();
     const { photonNumber, gameHasEve } = useBB84GameStore();
-    const { gameSuccess } = useBB84RoomStore();
-
-    const handleNavCleanup = useCallback(() => {
-        abandon(bb84Adapter);
-    }, []);
-
-    // Warn user on browser back / close / refresh while game is in progress
-    usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     // Restore game state from localStorage on mount (page refresh recovery)
     // OR initialize welcome messages for a fresh session
