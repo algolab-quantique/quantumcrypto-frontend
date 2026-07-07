@@ -718,7 +718,7 @@ Special cases to leave alone:
 - Test A (multi, played to félicitation): Back → `/`, Forward → `/bb84/play` empty step 1. → Issue 2 (P2). The landing page clears completed data (`page.tsx:31-33`), so Forward re-enters an emptied session. **Superseded by the 2026-07-07 repro** in the Slice 3 item above: post-Slice-2a the Back now lands on `/bb84` (not `/`), and the emptied session is cleared by the form effect's `completed` branch — Forward then renders the phantom fresh game. Trigger now understood (socket stays live).
 - Test B (multi, results table): Back → `/`, Forward → results table restored. **Works, no action** — results is a backend route (`app/(main)/games/[gameType]/[gameCode]/results`).
 
-**Deeper root (deferred, already tracked)**: `is-connected.tsx` ignores `{protocol}GameData`; `/bb84/play` uses the `playingSolo ? Solo : Multi` mode smell. The explicit `mode` refactor would remove the class of these edges. Big refactor — after the pilot.
+**Deeper root → now owned by Task 48** (session single-source-of-truth refactor). `is-connected.tsx` ignores `{protocol}GameData`; `/bb84/play` uses the `playingSolo ? Solo : Multi` mode smell; socket-as-proof-of-session. The full diagnosis + staged slice plan (A–E) live in Task 48.
 
 **Priority order agreed with Ibra**: P0 land Slice 1 → P1 Slice 2 (auto-bounce) → P2 Slice 3 (multi fail-close) → then Task 44 (DPS `localStorage.clear()`) → deferred is-connected/mode refactor.
 
@@ -741,6 +741,43 @@ Special cases to leave alone:
 - [ ] **P3 — datum for the deferred socket refactor**: `components/providers/socket-provider.tsx` is 1,555 lines, one context for all three protocols. Existing decision "socket-provider refactor last" (Task 40) stands; recorded here so the size is known.
 
 **What the review found GOOD (keep doing)**: `lib/protocol-lifecycle/` design (small, typed results, fail-close, SSR-safe); tracker discipline + ADR; clean tsc/lint; consistent `store/{protocol}/{game,progress,room}` layout; physics isolated in `lib/{protocol}`; exemplary small-slice commit history.
+
+---
+
+### 48. 🔴 Session single-source-of-truth refactor (the "design battle")
+
+**Status**: 🔴 OPEN — analysis confirmed, staged, NOT started. Big cross-protocol design change.
+**Date Added**: July 7, 2026
+**Priority**: P1 (structural; the root of the whole phantom/empty/wrong-mode game class)
+**Origin**: surfaced while finishing Task 46 Slice 3a. The phantom-game bug was a *symptom*; this task is the disease. Supersedes/absorbs the "Deeper root (deferred)" note under Task 46 and the deferred **Slice 3b**.
+**May get external review**: Ibra may also run another AI agent over this design before we execute — keep the diagnosis self-contained here so it can be reviewed cold.
+
+**The diagnosis (confirmed against code):** there is **no single source of truth** for "am I in a valid game session, and is it solo or multi?". It is answered by **4 readers with different logic**, over state written by **scattered writers**.
+
+*Readers (4 inconsistent definitions):*
+- `components/hoc/is-connected.tsx:67` — `hasLocalSession || playingSolo || playingMultiplayer || isWaitingRoomConnected || isPlayRoomConnected`, else `redirect('/')`.
+- `components/bb84/play-page/multi-game.tsx:71` — `playingMultiplayer && !isPlayRoomConnected` → restore-or-fail-close; **else render fresh** (the phantom path).
+- form effect `components/bb84/home-page/bb84-game-form-v3.tsx:145` — `detectBB84Session()` (storage-kind based).
+- play page `app/(main)/bb84/play/page.tsx:94` — `playingSolo ? <SoloGame/> : <MultiGame/>`.
+
+*Writers (scattered):* `socket-provider.tsx:401/421/448` sets `playingMultiplayer:true` as a **side-effect of socket events**; also `solo-game-modal.tsx:156`, `bb84-game-form-v3.tsx:276/279`. Session data itself lives in **3 places**: `bb84PlayerData`, `bb84GameData`, and `player-storage` booleans — plus the live socket. Every reader stitches these differently → when two disagree, a gap opens = the bug.
+
+**Two root smells to kill:**
+1. **Socket-as-proof-of-session** — `is-connected` + `multi-game` treat socket liveness as an access signal. (Almost certainly a hydration/timing-race hack: "session not in storage yet but socket live → let them in.") *This is why 3a is only a band-aid: it removed the last lying term in one path, but the "socket ⇒ session" rule is still in the code — any future path that leaves a socket open without a session re-opens the phantom.*
+2. **Mode-as-mutable-global-flag** — `playingSolo`/`playingMultiplayer` are booleans many writers keep "in sync" with reality. Mode should be **derived from the session**, not a drifting flag.
+
+**Concrete symptoms of the tangle (evidence, not opinion):** `multi-game.tsx`'s own `router.replace('/bb84')` fail-close is now **dead code** (is-connected redirects first); `is-connected` **computes `protocol` from the path (line 21) but throws it away** and sends everyone to `/` instead of `/${protocol}`; this shape is the **pilot** E91/DPS copy via the same shared HOC.
+
+**Target design:** ONE source of truth = the persisted session read through the lifecycle. Every guard asks the same question via the same resolver. Mode + socket are **derived from** the session, never authoritative. No valid session → fail-close to `/${protocol}`.
+
+**Confirmed slice plan (reproduce-first, tight, cross-protocol-aware — CONFIRMED with Ibra 2026-07-07):**
+- [ ] **Slice A (spike, read-only, START HERE):** verify *where/when* the multiplayer session is persisted at normal game start (socket-provider events) relative to navigation. Load-bearing fact: decides whether the socket OR-terms in `is-connected` are truly just race-cover (and thus safely removable). No behavior change.
+- [ ] **Slice B:** add ONE typed `detectSession(adapter)` resolver in the lifecycle (consolidate `detectBB84Session` + `restoreCheckpoint` into `{ none | active-solo | active-multi | completed | corrupt }`). Pure + unit-testable. No callers switched yet.
+- [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol.
+- [ ] **Slice D:** switch the BB84 play route to the single guard + session-derived mode; delete MultiGame's now-dead fail-close.
+- [ ] **Slice E:** once BB84 is proven, drop the socket OR-terms (the race they papered over must be closed by then via Slice A's finding); replicate to E91/DPS.
+
+**Cross-refs**: Task 40 (socket-provider refactor stays last), Task 46 (browser-Back hardening — done, this is its deeper root), Task 47 (lifecycle adoption ⅓ done; this refactor is the natural vehicle to push BB84→100% then E91/DPS).
 
 ---
 
