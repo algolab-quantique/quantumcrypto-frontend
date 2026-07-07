@@ -147,7 +147,13 @@ const BB84MainV3: React.FC = () => {
         // Stale, completed, corrupt, or orphaned session on the home page: clear
         // it. /bb84/play (restoreCheckpoint) is the only restore owner, so the
         // form page never restores — it only detects and routes.
+        // Also close the play socket (safe no-op if already closed): otherwise a
+        // finished multiplayer game keeps its socket alive, so a browser-Forward
+        // back into /bb84/play would render a phantom fresh game the sockets can
+        // still drive. Disconnecting routes that Forward into MultiGame's
+        // existing fail-close (Slice 3a).
         if (kind === 'corrupt' || kind === 'completed') {
+            disconnectPlayRoom();
             abandon(bb84Adapter);
             return;
         }
