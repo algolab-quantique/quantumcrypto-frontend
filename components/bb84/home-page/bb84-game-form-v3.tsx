@@ -152,34 +152,20 @@ const BB84MainV3: React.FC = () => {
             return;
         }
 
-        const applyModeFlags = (mode: 'multiplayer' | 'solo') => {
-            if (mode === 'multiplayer') {
-                setPlayingMultiplayer(true);
-                setPlayingSolo(false);
-            } else {
-                setPlayingSolo(true);
-                setPlayingMultiplayer(false);
-            }
-        };
-
-        // Play socket still alive (e.g. browser Back without teardown): bounce
-        // straight back to the play page instead of showing a rejoin dialog.
-        if (isPlayRoomConnected) {
-            if (kind === 'multiplayer' || kind === 'solo') {
-                applyModeFlags(kind);
-                router.replace('/bb84/play');
-            } else {
-                disconnectPlayRoom();
-            }
+        // Live play socket but nothing recoverable: clean up the stray socket.
+        if (isPlayRoomConnected && kind === 'none') {
+            disconnectPlayRoom();
             return;
         }
 
-        // Recoverable session but socket is closed: offer an explicit rejoin.
+        // Recoverable session (socket alive or not): offer an explicit rejoin
+        // instead of auto-bouncing, so browser Back lands on /bb84 and the user
+        // chooses rejoin or leave.
         if (kind === 'multiplayer' || kind === 'solo') {
             setDetectedKind(kind);
             setRejoinDialogOpen(true);
         }
-    }, [isPlayRoomConnected, disconnectPlayRoom, router, setPlayingMultiplayer, setPlayingSolo]);
+    }, [isPlayRoomConnected, disconnectPlayRoom]);
 
     const formSchema = z.object({
         playerName: z.string({
@@ -270,6 +256,9 @@ const BB84MainV3: React.FC = () => {
 
     const onCancelRejoin = () => {
         setRejoinDialogOpen(false);
+        // Decline = leave for real: close the play socket if it is still alive
+        // (safe no-op otherwise) before clearing the session.
+        disconnectPlayRoom();
         abandon(bb84Adapter);
     };
 
@@ -284,7 +273,10 @@ const BB84MainV3: React.FC = () => {
             setPlayingSolo(true);
             setPlayingMultiplayer(false);
         }
-        router.replace('/bb84/play');
+        // Rule (Slice 2a): replace transient screens, PUSH real destinations. /bb84 and
+        // /bb84/play are both real, so push — replace would overwrite /bb84 and leave a
+        // stale forward /bb84/play, breaking the browser back/forward stack after rejoin.
+        router.push('/bb84/play');
     };
 
     return (

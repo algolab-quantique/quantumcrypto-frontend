@@ -708,17 +708,38 @@ Special cases to leave alone:
 - Result: multi Back → `/bb84` (good, only broken by Issue 1); solo Back → `/` (skips `/bb84`).
 
 **Issues / slices**:
-- [ ] **P1 — Slice 2b (NEXT): connected-multiplayer auto-bounce.** `bb84-game-form-v3.tsx:164-172`: when `isPlayRoomConnected` + recoverable session, it does `router.replace('/bb84/play')` instead of showing the rejoin dialog. Causes flash-and-stay first Back, weird history, and no rejoin popup from the BB84 card. Fix: show the rejoin dialog even when the socket is alive; on decline, `disconnectPlayRoom()` + `abandon`. Solo unaffected (no socket).
-- [ ] **P2 — Slice 3: MultiGame fail-close parity (Task 45 analog).** `multi-game.tsx` only fail-closes under `playingMultiplayer && !isPlayRoomConnected`; otherwise it can render an empty/fresh game. Fix: `abandon` + redirect when there is no valid multiplayer session. Reproduce first.
+- [x] **RESOLVED — Slice 2b (tested green, uncommitted WIP): connected-multiplayer auto-bounce removed.** `bb84-game-form-v3.tsx`: the mount effect no longer `router.replace('/bb84/play')`-bounces when `isPlayRoomConnected` + recoverable session; it now shows the rejoin dialog even with a live socket, and *decline* (`onCancelRejoin`) does `disconnectPlayRoom()` + `abandon`. Ibra tested multi (Alice+Bob): M1 Back → `/bb84` + rejoin dialog + full restore ✅; M2 decline → clean socket `CloseEvent {code: 1000, wasClean: true}` ✅. Known/deferred: on decline the *partner* stays blocked (no partner-left signal) — Tasks 27/43.
+- [x] **RESOLVED — Slice 2c (tested green, uncommitted WIP): rejoin `replace` → `push`.** `onRejoin` did `router.replace('/bb84/play')`; from `/bb84` (after Back) that overwrote `/bb84` and left a stale forward `/bb84/play`, so history became `[/, /bb84/play, /bb84/play]` — forward stayed active but no-op'd then died, Back no-op'd once then jumped to landing. Fixed: `replace` → **`push`** per the Slice 2a rule (both `/bb84` and `/bb84/play` are real destinations); push keeps a clean, bounded `[/, /bb84, /bb84/play]` even on repeat rejoin. Ibra tested multi (Alice+Bob): repeated Back → `/bb84` → Rejoin at several game steps, **forward arrow no longer stuck-active** ✅.
+- [ ] **P2 — Slice 3: MultiGame fail-close parity (Task 45 analog) — NOW REPRODUCED (2026-07-07).** Repro (multi, played to félicitation): Back → `/bb84` (completed session abandoned by the form effect), Forward → `/bb84/play` renders a **fresh empty step-1 game** that Alice+Bob can actually play as a phantom "separate game" — because the sockets are still live. **Two coupled causes:** (1) the form effect's `kind === 'completed'` branch (`bb84-game-form-v3.tsx:150`) calls `abandon()` but NOT `disconnectPlayRoom()`, so the play sockets linger and keep exchanging messages; (2) `multi-game.tsx` fail-closes only under `playingMultiplayer && !isPlayRoomConnected`, so with the socket still alive but the session cleared it renders fresh instead of bouncing. Fix: fail-close in MultiGame on *no valid multiplayer session* (regardless of socket state) → `abandon` + redirect; and make the completed/corrupt abandon also `disconnectPlayRoom()`. (Folds in the old "Noticed/deferred" socket-linger item below.)
 - [x] **RESOLVED & DONE — Slice 2a (commit `c23a24b`):** solo start now uses `push` (`solo-game-modal.tsx`), so solo Back → `/bb84` → rejoin (tested: Back/Forward traverse `[/, /bb84, /bb84/play]` cleanly, rejoin each time, decline clears). Kept `replace` for waiting-room→play. Rule adopted: **replace transient screens, push real destinations.** (Ibra + other agent agreed.)
 
 **Tests observed (2026-07-01)**:
-- Test A (multi, played to félicitation): Back → `/`, Forward → `/bb84/play` empty step 1. → Issue 2 (P2). The landing page clears completed data (`page.tsx:31-33`), so Forward re-enters an emptied session. Exact store/socket trigger to be reproduced.
+- Test A (multi, played to félicitation): Back → `/`, Forward → `/bb84/play` empty step 1. → Issue 2 (P2). The landing page clears completed data (`page.tsx:31-33`), so Forward re-enters an emptied session. **Superseded by the 2026-07-07 repro** in the Slice 3 item above: post-Slice-2a the Back now lands on `/bb84` (not `/`), and the emptied session is cleared by the form effect's `completed` branch — Forward then renders the phantom fresh game. Trigger now understood (socket stays live).
 - Test B (multi, results table): Back → `/`, Forward → results table restored. **Works, no action** — results is a backend route (`app/(main)/games/[gameType]/[gameCode]/results`).
 
 **Deeper root (deferred, already tracked)**: `is-connected.tsx` ignores `{protocol}GameData`; `/bb84/play` uses the `playingSolo ? Solo : Multi` mode smell. The explicit `mode` refactor would remove the class of these edges. Big refactor — after the pilot.
 
 **Priority order agreed with Ibra**: P0 land Slice 1 → P1 Slice 2 (auto-bounce) → P2 Slice 3 (multi fail-close) → then Task 44 (DPS `localStorage.clear()`) → deferred is-connected/mode refactor.
+
+---
+
+### 47. 🟡 Codebase Review Findings (2026-07-06 full review)
+
+**Status**: 🟡 OPEN — net-new findings only; overlaps cross-referenced, not duplicated
+**Date Added**: July 6, 2026
+**Priority**: mixed (per item)
+
+**Context**: full codebase/architecture review (tsc clean, `next lint` clean, structure + duplication + lifecycle-adoption audit). Findings already tracked elsewhere are NOT repeated here: DPS `usePreventNavigation` trap → Tasks 37+42 (blocked on real DPS crashes — remove only after those are fixed); repo folder ownership → Task 41; lifecycle rollout to E91/DPS → Tasks 26/40; socket-provider mode-boolean smell → Task 40 guardrail note; TEST_MODE copy mismatch → Task 40 list.
+
+**Net-new findings**:
+- [ ] **P1 — `*_TEST_MODE = true` is a production landmine.** All three constants files (`bb84-constants.ts:35`, `e91-constants.ts:10`, `dps-constants.ts:22`) ship `TEST_MODE = true` with a hand-edit TODO. Replace the three booleans with one env-driven flag (e.g. `NEXT_PUBLIC_QC_TEST_MODE`), so production builds cannot forget it. (Related copy-alignment already in Task 40.)
+- [ ] **P1 — zero test infrastructure.** No runner, no tests anywhere. First target: `lib/protocol-lifecycle/lifecycle.ts` — pure, typed, and the crown jewel. ~10 unit tests on `restoreCheckpoint` (missing/corrupted/invalid/active/completed × session states) + `abandon`/`startFresh` would protect every protocol at once. Suggest vitest (zero-config with TS).
+- [ ] **P2 — lifecycle adoption is ⅓ done (measured).** Raw `localStorage` refs in components: BB84 **7**, E91 **15**, DPS **72**. ADR still `DRAFT/REVIEW`. When BB84 pilot settles: mark ADR accepted, then migrate DPS first (worst offender + still trap-guarded), then E91. (Execution tracked in 26/40; this item = the measurement + order rationale.)
+- [ ] **P3 — monster pages**: `app/(main)/bb84_card/page.tsx` (1,175 lines), `app/(main)/dps/page.tsx` (953), `app/(main)/e91/page.tsx` (581) — content-heavy pages, split when next touched (no dedicated slice).
+- [ ] **P3 — root-level clutter** (extends Task 41's folder work): `Hebergeurs_to_remove_later.md`, `TEST_PHOTON_VALUES.md`, `BACKEND_TEST_CHANGES.md`, `cryptoquantique_dns_setup_guide.md` → move to `docs/` or delete; **two tailwind configs** (`tailwind.config.js` AND `.ts`) → keep one.
+- [ ] **P3 — datum for the deferred socket refactor**: `components/providers/socket-provider.tsx` is 1,555 lines, one context for all three protocols. Existing decision "socket-provider refactor last" (Task 40) stands; recorded here so the size is known.
+
+**What the review found GOOD (keep doing)**: `lib/protocol-lifecycle/` design (small, typed results, fail-close, SSR-safe); tracker discipline + ADR; clean tsc/lint; consistent `store/{protocol}/{game,progress,room}` layout; physics isolated in `lib/{protocol}`; exemplary small-slice commit history.
 
 ---
 
