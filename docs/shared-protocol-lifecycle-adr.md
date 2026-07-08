@@ -1042,6 +1042,14 @@ Staged in Task 48 (Slices A–E), reproduce-first, no big-bang. Slice A is a rea
 the socket-de-authorization (Slice E) applies to **play routes only**, leaving the
 waiting-room guard separate.
 
+Slice D (the guard rework) is itself split into D1–D5 (see Task 48). A key **policy** it
+settles: a **completed session is kept until Home / Replay / new-game — NOT abandoned on
+browser-Back**. Returning to the play route then restores the félicitation screen (via the
+completed checkpoint) instead of fail-closing; fail-closing a re-enterable completed page is
+what produced the duplicate-history jank in the reverted Slice C. The socket is still
+disconnected on completed-Back (that part of the earlier fix stands); only the *checkpoint*
+is preserved, and `startFresh` (new game / replay) and the landing page still clear it.
+
 The interim detector used by guards (Slice B) is the read-only, non-hydrating classifier:
 
 ```typescript
