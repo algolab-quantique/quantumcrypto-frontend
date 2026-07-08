@@ -167,35 +167,35 @@ export const detectSession = (adapter: ProtocolAdapter): DetectedSession => {
 };
 
 export const restoreCheckpoint = (adapter: ProtocolAdapter): CheckpointRestoreResult => {
+    // Task 48 D1: classify via the single source of truth (detectSession), then
+    // hydrate. This keeps guard and page in agreement. detectSession is stricter
+    // than the old inline logic: a broken multiplayer identity now yields
+    // 'corrupted' (fail-close) instead of a local 'active' restore carrying a
+    // multiplayerSessionIssue. Callers only read kind + multiplayerSession, so the
+    // return contract is unchanged.
+    const detected = detectSession(adapter);
+
+    if (detected.kind === 'none') return {kind: 'missing'};
+    if (detected.kind === 'corrupt') return {kind: 'corrupted'};
+
+    // restoreCheckpoint keeps its contract: it restores an ACTUAL checkpoint.
+    // detectSession may classify DPS solo as 'solo' from the dpsPlayerData marker
+    // alone (no dpsGameData) as route-detection migration-compat — but restore must
+    // NOT synthesize a checkpoint from that marker. Require real gameData first, so
+    // "no checkpoint" stays {kind:'missing'} and DPS drift is not baked in here.
     const gameData = readStoredObject(adapter.gameDataKey);
     if (gameData.kind === 'missing') return {kind: 'missing'};
     if (gameData.kind === 'corrupted') return {kind: 'corrupted'};
 
     adapter.restoreRoom(gameData.data);
-
     adapter.hydrateProgress();
     adapter.hydrateConfig?.();
 
-    const checkpointKind = adapter.getRoomSnapshot().gameSuccess === true
-        ? 'completed'
-        : 'active';
-    const sessionResult = restoreMultiplayerSession(adapter);
+    const checkpointKind = detected.completed ? 'completed' : 'active';
 
-    if (sessionResult.kind === 'valid') {
-        return {
-            kind: checkpointKind,
-            multiplayerSession: sessionResult.session,
-        };
-    }
-
-    if (sessionResult.kind === 'invalid' || sessionResult.kind === 'corrupted') {
-        return {
-            kind: checkpointKind,
-            multiplayerSessionIssue: sessionResult.kind,
-        };
-    }
-
-    return {kind: checkpointKind};
+    return detected.kind === 'multi'
+        ? {kind: checkpointKind, multiplayerSession: detected.session}
+        : {kind: checkpointKind};
 };
 
 export const complete = (adapter: ProtocolAdapter) => {
