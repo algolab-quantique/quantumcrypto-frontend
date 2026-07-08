@@ -144,17 +144,24 @@ const BB84MainV3: React.FC = () => {
     useEffect(() => {
         const kind = detectBB84Session();
 
-        // Stale, completed, corrupt, or orphaned session on the home page: clear
-        // it. /bb84/play (restoreCheckpoint) is the only restore owner, so the
-        // form page never restores — it only detects and routes.
-        // Also close the play socket (safe no-op if already closed): otherwise a
-        // finished multiplayer game keeps its socket alive, so a browser-Forward
-        // back into /bb84/play would render a phantom fresh game the sockets can
-        // still drive. Disconnecting routes that Forward into MultiGame's
-        // existing fail-close (Slice 3a).
-        if (kind === 'corrupt' || kind === 'completed') {
+        // Corrupt session on the home page: unrecoverable, so clear it (and close
+        // any stray socket — safe no-op if already closed). /bb84/play
+        // (restoreCheckpoint) is the only restore owner; the form page only detects
+        // and routes.
+        if (kind === 'corrupt') {
             disconnectPlayRoom();
             abandon(bb84Adapter);
+            return;
+        }
+
+        // Completed session on the home page (Slice D2): KEEP the checkpoint so a
+        // browser-Forward back into /bb84/play restores the félicitation screen
+        // instead of fail-closing (which produced the flash + duplicate-/bb84 jank).
+        // Still disconnect the play socket — Slice 3a's phantom-game fix stands; we
+        // only preserve the checkpoint data, not the connection. Completed data is
+        // cleared later by startFresh (new game / replay) or the landing page.
+        if (kind === 'completed') {
+            disconnectPlayRoom();
             return;
         }
 
