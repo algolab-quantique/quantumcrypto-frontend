@@ -136,8 +136,14 @@ export const detectSession = (adapter: ProtocolAdapter): DetectedSession => {
             : {kind: 'corrupt'};
     }
 
-    // DPS-solo compatibility: parseable playerData explicitly marked solo, no room.
+    // DPS-solo compatibility (migration only, scoped to DPS): DPS solo writes
+    // dpsPlayerData {playingSolo:true, no room} and no dpsGameData. Gated to
+    // protocolId === 'dps' so this drift stays a DPS-specific compat rule and does
+    // NOT become a cross-protocol rule — for BB84/E91 a playingSolo-marked playerData
+    // is not a valid solo signal and falls through to corrupt below. Remove when DPS
+    // solo is standardized (ADR §11).
     if (
+        adapter.protocolId === 'dps' &&
         playerData.kind === 'found' &&
         playerData.data.playingSolo === true &&
         !isNonEmptyString(playerData.data.room)

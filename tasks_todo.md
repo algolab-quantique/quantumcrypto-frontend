@@ -787,7 +787,7 @@ Special cases to leave alone:
       2. corrupted `playerData` ⇒ **corrupt**
       3. valid multi identity (`gameCode`+`role`+`room`) **and** `gameData` found ⇒ **multi**
       4. valid multi identity but **no** `gameData` ⇒ **corrupt** (orphan)
-      5. DPS-solo compat: parseable `playerData` with `playingSolo:true` and no `room` ⇒ **solo**
+      5. DPS-solo compat (**gated to `protocolId === 'dps'`**): parseable `playerData` with `playingSolo:true` and no `room` ⇒ **solo** (BB84/E91 do NOT get this branch)
       6. `gameData` found **and** no `playerData` ⇒ **solo** (BB84/E91)
       7. `gameData` found **and** parseable non-solo/non-multi `playerData` ⇒ **corrupt** (NOT solo)
       8. else ⇒ **none**; `completed` ⟺ stored `gameData.gameSuccess === true` (read from JSON, no hydration). **BB84-first.**

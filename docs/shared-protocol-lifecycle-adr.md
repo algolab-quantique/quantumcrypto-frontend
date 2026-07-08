@@ -1020,9 +1020,11 @@ Applied to session storage, the **target standard**:
 This is almost certainly old drift, not a DPS-specific need.
 - **Short term (Slice B):** `detectSession` MUST tolerate the DPS solo shape — a *parseable*
   `playerData` **explicitly marked `playingSolo: true` with no `room`** is **solo**, even with no
-  `gameData` checkpoint. (A parseable `playerData` that is neither a solo marker nor a valid multi
-  identity is **corrupt/none**, NOT solo — so broken multiplayer never silently degrades to
-  SoloGame.) This is **migration compatibility**, not the target.
+  `gameData` checkpoint. This branch is **gated to `adapter.protocolId === 'dps'`** so the drift
+  stays a DPS-specific compat rule and never becomes a cross-protocol one. (For BB84/E91, and for
+  any parseable `playerData` that is neither this DPS marker nor a valid multi identity, the result
+  is **corrupt/none**, NOT solo — so broken multiplayer never silently degrades to SoloGame.) This
+  is **migration compatibility**, not the target.
 - **At DPS migration:** rewrite DPS solo to the standard (no `dpsPlayerData` in solo) unless a
   real DPS-specific reason surfaces.
 
