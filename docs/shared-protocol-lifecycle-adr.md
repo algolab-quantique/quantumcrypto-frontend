@@ -944,7 +944,70 @@ If the answers differ between BB84, E91, and DPS, the implementation is drifting
 
 ---
 
-## 11. Relationship to Existing Documents
+## 11. Session Detection and Route Guards
+
+> **Added**: July 2026 — tracked as **Task 48** in [tasks_todo.md](../tasks_todo.md).
+> This section extends §10 from *data* source-of-truth to *route-access* source-of-truth.
+> It is add-only and does not revise earlier sections, but where noted it **supersedes**
+> the mode-flag mechanism (`resetPlayerModeFlags`) as the authority for mode.
+
+### Why this section exists
+
+Today, "Am I in a valid session, and is it solo or multiplayer?" is answered by **four
+readers with different logic** — `components/hoc/is-connected.tsx`, the play page's
+`playingSolo ? SoloGame : MultiGame` switch, the form's `detectBB84Session()`, and
+`multi-game.tsx`'s own restore check — over state written by **scattered writers**
+(socket-provider side-effects, modals, the form). When two readers disagree, a gap opens
+(e.g. the phantom empty game after Back→Forward at félicitation). The fix is **one resolver
+that every guard reads**.
+
+### Rules
+
+1. **One resolver.** A single `detectSession(adapter)` answers all three questions:
+   *can this route render?*, *solo or multiplayer?*, *reconnect or not?* Guards and pages
+   read it; none re-derives session truth independently.
+
+2. **Play routes require a valid persisted session.** `/${protocol}/play` may render only
+   when `detectSession` reports a valid session. No valid session → fail-close, redirect to
+   `/${protocol}` (already the intent of §4.3's `{kind:'missing'} → redirect to protocol home`).
+
+3. **A live play socket is NOT route authorization.** For *route access*, validity comes from
+   the persisted checkpoint/identity, never from `isPlayRoomConnected`. This is **narrower**
+   than §10's "backend room + WebSocket is the source of truth for shared protocol *facts*",
+   which remains true for reconciling in-game state during active play — access ≠ fact
+   reconciliation. Rationale (verified): the session is persisted *before* play navigation —
+   socket-provider `ROLES_EVENT` writes `${protocol}PlayerData` and the mode flag, then calls
+   `connectToPlayRoom`, then the play socket's `CONNECTED_EVENT` navigates — so the socket
+   term in the guard was only ever race-cover.
+
+4. **Waiting-room routes are different (guards must be path-aware).** The lobby has no full
+   play session yet and is socket-driven, so a waiting-room guard MAY use
+   `isWaitingRoomConnected` as an access signal. The play-route rule (require a persisted
+   session) must therefore **not** be applied blanket to waiting-room routes. `is-connected.tsx`
+   is shared by both today; splitting it or making it path-aware is part of the work.
+
+5. **Mode is derived from the session, not the flags.** Solo-vs-multiplayer comes from
+   `detectSession`, not from the drifting `playingSolo`/`playingMultiplayer` booleans. This
+   **supersedes** those booleans as the mode authority (`resetPlayerModeFlags()` shrinks to
+   cleanup, not truth). The play page's `playingSolo ? Solo : Multi` switch is replaced by
+   session-derived mode.
+
+6. **The resolver must be BB84-first and protocol-careful.** Session shape is NOT uniform:
+   DPS solo persists `dpsPlayerData` (with a `playingSolo` marker), while BB84/E91 solo persist
+   **no** `*PlayerData` at all. So "player-data key exists ⇒ multiplayer" is **false** for DPS.
+   The resolver must key multiplayer off a valid multiplayer identity (`role` + `room`), not
+   the mere presence of the player-data key. Build and prove it on BB84 first; generalize to
+   E91/DPS only after.
+
+### Implementation
+
+Staged in Task 48 (Slices A–E), reproduce-first, no big-bang. Slice A is a read-only spike;
+the socket-de-authorization (Slice E) applies to **play routes only**, leaving the
+waiting-room guard separate.
+
+---
+
+## 12. Relationship to Existing Documents
 
 | Document | Status | Action |
 |----------|--------|--------|

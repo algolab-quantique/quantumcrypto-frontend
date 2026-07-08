@@ -770,14 +770,16 @@ Special cases to leave alone:
 
 **Target design:** ONE source of truth = the persisted session read through the lifecycle. Every guard asks the same question via the same resolver. Mode + socket are **derived from** the session, never authoritative. No valid session → fail-close to `/${protocol}`.
 
-**Confirmed slice plan (reproduce-first, tight, cross-protocol-aware — CONFIRMED with Ibra 2026-07-07):**
-- [ ] **Slice A (spike, read-only, START HERE):** verify *where/when* the multiplayer session is persisted at normal game start (socket-provider events) relative to navigation. Load-bearing fact: decides whether the socket OR-terms in `is-connected` are truly just race-cover (and thus safely removable). No behavior change.
-- [ ] **Slice B:** add ONE typed `detectSession(adapter)` resolver in the lifecycle (consolidate `detectBB84Session` + `restoreCheckpoint` into `{ none | active-solo | active-multi | completed | corrupt }`). Pure + unit-testable. No callers switched yet.
-- [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol.
-- [ ] **Slice D:** switch the BB84 play route to the single guard + session-derived mode; delete MultiGame's now-dead fail-close.
-- [ ] **Slice E:** once BB84 is proven, drop the socket OR-terms (the race they papered over must be closed by then via Slice A's finding); replicate to E91/DPS.
+**Reviewed by two agents + Ibra (2026-07-08).** Claude + GPT 5.5 both endorsed the diagnosis and target. GPT's one substantive correction — **accepted and folded in below**: the socket-de-authorization must be **play-routes-only**, because `is-connected.tsx` is shared with the *waiting-room* pages, which legitimately DO use `isWaitingRoomConnected` (the lobby has no persisted play session yet). Verified against code: waiting-room writes no PlayerData/flags; `ROLES_EVENT` (`socket-provider.tsx:401-408`) persists `${protocol}PlayerData` + the mode flag BEFORE `connectToPlayRoom`, and the play socket's `CONNECTED_EVENT` (line 534) navigates after — so for play routes the socket term is pure race-cover. Also verified: **DPS solo writes `dpsPlayerData` (with a `playingSolo` marker); BB84/E91 solo write none** — so the resolver must key "multiplayer" off a valid `role`+`room` identity, not the presence of the player-data key. Architecture rules now documented in **ADR §11 "Session Detection and Route Guards"** (`docs/shared-protocol-lifecycle-adr.md`).
 
-**Cross-refs**: Task 40 (socket-provider refactor stays last), Task 46 (browser-Back hardening — done, this is its deeper root), Task 47 (lifecycle adoption ⅓ done; this refactor is the natural vehicle to push BB84→100% then E91/DPS).
+**Confirmed slice plan (reproduce-first, tight, cross-protocol-aware):**
+- [ ] **Slice A (spike, read-only, START HERE):** verify *where/when* the multiplayer session is persisted at normal game start (socket-provider events) relative to navigation. Load-bearing fact for how aggressive Slices D/E can be. (Already substantially confirmed in the 2026-07-08 review — this slice writes up the per-protocol findings, incl. waiting-room needs and solo-shape differences.) No behavior change.
+- [ ] **Slice B:** add ONE typed `detectSession(adapter)` resolver in the lifecycle (consolidate `detectBB84Session` + `restoreCheckpoint` into `{ none | active-solo | active-multi | completed | corrupt }`). Pure + unit-testable. No callers switched yet. **BB84-first; do NOT over-generalize** — key multiplayer off valid `role`+`room`, NOT player-data-key presence (DPS solo persists `dpsPlayerData`).
+- [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol. (Aligns code to ADR §4.3, which already says redirect-to-protocol-home.)
+- [ ] **Slice D:** switch the BB84 play route to the single guard + session-derived mode; delete MultiGame's now-dead fail-close.
+- [ ] **Slice E (path-aware — CORRECTED):** remove socket-as-session **from play routes only**; the **waiting-room guard stays separate** (may keep `isWaitingRoomConnected`). Prove on BB84, then replicate to E91/DPS. (NOT "drop socket OR-terms globally" — that would break lobby access.)
+
+**Cross-refs**: ADR §11 (the documented rules), Task 40 (socket-provider refactor stays last), Task 46 (browser-Back hardening — done, this is its deeper root), Task 47 (lifecycle adoption ⅓ done; this refactor is the natural vehicle to push BB84→100% then E91/DPS).
 
 ---
 
