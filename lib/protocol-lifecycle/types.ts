@@ -24,6 +24,20 @@ export type CheckpointRestoreResult =
     | ({kind: 'active'} & RestoredCheckpoint)
     | ({kind: 'completed'} & RestoredCheckpoint);
 
+/**
+ * Read-only session classification for route guards (Task 48 / ADR §11).
+ *
+ * `detectSession(adapter)` returns this without hydrating stores, reconnecting,
+ * resetting, or navigating — callers decide what to do (e.g. reconnect only when
+ * `kind === 'multi' && !completed`). `completed` is an attribute, not a separate
+ * mode. Converges toward the target `ProtocolSession` shape (ADR §11).
+ */
+export type DetectedSession =
+    | {kind: 'none'}
+    | {kind: 'corrupt'}
+    | {kind: 'solo'; completed: boolean}
+    | {kind: 'multi'; completed: boolean; session: MultiplayerSession};
+
 export interface ProtocolAdapter {
     protocolId: ProtocolId;
     // Keep complete: missing keys can leave stale localStorage after abandon/replay.

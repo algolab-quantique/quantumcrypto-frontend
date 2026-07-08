@@ -774,7 +774,7 @@ Special cases to leave alone:
 
 **Confirmed slice plan (reproduce-first, tight, cross-protocol-aware):**
 - [x] **Slice A (DONE 2026-07-08, read-only spike):** verified where/when the session is persisted vs navigation, waiting-room access needs, and solo shapes. Findings written up below ("Slice A findings"). No behavior change.
-- [ ] **Slice B (type LOCKED 2026-07-08):** add ONE pure, **read-only** `detectSession(adapter): DetectedSession` in the lifecycle — no store hydration, no reconnect, no reset, no navigate; just read storage + classify. `restoreCheckpoint()` stays the side-effectful restore door (later reuses `detectSession` so guard/page agree). No callers switched yet. Type:
+- [x] **Slice B — DONE 2026-07-08 (implemented + verified, NO callers switched):** added pure, **read-only** `detectSession(adapter): DetectedSession` in `lifecycle.ts` (+ `DetectedSession` in `types.ts`) — no store hydration, no reconnect, no reset, no navigate; reuses `readStoredObject` / `isNonEmptyString` / `restoreMultiplayerSession`. `restoreCheckpoint()` stays the side-effectful restore door (Slice D refactors it to reuse `detectSession` so guard/page agree). `detectSession` is intentionally **stricter** than current `restoreCheckpoint` (unified in Slice D). tsc clean; verified via a 13-case logic matrix (scratchpad) incl. "broken multi missing room ⇒ corrupt". Type:
     ```ts
     type DetectedSession =
       | { kind: 'none' }
@@ -782,7 +782,15 @@ Special cases to leave alone:
       | { kind: 'solo';  completed: boolean }
       | { kind: 'multi'; completed: boolean; session: MultiplayerSession };
     ```
-    Reuse existing private helpers (`readStoredObject`, non-empty-string validation, multiplayer-identity validation). Classify: **multi ⟺ parseable `playerData` with non-empty `role` AND `room`**; **solo ⟺ `gameData` checkpoint exists but no valid multi identity** (incl. DPS solo's `dpsPlayerData` without `room` → solo, NOT corrupt); **corrupt ⟺ unreadable `playerData`/`gameData`**; **none ⟺ neither**; `completed ⟺ stored `gameData.gameSuccess === true`` (read from JSON, no hydration). **BB84-first.**
+    **Final classification (safe — `solo` only on POSITIVE evidence; broken multiplayer NEVER becomes fake solo):**
+      1. corrupted `gameData` ⇒ **corrupt**
+      2. corrupted `playerData` ⇒ **corrupt**
+      3. valid multi identity (`gameCode`+`role`+`room`) **and** `gameData` found ⇒ **multi**
+      4. valid multi identity but **no** `gameData` ⇒ **corrupt** (orphan)
+      5. DPS-solo compat: parseable `playerData` with `playingSolo:true` and no `room` ⇒ **solo**
+      6. `gameData` found **and** no `playerData` ⇒ **solo** (BB84/E91)
+      7. `gameData` found **and** parseable non-solo/non-multi `playerData` ⇒ **corrupt** (NOT solo)
+      8. else ⇒ **none**; `completed` ⟺ stored `gameData.gameSuccess === true` (read from JSON, no hydration). **BB84-first.**
     ⚠️ **Migration-compat, not target:** tolerating DPS solo's `dpsPlayerData` is a *compatibility rule to survive the current app*, NOT the target architecture. Target: `*PlayerData`/`playerDataKey` = multiplayer identity ONLY; solo uses the shared checkpoint model. See ADR §11 "Migration compatibility vs target architecture". Do NOT freeze this drift into the design.
 - [ ] **Slice E+ / DPS cleanup (deferred to DPS migration):** rewrite DPS solo so it does NOT write `dpsPlayerData` (converge to BB84/E91 standard: solo = checkpoint + no multi identity), unless a real DPS-specific need surfaces. Then `detectSession`'s DPS-solo compat branch can be removed. Tracked so old drift is not frozen into the architecture.
 - [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol. (Aligns code to ADR §4.3, which already says redirect-to-protocol-home.)

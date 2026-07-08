@@ -2,6 +2,7 @@ import usePlayerStore from '@/store/player-store';
 
 import type {
     CheckpointRestoreResult,
+    DetectedSession,
     MultiplayerSession,
     MultiplayerSessionIssue,
     ProtocolAdapter,
@@ -97,6 +98,66 @@ export const saveCheckpoint = (adapter: ProtocolAdapter) => {
     if (!isBrowser()) return;
 
     localStorage.setItem(adapter.gameDataKey, JSON.stringify(adapter.getRoomSnapshot()));
+};
+
+/**
+ * Read-only session classifier for route guards (Task 48 / ADR §11).
+ *
+ * Pure: reads localStorage and classifies. Does NOT hydrate stores, reconnect,
+ * reset, or navigate — the caller decides (e.g. reconnect only when
+ * `kind === 'multi' && !completed`). `solo` is returned only on POSITIVE evidence;
+ * a broken or ambiguous multiplayer state fails closed as `corrupt` rather than
+ * silently degrading to SoloGame.
+ *
+ * Note: currently STRICTER than `restoreCheckpoint` (which restores any found
+ * `gameData` locally regardless of identity). Slice D refactors `restoreCheckpoint`
+ * to reuse this classifier so guard and page agree.
+ *
+ * DPS-solo compatibility: DPS solo writes `dpsPlayerData {playingSolo:true}` and NO
+ * `dpsGameData`, so a solo-marked playerData (playingSolo && no room) counts as solo.
+ * This is migration compatibility (ADR §11) — remove the marker branch once DPS solo
+ * is standardized.
+ */
+export const detectSession = (adapter: ProtocolAdapter): DetectedSession => {
+    const gameData = readStoredObject(adapter.gameDataKey);
+    if (gameData.kind === 'corrupted') return {kind: 'corrupt'};
+
+    const playerData = readStoredObject(adapter.playerDataKey);
+    if (playerData.kind === 'corrupted') return {kind: 'corrupt'};
+
+    const completed = gameData.kind === 'found' && gameData.data.gameSuccess === true;
+
+    // Multiplayer iff a valid identity (gameCode + role + room) exists.
+    const multi = restoreMultiplayerSession(adapter);
+    if (multi.kind === 'valid') {
+        // A valid identity with no local checkpoint is an orphan, not a playable game.
+        return gameData.kind === 'found'
+            ? {kind: 'multi', completed, session: multi.session}
+            : {kind: 'corrupt'};
+    }
+
+    // DPS-solo compatibility: parseable playerData explicitly marked solo, no room.
+    if (
+        playerData.kind === 'found' &&
+        playerData.data.playingSolo === true &&
+        !isNonEmptyString(playerData.data.room)
+    ) {
+        return {kind: 'solo', completed};
+    }
+
+    // BB84/E91 solo: a local checkpoint with no player data at all.
+    if (gameData.kind === 'found' && playerData.kind === 'missing') {
+        return {kind: 'solo', completed};
+    }
+
+    // A checkpoint plus a non-solo, non-multi playerData is a broken session:
+    // fail closed rather than guess solo.
+    if (gameData.kind === 'found' && playerData.kind === 'found') {
+        return {kind: 'corrupt'};
+    }
+
+    // No checkpoint and no valid solo marker.
+    return {kind: 'none'};
 };
 
 export const restoreCheckpoint = (adapter: ProtocolAdapter): CheckpointRestoreResult => {

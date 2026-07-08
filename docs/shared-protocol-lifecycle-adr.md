@@ -1019,8 +1019,10 @@ Applied to session storage, the **target standard**:
 `{playingSolo:true, role, gameCode}` (no `room`)**, while BB84/E91 solo write no player data.
 This is almost certainly old drift, not a DPS-specific need.
 - **Short term (Slice B):** `detectSession` MUST tolerate the DPS solo shape — a *parseable*
-  `playerData` lacking a valid `room` is **solo** (when a `gameData` checkpoint exists), never
-  `corrupt`. This is **migration compatibility**, not the target.
+  `playerData` **explicitly marked `playingSolo: true` with no `room`** is **solo**, even with no
+  `gameData` checkpoint. (A parseable `playerData` that is neither a solo marker nor a valid multi
+  identity is **corrupt/none**, NOT solo — so broken multiplayer never silently degrades to
+  SoloGame.) This is **migration compatibility**, not the target.
 - **At DPS migration:** rewrite DPS solo to the standard (no `dpsPlayerData` in solo) unless a
   real DPS-specific reason surfaces.
 
