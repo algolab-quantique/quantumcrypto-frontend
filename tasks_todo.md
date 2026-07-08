@@ -846,6 +846,17 @@ Special cases to leave alone:
 
 ---
 
+### 49. 🐛 BB84 solo restart leaves an unplayable game (no photons at step 1)
+
+**Status**: 🔴 OPEN — reproduced 2026-07-08, NOT investigated. **Orthogonal to Task 48** (restart/photon-regeneration game logic, not session/guard/mode).
+**Not a D1 regression**: noticed while testing Task 48 D1, but D1 only changed `restoreCheckpoint` classification (hydration unchanged) and does not touch the restart flow.
+
+**Repro (Ibra):** solo, **Bob**, photon number **4**. All validation bits invalid → game requires restart → restart goes to **step 1**, but only **bases** are shown, **no photons**, so measurement is impossible → **stuck**. Refresh in that state → `/` (solo fail-close working; acceptable).
+
+**Likely cause (to confirm):** the restart/replay path (`game-restart-dialog.tsx` + BB84 solo regen) does not regenerate/persist photons for the new round, leaving step 1 without measurable photons. Investigate the solo restart handler and photon generation; check small-photon-count + all-invalid edge. Track separately from Task 48.
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
 **Not a code bug** — this is a testing methodology issue.
