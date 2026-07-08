@@ -774,7 +774,17 @@ Special cases to leave alone:
 
 **Confirmed slice plan (reproduce-first, tight, cross-protocol-aware):**
 - [x] **Slice A (DONE 2026-07-08, read-only spike):** verified where/when the session is persisted vs navigation, waiting-room access needs, and solo shapes. Findings written up below ("Slice A findings"). No behavior change.
-- [ ] **Slice B:** add ONE typed `detectSession(adapter)` resolver in the lifecycle (consolidate `detectBB84Session` + `restoreCheckpoint` into `{ none | active-solo | active-multi | completed | corrupt }`). Pure + unit-testable. No callers switched yet. **BB84-first; do NOT over-generalize** — key multiplayer off valid `role`+`room`, NOT player-data-key presence (DPS solo persists `dpsPlayerData`).
+- [ ] **Slice B (type LOCKED 2026-07-08):** add ONE pure, **read-only** `detectSession(adapter): DetectedSession` in the lifecycle — no store hydration, no reconnect, no reset, no navigate; just read storage + classify. `restoreCheckpoint()` stays the side-effectful restore door (later reuses `detectSession` so guard/page agree). No callers switched yet. Type:
+    ```ts
+    type DetectedSession =
+      | { kind: 'none' }
+      | { kind: 'corrupt' }
+      | { kind: 'solo';  completed: boolean }
+      | { kind: 'multi'; completed: boolean; session: MultiplayerSession };
+    ```
+    Reuse existing private helpers (`readStoredObject`, non-empty-string validation, multiplayer-identity validation). Classify: **multi ⟺ parseable `playerData` with non-empty `role` AND `room`**; **solo ⟺ `gameData` checkpoint exists but no valid multi identity** (incl. DPS solo's `dpsPlayerData` without `room` → solo, NOT corrupt); **corrupt ⟺ unreadable `playerData`/`gameData`**; **none ⟺ neither**; `completed ⟺ stored `gameData.gameSuccess === true`` (read from JSON, no hydration). **BB84-first.**
+    ⚠️ **Migration-compat, not target:** tolerating DPS solo's `dpsPlayerData` is a *compatibility rule to survive the current app*, NOT the target architecture. Target: `*PlayerData`/`playerDataKey` = multiplayer identity ONLY; solo uses the shared checkpoint model. See ADR §11 "Migration compatibility vs target architecture". Do NOT freeze this drift into the design.
+- [ ] **Slice E+ / DPS cleanup (deferred to DPS migration):** rewrite DPS solo so it does NOT write `dpsPlayerData` (converge to BB84/E91 standard: solo = checkpoint + no multi identity), unless a real DPS-specific need surfaces. Then `detectSession`'s DPS-solo compat branch can be removed. Tracked so old drift is not frozen into the architecture.
 - [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol. (Aligns code to ADR §4.3, which already says redirect-to-protocol-home.)
 - [ ] **Slice D:** switch the BB84 play route to the single guard + session-derived mode; delete MultiGame's now-dead fail-close.
 - [ ] **Slice E (path-aware — CORRECTED):** remove socket-as-session **from play routes only**; the **waiting-room guard stays separate** (may keep `isWaitingRoomConnected`). Prove on BB84, then replicate to E91/DPS. (NOT "drop socket OR-terms globally" — that would break lobby access.)

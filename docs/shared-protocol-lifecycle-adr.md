@@ -999,11 +999,56 @@ that every guard reads**.
    the mere presence of the player-data key. Build and prove it on BB84 first; generalize to
    E91/DPS only after.
 
+### Migration compatibility vs target architecture
+
+**Principle: an existing difference between protocols is NOT automatically an architecture
+difference.** Keep a per-protocol difference only when the protocol itself requires it.
+Otherwise it is implementation drift, and the target is one standard, unified shape. We must
+not stop unifying because of old code that can be refactored — only because a real protocol
+need demands divergence.
+
+Applied to session storage, the **target standard**:
+- `playerDataKey` / `*PlayerData` means **multiplayer identity only** (`role`, `room`,
+  `gameCode`, `partner`, …). Candidate rename at cleanup: `multiplayerSessionKey`.
+- **Solo** session state is represented by the shared checkpoint model (the `gameDataKey`
+  checkpoint; mode derived from "no valid multiplayer identity") — NOT by writing a
+  `*PlayerData` that pretends to be multiplayer player data.
+- Mode is explicit / consistently derived, never guessed from incidental legacy keys.
+
+**Known drift to standardize (not freeze): DPS solo writes `dpsPlayerData`
+`{playingSolo:true, role, gameCode}` (no `room`)**, while BB84/E91 solo write no player data.
+This is almost certainly old drift, not a DPS-specific need.
+- **Short term (Slice B):** `detectSession` MUST tolerate the DPS solo shape — a *parseable*
+  `playerData` lacking a valid `room` is **solo** (when a `gameData` checkpoint exists), never
+  `corrupt`. This is **migration compatibility**, not the target.
+- **At DPS migration:** rewrite DPS solo to the standard (no `dpsPlayerData` in solo) unless a
+  real DPS-specific reason surfaces.
+
+Target session shape that protocols and guards converge on:
+
+```typescript
+type ProtocolSession =
+  | { mode: 'solo';  protocol: ProtocolId; completed: boolean }
+  | { mode: 'multi'; protocol: ProtocolId; completed: boolean; session: MultiplayerSession };
+```
+
 ### Implementation
 
 Staged in Task 48 (Slices A–E), reproduce-first, no big-bang. Slice A is a read-only spike;
 the socket-de-authorization (Slice E) applies to **play routes only**, leaving the
 waiting-room guard separate.
+
+The interim detector used by guards (Slice B) is the read-only, non-hydrating classifier:
+
+```typescript
+type DetectedSession =
+  | { kind: 'none' }
+  | { kind: 'corrupt' }
+  | { kind: 'solo';  completed: boolean }
+  | { kind: 'multi'; completed: boolean; session: MultiplayerSession };
+```
+
+It converges toward `ProtocolSession` above; `completed` is an attribute, not a separate mode.
 
 ---
 
