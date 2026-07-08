@@ -773,13 +773,48 @@ Special cases to leave alone:
 **Reviewed by two agents + Ibra (2026-07-08).** Claude + GPT 5.5 both endorsed the diagnosis and target. GPT's one substantive correction — **accepted and folded in below**: the socket-de-authorization must be **play-routes-only**, because `is-connected.tsx` is shared with the *waiting-room* pages, which legitimately DO use `isWaitingRoomConnected` (the lobby has no persisted play session yet). Verified against code: waiting-room writes no PlayerData/flags; `ROLES_EVENT` (`socket-provider.tsx:401-408`) persists `${protocol}PlayerData` + the mode flag BEFORE `connectToPlayRoom`, and the play socket's `CONNECTED_EVENT` (line 534) navigates after — so for play routes the socket term is pure race-cover. Also verified: **DPS solo writes `dpsPlayerData` (with a `playingSolo` marker); BB84/E91 solo write none** — so the resolver must key "multiplayer" off a valid `role`+`room` identity, not the presence of the player-data key. Architecture rules now documented in **ADR §11 "Session Detection and Route Guards"** (`docs/shared-protocol-lifecycle-adr.md`).
 
 **Confirmed slice plan (reproduce-first, tight, cross-protocol-aware):**
-- [ ] **Slice A (spike, read-only, START HERE):** verify *where/when* the multiplayer session is persisted at normal game start (socket-provider events) relative to navigation. Load-bearing fact for how aggressive Slices D/E can be. (Already substantially confirmed in the 2026-07-08 review — this slice writes up the per-protocol findings, incl. waiting-room needs and solo-shape differences.) No behavior change.
+- [x] **Slice A (DONE 2026-07-08, read-only spike):** verified where/when the session is persisted vs navigation, waiting-room access needs, and solo shapes. Findings written up below ("Slice A findings"). No behavior change.
 - [ ] **Slice B:** add ONE typed `detectSession(adapter)` resolver in the lifecycle (consolidate `detectBB84Session` + `restoreCheckpoint` into `{ none | active-solo | active-multi | completed | corrupt }`). Pure + unit-testable. No callers switched yet. **BB84-first; do NOT over-generalize** — key multiplayer off valid `role`+`room`, NOT player-data-key presence (DPS solo persists `dpsPlayerData`).
 - [ ] **Slice C:** `is-connected` (BB84 path first) redirects to `/${protocol}` instead of `/`, still using the current OR. Tiny correct-UX win, reversible, per-protocol. (Aligns code to ADR §4.3, which already says redirect-to-protocol-home.)
 - [ ] **Slice D:** switch the BB84 play route to the single guard + session-derived mode; delete MultiGame's now-dead fail-close.
 - [ ] **Slice E (path-aware — CORRECTED):** remove socket-as-session **from play routes only**; the **waiting-room guard stays separate** (may keep `isWaitingRoomConnected`). Prove on BB84, then replicate to E91/DPS. (NOT "drop socket OR-terms globally" — that would break lobby access.)
 
 **Cross-refs**: ADR §11 (the documented rules), Task 40 (socket-provider refactor stays last), Task 46 (browser-Back hardening — done, this is its deeper root), Task 47 (lifecycle adoption ⅓ done; this refactor is the natural vehicle to push BB84→100% then E91/DPS).
+
+**Slice A findings (read-only spike, 2026-07-08 — verified against code, no behavior change):**
+
+*(1) Multiplayer start — identical sequence for BB84/E91/DPS, all in `socket-provider.tsx` `ROLES_EVENT`:*
+| Step | BB84 | E91 | DPS |
+|---|---|---|---|
+| set `playingMultiplayer:true` | :401 | :421 | :448 |
+| write `${p}PlayerData` (incl. `role`+`room`) | :403 | :423 | :450 |
+| write gameData/step/tab config | :404–406 | :424–426 | :451–456 |
+| `connectToPlayRoom(...)` | :408 | :428 | :458 |
+| play socket `CONNECTED_EVENT` → `navigateToPlayPage('/${p}/play')` (`replace`) | :534→543 | :534→545 | :534→547 |
+
+→ **Session identity + mode flag are always persisted BEFORE play navigation.** So on `/${p}/play` mount, `hasLocalSession` is already true without any socket. The `isPlayRoomConnected` OR-term in `is-connected` is **race-cover for play routes** → safe to drop for play (Slice E).
+
+*(2) Waiting-room:* `waiting-room.tsx` (all 3) write **no** `*PlayerData` and set **no** mode flags (grep empty). Lobby is navigated on the *waiting* socket's `CONNECTED_EVENT` (`socket-provider.tsx:286–288`, push `/${p}/waiting-room`), which fires BEFORE `ROLES_EVENT`. → During WAITING there is no persisted play session; the only access signal is **`isWaitingRoomConnected`**. Confirms ADR §11 rule 4 (waiting-room guard must keep the socket term; guards must be path-aware).
+
+*(3) Solo shapes — NOT uniform:*
+| Protocol | writes `*PlayerData` in solo? | contents | has `room`? |
+|---|---|---|---|
+| BB84 | ❌ no (`solo-game-modal.tsx:154` `startFresh` + config + `bb84GameData`; navigates `push` :200) | — | — |
+| E91 | ❌ no (`solo-game-modal.tsx` config + `e91GameData`; navigates `replace` :310) | — | — |
+| DPS | ✅ yes (`solo-game-modal.tsx:195`; navigates `replace` :203) | `{playerName, role, playingSolo:true, gameCode}` | ❌ **no `room`** |
+
+→ **`*PlayerData` presence ≠ multiplayer** (DPS solo writes it). Invariant that holds for all three: **valid multiplayer ⟺ `${p}PlayerData` has valid `role` AND `room`** (solo never has both — BB84/E91 have no playerData; DPS solo has no `room`). This is exactly what `restoreMultiplayerSession` already validates.
+
+**Design conclusion for Slice B (`detectSession` shape):**
+- multiplayer ⟺ `playerData` parses with non-empty `role` AND `room`.
+- solo ⟺ a local `gameData` checkpoint exists (or a `playingSolo` marker) but NOT a valid multi identity.
+- none ⟺ neither.
+- completed vs active ⟺ `getRoomSnapshot().gameSuccess === true` (as `restoreCheckpoint` already computes).
+- Per Ibra's nit: `detectSession` **returns the session info; the caller decides reconnect** — do NOT bake reconnect into the resolver.
+
+**Adjacent observations (NOT Slice A/Task 48 scope — logged for later):**
+- E91 solo (`solo-game-modal.tsx:310`) and DPS solo (`:203`) still `router.replace('/${p}/play')`, whereas BB84 solo was switched to `push` in Task 46 Slice 2a — so E91/DPS have the same "browser-Back skips `/${p}`" issue BB84 already fixed. A Task 46 parallel for E91/DPS, to weigh after Task 48.
+- `is-connected.tsx:70–75` calls `redirect('/')` inside a `useEffect` (Next's `redirect()` is meant for render/server) — minor smell; Slice C edits this line anyway.
 
 ---
 
