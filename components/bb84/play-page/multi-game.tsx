@@ -35,7 +35,6 @@ import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
@@ -171,4 +170,6 @@ const MultiGame = () => {
     );
 };
 
-export default isConnected(MultiGame);
+// Task 48 D4a: the is-connected HOC is removed — /bb84/play (PlayPage) now owns
+// the route guard via detectSession (ADR §11 Navigation Invariant).
+export default MultiGame;

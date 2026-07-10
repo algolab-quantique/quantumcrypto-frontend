@@ -1002,8 +1002,14 @@ D4a before D4b).
    read it; none re-derives session truth independently.
 
 2. **Play routes require a valid persisted session.** `/${protocol}/play` may render only
-   when `detectSession` reports a valid session. No valid session → fail-close, redirect to
-   `/${protocol}` (already the intent of §4.3's `{kind:'missing'} → redirect to protocol home`).
+   when `detectSession` reports a valid session. No valid session → fail-close **without
+   painting anything** (render-time gate), then redirect. **Fail-close target: `/` (decided
+   2026-07-09, D4a).** The earlier `/${protocol}` intent (§4.3) was superseded because a
+   `replace` toward `/${protocol}` recreates adjacent-duplicate history entries whenever
+   the previous entry *is* the protocol home (the reverted Slice C's jank). Under the
+   Navigation Invariant, fail-close only fires for typed-URL/corrupt access (valid history
+   entries restore instead), so the friendlier-home argument is low-stakes; may be
+   revisited after D4b if a duplicate-safe mechanism is found.
 
 3. **A live play socket is NOT route authorization.** For *route access*, validity comes from
    the persisted checkpoint/identity, never from `isPlayRoomConnected`. This is **narrower**

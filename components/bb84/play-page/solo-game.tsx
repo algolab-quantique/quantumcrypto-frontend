@@ -30,7 +30,6 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
 import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
@@ -158,4 +157,8 @@ const SoloGame = () => {
     );
 };
 
-export default isConnected(SoloGame);
+// Task 48 D4a: the is-connected HOC is removed — /bb84/play (PlayPage) now owns
+// the route guard via detectSession, and the HOC could not see a completed-solo
+// checkpoint (no bb84PlayerData, flags reset at landing), which would wrongly
+// veto valid sessions under the Navigation Invariant (ADR §11).
+export default SoloGame;
