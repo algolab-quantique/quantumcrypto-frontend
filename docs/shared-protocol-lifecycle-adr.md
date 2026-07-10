@@ -961,6 +961,40 @@ readers with different logic** — `components/hoc/is-connected.tsx`, the play p
 (e.g. the phantom empty game after Back→Forward at félicitation). The fix is **one resolver
 that every guard reads**.
 
+### The Navigation Invariant
+
+> **Added July 2026 (Task 48, D4 decision — agreed by Ibra). This is the governing rule for
+> all session/guard/navigation work; the numbered rules below serve it.**
+
+> **Session data is destroyed only by explicit user intent (new game, replay, quit) or
+> corruption — never as a side-effect of navigation. Every play-route history entry must
+> render a valid view of the persisted session, or fail-close only when no session exists
+> at all.**
+
+**Why:** the browser's forward stack cannot be deleted — after Back, the forward entries
+*exist* no matter what the app does. The only choice is what those entries show when
+visited: a valid restored view, or a broken page that must fail-close (redirect → flash /
+duplicate-history jank). Any "clear data on navigation" policy therefore *manufactures*
+broken forward entries. A URL is a view of persisted state; navigation must be
+non-destructive (the in-app gold standard is the backend-backed results route, which
+already behaves this way — the félicitation screen must behave the same).
+
+**Alternatives considered and rejected (2026-07-09):**
+- *Popup "quit or stay?" on Back at félicitation* — back-interception is the anti-pattern
+  Task 46 Slice 1 removed (`usePreventNavigation`); at félicitation there is no progress to
+  lose, so the question is semantically empty; and the "defer `gameSuccess` until results"
+  variant breaks completed-detection everywhere (refresh-restore, rejoin dialogs,
+  partner-left).
+- *Allow Back to `/${protocol}` but clear everything (block Forward)* — impossible to block
+  Forward (the entry exists); clearing just guarantees the entry is broken. This is the
+  pre-D2 behavior that produced the dead-forward/flash/duplicate jank.
+
+**Consequences:** the landing page must stop clearing completed BB84 data (its clearing on
+mount is the last "navigation destroys state" actor for completed games); and because
+`is-connected` ignores `gameData`, a completed **solo** checkpoint is invisible to it — so
+the landing-policy change requires the `detectSession`-based PlayPage guard first (Task 48
+D4a before D4b).
+
 ### Rules
 
 1. **One resolver.** A single `detectSession(adapter)` answers all three questions:
@@ -1043,12 +1077,17 @@ the socket-de-authorization (Slice E) applies to **play routes only**, leaving t
 waiting-room guard separate.
 
 Slice D (the guard rework) is itself split into D1–D5 (see Task 48). A key **policy** it
-settles: a **completed session is kept until Home / Replay / new-game — NOT abandoned on
-browser-Back**. Returning to the play route then restores the félicitation screen (via the
-completed checkpoint) instead of fail-closing; fail-closing a re-enterable completed page is
-what produced the duplicate-history jank in the reverted Slice C. The socket is still
-disconnected on completed-Back (that part of the earlier fix stands); only the *checkpoint*
-is preserved, and `startFresh` (new game / replay) and the landing page still clear it.
+settles: a **completed session is kept until an explicit new game / replay / quit — NOT
+destroyed by navigation** (see The Navigation Invariant above). Returning to the play route
+then restores the félicitation screen (via the completed checkpoint) instead of
+fail-closing; fail-closing a re-enterable completed page is what produced the
+duplicate-history jank in the reverted Slice C. The socket is still disconnected on
+completed-Back (that part of the earlier fix stands); only the *checkpoint* is preserved.
+Under the invariant, the **landing page's on-mount clearing of completed BB84 data is
+removed in D4b** (it was the last navigation-side-effect destroyer); `startFresh` (new game
+/ replay) and explicit quit remain the only ways completed data is cleared. D4a (PlayPage
+render-time guard via `detectSession`, child HOC removed) must land **before** D4b, because
+`is-connected` cannot see a completed-solo checkpoint.
 
 The interim detector used by guards (Slice B) is the read-only, non-hydrating classifier:
 
