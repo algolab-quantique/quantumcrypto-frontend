@@ -5,6 +5,7 @@ import MultiGame from '@/components/bb84/play-page/multi-game';
 import SoloGame from '@/components/bb84/play-page/solo-game';
 import BB84ProgressionSidebar from '@/components/shared/bb84-progression-sidebar';
 import Bb84Button from '@/components/bb84/play-page/bb84-button';
+import usePlayerStore from '@/store/player-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { abandon, detectSession } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
@@ -44,10 +45,17 @@ const PlayPage = () => {
     const [mode, setMode] = useState<'solo' | 'multi' | null>(null);
     useEffect(() => {
         const detected = detectSession(bb84Adapter);
-        if (detected.kind === 'multi') {
-            setMode('multi');
-        } else if (detected.kind === 'solo') {
-            setMode('solo');
+        if (detected.kind === 'multi' || detected.kind === 'solo') {
+            // Bridge (Task 48 D5a): re-assert the legacy mode flags from the
+            // session truth. The landing page resets them, but many components
+            // still branch on playingSolo (bb84-progression's ending block, the
+            // five tab components, MultiGame's restore gate) — without this, a
+            // restored solo félicitation renders the MULTI ending block (wrong
+            // buttons + 404 results link). Flags become a derived cache written
+            // only here; readers migrate off them later.
+            usePlayerStore.getState().setPlayingSolo(detected.kind === 'solo');
+            usePlayerStore.getState().setPlayingMultiplayer(detected.kind === 'multi');
+            setMode(detected.kind);
         } else {
             abandon(bb84Adapter);
             router.replace('/');
