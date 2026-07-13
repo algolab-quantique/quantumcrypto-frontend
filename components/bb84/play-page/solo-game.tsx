@@ -17,7 +17,6 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab from '@/components/bb84/play-page/tabs/alice-exchange-tab';
 import BobExchangeTab from '@/components/bb84/play-page/tabs/bob-exchange-tab';
@@ -31,7 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
-import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
+import { restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
@@ -48,7 +47,6 @@ const SoloGame = () => {
     ];
 
     const { localize } = useLanguage();
-    const router = useRouter();
     const { step, bb84Tab } = useBB84ProgressStore();
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
     const { playerRole, playerName } = usePlayerStore();
@@ -60,22 +58,10 @@ const SoloGame = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const result = restoreCheckpoint(bb84Adapter);
-
-        // A legitimate fresh solo start restores as 'active' (the solo modal
-        // writes bb84GameData before navigating here). So 'missing' or 'corrupted'
-        // on the play page means there is nothing valid to restore — fail-close
-        // instead of rendering a half-fresh, stuck game.
-        //
-        // Target '/' (not '/bb84'): abandon() flips playingSolo false, so this
-        // route swaps SoloGame -> MultiGame, and the is-connected guard then finds
-        // no session and redirects to '/'. Matching that guard keeps the outcome
-        // deterministic instead of racing it toward '/bb84'.
-        if (result.kind === 'missing' || result.kind === 'corrupted') {
-            abandon(bb84Adapter);
-            router.replace('/');
-            return;
-        }
+        // PlayPage's render-time guard (Task 48 D4a) guarantees a restorable
+        // session before SoloGame mounts, so restoreCheckpoint cannot return
+        // missing/corrupted here — the old fail-close branch was dead code (D5b).
+        restoreCheckpoint(bb84Adapter);
 
         const restoredLines = useBB84ProgressStore.getState().displayedLines;
         if (restoredLines.length === 0) {

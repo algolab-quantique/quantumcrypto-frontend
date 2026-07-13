@@ -806,7 +806,7 @@ Special cases to leave alone:
   - [x] **D4a DONE 2026-07-09 (tested green):** PlayPage owns the guard, **render-time** via `detectSession` — whole page renders `null` until the session resolves valid, so invalid entries redirect with **no paint at all**; fail-close ONLY for `none`/`corrupt` (`abandon` + `replace('/')`); **`is-connected` HOC removed from BB84 SoloGame/MultiGame** (PlayPage is their only importer — verified; waiting-rooms + E91/DPS keep the HOC). **Fail-close target = `/`** (not `/bb84`): replace-toward-`/bb84` recreates the adjacent-duplicate jank when the previous entry is `/bb84` (Slice C evidence) — ADR §11 rule 2 updated to record this decision (second agent concurred). Ibra tested: solo start/refresh/rejoin-popup ✅; félicitation Back/Forward restore ✅; **landing chain now flash-free** (URL briefly shows `/bb84/play`, page shows landing directly) ✅; typed URL `/bb84/play` with no session → straight to `/`, no flash ✅.
   - [x] **D4b DONE 2026-07-09 (tested green):** removed the **BB84** completed-clearing block from the landing page (E91/DPS blocks stay; flag-reset stays — flags demoted). The full natural chain now works, solo AND multi: félicitation → Back ×2 to `/` → Forward ×2 → **félicitation restored, no flash**; Rejouer works (startFresh). Completed data lifetime = until `startFresh` (new game/replay) or explicit quit. Optional later: max-age expiry.
   - [x] **D5a DONE 2026-07-09 (tested green) — the flag bridge.** Testing D4b exposed the LAST fragmented-reader class: **7 components still branch on `playingSolo`** (`bb84-progression.tsx:32,117-127` ending block + 5 tabs + MultiGame's restore gate `multi-game.tsx:71`). Landing resets the flags while the checkpoint now survives → restored solo félicitation rendered the MULTI ending block ("Votre Alice était…" + results link → 404 via empty solo gameCode). **Fix:** PlayPage's resolver effect re-asserts `playingSolo`/`playingMultiplayer` from `detectSession` before opening the render gate (zustand writes synchronous; all readers are children of the gate). Flags = **derived cache written only by the resolver owner**; readers migrate off flags in later cleanup. Also fixes the predicted multi-F5-after-landing edge (MultiGame's gate now passes). Tested: solo chain shows Rejouer/Retour ✅, multi chain + "voir les résultats" → real results table ✅.
-  - [ ] **D5b (remaining, tiny):** delete SoloGame/MultiGame now-dead fail-close branches (`solo-game.tsx:75-79` missing/corrupted → abandon+replace('/'); `multi-game.tsx:91-93` analog) — PlayPage's guard makes them unreachable. Optionally simplify MultiGame's flag-gated restore to unconditional-on-mount (like SoloGame) now that PlayPage guarantees a valid session. Pure deletion/simplification, zero intended behavior change; quick smoke test.
+  - [x] **D5b DONE 2026-07-13 (tested green):** deleted SoloGame/MultiGame dead fail-close branches (unreachable behind PlayPage's guard) and simplified MultiGame's restore gate `playingMultiplayer && !isPlayRoomConnected` → `!isPlayRoomConnected` (the flag term was constant-true via the D5a bridge; one fewer flag-reader). Removed orphaned `router`/`abandon` imports. Net −16 lines. Tested: solo refresh ✅, multi refresh ✅, multi completed Back/Forward chain ✅ (fresh tab). **Investigation note:** "hidden history states" seen during testing (Chrome, Alice=2/Bob=1, Brave=0) were **fossil `/bb84` duplicates minted by the pre-D4a MultiGame `replace('/bb84')` fail-close during earlier test sessions in long-lived tabs** — not a current-code bug; a fresh tab reproduces a clean `[/, /bb84, /bb84/play]` stack. Lesson recorded in the testing note below. **→ Slice D (D0–D5b) is COMPLETE.**
   - [ ] **Minor observation (2026-07-09, untriaged, LOW):** from restored solo félicitation, "Retour au menu principal" shows a brief background flash on the way to `/` (content not identifiable). Cosmetic; investigate when touching bb84-progression (`goToMenu` path).
   - Note: the "restart after insufficient valid bits → no photons, blocked" hit again during D4b/D5a testing via Rejouer — that is **Task 49** (already tracked, orthogonal to Task 48).
   **⚠️ Policy history (superseded):** the D2-era note said completed is kept on `/bb84` but still cleared by landing. The Navigation Invariant (above) extends D2's policy to ALL navigation: landing no longer clears completed BB84 either (D4b). Order matters: **D2 (protocol-page policy) → D3 (mode) → D4a (guard) → D4b (landing policy) → D5 (cleanup).**
@@ -861,6 +861,21 @@ Special cases to leave alone:
 **Likely cause (to confirm):** the restart/replay path (`game-restart-dialog.tsx` + BB84 solo regen) does not regenerate/persist photons for the new round, leaving step 1 without measurable photons. Investigate the solo restart handler and photon generation; check small-photon-count + all-invalid edge. Track separately from Task 48.
 
 ---
+
+### 🧪 LOCAL TESTING NOTE: Fossil History in Long-Lived Tabs
+
+**Not a code bug** — testing methodology (learned 2026-07-13, Task 48 D5b).
+
+Browser history is per-tab and survives the whole session. When testing navigation
+fixes, a long-lived tab still carries history entries minted by the OLD (buggy) code —
+e.g. adjacent duplicate `/bb84` entries from the pre-D4a `replace('/bb84')` fail-close.
+New navigation truncates entries only ABOVE the current position, so if a new test game
+starts from a Back-reached page, fossils below it survive and reappear as "hidden states"
+(Back does nothing). Symptom signature: counts differ per tab/player, and a fresh tab is
+clean.
+
+**Rule: always verify navigation-chain behavior in a FRESH tab** (or after restarting
+the browser tab), so the history stack starts empty.
 
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 

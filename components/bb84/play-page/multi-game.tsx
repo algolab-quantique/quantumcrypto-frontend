@@ -31,12 +31,11 @@ import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
-import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
-import { abandon, restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
+import { restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
@@ -54,10 +53,9 @@ const MultiGame = () => {
     ];
 
     const { localize } = useLanguage();
-    const router = useRouter();
     const { step, displayedLines, bb84Tab } = useBB84ProgressStore();
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
-    const { playerRole, playerName, playingMultiplayer } = usePlayerStore();
+    const { playerRole, playerName } = usePlayerStore();
     const { photonNumber, gameHasEve, setGameHasEve, setGameCode } = useBB84GameStore();
     const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
 
@@ -67,8 +65,11 @@ const MultiGame = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        if (playingMultiplayer && !isPlayRoomConnected) {
-            // ── Page refresh: restore state and reconnect if needed ─────────
+        // ── Page refresh: restore state and reconnect if needed ─────────────
+        // PlayPage's render-time guard (D4a) + flag bridge (D5a) guarantee a valid
+        // multiplayer session before MultiGame mounts, so the old playingMultiplayer
+        // gate and the missing-session fail-close were dead code (removed, D5b).
+        if (!isPlayRoomConnected) {
             const result = restoreCheckpoint(bb84Adapter);
             const session = result.kind === 'active' || result.kind === 'completed'
                 ? result.multiplayerSession
@@ -87,9 +88,6 @@ const MultiGame = () => {
                 if (result.kind === 'active') {
                     connectToPlayRoom('bb84', session.gameCode, session.role, session.room);
                 }
-            } else {
-                abandon(bb84Adapter);
-                router.replace('/bb84');
             }
         } else if (displayedLines.length === 0) {
             // ── Fresh session: show role-appropriate welcome messages ────────
