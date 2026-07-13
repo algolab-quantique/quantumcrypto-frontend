@@ -853,12 +853,30 @@ Special cases to leave alone:
 
 ### 49. 🐛 BB84 solo restart leaves an unplayable game (no photons at step 1)
 
-**Status**: 🔴 OPEN — reproduced 2026-07-08, NOT investigated. **Orthogonal to Task 48** (restart/photon-regeneration game logic, not session/guard/mode).
-**Not a D1 regression**: noticed while testing Task 48 D1, but D1 only changed `restoreCheckpoint` classification (hydration unchanged) and does not touch the restart flow.
+**Status**: 🔵 DIAGNOSED 2026-07-13 (root cause confirmed in code) — split into 49-A (solo fix, agreed) / 49-B (multi, reproduce first). **Orthogonal to Task 48.**
 
-**Repro (Ibra):** solo, **Bob**, photon number **4**. All validation bits invalid → game requires restart → restart goes to **step 1**, but only **bases** are shown, **no photons**, so measurement is impossible → **stuck**. Refresh in that state → `/` (solo fail-close working; acceptable).
+**Repro (Ibra):** solo, **Bob**, photon number **4**. Kept key bits < validation length → restart dialog → restart goes to **step 1**, but only **bases** are shown, **no photons** → **stuck**. Re-confirmed via Rejouer during D4b/D5a testing.
 
-**Likely cause (to confirm):** the restart/replay path (`game-restart-dialog.tsx` + BB84 solo regen) does not regenerate/persist photons for the new round, leaving step 1 without measurable photons. Investigate the solo restart handler and photon generation; check small-photon-count + all-invalid edge. Track separately from Task 48.
+**Root cause (CONFIRMED):** the insufficient-key restart dialog (`basis-tab.tsx:104-108`, triggered at `:115` when `keyBits.length < validationBitsLength`) calls only `resetRoom(); resetProgress();` — it regenerates **nothing**. For solo Bob, Alice's photons are generated ONCE at game start in `solo-game-modal.tsx:168-177`; no remount happens on restart, so no photons → stuck. **The correct machinery already exists and is bypassed:** the Eve-restart `restartGameWithoutEve` (`bb84-progression.tsx:61-94`) does it right — solo Bob regenerates fresh `aliceBits/aliceBases/alicePhotons` + welcome lines; multi sends the coordinated `RESTART_WITHOUT_EVE_EVENT` via the socket. (This "right code exists, caller bypasses it" pattern spawned the Task 50 audit.)
+
+- [ ] **49-A — solo fix (AGREED, frontend-only):** extract the duplicated "start a solo Bob round" generation block (already 2 copies: `solo-game-modal.tsx:168-192`, `bb84-progression.tsx:68-89` — do NOT add a third) into one helper (e.g. `lib/bb84/solo-round.ts`). Rewire `basis-tab`'s `restartGame` for solo: reset room+progress, **re-apply config** (photonNumber, validationBitsLength, and **KEEP Eve as it was** — this restart is bad luck, not Eve-detection, so `evePresent` survives and Bob's regen applies `mimicEveIntercept` when Eve is on, like the modal), regenerate fresh randomness, push role-appropriate welcome lines (Alice regenerates via her own UI). Verify while implementing: whether `resetRoom` resets `evePresent` (if so re-set from `gameHasEve`). Test: solo Bob AND Alice, 4 photons, force insufficient key → restart → playable round, config + Eve preserved.
+- [ ] **49-B — multi (REPRODUCE FIRST):** the `:115` trigger fires in multi too, and `restartGame` resets only LOCAL stores — the partner is never told → expected desync/hang. Reproduce (multi, 4 photons, one side hits insufficient key), document, then decide: proper fix is a coordinated restart like the Eve one, which likely needs a backend event (or confirming the backend relays a generic restart) — if backend-blocked, track with the partner-left family (Tasks 27/43).
+
+---
+
+### 50. 🟠 Behavior conformance audit — canonical code exists, callers bypass it
+
+**Status**: 🟠 AUDITED 2026-07-13 (targeted sweep) — findings tracked, fixes NOT started.
+**Principle (sibling of Task 48's state rule):** *one behavior = one canonical implementation; callers must call it.* Task 48 fixed "session STATE smeared across readers"; this audit covers "session/game BEHAVIORS smeared across copies." Trigger: Task 49's root cause — the correct restart (`restartGameWithoutEve`) existed while the broken dialog used a naive local copy.
+**Scope honesty:** this is a *targeted* sweep of the classes the Task-49 bug exposed (restart, clearing, welcome-lines, generation) — not a full census. Extend when new bypass classes surface.
+
+**Findings:**
+- [ ] **F1 — Restart behavior exists in ~7 copies, most naive.** Canonical: `bb84-progression.tsx:61` (solo regen + multi socket event). Naive `resetRoom(); resetProgress();` copies: BB84 `basis-tab.tsx:104` (= Task 49), E91 `solo-basis-tab.tsx:121` (+hand-copied welcome lines), E91 `basis-tab.tsx:123` (**multi, no socket coordination!**), E91 `solo-CHSH-tab.tsx:242` (+local state reset). E91 `CHSH-tab.tsx` restart not yet read. Inconsistent pair: socket-provider `RESTART_WITHOUT_EVE` handler does E91 **inline** (`:1103-1121`, manual key removal) but BB84 via the `restartWithoutEve()` util (`:1138`) — two styles for the same behavior. And `restartWithoutEve` itself hand-removes keys instead of using lifecycle/`clearProtocolStorage`. Fix direction: per-protocol canonical `restartRound()`/`restartWithoutEve()` in the lifecycle-adjacent layer; all dialogs/handlers call it. (BB84 slice = Task 49-A/B.)
+- [ ] **F2 — 23 call sites still use legacy `clearXXXLocalStorage()`** (bypassing `clearProtocolStorage`/lifecycle): DPS ×11, E91 ×9 + landing/results pages. BB84 = 0 ✅ (pilot migrated). Quantifies Task 47's "adoption ⅓" from the behavior side; absorbed by the E91/DPS replication (Tasks 26/40/48-template). E91 sites incl. `e91-game-form-v3.tsx:85,203,217,241`, `app/(main)/e91/play/page.tsx:47`, results page `:198-200`.
+- [ ] **F3 — Welcome-transcript lines hand-copied in ~7 files** (BB84: modal, solo-game, multi-game, progression; + socket-provider; DPS: solo-game, multi-game). One wording/step change = 7 edit sites. Candidate: per-protocol `welcomeLines(role)` helper; fold into replication slices.
+- [ ] **F4 — Solo round generation duplicated** (BB84: modal `:168-192` + progression `:68-89`; Task 49-A extracts to one helper). Check E91/DPS analogs during replication (note: E91 solo tabs seem to generate in-tab — their naive resets MAY be functional; verify per tab before "fixing").
+- [ ] **F5 — Multi restarts without partner coordination** (desync class): BB84 `basis-tab` (= Task 49-B) AND E91 `basis-tab.tsx:123`. Same family as partner-left (Tasks 27/43); likely backend-dependent.
+- Cross-refs (already tracked, not repeated): navigation push/replace violations in E91/DPS solo (Task 48 Slice A findings); guard/mode pattern replication (Task 48 template); raw localStorage counts (Task 47).
 
 ---
 
