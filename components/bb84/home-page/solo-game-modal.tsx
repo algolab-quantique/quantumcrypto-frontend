@@ -27,12 +27,7 @@ import { CheckedState } from '@radix-ui/react-checkbox';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useRouter } from 'next/navigation';
-import {
-    generateAliceBases,
-    generateAliceBits,
-    generateAlicePhotons, mimicEveIntercept,
-} from '@/lib/bb84/solo-player';
-import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
+import { beginSoloRound } from '@/lib/bb84/solo-round';
 import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
@@ -58,13 +53,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         setGameHasEve,
         setValidationBitsLength,
     } = useBB84GameStore();
-    const {
-        setEvePresent,
-        setAlicePhotons,
-        setAliceBits,
-        setAliceBases,
-    } = useBB84RoomStore();
-    const { pushLines } = useBB84ProgressStore();
+    const { setEvePresent } = useBB84RoomStore();
 
     const { localize } = useLanguage();
     const router = useRouter();
@@ -165,32 +154,11 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         localStorage.setItem('bb84GameHasEve', JSON.stringify(eve));
         localStorage.setItem('bb84GameData', JSON.stringify({ evePresent: eve }));
 
-        if (playerRole === 'B') {
-            const aliceBits = generateAliceBits(photonNumber);
-            const aliceBases = generateAliceBases(photonNumber);
-            let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
-            if (eve) {
-                alicePhotons = mimicEveIntercept(alicePhotons);
-            }
-            setAliceBits(aliceBits);
-            setAliceBases(aliceBases);
-            setAlicePhotons(alicePhotons);
-            pushLines([
-                {
-                    title: 'component.exchange.welcome',
-                },
-                {
-                    content: 'component.bobExchange.waiting',
-                },
-                {
-                    content: 'component.bobExchange.photonsArrived',
-                },
-                {
-                    title: 'component.game.step1',
-                    content: 'component.bobExchange.choose',
-                },
-            ]);
-        }
+        // Canonical, role-aware round start (lib/bb84/solo-round.ts) — shared
+        // with the restart paths so generation/transcript cannot drift (Task 50
+        // F3/F4). Bob: generated photons + his lines; Alice: her lines (she
+        // generates via her own UI).
+        beginSoloRound(photonNumber, eve);
         // History management: use push (NOT replace) so /bb84 stays in the
         // history stack. Browser Back from /bb84/play then returns to the
         // protocol page (which offers rejoin), instead of skipping straight to

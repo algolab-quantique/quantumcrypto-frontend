@@ -24,6 +24,7 @@ import GameRestartDialog
     from '@/components/bb84/play-page/game-restart-dialog';
 import {BB84GameStep} from '@/types';
 import {getValidBits, mimicEveIntercept} from '@/lib/bb84/solo-player';
+import {restartSoloRound} from '@/lib/bb84/solo-round';
 import {generateUniqueRandomList} from '@/lib/utils';
 
 const BasisTab = ({playerRole}: { playerRole: string }) => {
@@ -102,8 +103,17 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
     };
 
     const restartGame = () => {
-        resetRoom();
-        resetProgress();
+        if (playingSolo) {
+            // Task 49-A: same config (photon number, validation length, Eve),
+            // fresh randomness — the naive resetRoom+resetProgress left solo Bob
+            // with no photons (nothing regenerated them) and a stuck game.
+            restartSoloRound();
+        } else {
+            // Multi restart is still uncoordinated (partner is not told) —
+            // known desync, tracked as Task 49-B; behavior unchanged here.
+            resetRoom();
+            resetProgress();
+        }
         setRestartModalOpen(false);
     };
 

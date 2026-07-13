@@ -15,11 +15,7 @@ import {restartWithoutEve} from '@/lib/bb84/utils';
 import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
 import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import {toast} from 'sonner';
-import {
-    generateAliceBases,
-    generateAliceBits,
-    generateAlicePhotons, mimicEveIntercept,
-} from '@/lib/bb84/solo-player';
+import {beginSoloRound} from '@/lib/bb84/solo-round';
 
 const Bb84Progression = () => {
 
@@ -31,7 +27,7 @@ const Bb84Progression = () => {
 
     const {playerRole, partner: partnerName, playingSolo} = usePlayerStore();
 
-    const {displayedLines, pushLines} = useBB84ProgressStore();
+    const {displayedLines} = useBB84ProgressStore();
 
     const {
         gameSuccess,
@@ -39,9 +35,6 @@ const Bb84Progression = () => {
         validated,
         validatedByPartner,
         eveUndetected,
-        setAlicePhotons,
-        setAliceBits,
-        setAliceBases
     } = useBB84RoomStore();
 
 
@@ -65,29 +58,11 @@ const Bb84Progression = () => {
                 description: localize(
                     'component.validation.gameRestarted'),
             });
-            if (playerRole === 'B') {
-                const aliceBits = generateAliceBits(photonNumber);
-                const aliceBases = generateAliceBases(photonNumber);
-                let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
-                setAliceBits(aliceBits);
-                setAliceBases(aliceBases);
-                setAlicePhotons(alicePhotons);
-                pushLines([
-                    {
-                        title: 'component.exchange.welcome',
-                    },
-                    {
-                        content: 'component.bobExchange.waiting',
-                    },
-                    {
-                        content: 'component.bobExchange.photonsArrived',
-                    },
-                    {
-                        title: 'component.game.step1',
-                        content: 'component.bobExchange.choose',
-                    },
-                ]);
-            }
+            // Canonical, role-aware round start (lib/bb84/solo-round.ts).
+            // eve=false: this is the Eve-detected restart, Eve is removed.
+            // (Alice previously got NO welcome lines here — fixed by the
+            // role-aware helper.)
+            beginSoloRound(photonNumber, false);
             return;
         }
         sendEvent(RESTART_WITHOUT_EVE_EVENT);
