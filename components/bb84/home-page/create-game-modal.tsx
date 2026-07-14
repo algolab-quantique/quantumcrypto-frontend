@@ -111,6 +111,15 @@ const CreateGameModal = ({
         checked: CheckedState) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons: when checking Eve with a photon
+        // count below the with-Eve minimum, raise it automatically instead of
+        // making the user fix a validation error by hand (same as solo modal).
+        if (checked === true) {
+            const photonNumber = form.getValues('photonNumber');
+            if (photonNumber < BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE) {
+                form.setValue('photonNumber', BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE);
+            }
+        }
     };
 
     return (

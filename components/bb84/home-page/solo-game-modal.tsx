@@ -219,8 +219,16 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
     ) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons: when checking Eve with a photon
+        // count below the with-Eve minimum, raise it automatically instead of
+        // making the user fix a validation error by hand.
+        let nextPhotonNumber = photonNumber;
+        if (checked === true && photonNumber < BB84_SOLO_PHOTON_MIN_WITH_EVE) {
+            nextPhotonNumber = BB84_SOLO_PHOTON_MIN_WITH_EVE;
+            form.setValue('photonNumber', nextPhotonNumber);
+        }
         // Automatically adjust validation bits when Eve is toggled
-        form.setValue('validationBitsLength', getDefaultValidationBits(photonNumber));
+        form.setValue('validationBitsLength', getDefaultValidationBits(nextPhotonNumber));
     };
 
     const gameSettings = (
