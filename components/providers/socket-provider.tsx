@@ -940,6 +940,15 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         useBB84RoomStore.getState()
                             .setValidatedByPartner(true);
                         if (message['valid']) {
+                            // Mirror validation-tab's local rule on the
+                            // partner's side: a VALID verdict with Eve present
+                            // means she slipped through (eveUndetected).
+                            // Without this the partner's eveRestartNeeded
+                            // stays true and a spurious Eve-restart dialog
+                            // appears after a valid check.
+                            if (useBB84RoomStore.getState().evePresent) {
+                                useBB84RoomStore.getState().setEveUndetected(true);
+                            }
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',
@@ -967,6 +976,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         useBB84RoomStore.getState()
                             .setValidatedByPartner(true);
                         if (message['valid']) {
+                            // Same eveUndetected mirror as A_VALIDATED_EVENT.
+                            if (useBB84RoomStore.getState().evePresent) {
+                                useBB84RoomStore.getState().setEveUndetected(true);
+                            }
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',

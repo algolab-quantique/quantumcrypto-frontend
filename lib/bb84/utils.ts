@@ -54,6 +54,10 @@ export const restartWithoutEve = () => {
     localStorage.removeItem('bb84Step');
     localStorage.removeItem('bb84Tab');
     localStorage.removeItem('bb84DisplayedLines');
+    // A new round must not inherit the previous round's in-progress basis
+    // inputs: bob-exchange-tab re-hydrates its form from this key on mount —
+    // without this, the multi Eve-restart refills Bob's bases.
+    localStorage.removeItem('bb84BobBasisInputs');
     useBB84RoomStore.getState().resetRoom();
     useBB84RoomStore.getState().setEvePresent(false);
     useBB84ProgressStore.getState().resetProgress();
