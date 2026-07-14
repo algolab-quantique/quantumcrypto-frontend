@@ -995,6 +995,25 @@ mount is the last "navigation destroys state" actor for completed games); and be
 the landing-policy change requires the `detectSession`-based PlayPage guard first (Task 48
 D4a before D4b).
 
+### The Solo/Multi Parity Principle
+
+> **Added July 2026 (Task 49-C decision — Ibra).**
+
+> **"Solo vs multi" is who the partner is — not what the player sees.** The player plays
+> the same game, as Alice or Bob, with the same screens, dialogs, flows, and semantics.
+> Whether the partner is simulated by the computer (solo) or a real player over a socket
+> (multi) is a background implementation detail.
+
+Practical rules:
+- UI must not fork on mode: a restart is a dialog in both modes or a button in both —
+  never one of each. Same titles, same actions, same visual hierarchy.
+- Action *semantics* must match too: the same button must produce the same player-visible
+  outcome in both modes (e.g. what "Rejouer" does to Eve). If a mode cannot yet honor the
+  semantic (missing backend coordination), prefer aligning BOTH modes on the achievable
+  semantic over letting them diverge, and track the gap.
+- Only the coordination internals may differ behind the shared UI: solo resolves locally,
+  multi goes through the socket/backend.
+
 ### Rules
 
 1. **One resolver.** A single `detectSession(adapter)` answers all three questions:
