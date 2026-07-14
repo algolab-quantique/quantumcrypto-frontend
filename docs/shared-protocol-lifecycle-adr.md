@@ -1128,7 +1128,54 @@ It converges toward `ProtocolSession` above; `completed` is an attribute, not a 
 
 ---
 
-## 12. Relationship to Existing Documents
+## 12. Eve Presence and Restart Semantics (current state, decision, target)
+
+> **Added July 2026 (Task 49-C / Task 51).** The three protocols do **NOT** handle Eve
+> presence and Eve-detected restarts the same way. This section records how each works
+> today, why BB84 keeps its historical design for now, and the unification target.
+
+### How Eve presence works today (verified in code)
+
+| Protocol | The "Eve?" checkbox means | Mechanism |
+|---|---|---|
+| **BB84 solo** | Eve **is** present (deterministic) | `mimicEveIntercept` intercepts **every** photon with random bases; only *detection* is probabilistic (quantum physics: an intercepted photon reveals Eve through validation-bit mismatches with some probability). |
+| **BB84 multi** | Eve **may** be present (probabilistic!) | The create-game modal has a **"Probabilité d'Ève"** field (`evePercentage`, default 0.5) sent to the backend as `eve_percentage`; the backend draws and returns `game_has_eve` at `ROLES_EVENT`. **So BB84 is inconsistent with itself across modes** (found by Ibra 2026-07-14) — a Parity-Principle violation, see Task 51. |
+| **E91** | Eve **may** be present (probabilistic) | `isEveActuallyPresent = eve && Math.random() < evePercentage`; `E91_EVE_PERCENTAGE_DEFAULT = 0.5` (min/max constants exist). The original draw is kept (`e91OriginalEvePresent`) for the results reveal. |
+| **DPS** | Eve **may** be present (probabilistic) | Same pattern; `DPS_EVE_PERCENTAGE_DEFAULT = 0.5`. |
+
+### Restart after Eve is detected — the decided semantic
+
+**Both modes, one semantic: the new round restarts WITHOUT Eve** (Solo/Multi Parity
+Principle, §11).
+
+- **Multi**: the backend event is literally `RESTART_WITHOUT_EVE` (BB84 and E91 have
+  handlers; DPS has none — another asymmetry to resolve at its migration).
+- **Solo (BB84)**: aligned to the same semantic in Task 49-C via the canonical restart
+  helper (no legacy key-surgery).
+
+**Why Eve is switched off (historical design, deliberately kept):** this was the original
+design decision (by the previously responsible developer, when only multi existed): with
+BB84's *deterministic* Eve, restarting with Eve still on guarantees she intercepts again —
+students could loop detect→restart forever. Switching her off guarantees they complete the
+protocol end-to-end at least once. Pedagogy over realism, on purpose.
+
+The *insufficient-key* restart (too few matching bases) is different: it is bad luck, not
+detection — it restarts with the **same settings, Eve included**.
+
+### Unification target (Task 51 — product decision pending)
+
+The per-protocol divergence (deterministic vs probabilistic presence; missing DPS restart
+handler) is drift to unify, not a protocol need. The candidate end-state: **all protocols
+treat the checkbox as "Eve possible" with a probability constant**, and every restart
+simply **redraws** the presence. That preserves the anti-loop goal *statistically*
+(p < 1 ⇒ students eventually complete the protocol) while restoring realism (Eve may
+return, or slip through undetected), and it dissolves the "without Eve" special case —
+one restart semantic for all protocols and both modes. Until that decision is made, BB84
+continues exactly as designed.
+
+---
+
+## 13. Relationship to Existing Documents
 
 | Document | Status | Action |
 |----------|--------|--------|

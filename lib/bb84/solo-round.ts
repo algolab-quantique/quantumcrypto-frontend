@@ -64,8 +64,20 @@ export const beginSoloRound = (photonNumber: number, eve: boolean) => {
  * `evePresent` must survive. `resetRoom()` wipes it (and the persisted
  * checkpoint), so it is re-asserted from the game store's `gameHasEve`; the
  * store mutations then rebuild the checkpoint exactly like a fresh solo start.
+ *
+ * `withoutEve` (Task 49-C, Eve-detected restart): switch Eve OFF for the new
+ * round — the historical, deliberate semantic (deterministic BB84 Eve would
+ * otherwise loop detect→restart forever; students must be able to complete the
+ * protocol — see ADR §12). The game store does not persist, so the config key
+ * is updated too, or a refresh would resurrect Eve via hydrateConfig.
  */
-export const restartSoloRound = () => {
+export const restartSoloRound = (options?: {withoutEve?: boolean}) => {
+    if (options?.withoutEve) {
+        useBB84GameStore.getState().setGameHasEve(false);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('bb84GameHasEve', JSON.stringify(false));
+        }
+    }
     const {gameHasEve, photonNumber} = useBB84GameStore.getState();
     useBB84RoomStore.getState().resetRoom();
     useBB84ProgressStore.getState().resetProgress();

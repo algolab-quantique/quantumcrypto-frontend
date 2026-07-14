@@ -87,6 +87,10 @@ export const bb84Lines: LanguageItem[] = [
         'component.validationTab.invalid': 'Invalid',
         'component.gameRestart.restart': 'Restart',
         'component.gameRestart.playAgain': 'Play again',
+        'component.gameRestart.backToMenu': 'Back to BB84 menu',
+        'component.gameRestart.eveTitle': 'Eve was detected!',
+        'component.gameRestart.eveDescription': 'The key is compromised —' +
+            ' discard it and restart the exchange, this time without Eve.',
         'component.return.returnToMain': 'Return to main menu',
         'component.results.seeResults': 'See Results',
         'component.basisTab.alertTitle': 'Not enough bits!',
@@ -205,6 +209,10 @@ export const bb84Lines: LanguageItem[] = [
         'component.validationTab.invalid': 'Invalide',
         'component.gameRestart.restart': 'Redémarrer',
         'component.gameRestart.playAgain': 'Rejouer',
+        'component.gameRestart.backToMenu': 'Retour au menu BB84',
+        'component.gameRestart.eveTitle': 'Ève a été détectée !',
+        'component.gameRestart.eveDescription': 'La clé est compromise —' +
+            ' on la jette et on recommence l\'échange, cette fois sans Ève.',
         'component.return.returnToMain': 'Retour au menu principal',
         'component.results.seeResults': 'voir les résultats',
         'component.basisTab.alertTitle': 'Pas assez de bits !',
@@ -323,6 +331,10 @@ export const bb84Lines: LanguageItem[] = [
         'component.validationTab.invalid': 'Inválida',
         'component.gameRestart.restart': 'Reiniciar',
         'component.gameRestart.playAgain': 'Jugar de nuevo',
+        'component.gameRestart.backToMenu': 'Volver al menú BB84',
+        'component.gameRestart.eveTitle': '¡Eva fue detectada!',
+        'component.gameRestart.eveDescription': 'La clave está comprometida —' +
+            ' se descarta y se reinicia el intercambio, esta vez sin Eva.',
         'component.return.returnToMain': 'Regresar al menú principal',
         'component.results.seeResults': 'Ver resultados',
         'component.basisTab.alertTitle': '¡No hay suficientes bits!',

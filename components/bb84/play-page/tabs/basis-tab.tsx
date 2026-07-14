@@ -25,6 +25,9 @@ import GameRestartDialog
 import {BB84GameStep} from '@/types';
 import {getValidBits, mimicEveIntercept} from '@/lib/bb84/solo-player';
 import {restartSoloRound} from '@/lib/bb84/solo-round';
+import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
+import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
+import {useRouter} from 'next/navigation';
 import {generateUniqueRandomList} from '@/lib/utils';
 
 const BasisTab = ({playerRole}: { playerRole: string }) => {
@@ -32,7 +35,8 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
     const [restartModalOpen, setRestartModalOpen] = useState(false);
 
     const {localize} = useLanguage();
-    const {shareKey} = useSocket();
+    const {shareKey, disconnectPlayRoom} = useSocket();
+    const router = useRouter();
 
     const {
         setStep,
@@ -115,6 +119,20 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
             resetProgress();
         }
         setRestartModalOpen(false);
+    };
+
+    // Task 49-C: the quiet escape hatch — leaving is an explicit quit (the
+    // Navigation Invariant's "explicit user intent"), so the session is
+    // abandoned; settings changes live at the protocol menu. Same in both
+    // modes (Solo/Multi Parity Principle); disconnectPlayRoom is a safe
+    // no-op in solo.
+    const exitToMenu = () => {
+        // Deliberately do NOT close the dialog: it keeps covering the screen
+        // while abandon() wipes the stores and the navigation completes —
+        // otherwise the emptied step-1 game flashes during the transition.
+        disconnectPlayRoom();
+        abandon(bb84Adapter);
+        router.replace('/bb84');
     };
 
     const onSend = () => {
@@ -229,7 +247,10 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                                    'component.basisTab.alertTitle')}
                                description={localize(
                                    'component.basisTab.alertDescription')}
-                               onConfirm={restartGame}/>
+                               confirmLabel={localize(
+                                   'component.gameRestart.playAgain')}
+                               onConfirm={restartGame}
+                               onExit={exitToMenu}/>
             <div className="block border
                     text-card-foreground border-secondary bg-card shadow-lg
                     rounded-lg">
