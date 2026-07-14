@@ -893,6 +893,16 @@ Special cases to leave alone:
 
 ---
 
+### 52. 📋 E91 pre-migration findings (recorded 2026-07-14 — for when E91's turn comes)
+
+**Status**: 📋 RECORDED, deliberately NOT worked on (BB84 pilot first). Found by Ibra testing E91 with Eve.
+
+- [ ] **52-A — CHSH "not secure" restart leaves an EMPTY transcript.** `solo-CHSH-tab.tsx:242` `restartGameWithoutEve` is a naive `resetRoom+resetProgress` (+local state) that regenerates nothing and pushes NO welcome lines → the Game Progression sidebar is blank after restart (screenshot confirmed). Same disease as BB84 Task 49 / Task 50 F1; the E91 *basis*-tab restart pushes lines, the CHSH one forgot (copy drift). Fix vehicle: E91's canonical `solo-round`-style helper during its migration (mirror BB84's `lib/bb84/solo-round.ts`).
+- [ ] **52-B — the security claim is never verified.** `solo-CHSH-tab.tsx`: the CHSH `S` value is computed (`:116`) and displayed, but `onSecure`/`onUnsecure` "directly navigate or set state" (the file header says so itself, `:9`) — no comparison of the player's claim against `S` (≤ 2 vs > 2), no BB84-style valid/invalid "try again" feedback. Pedagogical gap: the game follows the user's decision blindly. Design the verification mechanic (mirror BB84's validate-with-feedback) at E91 migration.
+- Cross-refs: Task 50 F1 (restart copies), Task 51 (E91 already has probabilistic Eve — the model BB84 may adopt), Task 26/40 (E91 lifecycle migration).
+
+---
+
 ### 🧪 LOCAL TESTING NOTE: Fossil History in Long-Lived Tabs
 
 **Not a code bug** — testing methodology (learned 2026-07-13, Task 48 D5b).
