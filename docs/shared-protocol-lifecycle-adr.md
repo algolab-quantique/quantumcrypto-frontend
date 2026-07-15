@@ -1162,16 +1162,49 @@ protocol end-to-end at least once. Pedagogy over realism, on purpose.
 The *insufficient-key* restart (too few matching bases) is different: it is bad luck, not
 detection — it restarts with the **same settings, Eve included**.
 
-### Unification target (Task 51 — product decision pending)
+### Unification decision (Task 51 — DECIDED 2026-07-14, Ibra)
 
-The per-protocol divergence (deterministic vs probabilistic presence; missing DPS restart
-handler) is drift to unify, not a protocol need. The candidate end-state: **all protocols
-treat the checkbox as "Eve possible" with a probability constant**, and every restart
-simply **redraws** the presence. That preserves the anti-loop goal *statistically*
-(p < 1 ⇒ students eventually complete the protocol) while restoring realism (Eve may
-return, or slip through undetected), and it dissolves the "without Eve" special case —
-one restart semantic for all protocols and both modes. Until that decision is made, BB84
-continues exactly as designed.
+**Decision: BB84 solo Eve becomes probabilistic.** The checkbox means "Eve *possible*";
+her actual presence is drawn once at game start with a user-set probability
+("Probabilité d'Ève", default 0.5) — exactly like **BB84's own multiplayer mode**, E91,
+and DPS. BB84 stops being inconsistent with itself.
+
+**The old choice, recorded fairly:** solo Eve was deterministic (checkbox ⇒ she is
+there, every photon intercepted). Its merit was real: a *guaranteed* demonstration —
+every student who checks the box sees eavesdropping effects, ideal for a first lesson —
+and a simpler mental model.
+
+**Why it is no longer right for us:**
+1. **It defeats BB84's own lesson.** The protocol exists to detect an *unknown*
+   eavesdropper. When the student already knows the answer before playing, the
+   validation step is a demonstration, not a **measurement** — the genuine "did we catch
+   someone?" reasoning (the actual epistemic situation of Alice and Bob) never happens.
+2. **It violates the Solo/Multi Parity Principle inside one protocol**: the same
+   checkbox produces different physics in solo vs multi.
+3. It is inconsistent with E91/DPS, and it flattens the statistics lesson (all runs
+   identical) and the validation-bits lesson (she is always there, so "she may slip
+   through" never combines with "she may be absent").
+
+**Nothing is lost:** probability **1.0 reproduces the old behavior exactly** — the
+deterministic guaranteed-demo lesson remains available as a setting, not a code path.
+And the model being adopted is the original author's own multiplayer design, completed
+rather than replaced.
+
+**Phase 1 (implemented with this decision):** the solo modal gains the same
+"Probabilité d'Ève" field as the multiplayer create-game modal (same localization keys,
+bounds 0.1–1.0, default `BB84_EVE_PERCENTAGE_DEFAULT = 0.5`). The draw happens **once at
+game start**; both `gameHasEve` and `evePresent` carry the drawn result, so all
+downstream behavior is unchanged (insufficient-key restart preserves the drawn presence;
+Eve-detected restart still switches her off).
+
+**Explicitly NOT adopted: redrawing at restart.** At probability 1.0 a redraw would
+resurrect the detect→restart infinite loop the original design prevented. Revisit only
+with a capped/decaying scheme if ever wanted.
+
+**Phase 2 (later):** an end-of-game reveal — "Ève était-elle présente ?" — like E91's
+`e91OriginalEvePresent`, which requires storing the checkbox+probability separately from
+the draw. Also at the protocols' unification: give DPS a restart handler and align the
+remaining Eve mechanics.
 
 ---
 

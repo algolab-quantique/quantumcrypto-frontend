@@ -53,6 +53,22 @@ export const BB84_SOLO_PHOTON_MIN_WITHOUT_EVE = BB84_TEST_MODE ? 4 : 10;
 export const BB84_SOLO_PHOTON_DEFAULT = BB84_TEST_MODE ? 4 : 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Eve Presence Probability - SOLO MODE (Task 51, ADR §12)
+// The checkbox means "Eve POSSIBLE"; actual presence is drawn once at game
+// start with this probability — same model as BB84 multiplayer (backend
+// eve_percentage), E91 and DPS. Probability 1.0 reproduces the historical
+// deterministic behavior.
+// ─────────────────────────────────────────────────────────────────────────────
+/** Default Eve interception probability (mirrors E91/DPS and the multi create-game default) */
+export const BB84_EVE_PERCENTAGE_DEFAULT = 0.5;
+
+/** Minimum Eve interception probability */
+export const BB84_EVE_PERCENTAGE_MIN = 0.1;
+
+/** Maximum Eve interception probability */
+export const BB84_EVE_PERCENTAGE_MAX = 1.0;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Validation Bits Configuration - SOLO MODE
 // ─────────────────────────────────────────────────────────────────────────────
 /**
