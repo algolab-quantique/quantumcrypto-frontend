@@ -56,7 +56,8 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' to connect to has already started.',
         'component.createGame.numbersOnly': 'Only numbers are allowed',
         'component.createGame.validationLength': 'The validation bits must' +
-            ' be less than or equal to half of the key length',
+            ' be at most a quarter of the photon count (they are sacrificed' +
+            ' from the sifted key)',
         'component.createGame.validationDescription': 'Validation bits',
         'component.main.errorCreating': 'Error creating game',
         'component.createGame.evePercentage.invalidType': 'Only numbers' +
@@ -308,6 +309,27 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.replay': 'Play Again',
         'component.e91.results.home': 'Main Menu',
 
+        // BB84 Solo Results Page (Task 51 ph.2 — lives here, not in
+        // bb84-lines: /bb84/solo-results is not a play|solo route, so the
+        // language provider serves the QUANTUMCRYPTO dictionary, like E91's.)
+        'component.bb84.results.title': 'Solo game results',
+        'component.bb84.results.room': 'Players',
+        'component.bb84.results.evePresent': 'Eve present?',
+        'component.bb84.results.eveDetected': 'Eve detected?',
+        'component.bb84.results.time': 'Time',
+        'component.bb84.results.keyLength': 'Key length',
+        'component.bb84.results.score': 'Score',
+        'component.bb84.results.yes': 'Yes',
+        'component.bb84.results.no': 'No',
+        'component.bb84.results.revealAbsent': 'Eve was absent — your key' +
+            ' is secure',
+        'component.bb84.results.revealCaught': 'Eve was present — and you' +
+            ' detected her (the exchange was replayed without her)',
+        'component.bb84.results.revealMissed': '⚠️ Eve was present — and' +
+            ' you did NOT detect her: your key is compromised!',
+        'component.bb84.results.replay': 'Play Again',
+        'component.bb84.results.home': 'Main Menu',
+
         // Multiplayer Results Page
         'component.results.title': 'Results for game',
         'component.results.iteration': 'Iteration',
@@ -530,8 +552,8 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' essayez de vous connecter a déjà commencé.',
         'component.createGame.numbersOnly': 'Seuls les chiffres sont autorisés',
         'component.createGame.validationLength': 'Le nombre de bits de' +
-            ' validation doit être inférieur ou égal à la moitié' +
-            ' de la longueur de la clé',
+            ' validation doit être au plus le quart du nombre de photons' +
+            ' (ils sont sacrifiés de la clé tamisée)',
         'component.createGame.validationDescription': 'Bits de validation',
         'component.main.errorCreating': 'Erreur lors de la création du jeu',
         'component.createGame.evePercentage.invalidType': 'Doit être entre 0.1 et 1',
@@ -839,6 +861,25 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.replay': 'Rejouer',
         'component.e91.results.home': 'Menu Principal',
 
+        // BB84 Solo Results Page FR (Task 51 ph.2)
+        'component.bb84.results.title': 'Résultats de la partie solo',
+        'component.bb84.results.room': 'Joueurs',
+        'component.bb84.results.evePresent': 'Ève présente ?',
+        'component.bb84.results.eveDetected': 'Ève détectée ?',
+        'component.bb84.results.time': 'Temps',
+        'component.bb84.results.keyLength': 'Longueur de la clé',
+        'component.bb84.results.score': 'Score',
+        'component.bb84.results.yes': 'Oui',
+        'component.bb84.results.no': 'Non',
+        'component.bb84.results.revealAbsent': 'Ève était absente — votre' +
+            ' clé est sécurisée',
+        'component.bb84.results.revealCaught': 'Ève était présente — et' +
+            ' vous l\'avez détectée (l\'échange a été rejoué sans elle)',
+        'component.bb84.results.revealMissed': '⚠️ Ève était présente — et' +
+            ' vous ne l\'avez PAS détectée : votre clé est compromise !',
+        'component.bb84.results.replay': 'Rejouer',
+        'component.bb84.results.home': 'Menu Principal',
+
         // Multiplayer Results Page FR
         'component.results.title': 'Résultats de la partie',
         'component.results.iteration': 'Itération',
@@ -1069,8 +1110,8 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' intentando conectarte ya ha comenzado.',
         'component.createGame.numbersOnly': 'Solo se permiten números',
         'component.createGame.validationLength': 'Los bits de validación' +
-            ' deben ser menores o iguales a la mitad de la longitud de la' +
-            ' clave',
+            ' deben ser como máximo un cuarto del número de fotones (se' +
+            ' sacrifican de la clave tamizada)',
         'component.createGame.validationDescription': 'Bits de validación',
         'component.main.errorCreating': 'Error al crear el juego',
         'component.createGame.evePercentage.invalidType': 'Solo se permiten' +
@@ -1331,6 +1372,25 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.failure': '❌ Juego terminado.',
         'component.e91.results.replay': 'Jugar de Nuevo',
         'component.e91.results.home': 'Menú Principal',
+
+        // BB84 Solo Results Page ES (Task 51 ph.2)
+        'component.bb84.results.title': 'Resultados de la partida en solitario',
+        'component.bb84.results.room': 'Jugadores',
+        'component.bb84.results.evePresent': '¿Eva presente?',
+        'component.bb84.results.eveDetected': '¿Eva detectada?',
+        'component.bb84.results.time': 'Tiempo',
+        'component.bb84.results.keyLength': 'Longitud de la clave',
+        'component.bb84.results.score': 'Puntuación',
+        'component.bb84.results.yes': 'Sí',
+        'component.bb84.results.no': 'No',
+        'component.bb84.results.revealAbsent': 'Eva estaba ausente — tu' +
+            ' clave es segura',
+        'component.bb84.results.revealCaught': 'Eva estaba presente — y la' +
+            ' detectaste (el intercambio se rejugó sin ella)',
+        'component.bb84.results.revealMissed': '⚠️ Eva estaba presente — y' +
+            ' NO la detectaste: ¡tu clave está comprometida!',
+        'component.bb84.results.replay': 'Jugar de Nuevo',
+        'component.bb84.results.home': 'Menú Principal',
 
         // Multiplayer Results Page ES
         'component.results.title': 'Resultados del juego',

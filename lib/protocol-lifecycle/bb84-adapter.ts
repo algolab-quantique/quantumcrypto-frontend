@@ -35,6 +35,8 @@ export const bb84Adapter: ProtocolAdapter = {
         'bb84ValidationBitsLength',
         'bb84GameHasEve',
         'bb84BobBasisInputs',
+        'bb84SoloEveRecord',
+        'bb84GameStartTime',
     ],
     resetRoom: () => useBB84RoomStore.getState().resetRoom(),
     restoreRoom: data => useBB84RoomStore.getState().restoreGame(data as Partial<BB84RoomStateSchema>),

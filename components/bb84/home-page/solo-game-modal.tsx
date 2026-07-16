@@ -27,7 +27,7 @@ import { CheckedState } from '@radix-ui/react-checkbox';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useRouter } from 'next/navigation';
-import { beginSoloRound } from '@/lib/bb84/solo-round';
+import { beginSoloRound, recordSoloGameStart } from '@/lib/bb84/solo-round';
 import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
@@ -110,8 +110,13 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
+            // Cap at photons/4, not /2: the sifted key averages HALF the
+            // photons (Binomial n,1/2), and validation bits are sacrificed
+            // from it — a cap of n/2 makes the "not enough bits" restart fire
+            // in most rounds (found by Ibra: 6 photons/3 validation ⇒ ~66%
+            // restart rate). n/4 matches getDefaultValidationBits' 25%.
             (schema.validationBitsLength > 0 && schema.validationBitsLength <=
-                schema.photonNumber / 2)) || !schema.eve),
+                schema.photonNumber / 4)) || !schema.eve),
             {
                 message: localize('component.createGame.validationLength'),
                 path: ['validationBitsLength'],
@@ -163,8 +168,12 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         // Task 51 (ADR §12): the checkbox means "Eve POSSIBLE" — her actual
         // presence is drawn ONCE here, like BB84 multiplayer (backend draw from
         // eve_percentage), E91 and DPS. Probability 1.0 reproduces the old
-        // deterministic behavior. Both flags below carry the DRAW, so all
-        // downstream behavior (restarts, physics, refresh restore) is unchanged.
+        // deterministic behavior. TWO DISTINCT FLAGS:
+        // - gameHasEve = the CHECKBOX: the game includes the validation
+        //   mechanic. It must NOT carry the draw — skipping validation when
+        //   Eve wasn't drawn would leak the answer ("no validation step ⇒
+        //   she's not here"), defeating detection-under-uncertainty.
+        // - evePresent = the DRAW: whether she actually intercepts (physics).
         const eveDrawn = eve && Math.random() < evePercentage;
 
         void recordGameStats('bb84', 1, { silent: true });
@@ -172,15 +181,19 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         setPlayerName(playerName);
         setPlayingSolo(true);
         setEvePresent(eveDrawn);
-        setGameHasEve(eveDrawn);
+        setGameHasEve(eve);
         setValidationBitsLength(validationBitsLength);
         setPhotonNumber(photonNumber);
 
         // Save game config to localStorage for page refresh persistence
         localStorage.setItem('bb84PhotonNumber', JSON.stringify(photonNumber));
         localStorage.setItem('bb84ValidationBitsLength', JSON.stringify(validationBitsLength));
-        localStorage.setItem('bb84GameHasEve', JSON.stringify(eveDrawn));
+        localStorage.setItem('bb84GameHasEve', JSON.stringify(eve));
         localStorage.setItem('bb84GameData', JSON.stringify({ evePresent: eveDrawn }));
+        // Task 51 ph.2: persist the game's Eve story (checkbox, probability,
+        // draw) + start time for the solo results/reveal page. Game scope:
+        // restarts do not rewrite these.
+        recordSoloGameStart({ enabled: eve, percentage: evePercentage, drawn: eveDrawn });
 
         // Canonical, role-aware round start (lib/bb84/solo-round.ts) — shared
         // with the restart paths so generation/transcript cannot drift (Task 50

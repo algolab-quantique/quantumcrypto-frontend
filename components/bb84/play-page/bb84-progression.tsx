@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import GameProgression from '@/components/shared/game-progression';
 import usePlayerStore from '@/store/player-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
@@ -14,7 +14,7 @@ import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
 import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import {toast} from 'sonner';
-import {restartSoloRound} from '@/lib/bb84/solo-round';
+import {markSoloEveDetected, restartSoloRound} from '@/lib/bb84/solo-round';
 import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
 
 const Bb84Progression = () => {
@@ -55,6 +55,15 @@ const Bb84Progression = () => {
     const eveRestartNeeded = evePresent && !eveUndetected &&
         (validated || validatedByPartner);
 
+    // Task 51 ph.2: record the detection in the game's Eve story so the solo
+    // results page can reveal "present and caught" even though the Eve-restart
+    // wipes the round's evePresent flag.
+    useEffect(() => {
+        if (playingSolo && eveRestartNeeded) {
+            markSoloEveDetected();
+        }
+    }, [playingSolo, eveRestartNeeded]);
+
     // Task 49-C: ONE blocking dialog for both modes (Solo/Multi Parity
     // Principle, ADR §11) and ONE semantic: the new round restarts WITHOUT Eve
     // (historical, deliberate design — ADR §12: deterministic BB84 Eve would
@@ -90,18 +99,13 @@ const Bb84Progression = () => {
         router.replace(`/games/bb84/${gameCode}/results`);
     };
 
-    const goToMainMenu = () => {
-        // Completed game: nothing to quit, so just navigate (Navigation
-        // Invariant — completed data is kept until new game/replay, same as
-        // the sibling "Rejouer" button and Back-navigation). Abandoning here
-        // wiped the stores while the page was still mounted, flashing an
-        // empty step-1 form during the transition.
-        router.replace('/');
+    // Task 51 ph.2 (Parity Principle): solo mirrors multi — the félicitation
+    // offers ONE action, "Voir les résultats"; Rejouer/Retour live on the
+    // results page (like E91). Push (real destination): Back restores the
+    // félicitation, per the Navigation Invariant.
+    const goToSoloResultsPage = () => {
+        router.push('/bb84/solo-results');
     };
-
-    const goToBB84Page = () => {
-        router.replace('/bb84');
-    }
 
     return (
         <GameProgression className="border-none">
@@ -124,9 +128,8 @@ const Bb84Progression = () => {
                 {!playingSolo && <div className="w-full h-fit mb-1 flex justify-center">
                     <Button onClick={goToResultsPage}>{localize('component.results.seeResults')}</Button>
                 </div>}
-                {playingSolo && <div className="w-full h-fit mb-1 flex justify-center space-x-4">
-                    <Button onClick={goToBB84Page}>{localize('component.gameRestart.playAgain')}</Button>
-                    <Button onClick={goToMainMenu}>{localize('component.return.returnToMain')}</Button>
+                {playingSolo && <div className="w-full h-fit mb-1 flex justify-center">
+                    <Button onClick={goToSoloResultsPage}>{localize('component.results.seeResults')}</Button>
                 </div>}
             </div>}
         </GameProgression>

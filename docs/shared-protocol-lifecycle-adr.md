@@ -1193,13 +1193,32 @@ rather than replaced.
 **Phase 1 (implemented with this decision):** the solo modal gains the same
 "Probabilité d'Ève" field as the multiplayer create-game modal (same localization keys,
 bounds 0.1–1.0, default `BB84_EVE_PERCENTAGE_DEFAULT = 0.5`). The draw happens **once at
-game start**; both `gameHasEve` and `evePresent` carry the drawn result, so all
-downstream behavior is unchanged (insufficient-key restart preserves the drawn presence;
-Eve-detected restart still switches her off).
+game start**, and the two flags mean **different things** (a first implementation
+conflated them — caught by Ibra's testing):
+- **`gameHasEve` = the CHECKBOX (flow):** the game includes the validation mechanic. It
+  must NOT carry the draw — skipping the validation step when Eve wasn't drawn would
+  *leak the answer* ("no validation step ⇒ she's not here"), defeating the entire
+  detection-under-uncertainty pedagogy. The student always validates when Eve is
+  possible; that is how they find out.
+- **`evePresent` = the DRAW (physics):** whether she actually intercepts. The
+  insufficient-key restart preserves it; the Eve-detected restart zeroes it (presence
+  only — the validation mechanic stays, so the student re-validates and confirms the
+  clean channel, like the multiplayer coordinated restart).
 
-**Explicitly NOT adopted: redrawing at restart.** At probability 1.0 a redraw would
-resurrect the detect→restart infinite loop the original design prevented. Revisit only
-with a capped/decaying scheme if ever wanted.
+**Open question for multiplayer (check with the backend at 49-B):** does the backend's
+`game_has_eve` carry the checkbox or the draw? If it carries the draw, multi has the
+same validation-skip leak and needs the same flow/physics split server-side.
+
+**Restart semantics — current vs target (updated 2026-07-16):** today the Eve-detected
+restart forces her presence off, because that is what the multiplayer backend event
+(`RESTART_WITHOUT_EVE`) does and the Parity Principle requires both modes to match.
+**The agreed TARGET (Ibra) is a REDRAW with the same probability** — it makes every
+restart semantically identical ("same settings, fresh randomness, draw included") and is
+physically honest: at probability 1.0 the student can never establish a secure key on a
+permanently tapped channel, which is BB84's security *working* (the earlier "infinite
+loop" objection was overstated — the loop terminates when Eve slips through undetected,
+and a teacher choosing 1.0 is choosing exactly that lesson). **Flip both modes together**
+when the backend can redraw (49-B backend session); do not switch solo alone.
 
 **Phase 2 (later):** an end-of-game reveal — "Ève était-elle présente ?" — like E91's
 `e91OriginalEvePresent`, which requires storing the checkbox+probability separately from
