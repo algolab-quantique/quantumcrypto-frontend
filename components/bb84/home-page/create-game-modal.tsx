@@ -90,8 +90,11 @@ const CreateGameModal = ({
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
+            // Cap at photons/4, not /2 — same rationale as the solo modal:
+            // the sifted key averages half the photons, and validation bits
+            // are sacrificed from it (Solo/Multi Parity Principle).
             (schema.validationBits > 0 && schema.validationBits <=
-                schema.photonNumber / 2)) || !schema.eve),
+                schema.photonNumber / 4)) || !schema.eve),
             {
                 message: localize('component.createGame.validationLength'),
                 path: ['validationBits'],

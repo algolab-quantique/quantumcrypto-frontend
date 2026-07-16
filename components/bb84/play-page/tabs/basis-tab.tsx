@@ -140,7 +140,11 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
         if (isValid) {
             const keyBits = validatedBits.filter(({discarded}) => !discarded)
                 .map(({value}) => value);
-            if (keyBits.length < validationBitsLength) {
+            // <= not <: validation bits are SACRIFICED (publicly compared), so
+            // the sifted key must be strictly longer than the validation count
+            // or zero bits remain for the message — an unplayable game (found
+            // by Ibra, 2026-07-16).
+            if (keyBits.length <= validationBitsLength) {
                 setRestartModalOpen(true);
                 return;
             }
