@@ -20,7 +20,7 @@ import {
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-import { restartWithoutEve } from '@/lib/bb84/utils';
+import { restartWithoutEve, sacrificeValidationBits } from '@/lib/bb84/utils';
 import {
     A_BASES_EVENT,
     A_CIPHER_EVENT,
@@ -949,6 +949,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             if (useBB84RoomStore.getState().evePresent) {
                                 useBB84RoomStore.getState().setEveUndetected(true);
                             }
+                            // Task 53: the compared bits were announced
+                            // publicly — both players discard them (the
+                            // indices are symmetric on both clients).
+                            sacrificeValidationBits();
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',
@@ -980,6 +984,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             if (useBB84RoomStore.getState().evePresent) {
                                 useBB84RoomStore.getState().setEveUndetected(true);
                             }
+                            // Task 53: same sacrifice as A_VALIDATED_EVENT.
+                            sacrificeValidationBits();
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',

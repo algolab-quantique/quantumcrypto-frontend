@@ -914,7 +914,7 @@ Special cases to leave alone:
 
 ### 53. 🐛 BB84 never sacrifices the validation bits from the key (protocol-core bug)
 
-**Status**: 🔵 DIAGNOSED 2026-07-16 (Ibra: 6 photons, validation 1, sifted 2 → app encrypts with BOTH bits) — fix agreed, in progress.
+**Status**: ✅ DONE 2026-07-16 (tested green solo + multi: shortened identical keys, message decrypts; results keyLength honest). Canonical `sacrificeValidationBits()` in `lib/bb84/utils.ts`; called by the verdict-clicker (validation-tab) and mirrored on the partner (`A/B_VALIDATED` valid branches; indices symmetric — solo: frontend draw, multi: backend singleton draw).
 **The bug:** `validation-tab.tsx:85` reads the validation bits (`validationIndices.map(i => keyBits[i])`) and compares them **publicly** — but nothing ever removes them; `messaging-tab` encrypts with the full `keyBits`. In real BB84 the compared bits are announced on the public channel (Eve knows them) and MUST be discarded. Both modes affected (messaging-tab shared; multi shares the full sifted key). Pedagogically wrong exactly where the app teaches security. (Irony: the `<=` restart trigger comment already stated the correct theory — the code never did it. Poster child for Task 47's tests.)
 **Fix design:** after a VALID verdict, `keyBits := keyBits without validationIndices` — solo: in validation-tab before `moveToExchangeTab`; multi: mirror in socket-provider's `A/B_VALIDATED` valid branches (`validationIndices` are already symmetric on both clients). Downstream self-corrects: cipher/key display shrink, results `keyLength` honest, checkpoint persists filtered key, `<=` trigger already guarantees ≥1 remaining bit.
 

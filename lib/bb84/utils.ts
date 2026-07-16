@@ -48,6 +48,21 @@ export const clearBB84LocalStorage = () => {
     }
 }
 
+/**
+ * BB84's sacrifice step (Task 53): the validation bits are compared over the
+ * PUBLIC channel — Eve knows them — so after a VALID verdict they must be
+ * discarded from the key. The remaining bits are the secret key used for the
+ * encrypted message. Canonical for both modes: the verdict-clicker calls this
+ * from validation-tab; the partner mirrors it in the A/B_VALIDATED handlers
+ * (validationIndices are symmetric on both clients). No-op when the game has
+ * no validation step (no Eve mechanic).
+ */
+export const sacrificeValidationBits = () => {
+    const {keyBits, validationIndices, setKeyBits} = useBB84RoomStore.getState();
+    if (validationIndices.length === 0) return;
+    setKeyBits(keyBits.filter((_, index) => !validationIndices.includes(index)));
+};
+
 export const restartWithoutEve = () => {
     localStorage.removeItem('bb84PhotonNumber');
     localStorage.setItem('bb84GameData', JSON.stringify({}));
