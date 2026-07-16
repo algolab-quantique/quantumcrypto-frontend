@@ -99,10 +99,12 @@ table, guards) — decided and scoped when we get there.
 Playwright for the flows we test by hand today (browser Back/Forward chains,
 solo/multi rounds). Could eventually replace the manual two-browser ritual.
 
-### CI (with phase 1 or right after)
+### CI — ACTIVE (2026-07-17)
 
-A GitHub Actions workflow running `npm test` + `tsc --noEmit` on every push —
-so "checked by machine" is true even when nobody remembers to run it.
+`.github/workflows/tests.yml`: on every push and pull request, GitHub runs
+`npm test` + `tsc --noEmit` + `npm run lint` on a clean machine and marks the
+commit ✓ or ✗ — "checked by machine" is true even when nobody remembers to
+run it.
 
 ---
 
