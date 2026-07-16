@@ -99,7 +99,7 @@ table, guards) — decided and scoped when we get there.
 Playwright for the flows we test by hand today (browser Back/Forward chains,
 solo/multi rounds). Could eventually replace the manual two-browser ritual.
 
-### CI — ACTIVE (2026-07-17)
+### CI — ACTIVE (2026-07-16)
 
 `.github/workflows/tests.yml`: on every push and pull request, GitHub runs
 `npm test` + `tsc --noEmit` + `npm run lint` on a clean machine and marks the
