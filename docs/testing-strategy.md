@@ -40,8 +40,9 @@ We use **[Vitest](https://vitest.dev)** as the test runner.
 
 ### Dev dependencies
 
-`vitest`, `happy-dom` (light fake DOM/storage), `vite-tsconfig-paths` (resolves
-`@/…` imports). Nothing enters the production bundle.
+`vitest`, `happy-dom` (light fake DOM/storage). The `@/…` import aliases are
+resolved natively (`resolve.tsconfigPaths: true` in `vitest.config.ts`).
+Nothing enters the production bundle.
 
 ---
 
