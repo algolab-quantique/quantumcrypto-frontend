@@ -720,7 +720,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         router.replace('/');
                         localStorage.setItem('dpsPlayerData', JSON.stringify({}));
                         localStorage.setItem('dpsGameData', JSON.stringify({}));
-                        localStorage.clear();
+                        // Task 54 F2: no localStorage.clear() here — it wiped EVERY
+                        // protocol's data (incl. BB84's kept completed sessions,
+                        // violating the Navigation Invariant). clearDPSLocalStorage()
+                        // below already removes all DPS-owned keys.
                         clearDPSLocalStorage();
 
                     }
@@ -1170,7 +1173,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         router.replace('/');
                         localStorage.setItem('dpsPlayerData', JSON.stringify({}));
                         localStorage.setItem('dpsGameData', JSON.stringify({}));
-                        localStorage.clear();
+                        // Task 54 F2: no localStorage.clear() here — it wiped EVERY
+                        // protocol's data (incl. BB84's kept completed sessions,
+                        // violating the Navigation Invariant). clearDPSLocalStorage()
+                        // below already removes all DPS-owned keys.
                         clearDPSLocalStorage();
 
                     }
