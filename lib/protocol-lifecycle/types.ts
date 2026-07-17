@@ -13,9 +13,13 @@ export interface MultiplayerSession {
     [key: string]: unknown;
 }
 
+// Task 54 F4: `multiplayerSessionIssue` was pruned from this public result —
+// since D1, a broken multiplayer identity fails closed as {kind: 'corrupted'}
+// and can never reach a restored checkpoint. (The internal
+// `restoreMultiplayerSession` still uses MultiplayerSessionIssue for its own
+// classification.) A public type must not promise states no code can produce.
 type RestoredCheckpoint = {
     multiplayerSession?: MultiplayerSession;
-    multiplayerSessionIssue?: MultiplayerSessionIssue;
 };
 
 export type CheckpointRestoreResult =

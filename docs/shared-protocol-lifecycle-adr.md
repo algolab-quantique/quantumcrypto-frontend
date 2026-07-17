@@ -238,13 +238,14 @@ The public function stays simple, but the result is explicit:
 type CheckpointRestoreResult =
     | {kind: 'missing'}
     | {kind: 'corrupted'}
-    | {kind: 'active'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue}
-    | {kind: 'completed'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue};
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession};
 ```
 
-If multiplayer identity is missing or invalid, the checkpoint can still be
-restored locally. The page/socket layer simply cannot reconnect until it has a
-valid multiplayer session.
+Since D1 (Task 48) restore is STRICT: a missing multiplayer identity restores
+the checkpoint locally as solo, but a broken identity fails closed as
+`corrupted` — it never reaches a restored checkpoint (`multiplayerSessionIssue`
+was pruned from the public result accordingly, Task 54 F4).
 
 ### Internal restore components
 
@@ -451,8 +452,8 @@ interface MultiplayerSession {
 type CheckpointRestoreResult =
     | {kind: 'missing'}
     | {kind: 'corrupted'}
-    | {kind: 'active'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue}
-    | {kind: 'completed'; multiplayerSession?: MultiplayerSession; multiplayerSessionIssue?: MultiplayerSessionIssue};
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession};
 
 interface ProtocolAdapter {
     /** Protocol identifier */
