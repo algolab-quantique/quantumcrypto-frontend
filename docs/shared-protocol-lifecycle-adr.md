@@ -1,7 +1,10 @@
 # Shared Protocol Lifecycle — Architecture Decision Record
 
-> **Status**: DRAFT / REVIEW  
-> **Date**: June 2026  
+> **Status**: ACCEPTED — the BB84 pilot completed 2026-07-16 (Tasks 46–53: navigation
+> hardening, session single-source-of-truth, restart/Eve semantics, key sacrifice,
+> tests + CI), satisfying the acceptance gate set in Task 47. E91/DPS replication may
+> begin against this document.  
+> **Date**: June 2026 (accepted July 2026)  
 > **Supersedes**: [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) (preliminary version)  
 > **Complements**: [storage-architecture.md](storage-architecture.md) (historical reasoning, per-protocol audit)
 
@@ -648,7 +651,7 @@ export function getAdapter(protocolId: Protocol): ProtocolAdapter {
 ### New files (Phase 1)
 
 ```
-shared/
+lib/
 └── protocol-lifecycle/
     ├── types.ts              # ProtocolAdapter, ProtocolId, CheckpointRestoreResult
     ├── lifecycle.ts           # startFresh, saveCheckpoint, restoreCheckpoint, complete, abandon, clearProtocolStorage
@@ -1231,7 +1234,7 @@ remaining Eve mechanics.
 
 | Document | Status | Action |
 |----------|--------|--------|
-| **This ADR** | **Draft definitive plan** | Candidate architecture reference during review |
+| **This ADR** | **ACCEPTED (July 2026)** | The architecture reference; E91/DPS replicate against it |
 | [storage-architecture.md](storage-architecture.md) | Historical reasoning | Add header note pointing here. Keep for context. Rewrite after Phase 6. |
 | [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) | Superseded | Add header note pointing here. The ADR has better diagrams. |
 | [product-vision-game-experience.md](product-vision-game-experience.md) | Separate concern | Unchanged. Product/UX vision, not architecture. |
