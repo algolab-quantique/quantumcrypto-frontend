@@ -1,4 +1,5 @@
 import React from 'react';
+import {useLanguage} from '@/components/providers/language-provider';
 import {
     Table,
     TableBody,
@@ -14,6 +15,7 @@ interface ResultsTableProps {
 }
 
 const Bb84ResultsTable = ({rooms, players}: ResultsTableProps) => {
+    const {localize} = useLanguage();
 
     const getPlayerName = (playerId: number) => {
         const player = players.filter(player => player.id === playerId)[0];
@@ -63,10 +65,16 @@ const Bb84ResultsTable = ({rooms, players}: ResultsTableProps) => {
             <Table>
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg">
-                        <TableHead>Room</TableHead>
-                        <TableHead>Iteration</TableHead>
-                        <TableHead>Eve Present</TableHead>
-                        <TableHead>Time</TableHead>
+                        {/* Task 56: localized headers reusing the solo
+                            results keys (same dictionary on this route) +
+                            the derived Eve story (detected + verdict) so
+                            multi tells the same story as solo. */}
+                        <TableHead>{localize('component.bb84.results.room')}</TableHead>
+                        <TableHead>{localize('component.results.iteration')}</TableHead>
+                        <TableHead>{localize('component.bb84.results.evePresent')}</TableHead>
+                        <TableHead>{localize('component.bb84.results.eveDetected')}</TableHead>
+                        <TableHead>{localize('component.bb84.results.verdict')}</TableHead>
+                        <TableHead>{localize('component.bb84.results.time')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

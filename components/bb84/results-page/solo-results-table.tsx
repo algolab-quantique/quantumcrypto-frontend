@@ -112,6 +112,11 @@ const SoloResultsTable = ({
 
             {/* The reveal — the pedagogical point of probabilistic Eve */}
             <div className="text-center space-y-1">
+                {/* Task 56: same celebration as the multiplayer results page
+                    (shared neutral key) — both modes tell the full story. */}
+                <p className="text-xl text-green-500 font-bold">
+                    {localize('component.results.gameSuccess')}
+                </p>
                 <p className={`text-xl font-bold ${
                     !eveDrawn ? 'text-green-500'
                         : eveDetected ? 'text-green-500' : 'text-red-500'}`}>

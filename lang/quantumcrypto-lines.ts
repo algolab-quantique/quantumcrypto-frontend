@@ -327,6 +327,11 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' detected her (the exchange was replayed without her)',
         'component.bb84.results.revealMissed': '⚠️ Eve was present — and' +
             ' you did NOT detect her: your key is compromised!',
+        'component.bb84.results.verdict': 'Verdict',
+        'component.bb84.results.keyCompromised': 'Key compromised!',
+        'component.bb84.results.keySecure': 'Key secure',
+        'component.results.gameSuccess': '🎉 Congratulations! Game completed' +
+            ' successfully!',
         'component.bb84.results.replay': 'Play Again',
         'component.bb84.results.home': 'Main Menu',
 
@@ -877,6 +882,11 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' vous l\'avez détectée (l\'échange a été rejoué sans elle)',
         'component.bb84.results.revealMissed': '⚠️ Ève était présente — et' +
             ' vous ne l\'avez PAS détectée : votre clé est compromise !',
+        'component.bb84.results.verdict': 'Verdict',
+        'component.bb84.results.keyCompromised': 'Clé compromise !',
+        'component.bb84.results.keySecure': 'Clé sécurisée',
+        'component.results.gameSuccess': '🎉 Félicitations ! Partie terminée' +
+            ' avec succès !',
         'component.bb84.results.replay': 'Rejouer',
         'component.bb84.results.home': 'Menu Principal',
 
@@ -1389,6 +1399,11 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' detectaste (el intercambio se rejugó sin ella)',
         'component.bb84.results.revealMissed': '⚠️ Eva estaba presente — y' +
             ' NO la detectaste: ¡tu clave está comprometida!',
+        'component.bb84.results.verdict': 'Veredicto',
+        'component.bb84.results.keyCompromised': '¡Clave comprometida!',
+        'component.bb84.results.keySecure': 'Clave segura',
+        'component.results.gameSuccess': '🎉 ¡Felicidades! ¡Juego completado' +
+            ' con éxito!',
         'component.bb84.results.replay': 'Jugar de Nuevo',
         'component.bb84.results.home': 'Menú Principal',
 

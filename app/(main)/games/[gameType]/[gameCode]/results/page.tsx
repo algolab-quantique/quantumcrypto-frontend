@@ -240,7 +240,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
                         <p className="text-xl text-green-500 font-bold">
                             {isAdmin
                                 ? (localize('component.results.gamesFinished') || '✅ Some games have finished!')
-                                : (localize('component.e91.results.success') || '🎉 Congratulations! Game completed successfully!')}
+                                : (localize('component.results.gameSuccess') || '🎉 Congratulations! Game completed successfully!')}
                         </p>
                     </div>
                 )}
