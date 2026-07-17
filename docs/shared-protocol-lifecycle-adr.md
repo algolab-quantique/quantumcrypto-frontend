@@ -1240,7 +1240,46 @@ remaining Eve mechanics.
 
 ---
 
-## 13. Relationship to Existing Documents
+## 13. Standing Policies (Task 54 F5/F6 — rules that prevent regressions)
+
+### 13.1 The mode flags: derived cache, shrinking readership
+
+`playingSolo` / `playingMultiplayer` are a **derived cache of session truth**, not a
+source of truth (`detectSession` is). They currently work because of write ORDERING,
+which nothing enforces — so the full writer inventory is recorded here instead of
+living as tribal knowledge:
+
+| Writer | When |
+|---|---|
+| `useProtocolSessionGuard` (the D5a bridge) | on every guarded route mount — re-asserts truth |
+| socket-provider `ROLES_EVENT` (×3 protocols) | multiplayer start |
+| the solo start modals (×3 protocols) | solo start |
+| `bb84-game-form-v3` `onRejoin` | rejoin routing |
+| lifecycle `startFresh` / `abandon` | reset both to false |
+| the landing page | resets both on mount |
+
+**Rules:** (1) no NEW writers — mode changes flow through the lifecycle/guard;
+(2) no NEW readers — new components receive mode from the page (the guard already
+knows it); (3) **touched components migrate**: any component edited for any reason
+drops its `playingSolo` read in the same change (8 BB84 play-page files remain);
+(4) E91/DPS are born clean at replication (guard hook + mode passed down — their
+components never read the flags). A shared `ProtocolModeContext` is created at the
+FIRST migration that needs it — not before (no dead scaffolding).
+
+### 13.2 The socket provider: transport, not domain
+
+The provider holds ~50+ direct room-store manipulations inside its handlers — domain
+logic in the transport layer, in the one file that cannot be unit-tested as-is.
+**Hold-the-line rule:** NEW handler logic goes into per-protocol modules
+(`components/providers/socket-handlers/{protocol}-play-handler.ts`, the Phase-5 file
+plan of §6) that the provider merely calls; existing handler bodies move only when
+touched for another reason. First candidates when next touched: the `A/B_VALIDATED`
+bodies (modified twice in July 2026; extraction also makes them unit-testable).
+No big-bang extraction — §9 already warns Phase 5 is the riskiest change in the app.
+
+---
+
+## 14. Relationship to Existing Documents
 
 | Document | Status | Action |
 |----------|--------|--------|
