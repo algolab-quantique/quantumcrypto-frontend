@@ -23,6 +23,7 @@ import {Button} from '@/components/ui/button';
 import {useRouter} from 'next/navigation';
 import {Home, RotateCcw} from 'lucide-react';
 import type {SoloEveRecord} from '@/lib/bb84/solo-round';
+import {classifySoloEnding} from '@/lib/bb84/eve-story';
 
 const SoloResultsTable = ({
     playerName,
@@ -50,16 +51,16 @@ const SoloResultsTable = ({
 
     const eveDrawn = eveRecord?.drawn === true;
     const eveDetected = eveRecord?.detected === true;
-    // Same verdict semantics as the multi table: completed with Eve present
-    // and undetected = compromised key.
-    const keyCompromised = eveDrawn && !eveDetected;
-
-    // The reveal: absent / present-and-caught / present-and-missed.
-    const revealKey = !eveDrawn
-        ? 'component.bb84.results.revealAbsent'
-        : eveDetected
-            ? 'component.bb84.results.revealCaught'
-            : 'component.bb84.results.revealMissed';
+    // The ending classification is pure and fully unit-tested (eve-story.ts)
+    // — several endings cannot be forced manually (the MISSED one needs Eve
+    // present AND lucky matching validation bits).
+    const ending = classifySoloEnding(eveRecord);
+    const keyCompromised = ending === 'missed';
+    const revealKey = {
+        absent: 'component.bb84.results.revealAbsent',
+        caught: 'component.bb84.results.revealCaught',
+        missed: 'component.bb84.results.revealMissed',
+    }[ending];
 
     // Navigation Invariant: plain navigation, no clearing — completed data is
     // destroyed only by the next startFresh (new game / replay) or quit.
@@ -129,8 +130,7 @@ const SoloResultsTable = ({
                 stays sobering instead of congratulating a compromised key. */}
             <div className="text-center space-y-1">
                 <p className={`text-xl font-bold ${
-                    !eveDrawn ? 'text-green-500'
-                        : eveDetected ? 'text-green-500' : 'text-red-500'}`}>
+                    keyCompromised ? 'text-red-500' : 'text-green-500'}`}>
                     {localize(revealKey)}
                 </p>
                 {eveRecord?.enabled && (

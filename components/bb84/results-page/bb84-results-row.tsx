@@ -1,6 +1,7 @@
 import React from 'react';
 import {TableCell, TableRow} from '@/components/ui/table';
 import {useLanguage} from '@/components/providers/language-provider';
+import {deriveRoomEveStory} from '@/lib/bb84/eve-story';
 
 interface Bb84ResultsRowProps {
     room: any;
@@ -11,19 +12,10 @@ interface Bb84ResultsRowProps {
 const Bb84ResultsRow = ({room, player1, player2}: Bb84ResultsRowProps) => {
     const {localize} = useLanguage();
 
-    // Task 56 — derive the Eve story from the iterations (no backend change):
-    // the ONLY thing that removes Eve mid-game is the coordinated
-    // Eve-detected restart, which starts a new iteration without her. So:
-    // - an eve_present iteration followed by a later one => she was CAUGHT;
-    // - the LAST iteration eve_present => completed with her listening
-    //   (key compromised — the same "missed" ending as the solo reveal);
-    // - never present => key secure.
+    // Task 56 — the Eve story is derived from the iterations by the pure,
+    // fully unit-tested deriveRoomEveStory (lib/bb84/eve-story.ts).
     const iterations: any[] = room.iterations ?? [];
-    const lastIteration = iterations[iterations.length - 1];
-    const anyEve = iterations.some(({eve_present}: any) => eve_present);
-    const lastHadEve = !!lastIteration?.eve_present;
-    const eveDetected = anyEve && !lastHadEve;
-    const keyCompromised = lastHadEve;
+    const {eveDetected, keyCompromised} = deriveRoomEveStory(iterations);
 
     const yesNo = (value: boolean) => localize(value
         ? 'component.bb84.results.yes' : 'component.bb84.results.no');
