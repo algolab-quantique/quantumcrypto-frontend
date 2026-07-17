@@ -10,6 +10,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {
     abandon,
+    complete,
     detectSession,
     resolveSessionForRoute,
     restoreCheckpoint,
@@ -206,6 +207,17 @@ describe('resolveSessionForRoute (the route-guard policy)', () => {
         put('bb84PlayerData', {gameCode: 'X', role: 'A', room: 'r'});
         expect(resolveSessionForRoute(adapter, {completed: true, mode: 'solo'}))
             .toEqual({action: 'leave'});
+    });
+});
+
+describe('complete (the milestone persistence door — Task 54 F3)', () => {
+    it('writes the full room snapshot to the gameDataKey', () => {
+        const adapter = makeAdapter();
+        (adapter.getRoomSnapshot as ReturnType<typeof vi.fn>)
+            .mockReturnValue({gameSuccess: true, keyBits: ['1']});
+        complete(adapter);
+        expect(JSON.parse(localStorage.getItem('bb84GameData')!))
+            .toEqual({gameSuccess: true, keyBits: ['1']});
     });
 });
 

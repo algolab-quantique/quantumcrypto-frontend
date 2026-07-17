@@ -215,6 +215,15 @@ A lifecycle without save is incomplete.
 In Phase 1, `saveCheckpoint()` is a thin wrapper. It earns its place by being the
 **one place** where persistence is findable and extensible.
 
+> **Status of the two mechanisms (Task 54 F3, 2026-07-17):** the codebase has TWO
+> persistence mechanisms, on purpose — **incremental** persistence happens per field
+> via `updateAndStore()` inside the stores (every mutation mirrors to localStorage);
+> the **milestone** door is `complete(adapter)` → `saveCheckpoint(adapter)`, now
+> actually WIRED at the BB84 game-success moments (solo decrypt success and the
+> multiplayer success event) — it writes the full final snapshot and is where
+> backend sync will plug in. Naive picture: windows for everyday air, the door for
+> arrivals and departures.
+
 Important boundary: `saveCheckpoint()` should not blindly persist transient
 Zustand internals. If a store ever contains non-serializable fields or actions,
 the adapter must expose an explicit serializable room snapshot.

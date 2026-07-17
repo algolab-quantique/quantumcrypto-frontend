@@ -21,6 +21,8 @@ import {
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 import { restartWithoutEve, sacrificeValidationBits } from '@/lib/bb84/utils';
+import { complete } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import {
     A_BASES_EVENT,
     A_CIPHER_EVENT,
@@ -1105,6 +1107,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useBB84RoomStore.getState().setGameSuccess(true);
+                        // Task 54 F3: milestone snapshot through the lifecycle door
+                        // (also the future backend-sync hook).
+                        complete(bb84Adapter);
                         // Keep completed-game recovery data so a refresh can redirect
                         // to the results page. Cleanup happens from results/home flows.
                     } else if (gameType === 'dps') {
