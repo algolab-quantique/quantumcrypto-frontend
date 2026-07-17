@@ -3,7 +3,7 @@
 > [!NOTE]
 > The shared protocol lifecycle architecture is now documented in
 > [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md).
-> That ADR is the candidate architecture reference during review.
+> That ADR is ACCEPTED (July 2026) and is the architecture reference.
 >
 > This document is kept as historical context. It contains the original
 > storage/reconnect thinking and per-protocol audit that led to the ADR.
@@ -198,7 +198,7 @@ refactor breaks behavior, the app can return to a stable point.
 
 ### Diagrams
 
-See [Protocol Session Lifecycle Diagrams](protocol-session-lifecycle-diagrams.md)
+See the ADR's §4 sequence diagrams (the former lifecycle-diagrams doc was superseded and deleted)
 for Mermaid class and sequence diagrams describing the target lifecycle.
 
 ## Core Design Rule

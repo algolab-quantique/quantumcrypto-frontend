@@ -2,7 +2,8 @@
 
 > **Role**: Deep codebase audit and architectural investigation  
 > **Date**: June 2026  
-> **Led to**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) (the draft architecture plan)
+> **Led to**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) (since ACCEPTED, July 2026)
+> **Historical document** — reasoning that produced the ADR; do not follow as a spec.
 >
 > This document records the full investigation: every file read, redundancy
 > measurements, OOP vs functional analysis, and the initial architecture proposal.
@@ -23,7 +24,7 @@ I studied every file relevant to the architecture question:
 | **Constants** | [bb84-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/bb84-constants.ts), [e91-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/e91-constants.ts), [dps-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/dps-constants.ts) |
 | **Types** | [types.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/types.ts) |
 | **Hooks** | [use-prevent-navigation.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/hooks/use-prevent-navigation.ts) |
-| **Docs** | [storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md), [protocol-session-lifecycle-diagrams.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/protocol-session-lifecycle-diagrams.md), [product-vision-game-experience.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/product-vision-game-experience.md) |
+| **Docs** | [storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md), `protocol-session-lifecycle-diagrams.md` (deleted; in git history), [product-vision-game-experience.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/product-vision-game-experience.md) |
 | **Tasks** | [tasks_todo.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/tasks_todo.md) — 402 lines |
 | **Structure** | All `app/`, `components/`, `store/`, `lib/`, `hooks/` directories |
 
@@ -39,7 +40,7 @@ I studied every file relevant to the architecture question:
 
 3. **Solo mode works well.** localStorage-first, deterministic, each protocol's solo flow is self-contained. Don't mess with it.
 
-4. **The existing docs** ([storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md) and [lifecycle diagrams](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/protocol-session-lifecycle-diagrams.md)) already describe the right target. The thinking is sound.
+4. **The existing docs** ([storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md) and lifecycle diagrams (now ADR §4)) already describe the right target. The thinking is sound.
 
 ### 🔴 What's ACTUALLY the problem
 

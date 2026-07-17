@@ -5,7 +5,7 @@
 > tests + CI), satisfying the acceptance gate set in Task 47. E91/DPS replication may
 > begin against this document.  
 > **Date**: June 2026 (accepted July 2026)  
-> **Supersedes**: [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) (preliminary version)  
+> **Supersedes**: `protocol-session-lifecycle-diagrams.md` (preliminary version — deleted from the tree 2026-07-17, its diagrams live on improved in §4; retrievable via git)  
 > **Complements**: [storage-architecture.md](storage-architecture.md) (historical reasoning, per-protocol audit)
 
 ---
@@ -1236,6 +1236,6 @@ remaining Eve mechanics.
 |----------|--------|--------|
 | **This ADR** | **ACCEPTED (July 2026)** | The architecture reference; E91/DPS replicate against it |
 | [storage-architecture.md](storage-architecture.md) | Historical reasoning | Add header note pointing here. Keep for context. Rewrite after Phase 6. |
-| [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) | Superseded | Add header note pointing here. The ADR has better diagrams. |
+| `protocol-session-lifecycle-diagrams.md` | Superseded → **deleted 2026-07-17** | The ADR's §4 diagrams replaced it entirely; retrievable via git history. |
 | [product-vision-game-experience.md](product-vision-game-experience.md) | Separate concern | Unchanged. Product/UX vision, not architecture. |
 | [tasks_todo.md](../tasks_todo.md) Task 26 | Architecture task | Update to reference this ADR. |
