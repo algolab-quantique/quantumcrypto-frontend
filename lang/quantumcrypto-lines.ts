@@ -321,12 +321,13 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Score',
         'component.bb84.results.yes': 'Yes',
         'component.bb84.results.no': 'No',
-        'component.bb84.results.revealAbsent': 'Eve was absent — your key' +
-            ' is secure',
-        'component.bb84.results.revealCaught': 'Eve was present — and you' +
-            ' detected her (the exchange was replayed without her)',
-        'component.bb84.results.revealMissed': '⚠️ Eve was present — and' +
-            ' you did NOT detect her: your key is compromised!',
+        'component.bb84.results.revealAbsent': '🎉 Congratulations! Eve was' +
+            ' absent — your key is secure.',
+        'component.bb84.results.revealCaught': '🎉 Congratulations! You' +
+            ' detected Eve — the exchange was replayed without her.',
+        'component.bb84.results.revealMissed': '⚠️ Game finished… but Eve' +
+            ' was present and you did NOT detect her: your key is' +
+            ' compromised!',
         'component.bb84.results.verdict': 'Verdict',
         'component.bb84.results.keyCompromised': 'Key compromised!',
         'component.bb84.results.keySecure': 'Key secure',
@@ -876,12 +877,13 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Score',
         'component.bb84.results.yes': 'Oui',
         'component.bb84.results.no': 'Non',
-        'component.bb84.results.revealAbsent': 'Ève était absente — votre' +
-            ' clé est sécurisée',
-        'component.bb84.results.revealCaught': 'Ève était présente — et' +
-            ' vous l\'avez détectée (l\'échange a été rejoué sans elle)',
-        'component.bb84.results.revealMissed': '⚠️ Ève était présente — et' +
-            ' vous ne l\'avez PAS détectée : votre clé est compromise !',
+        'component.bb84.results.revealAbsent': '🎉 Félicitations ! Ève' +
+            ' était absente — votre clé est sécurisée.',
+        'component.bb84.results.revealCaught': '🎉 Félicitations ! Vous' +
+            ' avez détecté Ève — l\'échange a été rejoué sans elle.',
+        'component.bb84.results.revealMissed': '⚠️ Partie terminée… mais' +
+            ' Ève était présente et vous ne l\'avez PAS détectée : votre clé' +
+            ' est compromise !',
         'component.bb84.results.verdict': 'Verdict',
         'component.bb84.results.keyCompromised': 'Clé compromise !',
         'component.bb84.results.keySecure': 'Clé sécurisée',
@@ -1393,12 +1395,13 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Puntuación',
         'component.bb84.results.yes': 'Sí',
         'component.bb84.results.no': 'No',
-        'component.bb84.results.revealAbsent': 'Eva estaba ausente — tu' +
-            ' clave es segura',
-        'component.bb84.results.revealCaught': 'Eva estaba presente — y la' +
-            ' detectaste (el intercambio se rejugó sin ella)',
-        'component.bb84.results.revealMissed': '⚠️ Eva estaba presente — y' +
-            ' NO la detectaste: ¡tu clave está comprometida!',
+        'component.bb84.results.revealAbsent': '🎉 ¡Felicidades! Eva estaba' +
+            ' ausente — tu clave es segura.',
+        'component.bb84.results.revealCaught': '🎉 ¡Felicidades!' +
+            ' Detectaste a Eva — el intercambio se rejugó sin ella.',
+        'component.bb84.results.revealMissed': '⚠️ Partida terminada… pero' +
+            ' Eva estaba presente y NO la detectaste: ¡tu clave está' +
+            ' comprometida!',
         'component.bb84.results.verdict': 'Veredicto',
         'component.bb84.results.keyCompromised': '¡Clave comprometida!',
         'component.bb84.results.keySecure': 'Clave segura',

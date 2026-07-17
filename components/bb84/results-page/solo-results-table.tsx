@@ -50,6 +50,9 @@ const SoloResultsTable = ({
 
     const eveDrawn = eveRecord?.drawn === true;
     const eveDetected = eveRecord?.detected === true;
+    // Same verdict semantics as the multi table: completed with Eve present
+    // and undetected = compromised key.
+    const keyCompromised = eveDrawn && !eveDetected;
 
     // The reveal: absent / present-and-caught / present-and-missed.
     const revealKey = !eveDrawn
@@ -77,13 +80,16 @@ const SoloResultsTable = ({
                 <Table>
                     <TableHeader className="bg-card top-0 sticky">
                         <TableRow className="text-sm md:text-lg">
+                            {/* Task 56 polish: same column anatomy and order
+                                as the multiplayer table (Joueurs, Itération,
+                                présente, détectée, Verdict, Temps) + the solo
+                                extras (Longueur de la clé, Score). */}
                             <TableHead>{localize('component.bb84.results.room')}</TableHead>
+                            <TableHead>{localize('component.results.iteration')}</TableHead>
                             <TableHead>{localize('component.bb84.results.evePresent')}</TableHead>
                             <TableHead>{localize('component.bb84.results.eveDetected')}</TableHead>
-                            {/* Same word as the multiplayer results table —
-                                one vocabulary across the app (reuses its key). */}
-                            <TableHead>{localize('component.results.iteration')}</TableHead>
-                            <TableHead>{localize('component.bb84.results.time')} (s)</TableHead>
+                            <TableHead>{localize('component.bb84.results.verdict')}</TableHead>
+                            <TableHead>{localize('component.bb84.results.time')}</TableHead>
                             <TableHead>{localize('component.bb84.results.keyLength')}</TableHead>
                             <TableHead>{localize('component.bb84.results.score')}</TableHead>
                         </TableRow>
@@ -91,6 +97,7 @@ const SoloResultsTable = ({
                     <TableBody>
                         <TableRow>
                             <TableCell>{roomDisplay}</TableCell>
+                            <TableCell>{eveRecord?.rounds ?? 1}</TableCell>
                             <TableCell>
                                 {eveDrawn
                                     ? localize('component.bb84.results.yes')
@@ -101,8 +108,14 @@ const SoloResultsTable = ({
                                     ? localize('component.bb84.results.yes')
                                     : localize('component.bb84.results.no')}
                             </TableCell>
-                            <TableCell>{eveRecord?.rounds ?? 1}</TableCell>
-                            <TableCell>{Math.ceil(elapsedTime)}</TableCell>
+                            <TableCell className={keyCompromised
+                                ? 'text-red-500 font-bold'
+                                : 'text-green-500 font-bold'}>
+                                {localize(keyCompromised
+                                    ? 'component.bb84.results.keyCompromised'
+                                    : 'component.bb84.results.keySecure')}
+                            </TableCell>
+                            <TableCell>{`${Math.ceil(elapsedTime)} s`}</TableCell>
                             <TableCell>{keyLength}</TableCell>
                             <TableCell>{score}</TableCell>
                         </TableRow>
@@ -110,13 +123,11 @@ const SoloResultsTable = ({
                 </Table>
             </div>
 
-            {/* The reveal — the pedagogical point of probabilistic Eve */}
+            {/* The reveal — the pedagogical point of probabilistic Eve.
+                One reveal-led phrase per ending (polish after Task 56):
+                celebration integrated where it is EARNED — the missed ending
+                stays sobering instead of congratulating a compromised key. */}
             <div className="text-center space-y-1">
-                {/* Task 56: same celebration as the multiplayer results page
-                    (shared neutral key) — both modes tell the full story. */}
-                <p className="text-xl text-green-500 font-bold">
-                    {localize('component.results.gameSuccess')}
-                </p>
                 <p className={`text-xl font-bold ${
                     !eveDrawn ? 'text-green-500'
                         : eveDetected ? 'text-green-500' : 'text-red-500'}`}>
