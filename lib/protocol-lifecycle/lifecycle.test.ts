@@ -11,6 +11,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {
     abandon,
     detectSession,
+    resolveSessionForRoute,
     restoreCheckpoint,
     startFresh,
 } from './lifecycle';
@@ -160,6 +161,51 @@ describe('restoreCheckpoint', () => {
         put('dpsPlayerData', {playingSolo: true, role: 'A', gameCode: 'SOLO'});
         expect(restoreCheckpoint(dps)).toEqual({kind: 'missing'});
         expect(dps.restoreRoom).not.toHaveBeenCalled();
+    });
+});
+
+describe('resolveSessionForRoute (the route-guard policy)', () => {
+    const adapter = makeAdapter('bb84');
+
+    it('leaves when there is no session at all', () => {
+        expect(resolveSessionForRoute(adapter)).toEqual({action: 'leave'});
+    });
+
+    it('leaves on a corrupt session (fail-close)', () => {
+        localStorage.setItem('bb84GameData', '{oops');
+        expect(resolveSessionForRoute(adapter)).toEqual({action: 'leave'});
+    });
+
+    it('renders an active solo session in solo mode', () => {
+        put('bb84GameData', {});
+        expect(resolveSessionForRoute(adapter))
+            .toEqual({action: 'render', mode: 'solo'});
+    });
+
+    it('renders a multi session in multi mode', () => {
+        put('bb84GameData', {});
+        put('bb84PlayerData', {gameCode: 'X', role: 'A', room: 'r'});
+        expect(resolveSessionForRoute(adapter))
+            .toEqual({action: 'render', mode: 'multi'});
+    });
+
+    it('require.completed leaves for an ACTIVE session (results-page rule)', () => {
+        put('bb84GameData', {});
+        expect(resolveSessionForRoute(adapter, {completed: true}))
+            .toEqual({action: 'leave'});
+    });
+
+    it('require.completed renders a completed session', () => {
+        put('bb84GameData', {gameSuccess: true});
+        expect(resolveSessionForRoute(adapter, {completed: true}))
+            .toEqual({action: 'render', mode: 'solo'});
+    });
+
+    it('require.mode leaves when the session mode differs (solo results vs multi game)', () => {
+        put('bb84GameData', {gameSuccess: true});
+        put('bb84PlayerData', {gameCode: 'X', role: 'A', room: 'r'});
+        expect(resolveSessionForRoute(adapter, {completed: true, mode: 'solo'}))
+            .toEqual({action: 'leave'});
     });
 });
 

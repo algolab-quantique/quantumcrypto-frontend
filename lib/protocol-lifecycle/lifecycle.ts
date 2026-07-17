@@ -166,6 +166,41 @@ export const detectSession = (adapter: ProtocolAdapter): DetectedSession => {
     return {kind: 'none'};
 };
 
+/**
+ * Route-guard policy over detectSession (Task 54 F1; ADR §11 rules 1–2).
+ * Pure and unit-testable: given the persisted session and a route's
+ * requirements, decide whether the route may render (and in which mode) or
+ * must be left. The React mechanics (null-gate, redirect, flag bridge) live
+ * in useProtocolSessionGuard, which wraps this.
+ */
+export type RouteSessionRequirement = {
+    /** Route needs a COMPLETED session (e.g. results pages). Default: any valid session. */
+    completed?: boolean;
+    /** Route needs a specific mode (e.g. solo results). Default: either. */
+    mode?: 'solo' | 'multi';
+};
+
+export type RouteSessionResolution =
+    | {action: 'render'; mode: 'solo' | 'multi'}
+    | {action: 'leave'};
+
+export const resolveSessionForRoute = (
+    adapter: ProtocolAdapter,
+    require: RouteSessionRequirement = {},
+): RouteSessionResolution => {
+    const detected = detectSession(adapter);
+    if (detected.kind !== 'solo' && detected.kind !== 'multi') {
+        return {action: 'leave'};
+    }
+    if (require.completed && !detected.completed) {
+        return {action: 'leave'};
+    }
+    if (require.mode && detected.kind !== require.mode) {
+        return {action: 'leave'};
+    }
+    return {action: 'render', mode: detected.kind};
+};
+
 export const restoreCheckpoint = (adapter: ProtocolAdapter): CheckpointRestoreResult => {
     // Task 48 D1: classify via the single source of truth (detectSession), then
     // hydrate. This keeps guard and page in agreement. detectSession is stricter

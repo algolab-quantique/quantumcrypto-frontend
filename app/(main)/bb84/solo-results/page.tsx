@@ -11,11 +11,10 @@
  */
 
 import React, {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
 import SoloResultsTable from '@/components/bb84/results-page/solo-results-table';
 import usePlayerStore from '@/store/player-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
-import {detectSession, restoreCheckpoint} from '@/lib/protocol-lifecycle/lifecycle';
+import {useProtocolSessionGuard} from '@/lib/protocol-lifecycle/use-protocol-session-guard';
 import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import {useLanguage} from '@/components/providers/language-provider';
 import {
@@ -25,35 +24,32 @@ import {
 } from '@/lib/bb84/solo-round';
 
 const BB84SoloResultsPage = () => {
-    const router = useRouter();
     const {localize} = useLanguage();
     const {playerName, playerRole} = usePlayerStore();
     const {keyBits} = useBB84RoomStore();
 
-    const [ready, setReady] = useState(false);
+    // Task 54 F1: the shared guard — render nothing until the session resolves
+    // as a COMPLETED SOLO game (anything else leaves quietly to /bb84, no
+    // flash, and without abandoning: leaving a results page must never destroy
+    // an active game). hydrate: restores the stores from the checkpoint so
+    // fresh loads / Back / refresh all show the same view.
+    const {ready} = useProtocolSessionGuard(bb84Adapter, {
+        require: {completed: true, mode: 'solo'},
+        failCloseTo: '/bb84',
+        hydrate: true,
+    });
+
     const [eveRecord, setEveRecord] = useState<SoloEveRecord | null>(null);
     const [elapsedTime, setElapsedTime] = useState(0);
 
     useEffect(() => {
-        // Render-time gate: nothing paints until the session resolves as a
-        // COMPLETED solo game; anything else leaves quietly (no flash).
-        const detected = detectSession(bb84Adapter);
-        if (detected.kind !== 'solo' || !detected.completed) {
-            router.replace('/bb84');
-            return;
-        }
-
-        // Hydrate the stores from the persisted checkpoint (fresh page load,
-        // Back/Forward re-entry, refresh — all restore the same view).
-        restoreCheckpoint(bb84Adapter);
-
+        if (!ready) return;
         setEveRecord(readSoloEveRecord());
         const startTime = readSoloGameStartTime();
         if (startTime) {
             setElapsedTime((Date.now() - startTime) / 1000);
         }
-        setReady(true);
-    }, [router]);
+    }, [ready]);
 
     if (!ready) {
         return null;
