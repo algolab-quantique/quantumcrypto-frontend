@@ -49,6 +49,23 @@ export const clearBB84LocalStorage = () => {
 }
 
 /**
+ * Task 55: is the sifted key too short to continue?
+ * WITH the Eve mechanic, the validation bits are sacrificed (publicly
+ * compared), so the sifted key must be STRICTLY LONGER than the validation
+ * count or no message key remains. WITHOUT Eve nothing is sacrificed and only
+ * an EMPTY key is unplayable — a 1-bit key is fine (1-bit key → 1-bit
+ * message; the XOR lesson still works, and this app is purely educational).
+ * The old inline check ignored gameHasEve and wrongly restarted no-Eve games.
+ */
+export const isKeyTooShort = (
+    siftedLength: number,
+    gameHasEve: boolean,
+    validationBitsLength: number,
+): boolean => (
+    gameHasEve ? siftedLength <= validationBitsLength : siftedLength === 0
+);
+
+/**
  * BB84's sacrifice step (Task 53): the validation bits are compared over the
  * PUBLIC channel — Eve knows them — so after a VALID verdict they must be
  * discarded from the key. The remaining bits are the secret key used for the

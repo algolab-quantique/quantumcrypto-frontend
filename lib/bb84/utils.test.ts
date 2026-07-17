@@ -6,7 +6,7 @@
  */
 
 import {beforeEach, describe, expect, it} from 'vitest';
-import {restartWithoutEve, sacrificeValidationBits} from './utils';
+import {isKeyTooShort, restartWithoutEve, sacrificeValidationBits} from './utils';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 
 beforeEach(() => {
@@ -47,6 +47,24 @@ describe('sacrificeValidationBits (Task 53)', () => {
         room.setValidationIndices([0, 1]);
         sacrificeValidationBits();
         expect(useBB84RoomStore.getState().keyBits).toHaveLength(0);
+    });
+});
+
+describe('isKeyTooShort (Task 55: the restart-minimum policy)', () => {
+    it('with Eve: equal counts are too short (all bits would be sacrificed)', () => {
+        expect(isKeyTooShort(2, true, 2)).toBe(true);
+    });
+
+    it('with Eve: one spare bit beyond validation is enough', () => {
+        expect(isKeyTooShort(3, true, 2)).toBe(false);
+    });
+
+    it("Ibra's catch: WITHOUT Eve a 1-bit key is playable — no espion restart", () => {
+        expect(isKeyTooShort(1, false, 1)).toBe(false);
+    });
+
+    it('without Eve: only an EMPTY key is unplayable', () => {
+        expect(isKeyTooShort(0, false, 1)).toBe(true);
     });
 });
 

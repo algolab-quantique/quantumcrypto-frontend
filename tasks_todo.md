@@ -939,7 +939,7 @@ Special cases to leave alone:
 
 ### 55. 🐛 Insufficient-key restart fires in NO-Eve games (trigger ignores gameHasEve)
 
-**Status**: 🔵 DIAGNOSED 2026-07-17 (Ibra: solo, NO Eve, 1 sifted bit → "Pas assez de bits !" popup with the espion message). NOT fixed yet.
+**Status**: ✅ DONE 2026-07-17 (tested green). Pure `isKeyTooShort(sifted, gameHasEve, validationBits)` in `lib/bb84/utils.ts` (+4 tests incl. "Ibra's catch"); dialog message follows the REASON: empty key → `alertDescriptionEmptyKey` (both modes — also fixes Ibra's second catch: an EVE game with zero matching bases wrongly showed the espion text); non-empty-but-insufficient (Eve only) → espion message.
 **Bug:** basis-tab's trigger `keyBits.length <= validationBitsLength` never checks `gameHasEve` — but the modal stores a validationBitsLength even when Eve is unchecked (field hidden, value kept). In a no-Eve game there is NO validation step and nothing is sacrificed: a 1-bit key is usable (1-bit key → 1-bit message; the XOR lesson works — purely educational app).
 **Fix when acted:** mode-aware minimum — with Eve: `sifted > validationBitsLength` (sacrifice math); without Eve: `sifted ≥ 1` (only an empty key is truly stuck). Plus a message variant for the no-Eve empty-key case (current text wrongly says "vérifier qu'il n'y a pas d'espion").
 

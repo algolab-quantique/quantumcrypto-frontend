@@ -25,6 +25,7 @@ import GameRestartDialog
 import {BB84GameStep} from '@/types';
 import {getValidBits, mimicEveIntercept} from '@/lib/bb84/solo-player';
 import {restartSoloRound} from '@/lib/bb84/solo-round';
+import {isKeyTooShort} from '@/lib/bb84/utils';
 import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
 import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import {useRouter} from 'next/navigation';
@@ -33,6 +34,12 @@ import {generateUniqueRandomList} from '@/lib/utils';
 const BasisTab = ({playerRole}: { playerRole: string }) => {
 
     const [restartModalOpen, setRestartModalOpen] = useState(false);
+    // Task 55: the dialog message follows the REASON, not the Eve checkbox —
+    // an empty key (zero matching bases) gets the empty-key message in BOTH
+    // modes; only a non-empty-but-insufficient key (possible only with Eve,
+    // where validation bits are sacrificed) gets the espion message.
+    const [restartReason, setRestartReason] =
+        useState<'emptyKey' | 'insufficientForValidation'>('emptyKey');
 
     const {localize} = useLanguage();
     const {shareKey, disconnectPlayRoom} = useSocket();
@@ -140,11 +147,13 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
         if (isValid) {
             const keyBits = validatedBits.filter(({discarded}) => !discarded)
                 .map(({value}) => value);
-            // <= not <: validation bits are SACRIFICED (publicly compared), so
-            // the sifted key must be strictly longer than the validation count
-            // or zero bits remain for the message — an unplayable game (found
-            // by Ibra, 2026-07-16).
-            if (keyBits.length <= validationBitsLength) {
+            // Task 55: mode-aware minimum (pure policy in lib/bb84/utils).
+            // With Eve: sifted must exceed the sacrificed validation count.
+            // Without Eve: only an EMPTY key is unplayable — no-Eve games have
+            // no validation step and must not see the espion restart.
+            if (isKeyTooShort(keyBits.length, gameHasEve, validationBitsLength)) {
+                setRestartReason(keyBits.length === 0
+                    ? 'emptyKey' : 'insufficientForValidation');
                 setRestartModalOpen(true);
                 return;
             }
@@ -250,7 +259,9 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                                title={localize(
                                    'component.basisTab.alertTitle')}
                                description={localize(
-                                   'component.basisTab.alertDescription')}
+                                   restartReason === 'emptyKey'
+                                       ? 'component.basisTab.alertDescriptionEmptyKey'
+                                       : 'component.basisTab.alertDescription')}
                                confirmLabel={localize(
                                    'component.gameRestart.playAgain')}
                                onConfirm={restartGame}

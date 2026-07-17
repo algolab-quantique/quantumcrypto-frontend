@@ -97,6 +97,8 @@ export const bb84Lines: LanguageItem[] = [
         'component.basisTab.alertDescription': 'The key that you obtained' +
             ' does not have enough bits to verify that there is no' +
             ' eavesdropper. You must start again.',
+        'component.basisTab.alertDescriptionEmptyKey': 'No bases matched — the' +
+            ' key is empty. The exchange restarts.',
         'component.validationTab.title': 'Validation Step',
         'component.validationTab.start': 'The bits selected for validation' +
             ' are',
@@ -219,6 +221,8 @@ export const bb84Lines: LanguageItem[] = [
         'component.basisTab.alertDescription': 'La clé que vous avez' +
             ' obtenue n\'a pas assez de bits pour vérifier qu\'il n\'y a pas' +
             ' d\'espion. Vous devez recommencer.',
+        'component.basisTab.alertDescriptionEmptyKey': 'Aucune base ne' +
+            ' correspond — la clé est vide. On recommence l\'échange.',
         
         // Validation tab dans l'interface : Eve est présente dans une partie BB84 (solo ou multi). Détectée ou non.
         'component.validationTab.title': 'Étape de validation',
@@ -341,6 +345,8 @@ export const bb84Lines: LanguageItem[] = [
         'component.basisTab.alertDescription': 'La clave que obtuviste no' +
             ' tiene suficientes bits para verificar que no hay un espía.' +
             ' Debes empezar de nuevo.',
+        'component.basisTab.alertDescriptionEmptyKey': 'Ninguna base coincidió' +
+            ' — la clave está vacía. Se reinicia el intercambio.',
         'component.validationTab.title': 'Etapa de validación',
         'component.validationTab.start': 'Los bits seleccionados para la' +
             ' validación son',
