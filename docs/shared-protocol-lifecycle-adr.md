@@ -1,8 +1,11 @@
 # Shared Protocol Lifecycle — Architecture Decision Record
 
-> **Status**: DRAFT / REVIEW  
-> **Date**: June 2026  
-> **Supersedes**: [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) (preliminary version)  
+> **Status**: ACCEPTED — the BB84 pilot completed 2026-07-16 (Tasks 46–53: navigation
+> hardening, session single-source-of-truth, restart/Eve semantics, key sacrifice,
+> tests + CI), satisfying the acceptance gate set in Task 47. E91/DPS replication may
+> begin against this document.  
+> **Date**: June 2026 (accepted July 2026)  
+> **Supersedes**: `protocol-session-lifecycle-diagrams.md` (preliminary version — deleted from the tree 2026-07-17, its diagrams live on improved in §4; retrievable via git)  
 > **Complements**: [storage-architecture.md](storage-architecture.md) (historical reasoning, per-protocol audit)
 
 ---
@@ -109,16 +112,15 @@ classDiagram
         +restoreRoom(data): void
         +resetProgress(): void
         +hydrateProgress(): void
-        +getRoomStore(): ZustandStore
-        +getProgressStore(): ZustandStore
-        +getGameStore(): ZustandStore
+        +hydrateConfig?(): void
+        +getRoomSnapshot(): RoomSnapshot
     }
 
     class ProtocolLifecycle {
         <<module>>
         +startFresh(adapter): void
         +saveCheckpoint(adapter): void
-        +restoreCheckpoint(adapter): SessionStatus
+        +restoreCheckpoint(adapter): CheckpointRestoreResult
         +complete(adapter): void
         +abandon(adapter): void
         +clearProtocolStorage(adapter): void
@@ -190,9 +192,10 @@ stateDiagram-v2
 |-----------|-------------|
 | **startFresh** | Clear protocol storage → reset room store → reset progress store → set mode flags |
 | **saveCheckpoint** | Named entry point for persistence. Phase 1: stores already persist via `updateAndStore()`, this wraps that with a safe serializable snapshot. Future: backend sync plugs in here. |
-| **restoreCheckpoint** | Read `playerDataKey` → restore room from `gameDataKey` → hydrate progress → return status (`active` / `completed` / `null`) |
+| **restoreCheckpoint** | Public restore door for both solo and multiplayer. Restore local checkpoint from `gameDataKey` → hydrate progress → if valid multiplayer identity exists in `playerDataKey`, include it for reconnect. |
 | **complete** | Keep snapshot in localStorage (so refresh restores felicitation). Do NOT auto-navigate to results. |
 | **abandon** | Clear all protocol storage → reset stores → set `playingSolo=false`, `playingMultiplayer=false` |
+| **partnerLeave** | Triggered by `PLAYER_LEFT_EVENT` from backend. Run `abandon(adapter)` → close play socket → route back to `/${gameType}` → show notification. |
 | **clearProtocolStorage** | Remove all keys listed in `adapter.storageKeys` from localStorage |
 
 ### Why `saveCheckpoint()` is included
@@ -212,9 +215,61 @@ A lifecycle without save is incomplete.
 In Phase 1, `saveCheckpoint()` is a thin wrapper. It earns its place by being the
 **one place** where persistence is findable and extensible.
 
+> **Status of the two mechanisms (Task 54 F3, 2026-07-17):** the codebase has TWO
+> persistence mechanisms, on purpose — **incremental** persistence happens per field
+> via `updateAndStore()` inside the stores (every mutation mirrors to localStorage);
+> the **milestone** door is `complete(adapter)` → `saveCheckpoint(adapter)`, now
+> actually WIRED at the BB84 game-success moments (solo decrypt success and the
+> multiplayer success event) — it writes the full final snapshot and is where
+> backend sync will plug in. Naive picture: windows for everyday air, the door for
+> arrivals and departures.
+
 Important boundary: `saveCheckpoint()` should not blindly persist transient
 Zustand internals. If a store ever contains non-serializable fields or actions,
 the adapter must expose an explicit serializable room snapshot.
+
+### Restore checkpoint vs multiplayer identity
+
+`restoreCheckpoint(adapter)` is the simple public API. A future developer should
+be able to call it and read the result as: "restore the last saved protocol
+context."
+
+Internally, restore has two different concerns:
+
+1. **Local checkpoint** — protocol room snapshot and UI progress. This applies to
+   solo and multiplayer.
+2. **Multiplayer session identity** — `gameCode`, `role`, and `room`. This is
+   only needed so multiplayer can reconnect to the backend.
+
+The public function stays simple, but the result is explicit:
+
+```typescript
+type CheckpointRestoreResult =
+    | {kind: 'missing'}
+    | {kind: 'corrupted'}
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession};
+```
+
+Since D1 (Task 48) restore is STRICT: a missing multiplayer identity restores
+the checkpoint locally as solo, but a broken identity fails closed as
+`corrupted` — it never reaches a restored checkpoint (`multiplayerSessionIssue`
+was pruned from the public result accordingly, Task 54 F4).
+
+### Internal restore components
+
+| Element | Visibility | Responsibility |
+|---------|------------|----------------|
+| `restoreCheckpoint(adapter)` | Public lifecycle API | Restore the saved protocol context and return the next state for the page. |
+| `readStoredObject(gameDataKey)` | Internal helper | Read and validate the local room checkpoint. |
+| `adapter.restoreRoom(snapshot)` | Adapter method | Put protocol-specific room data back into the right store. |
+| `adapter.hydrateProgress()` | Adapter method | Restore UI progress from the protocol store. |
+| `restoreMultiplayerSession(adapter)` | Internal helper | Read `playerDataKey`, validate `gameCode`, `role`, and `room`, then return `multiplayerSession` if reconnect is possible. |
+| Play page / socket layer | Caller after restore | Reconnect to the backend only when `restoreCheckpoint()` returns `multiplayerSession`. |
+
+So reconnect is part of the restore architecture, but not a separate public
+lifecycle command. The page asks to restore; the lifecycle tells it whether
+there is enough multiplayer identity to reconnect.
 
 ---
 
@@ -262,7 +317,7 @@ sequenceDiagram
 
     Component->>Lifecycle: saveCheckpoint(adapter)
     Note over Lifecycle: Phase 1: wraps existing<br/>store persistence
-    Lifecycle->>Adapter: adapter.getRoomStore().getState()
+    Lifecycle->>Adapter: adapter.getRoomSnapshot()
     Lifecycle->>Lifecycle: localStorage.setItem(gameDataKey, snapshot)
     Note over Lifecycle: Phase N (future):<br/>also sync to backend here
 ```
@@ -281,22 +336,25 @@ sequenceDiagram
 
     Browser->>Page: refresh / mount
     Page->>Lifecycle: restoreCheckpoint(adapter)
-    Lifecycle->>Lifecycle: localStorage.getItem(playerDataKey)
+    Lifecycle->>Lifecycle: localStorage.getItem(gameDataKey)
 
-    alt No saved session
-        Lifecycle-->>Page: null → redirect to protocol home
-    else Has saved session
-        Lifecycle->>Lifecycle: localStorage.getItem(gameDataKey)
+    alt No local checkpoint
+        Lifecycle-->>Page: { kind: "missing" } → redirect to protocol home
+    else Corrupted checkpoint
+        Lifecycle-->>Page: { kind: "corrupted" } → clear/restart intentionally
+    else Has local checkpoint
         Lifecycle->>Adapter: adapter.restoreRoom(snapshot)
         Lifecycle->>Adapter: adapter.hydrateProgress()
+        Lifecycle->>Lifecycle: tryReadMultiplayerIdentity(playerDataKey)
+        Note over Lifecycle: If valid multiplayer identity exists,<br/>include it in the result.
 
         alt gameSuccess === true
-            Lifecycle-->>Page: COMPLETED → show felicitation
+            Lifecycle-->>Page: { kind: "completed" } → show felicitation
         else Solo mode
-            Lifecycle-->>Page: ACTIVE → resume play
-        else Multiplayer mode
-            Lifecycle-->>Page: ACTIVE → resume play
-            Page->>Socket: reconnect play room
+            Lifecycle-->>Page: { kind: "active" } → resume play
+        else Multiplayer mode with valid identity
+            Lifecycle-->>Page: { kind: "active", multiplayerSession } → resume play
+            Page->>Socket: reconnect play room with multiplayerSession
             Socket->>Backend: reconnect with saved identity
             alt Backend has snapshot (future)
                 Backend-->>Socket: authoritative room state
@@ -304,6 +362,8 @@ sequenceDiagram
             else No backend snapshot (current)
                 Note over Page: Use local checkpoint as fallback
             end
+        else Multiplayer identity missing/invalid
+            Lifecycle-->>Page: { kind: "active" } → local checkpoint restored, no reconnect
         end
     end
 ```
@@ -346,6 +406,37 @@ sequenceDiagram
     end
 ```
 
+### 4.5 Partner Left / Room Abandoned (Multiplayer Only)
+
+This flow handles a player leaving, crashing, or failing closed during a multiplayer game.
+The frontend unblocks the partner locally; the backend owns room status and Master/results updates.
+
+```mermaid
+sequenceDiagram
+    participant Leaver as Leaving Player
+    participant Backend
+    participant Partner as Remaining Partner
+    participant Master as Master Results Page
+
+    Note over Leaver: Player leaves, crashes,<br/>or fails closed
+    Leaver->>Leaver: abandon(adapter) and route to /{gameType}
+    Leaver->>Backend: play socket closes
+
+    Note over Backend: Backend detects player disconnected
+    Backend->>Partner: PLAYER_LEFT_EVENT
+
+    Note over Partner: Generic socket handler receives event
+    Partner->>Partner: getProtocolAdapter(gameType)
+    Partner->>Partner: abandon(adapter)
+    Partner->>Backend: disconnect play room socket
+    Partner->>Partner: show partner-left notification
+    Partner->>Partner: route to /{gameType}
+
+    Backend->>Backend: mark room status as abandoned
+    Backend->>Master: broadcast room state update
+    Note over Master: Show abandoned room instead of waiting forever
+```
+
 ---
 
 ## 5. Adapter Contract (Phase 1)
@@ -353,11 +444,25 @@ sequenceDiagram
 ### Interface
 
 ```typescript
-// shared/protocol-lifecycle/types.ts
+// lib/protocol-lifecycle/types.ts
 
 type Protocol = 'bb84' | 'e91' | 'dps';
-type GameMode = 'solo' | 'multiplayer';
-type SessionStatus = 'active' | 'completed' | null;
+type RoomSnapshot = Record<string, unknown>;
+type MultiplayerSessionIssue = 'invalid' | 'corrupted';
+
+interface MultiplayerSession {
+    gameCode: string;
+    role: string;
+    room: string;
+    playerName?: string;
+    partner?: string;
+}
+
+type CheckpointRestoreResult =
+    | {kind: 'missing'}
+    | {kind: 'corrupted'}
+    | {kind: 'active'; multiplayerSession?: MultiplayerSession}
+    | {kind: 'completed'; multiplayerSession?: MultiplayerSession};
 
 interface ProtocolAdapter {
     /** Protocol identifier */
@@ -369,14 +474,14 @@ interface ProtocolAdapter {
     /** Key for the full room state snapshot (e.g., 'bb84GameData') */
     gameDataKey: string;
 
-    /** Key for player identity/session data (e.g., 'bb84PlayerData') */
+    /** Key for multiplayer identity/session data (e.g., 'bb84PlayerData') */
     playerDataKey: string;
 
     /** Reset room store to initial state */
     resetRoom(): void;
 
     /** Restore room store from a parsed localStorage snapshot */
-    restoreRoom(data: Record<string, unknown>): void;
+    restoreRoom(data: RoomSnapshot): void;
 
     /** Reset progress store to initial state */
     resetProgress(): void;
@@ -384,28 +489,42 @@ interface ProtocolAdapter {
     /** Hydrate progress store from localStorage */
     hydrateProgress(): void;
 
-    /** Access the Zustand room store (for reading state in lifecycle) */
-    getRoomStore(): { getState(): Record<string, unknown> };
+    /** Hydrate setup/config store values persisted outside gameDataKey */
+    hydrateConfig?(): void;
 
-    /** Access the Zustand progress store */
-    getProgressStore(): { getState(): Record<string, unknown> };
-
-    /** Access the Zustand game store */
-    getGameStore(): { getState(): Record<string, unknown> };
+    /** Return JSON-safe room data for persistence */
+    getRoomSnapshot(): RoomSnapshot;
 }
 ```
+
+Implement `hydrateConfig()` only when a protocol stores setup values outside
+`gameDataKey`, such as photon count, Eve flag, or validation-bit length.
 
 ### Example adapter (BB84)
 
 ```typescript
-// shared/protocol-lifecycle/bb84-adapter.ts
+// lib/protocol-lifecycle/bb84-adapter.ts
 
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
+import useBB84RoomStore, {type BB84RoomStateSchema} from '@/store/bb84/bb84-room-store';
+import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {
     useBB84ProgressStore,
     hydrateBB84ProgressStore,
 } from '@/store/bb84/bb84-progress-store';
-import useBB84GameStore from '@/store/bb84/bb84-game-store';
+import {toSerializableSnapshot} from './snapshot';
+import type {ProtocolAdapter, RoomSnapshot} from './types';
+
+const readConfigValue = (key: string): unknown => {
+    if (typeof window === 'undefined') return undefined;
+    const raw = localStorage.getItem(key);
+    if (raw === null) return undefined;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return undefined;
+    }
+};
 
 export const bb84Adapter: ProtocolAdapter = {
     protocolId: 'bb84',
@@ -422,20 +541,32 @@ export const bb84Adapter: ProtocolAdapter = {
         'bb84GameHasEve',
         'bb84BobBasisInputs',
     ],
-    getRoomStore: () => useBB84RoomStore,
-    getProgressStore: () => useBB84ProgressStore,
-    getGameStore: () => useBB84GameStore,
     resetRoom: () => useBB84RoomStore.getState().resetRoom(),
-    restoreRoom: (data) => useBB84RoomStore.getState().restoreGame(data),
+    restoreRoom: (data) => useBB84RoomStore.getState().restoreGame(data as Partial<BB84RoomStateSchema>),
     resetProgress: () => useBB84ProgressStore.getState().resetProgress(),
     hydrateProgress: () => hydrateBB84ProgressStore(),
+    hydrateConfig: () => {
+        const gameStore = useBB84GameStore.getState();
+        const photonNumber = readConfigValue('bb84PhotonNumber');
+        const gameHasEve = readConfigValue('bb84GameHasEve');
+        const validationBitsLength = readConfigValue('bb84ValidationBitsLength');
+
+        if (typeof photonNumber === 'number') gameStore.setPhotonNumber(photonNumber);
+        if (typeof gameHasEve === 'boolean') gameStore.setGameHasEve(gameHasEve);
+        if (typeof validationBitsLength === 'number') {
+            gameStore.setValidationBitsLength(validationBitsLength);
+        }
+    },
+    getRoomSnapshot: () => toSerializableSnapshot(
+        useBB84RoomStore.getState() as unknown as RoomSnapshot,
+    ),
 };
 ```
 
 ### Lifecycle module
 
 ```typescript
-// shared/protocol-lifecycle/lifecycle.ts
+// lib/protocol-lifecycle/lifecycle.ts
 
 import usePlayerStore from '@/store/player-store';
 
@@ -461,41 +592,30 @@ export function saveCheckpoint(adapter: ProtocolAdapter): void {
     if (typeof window === 'undefined') return;
 
     // Phase 1: stores already persist field-by-field via updateAndStore().
-    // This function provides a named lifecycle entry point. The room store state
-    // is acceptable only while it remains a serializable protocol snapshot.
-    // If stores gain actions/transient fields, move snapshot selection into
-    // the adapter instead of persisting raw Zustand state.
-    //
+    // This function provides a named lifecycle entry point.
     // Future (Phase N): this is where backend snapshot sync plugs in.
-    const roomState = adapter.getRoomStore().getState();
-    localStorage.setItem(adapter.gameDataKey, JSON.stringify(roomState));
+    localStorage.setItem(adapter.gameDataKey, JSON.stringify(adapter.getRoomSnapshot()));
 }
 
 export function restoreCheckpoint(
     adapter: ProtocolAdapter
-): SessionStatus {
-    if (typeof window === 'undefined') return null;
+): CheckpointRestoreResult {
+    const gameData = readStoredObject(adapter.gameDataKey);
+    if (gameData.kind === 'missing') return {kind: 'missing'};
+    if (gameData.kind === 'corrupted') return {kind: 'corrupted'};
 
-    const rawPlayerData = localStorage.getItem(adapter.playerDataKey);
-    if (!rawPlayerData) return null;
+    adapter.restoreRoom(gameData.data);
+    adapter.hydrateProgress();
+    adapter.hydrateConfig?.();
 
-    // Restore room snapshot
-    const rawGameData = localStorage.getItem(adapter.gameDataKey);
-    if (rawGameData) {
-        try {
-            adapter.restoreRoom(JSON.parse(rawGameData));
-        } catch {
-            // Corrupted data — start fresh instead
-            return null;
-        }
+    const kind = adapter.getRoomSnapshot().gameSuccess === true ? 'completed' : 'active';
+    const session = restoreMultiplayerSessionIfValid(adapter);
+
+    if (session) {
+        return {kind, multiplayerSession: session};
     }
 
-    // Hydrate progress (step, tab, displayed lines)
-    adapter.hydrateProgress();
-
-    // Check if the session was completed
-    const roomState = adapter.getRoomStore().getState() as Record<string, unknown>;
-    return roomState.gameSuccess ? 'completed' : 'active';
+    return {kind};
 }
 
 export function complete(adapter: ProtocolAdapter): void {
@@ -515,7 +635,7 @@ export function abandon(adapter: ProtocolAdapter): void {
 ### Registry
 
 ```typescript
-// shared/protocol-lifecycle/registry.ts
+// lib/protocol-lifecycle/registry.ts
 
 import { bb84Adapter } from './bb84-adapter';
 import { e91Adapter } from './e91-adapter';
@@ -541,9 +661,9 @@ export function getAdapter(protocolId: Protocol): ProtocolAdapter {
 ### New files (Phase 1)
 
 ```
-shared/
+lib/
 └── protocol-lifecycle/
-    ├── types.ts              # ProtocolAdapter interface, Protocol, GameMode, SessionStatus
+    ├── types.ts              # ProtocolAdapter, ProtocolId, CheckpointRestoreResult
     ├── lifecycle.ts           # startFresh, saveCheckpoint, restoreCheckpoint, complete, abandon, clearProtocolStorage
     ├── bb84-adapter.ts        # BB84 adapter object
     ├── e91-adapter.ts         # E91 adapter object
@@ -600,11 +720,12 @@ store/b92/
 ### Step 2: Create adapter (~25 lines)
 
 ```typescript
-// shared/protocol-lifecycle/b92-adapter.ts
+// lib/protocol-lifecycle/b92-adapter.ts
 
 import useB92RoomStore from '@/store/b92/b92-room-store';
 import { useB92ProgressStore, hydrateB92ProgressStore } from '@/store/b92/b92-progress-store';
-import useB92GameStore from '@/store/b92/b92-game-store';
+import {toSerializableSnapshot} from './snapshot';
+import type {RoomSnapshot} from './types';
 
 export const b92Adapter: ProtocolAdapter = {
     protocolId: 'b92',  // add 'b92' to Protocol type first
@@ -614,20 +735,20 @@ export const b92Adapter: ProtocolAdapter = {
         'b92PlayerData', 'b92PhotonNumber', 'b92Step', 'b92Tab',
         'b92GameData', 'b92DisplayedLines', 'b92GameHasEve',
     ],
-    getRoomStore: () => useB92RoomStore,
-    getProgressStore: () => useB92ProgressStore,
-    getGameStore: () => useB92GameStore,
     resetRoom: () => useB92RoomStore.getState().resetRoom(),
     restoreRoom: (data) => useB92RoomStore.getState().restoreGame(data),
     resetProgress: () => useB92ProgressStore.getState().resetProgress(),
     hydrateProgress: () => hydrateB92ProgressStore(),
+    getRoomSnapshot: () => toSerializableSnapshot(
+        useB92RoomStore.getState() as unknown as RoomSnapshot,
+    ),
 };
 ```
 
 ### Step 3: Register
 
 ```typescript
-// shared/protocol-lifecycle/registry.ts — add one line:
+// lib/protocol-lifecycle/registry.ts — add one line:
 import { b92Adapter } from './b92-adapter';
 // ... add to protocolAdapters object
 ```
@@ -685,12 +806,12 @@ app/(main)/b92/
 ### Phase 1: Create shared infrastructure (no behavior change yet)
 
 **Create:**
-- `shared/protocol-lifecycle/types.ts`
-- `shared/protocol-lifecycle/lifecycle.ts`
-- `shared/protocol-lifecycle/bb84-adapter.ts`
-- `shared/protocol-lifecycle/e91-adapter.ts`
-- `shared/protocol-lifecycle/dps-adapter.ts`
-- `shared/protocol-lifecycle/registry.ts`
+- `lib/protocol-lifecycle/types.ts`
+- `lib/protocol-lifecycle/lifecycle.ts`
+- `lib/protocol-lifecycle/bb84-adapter.ts`
+- `lib/protocol-lifecycle/e91-adapter.ts`
+- `lib/protocol-lifecycle/dps-adapter.ts`
+- `lib/protocol-lifecycle/registry.ts`
 
 **Checkpoint:** All files compile. Existing app behavior unchanged. Adapters
 correctly reference existing stores.
@@ -739,6 +860,7 @@ Same pattern. DPS has the most localStorage keys (19).
 - 3 identical `disconnectXXXWaitingRoom()` → 1 generic `disconnectWaitingRoom(adapter)`
 - 3 similar `connectToWaitingRoom()` branches → 1 generic function
 - 3 similar `startGame()` branches → 1 generic function
+- `PLAYER_LEFT_EVENT` → lookup `getProtocolAdapter(gameType)`, run `abandon(adapter)`, then route to `/${gameType}`
 - Protocol-specific `onmessage` handlers → separate files per protocol
 
 **What stays in socket-provider:**
@@ -815,8 +937,10 @@ These rules apply to the current app and the refactored architecture:
 ### Multiplayer mode
 - Source of truth for shared protocol facts: backend room + WebSocket
 - Recovery cache: `localStorage`
-- Restore from: backend room snapshot (future) or local snapshot (current fallback)
+- Restore UI first from the local checkpoint, then reconnect if valid multiplayer identity exists
+- Reconcile shared protocol facts from backend room snapshot (future) or local snapshot (current fallback)
 - UI pacing: compare backend state with local checkpoint, guide missed steps in order
+- If backend reconnect fails, the restored local checkpoint can support retry / exit / explicit solo-style continuation later
 - Clear by: `clearProtocolStorage(adapter)` after completion or explicit exit
 
 ### Practical test for future work
@@ -833,12 +957,334 @@ If the answers differ between BB84, E91, and DPS, the implementation is drifting
 
 ---
 
-## 11. Relationship to Existing Documents
+## 11. Session Detection and Route Guards
+
+> **Added**: July 2026 — tracked as **Task 48** in [tasks_todo.md](../tasks_todo.md).
+> This section extends §10 from *data* source-of-truth to *route-access* source-of-truth.
+> It is add-only and does not revise earlier sections, but where noted it **supersedes**
+> the mode-flag mechanism (`resetPlayerModeFlags`) as the authority for mode.
+
+### Why this section exists
+
+Today, "Am I in a valid session, and is it solo or multiplayer?" is answered by **four
+readers with different logic** — `components/hoc/is-connected.tsx`, the play page's
+`playingSolo ? SoloGame : MultiGame` switch, the form's `detectBB84Session()`, and
+`multi-game.tsx`'s own restore check — over state written by **scattered writers**
+(socket-provider side-effects, modals, the form). When two readers disagree, a gap opens
+(e.g. the phantom empty game after Back→Forward at félicitation). The fix is **one resolver
+that every guard reads**.
+
+### The Navigation Invariant
+
+> **Added July 2026 (Task 48, D4 decision — agreed by Ibra). This is the governing rule for
+> all session/guard/navigation work; the numbered rules below serve it.**
+
+> **Session data is destroyed only by explicit user intent (new game, replay, quit) or
+> corruption — never as a side-effect of navigation. Every play-route history entry must
+> render a valid view of the persisted session, or fail-close only when no session exists
+> at all.**
+
+**Why:** the browser's forward stack cannot be deleted — after Back, the forward entries
+*exist* no matter what the app does. The only choice is what those entries show when
+visited: a valid restored view, or a broken page that must fail-close (redirect → flash /
+duplicate-history jank). Any "clear data on navigation" policy therefore *manufactures*
+broken forward entries. A URL is a view of persisted state; navigation must be
+non-destructive (the in-app gold standard is the backend-backed results route, which
+already behaves this way — the félicitation screen must behave the same).
+
+**Alternatives considered and rejected (2026-07-09):**
+- *Popup "quit or stay?" on Back at félicitation* — back-interception is the anti-pattern
+  Task 46 Slice 1 removed (`usePreventNavigation`); at félicitation there is no progress to
+  lose, so the question is semantically empty; and the "defer `gameSuccess` until results"
+  variant breaks completed-detection everywhere (refresh-restore, rejoin dialogs,
+  partner-left).
+- *Allow Back to `/${protocol}` but clear everything (block Forward)* — impossible to block
+  Forward (the entry exists); clearing just guarantees the entry is broken. This is the
+  pre-D2 behavior that produced the dead-forward/flash/duplicate jank.
+
+**Consequences:** the landing page must stop clearing completed BB84 data (its clearing on
+mount is the last "navigation destroys state" actor for completed games); and because
+`is-connected` ignores `gameData`, a completed **solo** checkpoint is invisible to it — so
+the landing-policy change requires the `detectSession`-based PlayPage guard first (Task 48
+D4a before D4b).
+
+### The Solo/Multi Parity Principle
+
+> **Added July 2026 (Task 49-C decision — Ibra).**
+
+> **"Solo vs multi" is who the partner is — not what the player sees.** The player plays
+> the same game, as Alice or Bob, with the same screens, dialogs, flows, and semantics.
+> Whether the partner is simulated by the computer (solo) or a real player over a socket
+> (multi) is a background implementation detail.
+
+Practical rules:
+- UI must not fork on mode: a restart is a dialog in both modes or a button in both —
+  never one of each. Same titles, same actions, same visual hierarchy.
+- Action *semantics* must match too: the same button must produce the same player-visible
+  outcome in both modes (e.g. what "Rejouer" does to Eve). If a mode cannot yet honor the
+  semantic (missing backend coordination), prefer aligning BOTH modes on the achievable
+  semantic over letting them diverge, and track the gap.
+- Only the coordination internals may differ behind the shared UI: solo resolves locally,
+  multi goes through the socket/backend.
+
+### Rules
+
+1. **One resolver.** A single `detectSession(adapter)` answers all three questions:
+   *can this route render?*, *solo or multiplayer?*, *reconnect or not?* Guards and pages
+   read it; none re-derives session truth independently.
+
+2. **Play routes require a valid persisted session.** `/${protocol}/play` may render only
+   when `detectSession` reports a valid session. No valid session → fail-close **without
+   painting anything** (render-time gate), then redirect. **Fail-close target: `/` (decided
+   2026-07-09, D4a).** The earlier `/${protocol}` intent (§4.3) was superseded because a
+   `replace` toward `/${protocol}` recreates adjacent-duplicate history entries whenever
+   the previous entry *is* the protocol home (the reverted Slice C's jank). Under the
+   Navigation Invariant, fail-close only fires for typed-URL/corrupt access (valid history
+   entries restore instead), so the friendlier-home argument is low-stakes; may be
+   revisited after D4b if a duplicate-safe mechanism is found.
+
+3. **A live play socket is NOT route authorization.** For *route access*, validity comes from
+   the persisted checkpoint/identity, never from `isPlayRoomConnected`. This is **narrower**
+   than §10's "backend room + WebSocket is the source of truth for shared protocol *facts*",
+   which remains true for reconciling in-game state during active play — access ≠ fact
+   reconciliation. Rationale (verified): the session is persisted *before* play navigation —
+   socket-provider `ROLES_EVENT` writes `${protocol}PlayerData` and the mode flag, then calls
+   `connectToPlayRoom`, then the play socket's `CONNECTED_EVENT` navigates — so the socket
+   term in the guard was only ever race-cover.
+
+4. **Waiting-room routes are different (guards must be path-aware).** The lobby has no full
+   play session yet and is socket-driven, so a waiting-room guard MAY use
+   `isWaitingRoomConnected` as an access signal. The play-route rule (require a persisted
+   session) must therefore **not** be applied blanket to waiting-room routes. `is-connected.tsx`
+   is shared by both today; splitting it or making it path-aware is part of the work.
+
+5. **Mode is derived from the session, not the flags.** Solo-vs-multiplayer comes from
+   `detectSession`, not from the drifting `playingSolo`/`playingMultiplayer` booleans. This
+   **supersedes** those booleans as the mode authority (`resetPlayerModeFlags()` shrinks to
+   cleanup, not truth). The play page's `playingSolo ? Solo : Multi` switch is replaced by
+   session-derived mode.
+
+6. **The resolver must be BB84-first and protocol-careful.** Session shape is NOT uniform:
+   DPS solo persists `dpsPlayerData` (with a `playingSolo` marker), while BB84/E91 solo persist
+   **no** `*PlayerData` at all. So "player-data key exists ⇒ multiplayer" is **false** for DPS.
+   The resolver must key multiplayer off a valid multiplayer identity (`role` + `room`), not
+   the mere presence of the player-data key. Build and prove it on BB84 first; generalize to
+   E91/DPS only after.
+
+### Migration compatibility vs target architecture
+
+**Principle: an existing difference between protocols is NOT automatically an architecture
+difference.** Keep a per-protocol difference only when the protocol itself requires it.
+Otherwise it is implementation drift, and the target is one standard, unified shape. We must
+not stop unifying because of old code that can be refactored — only because a real protocol
+need demands divergence.
+
+Applied to session storage, the **target standard**:
+- `playerDataKey` / `*PlayerData` means **multiplayer identity only** (`role`, `room`,
+  `gameCode`, `partner`, …). Candidate rename at cleanup: `multiplayerSessionKey`.
+- **Solo** session state is represented by the shared checkpoint model (the `gameDataKey`
+  checkpoint; mode derived from "no valid multiplayer identity") — NOT by writing a
+  `*PlayerData` that pretends to be multiplayer player data.
+- Mode is explicit / consistently derived, never guessed from incidental legacy keys.
+
+**Known drift to standardize (not freeze): DPS solo writes `dpsPlayerData`
+`{playingSolo:true, role, gameCode}` (no `room`)**, while BB84/E91 solo write no player data.
+This is almost certainly old drift, not a DPS-specific need.
+- **Short term (Slice B):** `detectSession` MUST tolerate the DPS solo shape — a *parseable*
+  `playerData` **explicitly marked `playingSolo: true` with no `room`** is **solo**, even with no
+  `gameData` checkpoint. This branch is **gated to `adapter.protocolId === 'dps'`** so the drift
+  stays a DPS-specific compat rule and never becomes a cross-protocol one. (For BB84/E91, and for
+  any parseable `playerData` that is neither this DPS marker nor a valid multi identity, the result
+  is **corrupt/none**, NOT solo — so broken multiplayer never silently degrades to SoloGame.) This
+  is **migration compatibility**, not the target.
+- **At DPS migration:** rewrite DPS solo to the standard (no `dpsPlayerData` in solo) unless a
+  real DPS-specific reason surfaces.
+
+Target session shape that protocols and guards converge on:
+
+```typescript
+type ProtocolSession =
+  | { mode: 'solo';  protocol: ProtocolId; completed: boolean }
+  | { mode: 'multi'; protocol: ProtocolId; completed: boolean; session: MultiplayerSession };
+```
+
+### Implementation
+
+Staged in Task 48 (Slices A–E), reproduce-first, no big-bang. Slice A is a read-only spike;
+the socket-de-authorization (Slice E) applies to **play routes only**, leaving the
+waiting-room guard separate.
+
+Slice D (the guard rework) is itself split into D1–D5 (see Task 48). A key **policy** it
+settles: a **completed session is kept until an explicit new game / replay / quit — NOT
+destroyed by navigation** (see The Navigation Invariant above). Returning to the play route
+then restores the félicitation screen (via the completed checkpoint) instead of
+fail-closing; fail-closing a re-enterable completed page is what produced the
+duplicate-history jank in the reverted Slice C. The socket is still disconnected on
+completed-Back (that part of the earlier fix stands); only the *checkpoint* is preserved.
+Under the invariant, the **landing page's on-mount clearing of completed BB84 data is
+removed in D4b** (it was the last navigation-side-effect destroyer); `startFresh` (new game
+/ replay) and explicit quit remain the only ways completed data is cleared. D4a (PlayPage
+render-time guard via `detectSession`, child HOC removed) must land **before** D4b, because
+`is-connected` cannot see a completed-solo checkpoint.
+
+The interim detector used by guards (Slice B) is the read-only, non-hydrating classifier:
+
+```typescript
+type DetectedSession =
+  | { kind: 'none' }
+  | { kind: 'corrupt' }
+  | { kind: 'solo';  completed: boolean }
+  | { kind: 'multi'; completed: boolean; session: MultiplayerSession };
+```
+
+It converges toward `ProtocolSession` above; `completed` is an attribute, not a separate mode.
+
+---
+
+## 12. Eve Presence and Restart Semantics (current state, decision, target)
+
+> **Added July 2026 (Task 49-C / Task 51).** The three protocols do **NOT** handle Eve
+> presence and Eve-detected restarts the same way. This section records how each works
+> today, why BB84 keeps its historical design for now, and the unification target.
+
+### How Eve presence works today (verified in code)
+
+| Protocol | The "Eve?" checkbox means | Mechanism |
+|---|---|---|
+| **BB84 solo** | Eve **is** present (deterministic) | `mimicEveIntercept` intercepts **every** photon with random bases; only *detection* is probabilistic (quantum physics: an intercepted photon reveals Eve through validation-bit mismatches with some probability). |
+| **BB84 multi** | Eve **may** be present (probabilistic!) | The create-game modal has a **"Probabilité d'Ève"** field (`evePercentage`, default 0.5) sent to the backend as `eve_percentage`; the backend draws and returns `game_has_eve` at `ROLES_EVENT`. **So BB84 is inconsistent with itself across modes** (found by Ibra 2026-07-14) — a Parity-Principle violation, see Task 51. |
+| **E91** | Eve **may** be present (probabilistic) | `isEveActuallyPresent = eve && Math.random() < evePercentage`; `E91_EVE_PERCENTAGE_DEFAULT = 0.5` (min/max constants exist). The original draw is kept (`e91OriginalEvePresent`) for the results reveal. |
+| **DPS** | Eve **may** be present (probabilistic) | Same pattern; `DPS_EVE_PERCENTAGE_DEFAULT = 0.5`. |
+
+### Restart after Eve is detected — the decided semantic
+
+**Both modes, one semantic: the new round restarts WITHOUT Eve** (Solo/Multi Parity
+Principle, §11).
+
+- **Multi**: the backend event is literally `RESTART_WITHOUT_EVE` (BB84 and E91 have
+  handlers; DPS has none — another asymmetry to resolve at its migration).
+- **Solo (BB84)**: aligned to the same semantic in Task 49-C via the canonical restart
+  helper (no legacy key-surgery).
+
+**Why Eve is switched off (historical design, deliberately kept):** this was the original
+design decision (by the previously responsible developer, when only multi existed): with
+BB84's *deterministic* Eve, restarting with Eve still on guarantees she intercepts again —
+students could loop detect→restart forever. Switching her off guarantees they complete the
+protocol end-to-end at least once. Pedagogy over realism, on purpose.
+
+The *insufficient-key* restart (too few matching bases) is different: it is bad luck, not
+detection — it restarts with the **same settings, Eve included**.
+
+### Unification decision (Task 51 — DECIDED 2026-07-14, Ibra)
+
+**Decision: BB84 solo Eve becomes probabilistic.** The checkbox means "Eve *possible*";
+her actual presence is drawn once at game start with a user-set probability
+("Probabilité d'Ève", default 0.5) — exactly like **BB84's own multiplayer mode**, E91,
+and DPS. BB84 stops being inconsistent with itself.
+
+**The old choice, recorded fairly:** solo Eve was deterministic (checkbox ⇒ she is
+there, every photon intercepted). Its merit was real: a *guaranteed* demonstration —
+every student who checks the box sees eavesdropping effects, ideal for a first lesson —
+and a simpler mental model.
+
+**Why it is no longer right for us:**
+1. **It defeats BB84's own lesson.** The protocol exists to detect an *unknown*
+   eavesdropper. When the student already knows the answer before playing, the
+   validation step is a demonstration, not a **measurement** — the genuine "did we catch
+   someone?" reasoning (the actual epistemic situation of Alice and Bob) never happens.
+2. **It violates the Solo/Multi Parity Principle inside one protocol**: the same
+   checkbox produces different physics in solo vs multi.
+3. It is inconsistent with E91/DPS, and it flattens the statistics lesson (all runs
+   identical) and the validation-bits lesson (she is always there, so "she may slip
+   through" never combines with "she may be absent").
+
+**Nothing is lost:** probability **1.0 reproduces the old behavior exactly** — the
+deterministic guaranteed-demo lesson remains available as a setting, not a code path.
+And the model being adopted is the original author's own multiplayer design, completed
+rather than replaced.
+
+**Phase 1 (implemented with this decision):** the solo modal gains the same
+"Probabilité d'Ève" field as the multiplayer create-game modal (same localization keys,
+bounds 0.1–1.0, default `BB84_EVE_PERCENTAGE_DEFAULT = 0.5`). The draw happens **once at
+game start**, and the two flags mean **different things** (a first implementation
+conflated them — caught by Ibra's testing):
+- **`gameHasEve` = the CHECKBOX (flow):** the game includes the validation mechanic. It
+  must NOT carry the draw — skipping the validation step when Eve wasn't drawn would
+  *leak the answer* ("no validation step ⇒ she's not here"), defeating the entire
+  detection-under-uncertainty pedagogy. The student always validates when Eve is
+  possible; that is how they find out.
+- **`evePresent` = the DRAW (physics):** whether she actually intercepts. The
+  insufficient-key restart preserves it; the Eve-detected restart zeroes it (presence
+  only — the validation mechanic stays, so the student re-validates and confirms the
+  clean channel, like the multiplayer coordinated restart).
+
+**Open question for multiplayer (check with the backend at 49-B):** does the backend's
+`game_has_eve` carry the checkbox or the draw? If it carries the draw, multi has the
+same validation-skip leak and needs the same flow/physics split server-side.
+
+**Restart semantics — current vs target (updated 2026-07-16):** today the Eve-detected
+restart forces her presence off, because that is what the multiplayer backend event
+(`RESTART_WITHOUT_EVE`) does and the Parity Principle requires both modes to match.
+**The agreed TARGET (Ibra) is a REDRAW with the same probability** — it makes every
+restart semantically identical ("same settings, fresh randomness, draw included") and is
+physically honest: at probability 1.0 the student can never establish a secure key on a
+permanently tapped channel, which is BB84's security *working* (the earlier "infinite
+loop" objection was overstated — the loop terminates when Eve slips through undetected,
+and a teacher choosing 1.0 is choosing exactly that lesson). **Flip both modes together**
+when the backend can redraw (49-B backend session); do not switch solo alone.
+
+**Phase 2 (later):** an end-of-game reveal — "Ève était-elle présente ?" — like E91's
+`e91OriginalEvePresent`, which requires storing the checkbox+probability separately from
+the draw. Also at the protocols' unification: give DPS a restart handler and align the
+remaining Eve mechanics.
+
+---
+
+## 13. Standing Policies (Task 54 F5/F6 — rules that prevent regressions)
+
+### 13.1 The mode flags: derived cache, shrinking readership
+
+`playingSolo` / `playingMultiplayer` are a **derived cache of session truth**, not a
+source of truth (`detectSession` is). They currently work because of write ORDERING,
+which nothing enforces — so the full writer inventory is recorded here instead of
+living as tribal knowledge:
+
+| Writer | When |
+|---|---|
+| `useProtocolSessionGuard` (the D5a bridge) | on every guarded route mount — re-asserts truth |
+| socket-provider `ROLES_EVENT` (×3 protocols) | multiplayer start |
+| the solo start modals (×3 protocols) | solo start |
+| `bb84-game-form-v3` `onRejoin` | rejoin routing |
+| lifecycle `startFresh` / `abandon` | reset both to false |
+| the landing page | resets both on mount |
+
+**Rules:** (1) no NEW writers — mode changes flow through the lifecycle/guard;
+(2) no NEW readers — new components receive mode from the page (the guard already
+knows it); (3) **touched components migrate**: any component edited for any reason
+drops its `playingSolo` read in the same change (8 BB84 play-page files remain);
+(4) E91/DPS are born clean at replication (guard hook + mode passed down — their
+components never read the flags). A shared `ProtocolModeContext` is created at the
+FIRST migration that needs it — not before (no dead scaffolding).
+
+### 13.2 The socket provider: transport, not domain
+
+The provider holds ~50+ direct room-store manipulations inside its handlers — domain
+logic in the transport layer, in the one file that cannot be unit-tested as-is.
+**Hold-the-line rule:** NEW handler logic goes into per-protocol modules
+(`components/providers/socket-handlers/{protocol}-play-handler.ts`, the Phase-5 file
+plan of §6) that the provider merely calls; existing handler bodies move only when
+touched for another reason. First candidates when next touched: the `A/B_VALIDATED`
+bodies (modified twice in July 2026; extraction also makes them unit-testable).
+No big-bang extraction — §9 already warns Phase 5 is the riskiest change in the app.
+
+---
+
+## 14. Relationship to Existing Documents
 
 | Document | Status | Action |
 |----------|--------|--------|
-| **This ADR** | **Draft definitive plan** | Candidate architecture reference during review |
+| **This ADR** | **ACCEPTED (July 2026)** | The architecture reference; E91/DPS replicate against it |
 | [storage-architecture.md](storage-architecture.md) | Historical reasoning | Add header note pointing here. Keep for context. Rewrite after Phase 6. |
-| [protocol-session-lifecycle-diagrams.md](protocol-session-lifecycle-diagrams.md) | Superseded | Add header note pointing here. The ADR has better diagrams. |
+| `protocol-session-lifecycle-diagrams.md` | Superseded → **deleted 2026-07-17** | The ADR's §4 diagrams replaced it entirely; retrievable via git history. |
 | [product-vision-game-experience.md](product-vision-game-experience.md) | Separate concern | Unchanged. Product/UX vision, not architecture. |
 | [tasks_todo.md](../tasks_todo.md) Task 26 | Architecture task | Update to reference this ADR. |

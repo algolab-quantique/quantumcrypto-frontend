@@ -2,7 +2,8 @@
 
 > **Role**: Deep codebase audit and architectural investigation  
 > **Date**: June 2026  
-> **Led to**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) (the draft architecture plan)
+> **Led to**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) (since ACCEPTED, July 2026)
+> **Historical document** — reasoning that produced the ADR; do not follow as a spec.
 >
 > This document records the full investigation: every file read, redundancy
 > measurements, OOP vs functional analysis, and the initial architecture proposal.
@@ -23,7 +24,7 @@ I studied every file relevant to the architecture question:
 | **Constants** | [bb84-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/bb84-constants.ts), [e91-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/e91-constants.ts), [dps-constants.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/dps-constants.ts) |
 | **Types** | [types.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/types.ts) |
 | **Hooks** | [use-prevent-navigation.ts](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/hooks/use-prevent-navigation.ts) |
-| **Docs** | [storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md), [protocol-session-lifecycle-diagrams.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/protocol-session-lifecycle-diagrams.md), [product-vision-game-experience.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/product-vision-game-experience.md) |
+| **Docs** | [storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md), `protocol-session-lifecycle-diagrams.md` (deleted; in git history), [product-vision-game-experience.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/product-vision-game-experience.md) |
 | **Tasks** | [tasks_todo.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/tasks_todo.md) — 402 lines |
 | **Structure** | All `app/`, `components/`, `store/`, `lib/`, `hooks/` directories |
 
@@ -39,7 +40,7 @@ I studied every file relevant to the architecture question:
 
 3. **Solo mode works well.** localStorage-first, deterministic, each protocol's solo flow is self-contained. Don't mess with it.
 
-4. **The existing docs** ([storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md) and [lifecycle diagrams](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/protocol-session-lifecycle-diagrams.md)) already describe the right target. The thinking is sound.
+4. **The existing docs** ([storage-architecture.md](file:///Users/chei2402/Documents/github/algolab-quantique/quantumcrypto-frontend/docs/storage-architecture.md) and lifecycle diagrams (now ADR §4)) already describe the right target. The thinking is sound.
 
 ### 🔴 What's ACTUALLY the problem
 
@@ -378,7 +379,7 @@ sequenceDiagram
 This is NOT an abstract class. It's a plain TypeScript object:
 
 ```typescript
-// === THE INTERFACE (shared/protocol-lifecycle/types.ts) ===
+// === THE INTERFACE (lib/protocol-lifecycle/types.ts) ===
 
 type Protocol = 'bb84' | 'e91' | 'dps';
 type GameMode = 'solo' | 'multiplayer';
@@ -410,7 +411,7 @@ interface ProtocolAdapter {
 ```
 
 ```typescript
-// === ONE ADAPTER (shared/protocol-lifecycle/bb84-adapter.ts) ===
+// === ONE ADAPTER (lib/protocol-lifecycle/bb84-adapter.ts) ===
 
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useBB84ProgressStore, hydrateBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
@@ -438,7 +439,7 @@ export const bb84Adapter: ProtocolAdapter = {
 Then the lifecycle service:
 
 ```typescript
-// === LIFECYCLE SERVICE (shared/protocol-lifecycle/lifecycle.ts) ===
+// === LIFECYCLE SERVICE (lib/protocol-lifecycle/lifecycle.ts) ===
 
 export function clearProtocolStorage(adapter: ProtocolAdapter): void {
     if (typeof window === 'undefined') return;
@@ -582,7 +583,7 @@ With this architecture, adding B92 would be:
    - `store/b92/b92-progress-store.ts`
 
 2. **Create adapter** (small object):
-   - `shared/protocol-lifecycle/b92-adapter.ts`
+   - `lib/protocol-lifecycle/b92-adapter.ts`
 
 3. **Register**:
    - Add to `registry.ts`
@@ -631,7 +632,7 @@ The existing room stores, progress stores, and game stores are well-structured. 
 - Agree on the file structure
 
 ### Phase 1: Create shared infrastructure (no behavior change)
-- Create `shared/protocol-lifecycle/` with types, lifecycle service, storage helpers
+- Create `lib/protocol-lifecycle/` with types, lifecycle service, storage helpers
 - Create all 3 adapters
 - Create registry
 - **Tests**: Ensure the adapters correctly wrap existing stores

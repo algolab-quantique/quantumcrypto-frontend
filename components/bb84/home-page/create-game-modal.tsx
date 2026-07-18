@@ -90,8 +90,11 @@ const CreateGameModal = ({
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
+            // Cap at photons/4, not /2 — same rationale as the solo modal:
+            // the sifted key averages half the photons, and validation bits
+            // are sacrificed from it (Solo/Multi Parity Principle).
             (schema.validationBits > 0 && schema.validationBits <=
-                schema.photonNumber / 2)) || !schema.eve),
+                schema.photonNumber / 4)) || !schema.eve),
             {
                 message: localize('component.createGame.validationLength'),
                 path: ['validationBits'],
@@ -111,6 +114,15 @@ const CreateGameModal = ({
         checked: CheckedState) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons: when checking Eve with a photon
+        // count below the with-Eve minimum, raise it automatically instead of
+        // making the user fix a validation error by hand (same as solo modal).
+        if (checked === true) {
+            const photonNumber = form.getValues('photonNumber');
+            if (photonNumber < BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE) {
+                form.setValue('photonNumber', BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE);
+            }
+        }
     };
 
     return (

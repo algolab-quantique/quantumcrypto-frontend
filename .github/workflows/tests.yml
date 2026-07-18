@@ -1,0 +1,31 @@
+# CI — docs/testing-strategy.md (Task 47).
+# On every push and pull request, GitHub runs the unit suite, the type check
+# and the linter on a clean machine, and marks the commit ✓ or ✗.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint

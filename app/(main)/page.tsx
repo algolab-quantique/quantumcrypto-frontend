@@ -8,7 +8,6 @@ import AboutSectionV3 from '@/components/home-page/v3/about-section-v3';
 import AtmosphericBackground from '@/components/home-page/v3/atmospheric-background';
 import Image from 'next/image';
 import { useEffect } from 'react';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import usePlayerStore from '@/store/player-store';
@@ -24,16 +23,12 @@ export default function LandingPageV3() {
         setPlayingSolo(false);
         setPlayingMultiplayer(false);
 
-        // 2. Check and clean up completed BB84 game data
-        try {
-            const bb84GameRaw = localStorage.getItem('bb84GameData');
-            const bb84Game = bb84GameRaw ? JSON.parse(bb84GameRaw) : null;
-            if (bb84Game?.gameSuccess === true) {
-                clearBB84LocalStorage();
-            }
-        } catch (e) {
-            console.error('Error cleaning BB84 storage on landing mount:', e);
-        }
+        // 2. BB84 completed data is deliberately NOT cleared here (Task 48 D4b,
+        // ADR §11 Navigation Invariant): session data is destroyed only by explicit
+        // user intent — startFresh (new game / replay) or quit — never as a
+        // side-effect of navigation. Keeping the completed checkpoint lets browser
+        // Forward back into /bb84/play restore the félicitation screen instead of
+        // fail-closing. E91/DPS below keep the old clearing until their migration.
 
         // 3. Check and clean up completed DPS game data
         try {

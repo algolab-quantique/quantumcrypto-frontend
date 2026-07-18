@@ -24,14 +24,26 @@ import GameRestartDialog
     from '@/components/bb84/play-page/game-restart-dialog';
 import {BB84GameStep} from '@/types';
 import {getValidBits, mimicEveIntercept} from '@/lib/bb84/solo-player';
+import {restartSoloRound} from '@/lib/bb84/solo-round';
+import {isKeyTooShort} from '@/lib/bb84/utils';
+import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
+import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
+import {useRouter} from 'next/navigation';
 import {generateUniqueRandomList} from '@/lib/utils';
 
 const BasisTab = ({playerRole}: { playerRole: string }) => {
 
     const [restartModalOpen, setRestartModalOpen] = useState(false);
+    // Task 55: the dialog message follows the REASON, not the Eve checkbox —
+    // an empty key (zero matching bases) gets the empty-key message in BOTH
+    // modes; only a non-empty-but-insufficient key (possible only with Eve,
+    // where validation bits are sacrificed) gets the espion message.
+    const [restartReason, setRestartReason] =
+        useState<'emptyKey' | 'insufficientForValidation'>('emptyKey');
 
     const {localize} = useLanguage();
-    const {shareKey} = useSocket();
+    const {shareKey, disconnectPlayRoom} = useSocket();
+    const router = useRouter();
 
     const {
         setStep,
@@ -102,9 +114,32 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
     };
 
     const restartGame = () => {
-        resetRoom();
-        resetProgress();
+        if (playingSolo) {
+            // Task 49-A: same config (photon number, validation length, Eve),
+            // fresh randomness — the naive resetRoom+resetProgress left solo Bob
+            // with no photons (nothing regenerated them) and a stuck game.
+            restartSoloRound();
+        } else {
+            // Multi restart is still uncoordinated (partner is not told) —
+            // known desync, tracked as Task 49-B; behavior unchanged here.
+            resetRoom();
+            resetProgress();
+        }
         setRestartModalOpen(false);
+    };
+
+    // Task 49-C: the quiet escape hatch — leaving is an explicit quit (the
+    // Navigation Invariant's "explicit user intent"), so the session is
+    // abandoned; settings changes live at the protocol menu. Same in both
+    // modes (Solo/Multi Parity Principle); disconnectPlayRoom is a safe
+    // no-op in solo.
+    const exitToMenu = () => {
+        // Deliberately do NOT close the dialog: it keeps covering the screen
+        // while abandon() wipes the stores and the navigation completes —
+        // otherwise the emptied step-1 game flashes during the transition.
+        disconnectPlayRoom();
+        abandon(bb84Adapter);
+        router.replace('/bb84');
     };
 
     const onSend = () => {
@@ -112,7 +147,13 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
         if (isValid) {
             const keyBits = validatedBits.filter(({discarded}) => !discarded)
                 .map(({value}) => value);
-            if (keyBits.length < validationBitsLength) {
+            // Task 55: mode-aware minimum (pure policy in lib/bb84/utils).
+            // With Eve: sifted must exceed the sacrificed validation count.
+            // Without Eve: only an EMPTY key is unplayable — no-Eve games have
+            // no validation step and must not see the espion restart.
+            if (isKeyTooShort(keyBits.length, gameHasEve, validationBitsLength)) {
+                setRestartReason(keyBits.length === 0
+                    ? 'emptyKey' : 'insufficientForValidation');
                 setRestartModalOpen(true);
                 return;
             }
@@ -218,8 +259,13 @@ const BasisTab = ({playerRole}: { playerRole: string }) => {
                                title={localize(
                                    'component.basisTab.alertTitle')}
                                description={localize(
-                                   'component.basisTab.alertDescription')}
-                               onConfirm={restartGame}/>
+                                   restartReason === 'emptyKey'
+                                       ? 'component.basisTab.alertDescriptionEmptyKey'
+                                       : 'component.basisTab.alertDescription')}
+                               confirmLabel={localize(
+                                   'component.gameRestart.playAgain')}
+                               onConfirm={restartGame}
+                               onExit={exitToMenu}/>
             <div className="block border
                     text-card-foreground border-secondary bg-card shadow-lg
                     rounded-lg">

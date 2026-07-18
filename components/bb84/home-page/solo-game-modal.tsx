@@ -27,13 +27,9 @@ import { CheckedState } from '@radix-ui/react-checkbox';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import { useRouter } from 'next/navigation';
-import {
-    generateAliceBases,
-    generateAliceBits,
-    generateAlicePhotons, mimicEveIntercept,
-} from '@/lib/bb84/solo-player';
-import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { beginSoloRound, recordSoloGameStart } from '@/lib/bb84/solo-round';
+import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
 import {
     BB84_TEST_MODE,
@@ -41,6 +37,9 @@ import {
     BB84_SOLO_PHOTON_MIN_WITH_EVE,
     BB84_SOLO_PHOTON_MIN_WITHOUT_EVE,
     BB84_SOLO_PHOTON_DEFAULT,
+    BB84_EVE_PERCENTAGE_DEFAULT,
+    BB84_EVE_PERCENTAGE_MIN,
+    BB84_EVE_PERCENTAGE_MAX,
     getDefaultValidationBits,
 } from '@/bb84-constants';
 
@@ -57,14 +56,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         setGameHasEve,
         setValidationBitsLength,
     } = useBB84GameStore();
-    const {
-        setEvePresent,
-        setAlicePhotons,
-        setAliceBits,
-        setAliceBases,
-        resetRoom,
-    } = useBB84RoomStore();
-    const { pushLines, resetProgress } = useBB84ProgressStore();
+    const { setEvePresent } = useBB84RoomStore();
 
     const { localize } = useLanguage();
     const router = useRouter();
@@ -86,6 +78,22 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
             invalid_type_error: localize('component.createGame.numbersOnly'),
         })
             .int(),
+        evePercentage: z.coerce.number({
+            invalid_type_error: localize(
+                'component.createGame.evePercentage.invalidType'),
+        })
+            .positive({
+                message: localize(
+                    'component.createGame.evePercentage.positive'),
+            })
+            .gte(BB84_EVE_PERCENTAGE_MIN, {
+                message: localize(
+                    'component.createGame.evePercentage.greaterThan'),
+            })
+            .lte(BB84_EVE_PERCENTAGE_MAX, {
+                message: localize(
+                    'component.createGame.evePercentage.lessThan'),
+            }),
         playerName: z.string({
             required_error: localize('component.main.nameRequired'),
         }).min(2, {
@@ -102,8 +110,13 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
             message: localize('component.createGame.keyMin'),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
+            // Cap at photons/4, not /2: the sifted key averages HALF the
+            // photons (Binomial n,1/2), and validation bits are sacrificed
+            // from it — a cap of n/2 makes the "not enough bits" restart fire
+            // in most rounds (found by Ibra: 6 photons/3 validation ⇒ ~66%
+            // restart rate). n/4 matches getDefaultValidationBits' 25%.
             (schema.validationBitsLength > 0 && schema.validationBitsLength <=
-                schema.photonNumber / 2)) || !schema.eve),
+                schema.photonNumber / 4)) || !schema.eve),
             {
                 message: localize('component.createGame.validationLength'),
                 path: ['validationBitsLength'],
@@ -140,6 +153,7 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
             photonNumber: BB84_SOLO_PHOTON_DEFAULT,
             eve: false,
             validationBitsLength: getDefaultValidationBits(BB84_SOLO_PHOTON_DEFAULT),
+            evePercentage: BB84_EVE_PERCENTAGE_DEFAULT,
             playerName: '',
         },
     });
@@ -149,14 +163,24 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         eve: boolean,
         validationBitsLength: number,
         playerName: string,
+        evePercentage: number,
     ) => {
+        // Task 51 (ADR §12): the checkbox means "Eve POSSIBLE" — her actual
+        // presence is drawn ONCE here, like BB84 multiplayer (backend draw from
+        // eve_percentage), E91 and DPS. Probability 1.0 reproduces the old
+        // deterministic behavior. TWO DISTINCT FLAGS:
+        // - gameHasEve = the CHECKBOX: the game includes the validation
+        //   mechanic. It must NOT carry the draw — skipping validation when
+        //   Eve wasn't drawn would leak the answer ("no validation step ⇒
+        //   she's not here"), defeating detection-under-uncertainty.
+        // - evePresent = the DRAW: whether she actually intercepts (physics).
+        const eveDrawn = eve && Math.random() < evePercentage;
+
         void recordGameStats('bb84', 1, { silent: true });
-        clearBB84LocalStorage();
-        resetRoom();
-        resetProgress();
+        startFresh(bb84Adapter);
         setPlayerName(playerName);
         setPlayingSolo(true);
-        setEvePresent(eve);
+        setEvePresent(eveDrawn);
         setGameHasEve(eve);
         setValidationBitsLength(validationBitsLength);
         setPhotonNumber(photonNumber);
@@ -165,35 +189,24 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         localStorage.setItem('bb84PhotonNumber', JSON.stringify(photonNumber));
         localStorage.setItem('bb84ValidationBitsLength', JSON.stringify(validationBitsLength));
         localStorage.setItem('bb84GameHasEve', JSON.stringify(eve));
-        localStorage.setItem('bb84GameData', JSON.stringify({ evePresent: eve }));
+        localStorage.setItem('bb84GameData', JSON.stringify({ evePresent: eveDrawn }));
+        // Task 51 ph.2: persist the game's Eve story (checkbox, probability,
+        // draw) + start time for the solo results/reveal page. Game scope:
+        // restarts do not rewrite these.
+        recordSoloGameStart({ enabled: eve, percentage: evePercentage, drawn: eveDrawn });
 
-        if (playerRole === 'B') {
-            const aliceBits = generateAliceBits(photonNumber);
-            const aliceBases = generateAliceBases(photonNumber);
-            let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
-            if (eve) {
-                alicePhotons = mimicEveIntercept(alicePhotons);
-            }
-            setAliceBits(aliceBits);
-            setAliceBases(aliceBases);
-            setAlicePhotons(alicePhotons);
-            pushLines([
-                {
-                    title: 'component.exchange.welcome',
-                },
-                {
-                    content: 'component.bobExchange.waiting',
-                },
-                {
-                    content: 'component.bobExchange.photonsArrived',
-                },
-                {
-                    title: 'component.game.step1',
-                    content: 'component.bobExchange.choose',
-                },
-            ]);
-        }
-        router.replace('/bb84/play');
+        // Canonical, role-aware round start (lib/bb84/solo-round.ts) — shared
+        // with the restart paths so generation/transcript cannot drift (Task 50
+        // F3/F4). Bob: generated photons + his lines; Alice: her lines (she
+        // generates via her own UI).
+        beginSoloRound(photonNumber, eveDrawn);
+        // History management: use push (NOT replace) so /bb84 stays in the
+        // history stack. Browser Back from /bb84/play then returns to the
+        // protocol page (which offers rejoin), instead of skipping straight to
+        // '/'. Keep this a push unless we deliberately uniformize navigation to
+        // replace — see tasks_todo.md Task 46 (replace transient screens, push
+        // real destinations).
+        router.push('/bb84/play');
     };
 
     const roleSelection = (
@@ -247,8 +260,16 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
     ) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons: when checking Eve with a photon
+        // count below the with-Eve minimum, raise it automatically instead of
+        // making the user fix a validation error by hand.
+        let nextPhotonNumber = photonNumber;
+        if (checked === true && photonNumber < BB84_SOLO_PHOTON_MIN_WITH_EVE) {
+            nextPhotonNumber = BB84_SOLO_PHOTON_MIN_WITH_EVE;
+            form.setValue('photonNumber', nextPhotonNumber);
+        }
         // Automatically adjust validation bits when Eve is toggled
-        form.setValue('validationBitsLength', getDefaultValidationBits(photonNumber));
+        form.setValue('validationBitsLength', getDefaultValidationBits(nextPhotonNumber));
     };
 
     const gameSettings = (
@@ -260,8 +281,9 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
                         eve,
                         validationBitsLength,
                         playerName,
+                        evePercentage,
                     }) => onStartSoloGame(photonNumber, eve,
-                        validationBitsLength, playerName))}
+                        validationBitsLength, playerName, evePercentage))}
             >
                 <FormField
                     control={form.control}
@@ -344,6 +366,28 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
                                     maxLength={2}
                                     min="0"
                                     placeholder="10"
+                                    className="text-center w-[50px]"
+                                    {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />}
+                {eveChecked && <FormField
+                    control={form.control}
+                    name="evePercentage"
+                    render={({ field }) => (
+                        <FormItem
+                            className="space-y-0 flex gap-x-5 items-center">
+                            <FormLabel
+                                className="text-nowrap col-span-1"
+                            >{localize(
+                                'component.createGame.evePercentage.label')}</FormLabel>
+                            <FormControl className="mx-2">
+                                <Input
+                                    maxLength={3}
+                                    min="0"
+                                    placeholder="0.5"
                                     className="text-center w-[50px]"
                                     {...field} />
                             </FormControl>

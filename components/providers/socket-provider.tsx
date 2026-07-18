@@ -20,7 +20,9 @@ import {
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-import { restartWithoutEve } from '@/lib/bb84/utils';
+import { restartWithoutEve, sacrificeValidationBits } from '@/lib/bb84/utils';
+import { complete } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import {
     A_BASES_EVENT,
     A_CIPHER_EVENT,
@@ -720,7 +722,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         router.replace('/');
                         localStorage.setItem('dpsPlayerData', JSON.stringify({}));
                         localStorage.setItem('dpsGameData', JSON.stringify({}));
-                        localStorage.clear();
+                        // Task 54 F2: no localStorage.clear() here — it wiped EVERY
+                        // protocol's data (incl. BB84's kept completed sessions,
+                        // violating the Navigation Invariant). clearDPSLocalStorage()
+                        // below already removes all DPS-owned keys.
                         clearDPSLocalStorage();
 
                     }
@@ -940,6 +945,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         useBB84RoomStore.getState()
                             .setValidatedByPartner(true);
                         if (message['valid']) {
+                            // Mirror validation-tab's local rule on the
+                            // partner's side: a VALID verdict with Eve present
+                            // means she slipped through (eveUndetected).
+                            // Without this the partner's eveRestartNeeded
+                            // stays true and a spurious Eve-restart dialog
+                            // appears after a valid check.
+                            if (useBB84RoomStore.getState().evePresent) {
+                                useBB84RoomStore.getState().setEveUndetected(true);
+                            }
+                            // Task 53: the compared bits were announced
+                            // publicly — both players discard them (the
+                            // indices are symmetric on both clients).
+                            sacrificeValidationBits();
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',
@@ -967,6 +985,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         useBB84RoomStore.getState()
                             .setValidatedByPartner(true);
                         if (message['valid']) {
+                            // Same eveUndetected mirror as A_VALIDATED_EVENT.
+                            if (useBB84RoomStore.getState().evePresent) {
+                                useBB84RoomStore.getState().setEveUndetected(true);
+                            }
+                            // Task 53: same sacrifice as A_VALIDATED_EVENT.
+                            sacrificeValidationBits();
                             useBB84ProgressStore.getState().pushLines([
                                 {
                                     title: 'component.validationTab.validated',
@@ -1083,6 +1107,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                             ]);
                         }
                         useBB84RoomStore.getState().setGameSuccess(true);
+                        // Task 54 F3: milestone snapshot through the lifecycle door
+                        // (also the future backend-sync hook).
+                        complete(bb84Adapter);
                         // Keep completed-game recovery data so a refresh can redirect
                         // to the results page. Cleanup happens from results/home flows.
                     } else if (gameType === 'dps') {
@@ -1151,7 +1178,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         router.replace('/');
                         localStorage.setItem('dpsPlayerData', JSON.stringify({}));
                         localStorage.setItem('dpsGameData', JSON.stringify({}));
-                        localStorage.clear();
+                        // Task 54 F2: no localStorage.clear() here — it wiped EVERY
+                        // protocol's data (incl. BB84's kept completed sessions,
+                        // violating the Navigation Invariant). clearDPSLocalStorage()
+                        // below already removes all DPS-owned keys.
                         clearDPSLocalStorage();
 
                     }

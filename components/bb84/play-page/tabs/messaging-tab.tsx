@@ -10,13 +10,14 @@ import {CheckCircle2, Send} from 'lucide-react';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {Input} from '@/components/ui/input';
 import {cn} from '@/lib/utils';
-import {clearBB84LocalStorage} from '@/lib/bb84/utils';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {useLanguage} from '@/components/providers/language-provider';
 import {useSocket} from '@/components/providers/socket-provider';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import {forbiddenSymbols} from '@/lib/utils';
+import {complete} from '@/lib/protocol-lifecycle/lifecycle';
+import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import usePlayerStore from '@/store/player-store';
 
 const MessagingTab = ({playerRole}: { playerRole: string }) => {
@@ -165,6 +166,10 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 setPersistedCrypto(updatedCrypto.map(({value}) => value));
                 setPersistedMessage(message.map(({value}) => value));
                 setGameSuccess(true);
+                // Task 54 F3: the milestone door — write the full completed
+                // snapshot through the lifecycle (also the future backend-sync
+                // hook). Incremental persistence stays updateAndStore.
+                complete(bb84Adapter);
             } else {
                 setPersistedCrypto(updatedCrypto.map(({value}) => value));
                 setPersistedMessage(message.map(({value}) => value));

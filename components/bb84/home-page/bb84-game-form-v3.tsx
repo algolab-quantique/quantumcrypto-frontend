@@ -26,18 +26,86 @@ import { Input } from '@/components/ui/input';
 import CreateGameModal from '@/components/bb84/home-page/create-game-modal';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import SoloGameModal from '@/components/bb84/home-page/solo-game-modal';
 import { Gamepad2, Users, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+
+type BB84SessionKind = 'multiplayer' | 'solo' | 'completed' | 'corrupt' | 'none';
+
+/** Present-and-parseable → value, missing → null, present-but-unparseable → undefined. */
+const readJSON = (key: string): unknown => {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return undefined;
+    }
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Read-only BB84 session detection for the /bb84 form page.
+ *
+ * Inspects localStorage and the persisted playingSolo flag WITHOUT mutating any
+ * store. /bb84/play (restoreCheckpoint) stays the only owner of restore/reconnect;
+ * this function only decides which recovery affordance the form page should show.
+ *
+ * Requiring bb84GameData for both modes matches the play page's fail-closed rule:
+ * the play socket does not resend a full room snapshot on reconnect, so multiplayer
+ * identity without a room checkpoint is not recoverable.
+ */
+const detectBB84Session = (): BB84SessionKind => {
+    if (typeof window === 'undefined') return 'none';
+
+    const gameData = readJSON('bb84GameData');
+    const playerData = readJSON('bb84PlayerData');
+
+    const gameDataCorrupt = gameData === undefined;
+    const playerDataCorrupt = playerData === undefined;
+
+    const validGameData = isRecord(gameData);
+    const validPlayerData =
+        isRecord(playerData) &&
+        typeof playerData.gameCode === 'string' && playerData.gameCode.trim() !== '' &&
+        typeof playerData.role === 'string' && playerData.role.trim() !== '' &&
+        typeof playerData.room === 'string' && playerData.room.trim() !== '';
+    const playerDataPresentButInvalid = isRecord(playerData) && !validPlayerData;
+
+    // Present-but-unparseable snapshot, or structurally invalid identity → clear.
+    if (gameDataCorrupt || playerDataCorrupt || playerDataPresentButInvalid) {
+        return 'corrupt';
+    }
+
+    // Completed game left over on the home page → stale, clear it.
+    if (validGameData && (gameData as Record<string, unknown>).gameSuccess === true) {
+        return 'completed';
+    }
+
+    // Multiplayer needs valid identity AND a restorable room snapshot.
+    if (validPlayerData && validGameData) return 'multiplayer';
+
+    // Multiplayer identity without a room snapshot cannot be restored → orphan.
+    if (validPlayerData && !validGameData) return 'corrupt';
+
+    // Solo = a restorable room snapshot with no multiplayer identity. By this
+    // point every bb84PlayerData case (valid MP, orphan, corrupt) has already
+    // returned, so reaching here means no MP identity. Flag-independent on
+    // purpose: the landing page resets playingSolo, but bb84GameData survives.
+    if (validGameData) return 'solo';
+
+    return 'none';
+};
 
 /**
  * BB84MainV3 — V3 Visual Skin for the BB84 Game Form
@@ -55,163 +123,62 @@ const BB84MainV3: React.FC = () => {
         isWaitingRoomConnected,
         waitingRoomConnecting,
         isPlayRoomConnected,
-        connectToPlayRoom,
         disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
+    const [detectedKind, setDetectedKind] = useState<'multiplayer' | 'solo' | null>(null);
     const [flipFace, setFlipFace] = useState<'front' | 'solo' | 'multi'>('front');
     const [soloModalOpen, setSoloModalOpen] = useState(false);
     const { localize } = useLanguage();
-    const {
-        setGameCode,
-        setGameHasEve,
-        setValidationBitsLength,
-        setPhotonNumber,
-    } = useBB84GameStore();
+    const { setGameCode } = useBB84GameStore();
     const {
         setPlayerName,
         setPlayerRole,
-        setPartner,
         setIsAdmin,
         setPlayingSolo,
         setPlayingMultiplayer,
     } = usePlayerStore();
-    const {
-        setBb84Tab,
-        setStep,
-        setDisplayedLines,
-        resetProgress,
-    } = useBB84ProgressStore();
-    const { restoreGame, resetRoom } = useBB84RoomStore();
     const router = useRouter();
 
-    const getSavedItem = (key: string) => {
-        const item = localStorage.getItem(key);
-        if (!item) return null;
-
-        try {
-            return JSON.parse(item);
-        } catch {
-            return null;
-        }
-    };
-
-    const clearSavedSession = () => {
-        clearBB84LocalStorage();
-        setPlayingSolo(false);
-        setPlayingMultiplayer(false);
-    };
-
     useEffect(() => {
-        const previousGameRaw = localStorage.getItem('bb84PlayerData');
-        const gameDataRaw = localStorage.getItem('bb84GameData');
-        const previousGame = getSavedItem('bb84PlayerData');
-        const gameData = getSavedItem('bb84GameData');
-        const hasCorruptSavedSession = Boolean(
-            (previousGameRaw && !previousGame) ||
-            (gameDataRaw && !gameData)
-        );
-        const hasInvalidPlayerData = Boolean(
-            previousGame && (
-                !previousGame.gameCode ||
-                !previousGame.role ||
-                !previousGame.room
-            )
-        );
-        const gameCompleted = gameData && gameData.gameSuccess === true;
-        const hasActiveSession = Boolean(
-            previousGame?.gameCode &&
-            previousGame?.role &&
-            previousGame?.room &&
-            usePlayerStore.getState().playingMultiplayer
-        );
+        const kind = detectBB84Session();
 
-        if (hasCorruptSavedSession || hasInvalidPlayerData) {
-            clearSavedSession();
+        // Corrupt session on the home page: unrecoverable, so clear it (and close
+        // any stray socket — safe no-op if already closed). /bb84/play
+        // (restoreCheckpoint) is the only restore owner; the form page only detects
+        // and routes.
+        if (kind === 'corrupt') {
+            disconnectPlayRoom();
+            abandon(bb84Adapter);
             return;
         }
 
-        // If the game was already completed, clean up stale data.
-        if (gameCompleted) {
-            clearSavedSession();
-            return;
-        }
-
-        if (isPlayRoomConnected && hasActiveSession) {
-            router.push('/bb84/play');
-            return;
-        }
-
-        if (isPlayRoomConnected && !hasActiveSession) {
+        // Completed session on the home page (Slice D2): KEEP the checkpoint so a
+        // browser-Forward back into /bb84/play restores the félicitation screen
+        // instead of fail-closing (which produced the flash + duplicate-/bb84 jank).
+        // Still disconnect the play socket — Slice 3a's phantom-game fix stands; we
+        // only preserve the checkpoint data, not the connection. Completed data is
+        // cleared later by startFresh (new game / replay) or the landing page.
+        if (kind === 'completed') {
             disconnectPlayRoom();
             return;
         }
 
-        if (previousGameRaw) {
+        // Live play socket but nothing recoverable: clean up the stray socket.
+        if (isPlayRoomConnected && kind === 'none') {
+            disconnectPlayRoom();
+            return;
+        }
+
+        // Recoverable session (socket alive or not): offer an explicit rejoin
+        // instead of auto-bouncing, so browser Back lands on /bb84 and the user
+        // chooses rejoin or leave.
+        if (kind === 'multiplayer' || kind === 'solo') {
+            setDetectedKind(kind);
             setRejoinDialogOpen(true);
         }
     }, [isPlayRoomConnected, disconnectPlayRoom]);
-
-    const getGameProgress = () => {
-        const previousGame = getSavedItem('bb84PlayerData');
-
-        if (previousGame) {
-            const {
-                gameCode,
-                role,
-                partner,
-                gameHasEve,
-                playerName,
-            } = previousGame;
-
-            setGameHasEve(gameHasEve);
-            setGameCode(gameCode);
-            setPartner(partner);
-            setPlayerRole(role);
-            setPlayerName(playerName);
-            if (role && previousGame.room) {
-                // bb84PlayerData is written only for multiplayer rooms. Restoring
-                // these flags lets the next /bb84/play refresh recover in place.
-                setPlayingMultiplayer(true);
-                setPlayingSolo(false);
-            }
-        }
-
-        const stepJSON = getSavedItem('bb84Step');
-        if (stepJSON) {
-            setStep(stepJSON);
-        }
-
-        const tab = localStorage.getItem('bb84Tab');
-        if (tab) {
-            setBb84Tab(tab);
-        }
-
-        const photonNumber = getSavedItem('bb84PhotonNumber');
-        if (photonNumber) {
-            setPhotonNumber(photonNumber);
-        }
-
-        const validationBitsLength = getSavedItem('bb84ValidationBitsLength');
-        if (validationBitsLength) {
-            setValidationBitsLength(validationBitsLength);
-        }
-
-        const previousDisplayedLines = getSavedItem('bb84DisplayedLines');
-        if (previousDisplayedLines) {
-            setDisplayedLines(previousDisplayedLines);
-        }
-
-        const gameDataJSON = getSavedItem('bb84GameData');
-        if (gameDataJSON) {
-            restoreGame(gameDataJSON);
-        }
-
-        if (previousGame && previousGame.role && previousGame.room) {
-            connectToPlayRoom('bb84', useBB84GameStore.getState().gameCode, previousGame.role, previousGame.room);
-        }
-    };
 
     const formSchema = z.object({
         playerName: z.string({
@@ -243,10 +210,7 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
-        // Reset solo/multiplayer flags before joining a new game.
-        clearBB84LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        startFresh(bb84Adapter);
 
         setGameCode(gamePIN);
         setPlayerName(playerName);
@@ -268,10 +232,7 @@ const BB84MainV3: React.FC = () => {
 
         if (isWaitingRoomConnected) return;
 
-        // Reset solo/multiplayer flags before creating a new game.
-        clearBB84LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        startFresh(bb84Adapter);
 
         setCreatingGame(true);
 
@@ -308,18 +269,35 @@ const BB84MainV3: React.FC = () => {
 
     const onCancelRejoin = () => {
         setRejoinDialogOpen(false);
-        clearBB84LocalStorage();
+        // Decline = leave for real: close the play socket if it is still alive
+        // (safe no-op otherwise) before clearing the session.
+        disconnectPlayRoom();
+        abandon(bb84Adapter);
     };
 
     const onRejoin = () => {
         setRejoinDialogOpen(false);
-        getGameProgress();
+        // The form page only sets the correct mode flags and routes; /bb84/play
+        // owns restoreCheckpoint() and multiplayer reconnect.
+        if (detectedKind === 'multiplayer') {
+            setPlayingMultiplayer(true);
+            setPlayingSolo(false);
+        } else if (detectedKind === 'solo') {
+            setPlayingSolo(true);
+            setPlayingMultiplayer(false);
+        }
+        // Rule (Slice 2a): replace transient screens, PUSH real destinations. /bb84 and
+        // /bb84/play are both real, so push — replace would overwrite /bb84 and leave a
+        // stale forward /bb84/play, breaking the browser back/forward stack after rejoin.
+        router.push('/bb84/play');
     };
 
     return (
         <>
             <AlertDialog open={rejoinDialogOpen}>
-                <AlertDialogContent className="border-primary/30 bg-card/90 backdrop-blur-sm">
+                <AlertDialogContent
+                    className="border-primary/30 bg-card/90 backdrop-blur-sm"
+                    onEscapeKeyDown={(e) => e.preventDefault()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {localize('component.bb84.gameFound')}

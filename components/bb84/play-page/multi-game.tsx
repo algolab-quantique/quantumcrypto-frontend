@@ -19,7 +19,7 @@
  * internally on the `playingSolo` flag from the player store.
  */
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import usePlayerStore from '@/store/player-store';
 import AliceExchangeTab from '@/components/bb84/play-page/tabs/alice-exchange-tab';
@@ -28,17 +28,15 @@ import BasisTab from '@/components/bb84/play-page/tabs/basis-tab';
 import MessagingTab from '@/components/bb84/play-page/tabs/messaging-tab';
 import ValidationTab from '@/components/bb84/play-page/tabs/validation-tab';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
-import { hydrateBB84ProgressStore, useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
-import useBB84RoomStore from '@/store/bb84/bb84-room-store';
+import { useBB84ProgressStore } from '@/store/bb84/bb84-progress-store';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Minus, MoveHorizontal, MoveDiagonal2, MoveDiagonal, MoveVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import isConnected from '@/components/hoc/is-connected';
 import Bb84Progression from '@/components/bb84/play-page/bb84-progression';
-import { usePreventNavigation } from '@/hooks/use-prevent-navigation';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 
 
 const MultiGame = () => {
@@ -57,18 +55,9 @@ const MultiGame = () => {
     const { localize } = useLanguage();
     const { step, displayedLines, bb84Tab } = useBB84ProgressStore();
     const { pushLines, setBb84Tab } = useBB84ProgressStore();
-    const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setValidationBitsLength, setGameCode } = useBB84GameStore();
-    const { restoreGame, gameSuccess } = useBB84RoomStore();
+    const { playerRole, playerName } = usePlayerStore();
+    const { photonNumber, gameHasEve, setGameHasEve, setGameCode } = useBB84GameStore();
     const { isPlayRoomConnected, connectToPlayRoom } = useSocket();
-
-    const handleNavCleanup = useCallback(() => {
-        clearBB84LocalStorage();
-        usePlayerStore.getState().setPlayingMultiplayer(false);
-    }, []);
-
-    // Warn user on browser back / close / refresh while game is in progress
-    usePreventNavigation(!gameSuccess, handleNavCleanup);
 
     // Restore game state from localStorage on mount (page refresh recovery)
     // OR initialize welcome messages for a fresh session
@@ -76,50 +65,29 @@ const MultiGame = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
+        // ── Page refresh: restore state and reconnect if needed ─────────────
+        // PlayPage's render-time guard (D4a) + flag bridge (D5a) guarantee a valid
+        // multiplayer session before MultiGame mounts, so the old playingMultiplayer
+        // gate and the missing-session fail-close were dead code (removed, D5b).
+        if (!isPlayRoomConnected) {
+            const result = restoreCheckpoint(bb84Adapter);
+            const session = result.kind === 'active' || result.kind === 'completed'
+                ? result.multiplayerSession
+                : undefined;
 
-        if (playingMultiplayer && !isPlayRoomConnected) {
-            // ── Page refresh: restore state and reconnect if needed ─────────
-
-            const gameData = getItem('bb84GameData');
-
-            // Restore room state (bases, bits, cipher, gameSuccess, etc.)
-            if (gameData) restoreGame(gameData);
-
-            // Restore local UI checkpoint: step, active tab, narrative lines.
-            hydrateBB84ProgressStore();
-
-            // Restore game config (set by the lobby before entering this page)
-            const savedPhotonNumber = getItem('bb84PhotonNumber');
-            if (savedPhotonNumber) setPhotonNumber(savedPhotonNumber);
-
-            const savedGameHasEve = getItem('bb84GameHasEve');
-            if (savedGameHasEve !== null) setGameHasEve(savedGameHasEve);
-
-            const savedValidationBitsLength = getItem('bb84ValidationBitsLength');
-            if (savedValidationBitsLength) setValidationBitsLength(savedValidationBitsLength);
-
-            // Restore player identity from saved session
-            const playerData = getItem('bb84PlayerData');
-            if (playerData?.gameCode && playerData?.role && playerData?.room) {
-                setGameCode(playerData.gameCode);
-                if (playerData.role) usePlayerStore.getState().setPlayerRole(playerData.role);
-                if (playerData.partner) usePlayerStore.getState().setPartner(playerData.partner);
-                if (playerData.playerName) usePlayerStore.getState().setPlayerName(playerData.playerName);
-                if (playerData.gameHasEve !== undefined) setGameHasEve(playerData.gameHasEve);
+            if (session) {
+                setGameCode(session.gameCode);
+                usePlayerStore.getState().setPlayerRole(session.role);
+                if (typeof session.partner === 'string') usePlayerStore.getState().setPartner(session.partner);
+                if (typeof session.playerName === 'string') usePlayerStore.getState().setPlayerName(session.playerName);
+                if (typeof session.gameHasEve === 'boolean') setGameHasEve(session.gameHasEve);
 
                 // Only reconnect WebSocket if game is still in progress.
                 // Completed games restore the félicitations screen locally —
                 // the user navigates to results explicitly via "Voir les résultats".
-                if (!gameData?.gameSuccess) {
-                    connectToPlayRoom('bb84', playerData.gameCode, playerData.role, playerData.room);
+                if (result.kind === 'active') {
+                    connectToPlayRoom('bb84', session.gameCode, session.role, session.room);
                 }
-            } else {
-                // No valid session data — cannot reconnect, reset multiplayer flag
-                setPlayingMultiplayer(false);
             }
         } else if (displayedLines.length === 0) {
             // ── Fresh session: show role-appropriate welcome messages ────────
@@ -200,4 +168,6 @@ const MultiGame = () => {
     );
 };
 
-export default isConnected(MultiGame);
+// Task 48 D4a: the is-connected HOC is removed — /bb84/play (PlayPage) now owns
+// the route guard via detectSession (ADR §11 Navigation Invariant).
+export default MultiGame;

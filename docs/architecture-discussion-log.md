@@ -2,7 +2,8 @@
 
 > **Date**: June 2026  
 > **Participants**: Developer (Ibra), Claude Opus 4 (architecture proposal), Codex/ChatGPT 5.5 (reviewer)  
-> **Outcome**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) as the draft candidate plan
+> **Outcome**: [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) (since ACCEPTED, July 2026)
+> **Historical document** — the debate that produced the ADR; do not follow as a spec.
 
 This document records the key decisions and disagreements from the architecture
 review discussion. It is kept so a future contributor can understand **why**
@@ -166,7 +167,7 @@ docs/
 ├── architecture-discussion-log.md           ← This file: 3-way review decisions
 ├── shared-protocol-lifecycle-adr.md         ← Draft candidate architecture plan
 ├── storage-architecture.md                  ← Historical per-protocol audit (points to ADR)
-├── protocol-session-lifecycle-diagrams.md   ← Superseded preliminary diagrams (points to ADR)
+├── protocol-session-lifecycle-diagrams.md   ← (deleted 2026-07-17; superseded by ADR §4)
 ├── product-vision-game-experience.md        ← Product/UX vision (separate concern)
-└── tasks_archived.md                        ← Completed task history
+└── tasks_archived.md                        ← (deleted 2026-07-17; history lives in git)
 ```

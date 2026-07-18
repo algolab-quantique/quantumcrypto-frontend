@@ -5,9 +5,10 @@ import MultiGame from '@/components/bb84/play-page/multi-game';
 import SoloGame from '@/components/bb84/play-page/solo-game';
 import BB84ProgressionSidebar from '@/components/shared/bb84-progression-sidebar';
 import Bb84Button from '@/components/bb84/play-page/bb84-button';
-import usePlayerStore from '@/store/player-store';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
-import { clearBB84LocalStorage } from '@/lib/bb84/utils';
+import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { useProtocolSessionGuard } from '@/lib/protocol-lifecycle/use-protocol-session-guard';
+import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
 import {
@@ -22,7 +23,6 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const PlayPage = () => {
-    const { playingSolo } = usePlayerStore();
     const { gameSuccess } = useBB84RoomStore();
     const { disconnectPlayRoom } = useSocket();
     const router = useRouter();
@@ -30,13 +30,19 @@ const PlayPage = () => {
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
     const [pendingDestination, setPendingDestination] = useState('/bb84');
 
+    // Task 48 D4a → Task 54 F1: the guard/mode/bridge pattern proven here now
+    // lives in ONE place (useProtocolSessionGuard over the pure
+    // resolveSessionForRoute) so E91/DPS adopt it instead of copying it.
+    // Semantics unchanged: whole page renders null until the session resolves
+    // valid (no flash); invalid entries abandon corrupt leftovers and leave to
+    // '/'; mode is fixed at mount; the flag bridge re-asserts playingSolo/Multi.
+    const { mode } = useProtocolSessionGuard(bb84Adapter, { abandonOnLeave: true });
+
     const cleanupActiveGame = useCallback(() => {
         setIsLeaving(true);
         setLeaveDialogOpen(false);
         disconnectPlayRoom();
-        clearBB84LocalStorage();
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
+        abandon(bb84Adapter);
     }, [disconnectPlayRoom]);
 
     const leaveGame = useCallback((destination: string) => {
@@ -61,6 +67,12 @@ const PlayPage = () => {
     const quitGame = () => {
         leaveGame(pendingDestination);
     };
+
+    // Render-time gate (D4a): nothing paints until the session is resolved as
+    // valid — invalid entries redirect from the effect above while this stays null.
+    if (mode === null) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col h-full max-h-full">
@@ -91,8 +103,10 @@ const PlayPage = () => {
                 <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
                     Déconnexion...
                 </div>
+            ) : mode === 'solo' ? (
+                <SoloGame />
             ) : (
-                playingSolo ? <SoloGame /> : <MultiGame />
+                <MultiGame />
             )}
         </div>
     );

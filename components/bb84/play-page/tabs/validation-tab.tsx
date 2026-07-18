@@ -17,6 +17,7 @@ import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import {BB84GameStep, Line} from '@/types';
 import {useSocket} from '@/components/providers/socket-provider';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
+import {sacrificeValidationBits} from '@/lib/bb84/utils';
 
 export const moveToExchangeTab = () => {
 
@@ -108,6 +109,11 @@ const ValidationTab = ({playerRole}: { playerRole: string }) => {
                 console.log('Went into if');
                 setEveUndetected(true);
             }
+            // Task 53: the compared bits were announced publicly — sacrifice
+            // them from the key before moving on to the encrypted messaging.
+            // (Covers solo and the multi verdict-clicker; the partner mirrors
+            // this in the A/B_VALIDATED socket handlers.)
+            sacrificeValidationBits();
             pushLines([{content: 'component.validationTab.validated'}]);
             moveToExchangeTab();
         } else {
