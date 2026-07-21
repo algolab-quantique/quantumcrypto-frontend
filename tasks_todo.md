@@ -534,7 +534,7 @@ Special cases to leave alone:
 **Bugs / decisions found during implementation**:
 - [ ] Adapter caution: keep each `storageKeys` list complete or stale localStorage can survive abandon/replay.
 - [ ] Adapter caution: `getRoomSnapshot()` must stay JSON-safe; add explicit snapshot mappers if stores gain non-serializable values.
-- [ ] BB84 solo setup: photon minimum validation uses `BB84_TEST_MODE` values, but the translated message still says production values `16`/`10`; align copy or disable test mode before deployment.
+- [ ] BB84 solo setup: photon minimum validation uses `BB84_TEST_MODE` values, but the translated message still says production values `16`/`10`; align copy or disable test mode before deployment. (→ tracked in detail as Task 57 finding **G**; preferred fix is E91-style interpolation, not relying on the numbers coinciding.)
 - [ ] Home page/dev startup: refreshing quickly after `npm run dev` can land near `/#about` with hero/protocol sections apparently missing or mis-positioned. Likely hash/scroll restoration before the dev layout finishes loading; reproduce separately before fixing.
 - [ ] BB84 multiplayer partner-left gap: fail-closed/quit cleans Alice locally, but Bob and the master results page can remain waiting. Define a backend/frontend leave event policy before fixing.
 - [ ] DPS tiny cleanup: remove unused wrong `clearBB84LocalStorage` import from `components/dps/play-page/tabs/alice-messaging-tab.tsx`.
@@ -734,7 +734,7 @@ Special cases to leave alone:
 
 **Net-new findings**:
 - **📦 DEPLOYMENT REALITY (noted 2026-07-17):** `development` does NOT auto-deploy. Production = manual copy of the branch files into a separate OLD repo connected to AWS Amplify. Consequences: (1) merging to `development` is safe integration, no release; (2) **the TEST_MODE fix below is the GATE before any copy to the Amplify repo** — that is where the landmine detonates; (3) future item: point Amplify at THIS repo (or automate) instead of copy-paste deployment.
-- [ ] **P1 — `*_TEST_MODE = true` is a production landmine.** All three constants files (`bb84-constants.ts:35`, `e91-constants.ts:10`, `dps-constants.ts:22`) ship `TEST_MODE = true` with a hand-edit TODO. Replace the three booleans with one env-driven flag (e.g. `NEXT_PUBLIC_QC_TEST_MODE`), so production builds cannot forget it. (Related copy-alignment already in Task 40.)
+- [ ] **P1 — `*_TEST_MODE = true` is a production landmine.** All three constants files (`bb84-constants.ts:35`, `e91-constants.ts:10`, `dps-constants.ts:22`) ship `TEST_MODE = true` with a hand-edit TODO. Replace the three booleans with one env-driven flag (e.g. `NEXT_PUBLIC_QC_TEST_MODE`), so production builds cannot forget it. (Related copy-alignment already in Task 40.) **⚠️ SUPERSEDED BY TASK 57 (2026-07-20) — this item as written is factually wrong twice: only TWO flags are live (`DPS_TEST_MODE` is dead code and DPS has no production values at all), and a plain env variable does NOT close the hole because `.env.local` is tracked AND rsynced to the Amplify repo. Read Task 57 before implementing.**
 - [x] **P1 — PHASE 1 DONE 2026-07-16: Vitest installed, 39 tests green in <1s (`npm test`). Strategy in `docs/testing-strategy.md`** (Vitest — why, vs Jest/node:test/Bun/E2E; colocated `*.test.ts`; happy-dom; phase 1 = pure logic ≈35 assertions on `lifecycle.ts` (detectSession matrix, restoreCheckpoint, startFresh/abandon), `solo-round.ts`, `sacrificeValidationBits`, `solo-player.ts`; phase 2 = components; phase 3 = Playwright E2E; CI; **rule: every hand-found bug's fix commit carries the test that would have caught it**). Colocated: `lifecycle.test.ts` (detectSession matrix permanent, restoreCheckpoint contracts, startFresh/abandon), `solo-round.test.ts` (flag split, restart semantics, Eve record), `utils.test.ts` (**sacrificeValidationBits — the test that would have caught Task 53**), `solo-player.test.ts` (generators/sifting invariants). CI ACTIVE 2026-07-16 (`.github/workflows/tests.yml`: test+tsc+lint on every push). Remaining: phases 2–3 later. **URGENCY origin (Ibra, 2026-07-16): "we discover bugs by chance, and this is not good at all"** — the July harvest was all chance-found: the missing key-sacrifice (Task 53, protocol-core!), the flag conflation, the n/2 cap restart-loop, the `<=` empty-key edge, the stale basis inputs.
 - [ ] **P2 — lifecycle adoption is ⅓ done (measured).** Raw `localStorage` refs in components: BB84 **7**, E91 **15**, DPS **72**. ~~ADR still `DRAFT/REVIEW`~~ ADR marked **ACCEPTED 2026-07-16** (Task 54 F7). Next: migrate DPS first (worst offender + still trap-guarded), then E91. (Execution tracked in 26/40; this item = the measurement + order rationale.)
 - [ ] **P3 — monster pages**: `app/(main)/bb84_card/page.tsx` (1,175 lines), `app/(main)/dps/page.tsx` (953), `app/(main)/e91/page.tsx` (581) — content-heavy pages, split when next touched (no dedicated slice).
@@ -912,6 +912,31 @@ Special cases to leave alone:
 - [ ] **52-B — the security claim is never verified.** `solo-CHSH-tab.tsx`: the CHSH `S` value is computed (`:116`) and displayed, but `onSecure`/`onUnsecure` "directly navigate or set state" (the file header says so itself, `:9`) — no comparison of the player's claim against `S` (≤ 2 vs > 2), no BB84-style valid/invalid "try again" feedback. Pedagogical gap: the game follows the user's decision blindly. Design the verification mechanic (mirror BB84's validate-with-feedback) at E91 migration.
 - Cross-refs: Task 50 F1 (restart copies), Task 51 (E91 already has probabilistic Eve — the model BB84 may adopt), Task 26/40 (E91 lifecycle migration).
 
+**🔬 E91 EVE AUDIT (2026-07-20, requested after the BB84 Eve bug — all numbers from running the REAL `lib/e91/solo-player.ts`):**
+
+**What is RIGHT (and is the model BB84 should copy):**
+- ✅ **No duplication.** `solo-measurement-tab.tsx:41` **imports** `eveGenerateBits` from `lib/e91/solo-player.ts` and calls it at `:161`/`:181`. One implementation, one home. This is exactly the architecture rule BB84's `alice-exchange-tab.tsx` violates (Task 57 A-bis) — **E91 is the good example here, BB84 is the bad one.**
+- ✅ **No `undefined`-index bug.** `eveGenerateBits` loops over its own `bases` parameter, so no array-length mismatch is possible. Not the BB84 bug family.
+- ✅ **The no-Eve entanglement model is excellent.** Measured S = **2.838** over 200k samples vs the quantum target 2√2 = 2.828. `generateEntangledBits` + `PROBABILITY_THRESHOLD = sin²(π/8)` is textbook-correct.
+- ✅ **Eve does destroy the correlation.** With Eve, key bits at matching bases agree only **49.9%** of the time (= no correlation), and S collapses to **0.005**.
+
+- [ ] **52-C — 🟡 DOWNGRADED P1→P3 by DECISION (Ibra, 2026-07-20): teach the concept, document the limitation.** Ibra's call: CHSH needs large N to be statistically valid, but this is a short interactive student form — so the app deliberately demonstrates the **concept** of the Bell test, not a statistically sound one. **Action is therefore NOT "raise the photon counts" but "add an explanatory Note in the simulation"** telling the student that with few photons S is noisy and a single game cannot decide the question — that limitation is itself part of the physics lesson. The numbers below stay recorded as the justification for the Note's wording, and as the reason the `onUnsecure`→`gameLoss` punishment needs revisiting (a student reasoning correctly from a noisy S must not simply "lose"). Original finding text follows.
+  **Original finding — the CHSH test is statistically meaningless at every photon count the app offers.** CHSH needs 4 specific basis pairs — (1,2), (1,4), (3,2), (3,4) — each occurring with probability 1/9 (Alice picks from 3 bases, Bob from 3). Measured over 50 000 games per row, in **Eve-ABSENT** games (`gameHasEve=true, evePresent=false` — reachable under the Task 51 probabilistic draw, and the CHSH tab IS shown then: `solo-game.tsx:166` gates on `gameHasEve`):
+
+  | photons | no-Eve games where \|S\|>2 (Bell violated, student should answer SECURE) | games missing a CHSH pair entirely |
+  |---|---|---|
+  | **4** (E91 solo TEST_MODE default) | **6.0%** | 99.6% |
+  | 8 (TEST_MODE min with Eve) | 27.4% | 90.5% |
+  | **10** (PRODUCTION default) | **37.5%** | 81.3% |
+  | 20 (production min with Eve) | 66.1% | 33.8% |
+  | 30 (`E91_SOLO_PHOTON_MAX`) | 77.7% | 11.4% |
+
+  At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. **Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**
+
+- [ ] **52-D — 🟠 P2: Eve's output is biased, which is physically impossible and student-visible.** `eveGenerateBits` (`lib/e91/solo-player.ts:261-289`) produces, measured over 100k samples per basis: basis '1' → **85.32%** zeros, basis '2' → **100.00%** zeros (hardcoded `outcome = 1`, commented "Basis 2: Deterministic (always 1)"), basis '3' → **85.46%** zeros, basis '4' → 50.21% zeros. Any measurement outcome on a maximally mixed state must be **50/50** — a biased marginal means the output encodes the basis instead of a measurement. **Same family as the BB84 bug: a constant output.** Student-visible tell: with Eve present, EVERY basis-2 result is `0` (verified: at 2-2 key positions Bob's bit is '0' 100% of the time), so a student can spot Eve by "all my 2s are zeros" rather than by Bell's inequality — which defeats the entire pedagogical point of E91. Fix: make Eve's outcome an unbiased 50/50 draw for all bases (that alone still gives S≈0 and still destroys the key correlation).
+- [ ] **52-E — 🟡 P3 (design note, not a bug): Eve is modelled as TOTAL decorrelation, not intercept-resend.** Measured S with Eve = **0.005**; a real intercept-resend attack on E91 halves the correlations, giving S ≈ 2√2/2 = **1.414** — still below the classical bound of 2, so still detectable, but not a flatline. The docstring (`:236-257`) is honest that this is a deliberate "Statistical Shortcut" matching the backend, and it does meet its stated goal (force S ≤ 2). Recording it because it makes Eve maximally obvious (same over-detection spirit as the BB84 bug) and because any future "how strong is Eve?" teaching lever lives here. Changing it requires a matching backend change — do not touch unilaterally.
+- [ ] **52-F — P3 cleanup: `simulateSoloExchange` (`lib/e91/solo-player.ts:401-450`) is dead code**, documented as "currently NOT USED" at `:379`. It duplicates the Eve/entanglement branching that `solo-measurement-tab.tsx:155-190` actually performs — a second source of truth waiting to drift. Delete or wire it up during the E91 migration.
+
 ---
 
 ### 53. 🐛 BB84 never sacrifices the validation bits from the key (protocol-core bug)
@@ -951,6 +976,161 @@ Special cases to leave alone:
 
 **Status**: ✅ DONE 2026-07-17 (core verified; caught-case display pending 49-B). Solo gained the celebration (then merged into reveal-led single phrases — polish slice); multi gained localized headers + derived **« Ève détectée ? »** and colored **Verdict** columns (derivation: only the coordinated Eve-restart removes Eve, so last-iteration-with-Eve ⇒ compromise; earlier-Eve-then-clean ⇒ caught). **VERIFIED by Ibra:** no-Eve room → vert « Clé sécurisée »; missed case → rouge « Clé compromise ! ». Caught-case display unverifiable until the 49-B multi-restart bug is fixed. Shared neutral key `component.results.gameSuccess` replaces the e91-named one on the shared results page.
 Multi results show a generic "🎉 Félicitations ! Partie terminée avec succès !"; solo results show the Eve reveal ("Ève était absente — votre clé est sécurisée"). Mirrored gaps: solo lacks the celebration line; **multi lacks the Eve reveal** (Parity Principle: both modes should tell the same story). Multi's table is backend-fed and the backend knows `game_has_eve`, so a multi reveal is feasible — touches the multi results component (+ maybe payload). Small UX slice, with 49-B/backend session or at replication.
+
+---
+
+### 57. 🔬 TEST_MODE review → became the PROTOCOL PHYSICS investigation (2026-07-20)
+
+> **📍 START HERE IF YOU ARE COLD (new session, new agent, or Ibra after a break):** read
+> **[docs/protocol-physics.md](docs/protocol-physics.md)** first — it is the self-contained
+> orientation for this whole line of work. This task is the raw findings log behind it.
+>
+> **THE REALIZATION (Ibra, 2026-07-20) — the project has TWO axes, and they were being confused:**
+>
+> | Axis | Governs | Document | State |
+> |---|---|---|---|
+> | **A. Session & data lifecycle** | where form data goes, refresh, restore, `startFresh`, `abandon`, storage keys, route guards | `docs/shared-protocol-lifecycle-adr.md` | ACCEPTED, BB84 pilot done, E91/DPS pending |
+> | **B. Protocol physics** | encoding, measurement, Eve, sifting — *what the simulation computes* | **`docs/protocol-physics.md` (NEW)** | just opened |
+>
+> **The whole ADR/refactor effort to date was Axis A only.** It asked "where does this data go
+> and does it survive a refresh?" — never "is the number in it physically correct?". That is
+> its stated scope, not a flaw. But it means BB84 could be fully lifecycle-conformant and still
+> compute wrong physics — which it was, for 22 months.
+>
+> **Verified project history (git, not recollection):** 6 contributors over ~2 years (chegrane
+> 300 commits, noblechap 40, Frederic 28, ZoubaGate 12, +2). Built **multiplayer-first**; solo
+> came later and per-protocol — **BB84 solo `2024-11-25 | Frederic`** (predates Ibra), **E91 solo
+> `2025-12-08 | chegrane`**, **DPS solo `2026-01-07 | chegrane`**. Each contributor copied the
+> physics they needed into the file they were editing. "Add solo without breaking multi"
+> succeeded — but it **doubled every physics primitive instead of sharing one**. The Eve bug
+> dates to `2024-09-03 | Frederic | "Initial commit"` (the multi copy) and reached solo by
+> copy-paste on `2024-11-25`.
+>
+> - [ ] **SEQUENCING DECISION PENDING (Ibra):** finish Axis B for BB84 **before** starting the
+>   Axis A migration for E91/DPS? **For:** E91/DPS files get opened and edited during their
+>   lifecycle migration, and their physics already has known problems (52-C…52-F; DPS has no
+>   solo Eve at all) — touching the same files twice is waste. **Against:** Axis A has momentum
+>   and a proven pilot. Ibra leaned toward physics-first in the 2026-07-20 session.
+
+**Status**: 🔴 OPEN — design agreed, Slice 0 + Slice 1 implemented (see finding J), rest not started
+**Date Added**: July 20, 2026
+**Priority**: mixed (A and D are P1)
+**Origin**: pre-implementation review of Task 47's P1 "`*_TEST_MODE = true` is a production landmine". The review invalidated part of that item's premise and surfaced a protocol-core bug. **Every claim below was verified against the code or by simulation — none is intuition.**
+
+**⚠️ Task 47's P1 item is factually wrong on two points** (kept there, corrected here): it says "all three constants files" ship a live flag, and it proposes a plain env variable as the fix. Neither survives contact with the code — see C and D.
+
+#### A — 🐛 P1 PROTOCOL-CORE: Eve's re-emission uses the wrong basis array
+`lib/bb84/solo-player.ts:89` — inside the re-emit `.map()`:
+```ts
+const basis = bases[index];      // bases is the 2-element alphabet ['+','x']
+                                 // should be eveBases[index]
+```
+It indexes the **basis alphabet** instead of Eve's drawn bases. Combined with the dangling `else` on the third `if`, the output is deterministic garbage. **Verified empirically** (20 000 trials, exact copy of the function): photon 0 is always re-emitted in `+`, photon 1 always in `x`, and **every photon from index 2 onward is re-emitted as a constant `4`** — regardless of what Eve measured.
+
+Effect on what students observe (200 000-trial simulation of the full pipeline `generateAlicePhotons → mimicEveIntercept → simulateBobExchange → getValidBits → validation compare`):
+
+| photons | validation bits | P(caught) TODAY (buggy) | P(caught) CORRECT |
+|---|---|---|---|
+| 4  | 1 | 39.8% | **25.0%** |
+| 6  | 1 | 40.6% | **24.7%** |
+| 10 | 2 | 68.2% | **43.6%** |
+| 16 | 4 | 92.0% | **68.3%** |
+| 20 | 5 | 96.0% | **76.1%** |
+| 30 | 7 | 99.0% | **86.5%** |
+
+The CORRECT column matches theory `1 − 0.75^v` exactly (v=1→25%, v=4→68.4%, v=7→86.7%), which validates the simulation. **The app currently over-teaches "Eve always gets caught"** — the physics students see is wrong today, in dev AND in production. This is arguably more important than the whole TEST_MODE task.
+
+#### B — P2: the existing Eve test cannot catch A
+`lib/bb84/solo-player.test.ts:38` asserts only `toHaveLength(16)` and `[1,2,3,4]` membership — both hold for the broken output. Per the Task 47 rule ("every hand-found bug's fix commit carries the test that would have caught it"), A's fix must carry a **distribution/basis-correlation** test, not a shape test.
+
+#### C — P1: `DPS_TEST_MODE` is dead, and DPS has NO production values
+`dps-constants.ts:22` declares the flag; **grep confirms zero reads** (only itself and a comment at :28). DPS solo constants are hardcoded `MIN=4 / MAX=20 / DEFAULT=6`. So there are **two** live flags, not three — and flipping any flag will never fix DPS, because its production numbers were never written. Any TEST_MODE slice must *define* DPS production values, not just gate existing ones.
+
+#### D — 🚨 P1: the proposed env-flag fix does NOT close the hole (deployment trap)
+`DEPLOYMENT_GUIDE.md` Phase 2 syncs with:
+`rsync -av --exclude='.git' --exclude='node_modules' --exclude='.next' ../quantumcrypto-frontend/ .`
+**`.env*` is not excluded**, and `.gitignore` ignores only `.env` — so `.env.local` is git-TRACKED *and* rsynced into the Amplify repo. Verified in the installed `@next/env` (`processEnv`/`populate`): a var already present in the real environment wins, but `.env.local` **is** loaded during a production build and fills in anything Amplify has not defined. Load order is `.env.$mode.local`, `.env.local`, `.env.$mode`, `.env`.
+
+⇒ Putting `NEXT_PUBLIC_QC_TEST_MODE=true` in `.env.local` for dev convenience **ships it to production**. A plain env flag just moves the landmine from a `.ts` file into a `.env` file — less visible, same detonation. (Bonus exposure: the tracked `.env.local` also carries `NEXT_PUBLIC_API_URL=http://localhost:8000` into the deploy repo; harmless only while Amplify defines its own.)
+
+#### E — P2 user-visible: DPS create-game shows raw placeholders
+`components/dps/home-page/create-game-modal.tsx:86` reuses `component.e91.createGame.keyMin` **without the `.replace()` calls** that E91 does (`components/e91/home-page/solo-game-modal.tsx:220-221`). The message contains `{minWithEve}` / `{minWithoutEve}`, so students see the literal braces. Also a cross-protocol key reuse smell (DPS borrowing an `e91.`-named key).
+
+#### F — P3 i18n gap: DPS solo validation message is hardcoded English
+`components/dps/home-page/solo-game-modal.tsx:123` — `` message: `Minimum ${DPS_SOLO_PHOTON_MIN} photons` `` — never localized, breaks FR/ES.
+
+#### G — P2: the original Task 40 copy mismatch, explained
+BB84 solo reuses `component.createGame.keyMin`, whose text hardcodes "16 / 10" in all three languages (`lang/quantumcrypto-lines.ts:46, 548, 1112`). Those numbers are correct for BB84 **multiplayer** (16/10) and for solo **in production mode** — they are wrong only while `BB84_TEST_MODE=true` (6/4). E91 already solved this properly with interpolation. So G is auto-fixed by the flag work, but the *right* fix is to interpolate like E91 rather than depend on the numbers coinciding.
+
+**AGREED DESIGN for when we implement (Ibra, 2026-07-20) — "safe by absence, not safe by configuration":**
+```ts
+// one flag for all protocols
+export const QC_TEST_MODE =
+    process.env.NODE_ENV !== 'production' &&
+    process.env.NEXT_PUBLIC_QC_TEST_MODE === 'true';
+```
+- ~~`next build` forces `NODE_ENV=production`~~ **CORRECTED 2026-07-20 (verified in installed Next 14.2.35, `node_modules/next/dist/bin/next:60`):** `next build` only **DEFAULTS** `NODE_ENV` to production (`NODE_ENV = NODE_ENV || defaultEnv`) — an inherited `NODE_ENV=development` (shell profile, CI env) survives with just a warning. The `NODE_ENV` gate is a strong second factor, NOT a guarantee.
+- **The real lock:** `next.config.js` phase guard — export the function form and during `PHASE_PRODUCTION_BUILD` **throw** if test mode would be live (`NODE_ENV !== 'production'` or the flag set). A deploy build then *cannot succeed* in test mode; the failure happens at build time in Amplify, not at runtime in front of students.
+- Absence ⇒ production values. Opt-in, never opt-out.
+- Ships with: a CI test asserting production values under a production build; `.env*` added to the rsync excludes in `DEPLOYMENT_GUIDE.md`; **real production constants for DPS** (C); interpolated copy instead of hardcoded numbers (G).
+
+**Recommended slice order** (not yet approved for execution): **A+B first** (small, isolated, protocol-core), then the TEST_MODE slice. Doing TEST_MODE first would ship "correct" photon minimums whose statistical justification is still computed by broken code.
+
+**💡 Product idea (log only, do NOT build now):** the photon count is not a speed knob — it *is* the lesson. It sets P(Eve caught) from 25% to 87%. Given Task 56 now teaches three endings (`absent | caught | missed`), the honest long-term direction is to make photon count an **explained in-app choice** ("shorter game ⇒ Eve escapes more often") rather than a hidden build constant. Relates to Task 51 (probabilistic Eve) and `docs/product-vision-game-experience.md`.
+
+**🔬 RE-VERIFICATION ADDENDUM (2026-07-20, second pass — real code, not transcription):**
+- Finding A re-confirmed by importing the ACTUAL `lib/bb84/solo-player.ts` via `node --experimental-strip-types` (zero transcription). Distribution identical: idx 0 → always re-emitted `+`, idx 1 → always `x`, idx ≥2 → constant `4`. Decisive test: fixed input `[1,1,1,1,1,1]` over 5 000 runs yields output sets `{1,2} {3,4} {4} {4} {4} {4}` — from index 2 on, **Eve's output ignores her input entirely**. Root cause is one token: `bases[index]` (the 2-letter alphabet) instead of `eveBases[index]` at `solo-player.ts:89`; indices ≥2 read `undefined`, no branch matches, dangling `else` emits `4`. Indices 0/1 are also wrong (re-emit basis fixed by POSITION, not by Eve's measured basis) — just less visibly.
+- Detection table recomputed with the EXACT real flow (random `generateUniqueRandomList` validation indices per `basis-tab.tsx:168`, real `isKeyTooShort` `<=` policy): TODAY buggy → 43.7% (n=4,v=1), 72.5% (10,2), 92.9% (16,4), 99.1% (30,7). AFTER one-token fix → 25.1%, 43.8%, 68.4%, 86.7% — matching theory `1−(3/4)^v` to the decimal. Conclusion unchanged, numbers now exact.
+- **Sibling-protocol scan (for the DPS/E91 migration arc):** E91 `lib/e91/solo-player.ts:261` (`eveGenerateBits`) is a **documented, deliberate** phenomenological model ("Statistical Shortcut" comment block, matches backend) — NOT this bug family; audit its CHSH thresholds when E91's turn comes, but nothing silent. DPS `lib/dps/dps-protocol.ts` has **no solo Eve interception simulation at all** — consistent with C (dead flag, no prod values). The bug is BB84-only.
+
+#### A-bis — 🚨 CORRECTION 2026-07-20 (3rd pass, after backend review): the bug is **NOT solo-only — it is in MULTIPLAYER too**
+My earlier "solo-only" scoping was **WRONG**, and the error was scope, not diagnosis. Traced with the backend in hand:
+- **The backend performs ZERO photon physics.** Verified: `grep -rn "photon" --include="*.py"` over the whole backend, excluding `photon_number`, returns **nothing**. `bb84/consumers.py:305` simply relays `A_PHOTONS` (and `A_BASES`/`B_BASES`/`A_CIPHER`/…) between the two clients. Eve's interception in multiplayer is therefore executed **in Alice's browser**.
+- **There is a SECOND, duplicated Eve implementation:** `eveIntercept()`, a component-local function at `components/bb84/play-page/tabs/alice-exchange-tab.tsx:258-282`, called from `onSendPhotons` (`:154-157`) whenever `evePresent`. It runs for **multiplayer** (then `sendPhotons(photons)` → backend relay → Bob) **and** for solo-when-the-human-plays-Alice.
+- **It carries the identical defect** at `alice-exchange-tab.tsx:276`: `const basis = bases[index]` instead of `eveBases[index]`. Confirmed by running a verbatim copy: fixed input `[1×8]` over 5 000 runs → output sets `{1,2} {3,4} {4} {4} {4} {4} {4} {4}` — byte-for-byte the same signature as `mimicEveIntercept`.
+
+**⇒ Corrected blast radius: BOTH modes, all three player configurations.** `mimicEveIntercept` (`lib/bb84/solo-player.ts:89`) covers solo-as-Bob; `eveIntercept` (`alice-exchange-tab.tsx:276`) covers solo-as-Alice AND all of multiplayer. Every BB84 game with Eve present, in either mode, has ~50% error per sifted bit instead of the correct 25%.
+
+**Root cause is duplication, not typing:** the physics was copy-pasted into a React component instead of imported from `lib/bb84/`, so the same bug shipped twice. `basis-tab.tsx:26` and `bob-exchange-tab.tsx:27` *import* `mimicEveIntercept` and never call it — dead imports that make the duplication look like reuse. **The fix must consolidate to ONE exported physics function in `lib/bb84/solo-player.ts` used by both call sites** — patching the two copies separately would preserve the exact condition that created the bug. This is a textbook case for the new architecture's "physics isolated in `lib/{protocol}`" rule (Task 47's "what the review found GOOD"), which this component silently violates.
+
+#### H — Backend review notes (2026-07-20, read-only; `quantumcrypto-backend/bb84/`)
+The backend's Eve role is narrow and, within that scope, sound:
+- **Owns the coin flip only.** `consumers.py:175-181` draws `eve_present` per ROOM (inside the pairing loop, so each pair gets an independent draw), persists it via `create_room(...)`, and ships it to both partners in the `ROLES` message alongside `game_has_eve`. This is the multiplayer counterpart of BB84_EVE_PERCENTAGE (Task 51/ADR §12) — the frontend's solo model correctly mirrors it.
+- **Owns the validation indices.** `consumers.py:336-340` — singleton per game group, `random.sample(range(key_length), validation_bits_length)`, so whichever player clicks Validate first fixes the indices for both. Correct and well commented.
+- [ ] **P3 — `eve_percentage` is quantized to 1 decimal.** `consumers.py:178-181` wraps both weights in `round(x, 1)`, so 0.55 → weights `[0.6, 0.4]`. Harmless at the current 0.1-step UI (`BB84_EVE_PERCENTAGE_MIN = 0.1`), but it silently rounds any finer value; drop the `round()` or document the step.
+- **Note for the E91/DPS arc:** this "backend = orchestration, frontend = physics" split is a real architectural fact to carry into the migration — it means protocol correctness is a FRONTEND responsibility in BB84 multiplayer, and `lib/bb84/` is the only correct home for it.
+
+#### I — 🏛️ WHERE DOES PROTOCOL PHYSICS LIVE? (2026-07-20, open design question raised by Ibra)
+**The question:** in multiplayer, who plays Eve — the backend (the "channel" device), Alice's device, or Bob's device? Verified survey of what the code does TODAY:
+
+| Protocol | Multi physics runs in | Solo physics runs in | Implementations of the same physics |
+|---|---|---|---|
+| **BB84** | **Frontend** — Alice's browser (`alice-exchange-tab.tsx:258`), backend is a pure relay (verified: `grep photon` over the whole backend returns nothing) | Frontend (`lib/bb84/solo-player.ts`) | **2, both TypeScript** — and both carry the identical bug (A-bis) |
+| **E91** | **Backend** — `e91/consumers.py:480` `generateEntangledBits`, `:508` `eveGeneratedBits`, called from the `A_MEASURE`/`B_MEASURE` handlers (`:337-364`) | Frontend (`lib/e91/solo-player.ts`) | **2, one TypeScript + one Python** |
+| **DPS** | backend draws `eve_present` only; no physics found | — | — |
+
+⇒ **The codebase already contains BOTH candidate answers, and BOTH have produced duplication.** BB84 duplicated within TypeScript (→ the Eve bug). E91 duplicated across languages — its TS docstring (`lib/e91/solo-player.ts:5`) openly states it "strictly follows the backend's simulation logic (consumers.py)", i.e. the two copies are kept in sync by human discipline alone. That is why E91's basis-2 bias (52-D) exists identically in Python and TypeScript.
+
+**The real question is therefore not WHERE Eve runs, but HOW MANY implementations exist.** Solo can never use the backend (no game session, no round-trip), so solo physics is permanently frontend. Any design that puts multi physics in the backend *guarantees* two implementations in two languages. Only "frontend for both modes" yields one.
+
+- [ ] **DECIDE (Ibra):** adopt **"the sender simulates the channel"** — the transmitting client applies the channel effects (Eve) before sending, so solo and multi share ONE `lib/{protocol}` implementation and the backend stays pure transport. Counter-argument to weigh: the backend already owns `eve_present` and feeds the results page, so a client that fails to apply Eve (bug/tamper/stale version) would make the results page report an Eve who never acted — server-authoritative physics cannot diverge that way. Whatever is chosen must be written into ADR §12, which currently documents `mimicEveIntercept` for solo and is **silent on who intercepts in multi**.
+#### J — 📋 SLICE PLAN for the BB84 Eve fix (agreed with Ibra 2026-07-20; execute in order)
+
+**Rule adopted:** ADR §13.3 "ONE implementation, the SENDER simulates the channel" — written 2026-07-20. Backend stays pure transport; solo and multi share one `lib/bb84/` function. Rejected alternative (backend-side Eve) and its cross-language-duplication cost are recorded in the ADR itself, not just here.
+
+- [x] **Slice 0 — ARCHITECTURE (docs only). DONE 2026-07-20.** ADR **§13.3** added (the rule, the evidence table BB84-vs-E91, why not the backend, why not the receiver, the accepted cost, 5 standing rules, E91 grandfathered). ADR **§12** corrected — its BB84-multi row was silent on who intercepts; it now records that presence is drawn by the backend while the interception runs in Alice's browser, and that the BB84 backend performs no physics at all.
+- [x] **Slice 1 — TESTS + FIX. ✅ DONE 2026-07-20 (not yet committed — awaiting Ibra's review).** TDD order executed and evidenced: the 5 new tests were run against the UNFIXED code and **all 5 failed**, while the 6 pre-existing tests passed — including the original domain test, which is the direct proof that shape-only testing could never catch this. Then `bases[index]` → `eveBases[index]` at `lib/bb84/solo-player.ts:89`; all 11 pass. Full gates: **68 tests green (5 files), `tsc --noEmit` clean, `next lint` clean.** Post-fix verification against Ibra's own browser repro: `alicePhotons` now varied (`3 3 1 2 3 1 3 2 1 1 2 1 4 4 4 1 3 2 3 1`) instead of `[1,3,4,4,4…]`; Bob typing `x` everywhere now yields a proper 0/1 mix instead of a wall of 1s. **Physics contract confirmed: error rate per sifted bit = 24.98% with Eve (textbook BB84 = 25%) and 0.00% without.** Original plan follows.
+  - Fix: `lib/bb84/solo-player.ts:89` `bases[index]` → `eveBases[index]`.
+  - Test 1 (**the one that would have caught it**) — physics invariant, deterministic via `vi.spyOn(Math,'random')`: force Eve's basis to `+` ⇒ every re-emitted photon must be a `+` photon (1 or 2); force `x` ⇒ every one must be an `x` photon (3 or 4). Today: FAILS.
+  - Test 2 — exact arrays under the same mock. `Math.random()=0.4` (Eve always `+`, default measurement `'0'`): input `[1,2,3,4,1,2,3,4]` ⇒ **`[1,2,1,1,1,2,1,1]`** (today gives `[1,4,4,4,4,4,4,4]`). `Math.random()=0.6` (Eve always `x`, default `'1'`): same input ⇒ **`[4,4,3,4,4,4,3,4]`** (today gives `[2,4,4,4,4,4,4,4]`). Values computed and verified 2026-07-20.
+  - Test 3 — no position may be constant: over many runs with a fixed input, **every** index must produce more than one distinct output. Today indices ≥2 yield only `{4}`.
+  - Keep the existing length/domain test (it is not wrong, only insufficient).
+- [ ] **Slice 2 — CONSOLIDATE (this is what fixes multiplayer).** Delete the component-local `eveIntercept()` (`alice-exchange-tab.tsx:258-282`); import `mimicEveIntercept` from `lib/bb84/solo-player`. Rewrite `onSendPhotons` to parse photons to numbers FIRST, then intercept: `const sentPhotons = evePresent ? mimicEveIntercept(photons) : photons;`. Also removes a **latent second defect** in the copy — it derived `eveBases` from `basisInputs` but `measurements` from `polarList` (two different arrays; the shared version derives both from `photons`) — and the string/number comparison drift (`photon == '1'` vs `photon == 1`). First code conforming to ADR §13.3.
+- [ ] **Slice 3 — CLEANUP.** Remove the dead `mimicEveIntercept` imports at `basis-tab.tsx:26` and `bob-exchange-tab.tsx:27` — never called, and they made the duplication *look* like reuse.
+- [ ] **Slice 4 — AUTOMATED PHYSICS-CONTRACT SUITE (Ibra's explicit ask: "a slice for adding good tests").** Beyond the regression tests: pin the *protocol behaviour*, not just the function's shape — the class of test whose absence let this bug live. Candidates: (a) end-to-end sifted-bit **error rate ≈ 25%** with Eve and **0%** without (the textbook BB84 number; verified achievable — the corrected code matches `1−(3/4)^v` to the decimal); (b) `simulateBobExchange` — matching basis ⇒ deterministic, mismatched ⇒ 50/50, verified per photon type; (c) `getValidBits` sifting invariants; (d) a guard test asserting **no component re-implements physics** (grep-style ADR §13.3 conformance check). Feeds `docs/testing-strategy.md` phase 2.
+- [ ] **VERIFY after Slice 2 (browser, Ibra's own repro).** Solo as **Bob**, Eve probability 1, 20 photons, type `x` in every row: `alicePhotons` must show varied values (not `[1,3,4,4,4…]`) and the measurement column a proper mix (not a wall of `1`s). Then the two-browser multi run (normal + incognito) for the `eveIntercept` path.
+
+- [ ] **P3 — latent bug in the E91 Python twin:** `e91/consumers.py:508` `eveGeneratedBits` has **no `else` fallback** for an unexpected basis (the TS version has `outcome = 1` at `solo-player.ts:281`). On an unknown basis Python leaves `outcome` unbound → `UnboundLocalError` on the first iteration, or **silently reuses the previous photon's outcome** on later iterations. Unreachable today (bases are constrained to 1-4) but it is a real divergence between the two "synchronized" copies.
 
 ---
 

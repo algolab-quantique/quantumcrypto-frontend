@@ -10,8 +10,14 @@
 
 | Document | What it is |
 |---|---|
-| [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) | **The architecture reference (ACCEPTED, July 2026).** Session lifecycle, adapter contract, `detectSession`, the Navigation Invariant (§11), the Solo/Multi Parity Principle (§11), Eve semantics (§12). E91/DPS replicate against this. |
+| [shared-protocol-lifecycle-adr.md](shared-protocol-lifecycle-adr.md) | **AXIS A — the architecture reference (ACCEPTED, July 2026).** Session lifecycle, adapter contract, `detectSession`, the Navigation Invariant (§11), the Solo/Multi Parity Principle (§11), Eve semantics (§12), standing policies (§13). E91/DPS replicate against this. **Governs where data goes — not what the simulation computes.** |
+| [protocol-physics.md](protocol-physics.md) | **AXIS B — the quantum simulation itself (OPEN, July 2026).** Encoding, measurement, Eve, sifting. Why there is no single source of truth today (the same primitive written out 4× each), how the codebase got there (verified via git), the target `lib/{protocol}/protocol.ts` structure, and the BB84 Eve bug that opened the file. |
 | [testing-strategy.md](testing-strategy.md) | **The testing law (ACCEPTED).** Vitest, colocated tests, phased scope, CI, and the rule: every hand-found bug's fix commit carries its test. |
+
+> **Two axes, easy to confuse.** The lifecycle ADR asks *"where does this data go, and does it
+> survive a refresh?"*. It never asks *"is the number in it physically correct?"*. A protocol
+> can be fully lifecycle-conformant and still simulate the wrong physics — BB84 was, for 22
+> months. Read both.
 
 The **live task tracker** is [`tasks_todo.md`](../tasks_todo.md) at the repo root.
 
