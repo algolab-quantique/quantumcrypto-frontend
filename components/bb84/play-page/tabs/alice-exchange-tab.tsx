@@ -27,7 +27,7 @@ import {useSocket} from '@/components/providers/socket-provider';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
-import {simulateBobExchange} from '@/lib/bb84/solo-player';
+import {mimicEveIntercept, simulateBobExchange} from '@/lib/bb84/solo-player';
 
 const AliceExchangeTab = ({photonNumber, polarIcons}: {
     photonNumber: number;
@@ -151,18 +151,19 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
 
     const onSendPhotons = () => {
         if (validateForm && !photonsSent) {
-            let evePhotons = null;
-            if (evePresent) {
-                evePhotons = eveIntercept();
-            }
-            let photons = polarList.map(({value}) => parseInt(value));
+            const photons = polarList.map(({value}) => parseInt(value));
             setAlicePhotons(photons);
             setAliceBits(bitsInputs.map(({value}) => value));
             setAliceBases(basisInputs.map(({value}) => value));
-            photons = evePresent && evePhotons ? evePhotons : photons;
+            // The sender simulates the channel (ADR §13.3): if Eve is present
+            // she intercepts here, before transmit, using the one shared physics
+            // function that solo (as Bob) also uses. The store keeps Alice's
+            // original photons; only the transmitted copy is Eve's.
+            const sentPhotons = evePresent
+                ? mimicEveIntercept(photons) : photons;
             if (playingSolo) {
                 const [bobBases, bobMeasurements] = simulateBobExchange(
-                    photons);
+                    sentPhotons);
                 setBobMeasurements(bobMeasurements);
                 setBobBases(bobBases);
                 pushLines([
@@ -184,7 +185,7 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
                     setStep(BB84GameStep.BASIS);
                 }, 2000);               
             } else {
-                sendPhotons(photons);
+                sendPhotons(sentPhotons);
                 pushLines([
                     {
                         content: 'component.aliceExchange.sent',
@@ -253,32 +254,6 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
             [bitsOrBase ? 'basisInputs' : 'bitsInputs']: newList,
         }, true);
         setList(newList);
-    };
-
-    const eveIntercept = (): number[] => {
-        const bases = ['+', 'x'];
-        const eveBases = basisInputs.map(
-            _ => bases[Math.floor(Math.random() * 2)]);
-        const measurements = polarList.map(({value: photon}, index) => {
-            let measurement = (Math.random() < 0.5) ? '0' : '1';
-            const basis = eveBases[index];
-            if (photon == '1' && basis == '+')
-                measurement = '0';
-            else if (photon == '2' && basis == '+')
-                measurement = '1';
-            else if (photon == '3' && basis == 'x')
-                measurement = '0';
-            else if (photon == '4' && basis == 'x')
-                measurement = '1';
-            return measurement;
-        });
-        return measurements.map((measurement, index) => {
-            const basis = bases[index];
-            if (measurement === '0' && basis === '+') return 1;
-            if (measurement === '0' && basis === 'x') return 3;
-            if (measurement === '1' && basis === '+') return 2;
-            else return 4;
-        });
     };
 
     return (
