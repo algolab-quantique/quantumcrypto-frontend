@@ -24,7 +24,6 @@ import {
 import {useSocket} from '@/components/providers/socket-provider';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
-import {mimicEveIntercept} from '@/lib/bb84/solo-player';
 
 const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
 

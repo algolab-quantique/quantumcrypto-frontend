@@ -23,7 +23,7 @@ import {useSocket} from '@/components/providers/socket-provider';
 import GameRestartDialog
     from '@/components/bb84/play-page/game-restart-dialog';
 import {BB84GameStep} from '@/types';
-import {getValidBits, mimicEveIntercept} from '@/lib/bb84/solo-player';
+import {getValidBits} from '@/lib/bb84/solo-player';
 import {restartSoloRound} from '@/lib/bb84/solo-round';
 import {isKeyTooShort} from '@/lib/bb84/utils';
 import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
