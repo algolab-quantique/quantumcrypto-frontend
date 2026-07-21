@@ -86,7 +86,7 @@ export const mimicEveIntercept = (photons: number[]): number[] => {
         return measurement;
     });
     return measurements.map((measurement, index) => {
-        const basis = bases[index];
+        const basis = eveBases[index];
         if (measurement === '0' && basis === '+') return 1;
         if (measurement === '0' && basis === 'x') return 3;
         if (measurement === '1' && basis === '+') return 2;
