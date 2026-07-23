@@ -5,6 +5,8 @@
  * exact contract, by pinning Math.random so the outcome becomes deterministic.
  */
 
+import {readdirSync, readFileSync, statSync} from 'fs';
+import {join} from 'path';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {
     generateAliceBases,
@@ -213,5 +215,43 @@ describe('BB84 physics contract (end to end)', () => {
         const aliceBases = ['+', '+', '+', 'x', 'x'];
         // matches at indices 0, 2, 3 → bits '1', '1', '0'
         expect(getValidBits(bits, bobBases, aliceBases)).toEqual(['1', '1', '0']);
+    });
+});
+
+/**
+ * ADR §13.3 conformance guard. Protocol physics lives ONLY in this file; a
+ * component must import it, never re-implement it. This fs-scans the BB84
+ * components and fails if the measurement rule (photon+basis → bit) or the
+ * encoding rule (bit+basis → photon) reappears inline. It is the regression
+ * lock for Task 57: the Eve bug existed because the physics was copy-pasted into
+ * components, so this test makes that duplication impossible to reintroduce
+ * silently. (Scans components/ only — lib/bb84/protocol.ts is the intended home.)
+ */
+describe('ADR §13.3 conformance — physics stays in protocol.ts', () => {
+    const collectSourceFiles = (dir: string): string[] => {
+        const out: string[] = [];
+        for (const entry of readdirSync(dir)) {
+            const full = join(dir, entry);
+            if (statSync(full).isDirectory()) {
+                out.push(...collectSourceFiles(full));
+            } else if (/\.tsx?$/.test(entry)) {
+                out.push(full);
+            }
+        }
+        return out;
+    };
+
+    // The exact shapes that duplicated before Slice 2.5.
+    const MEASUREMENT_RULE = /photon\s*===?\s*1\s*&&\s*basis/;      // photon+basis → bit
+    const ENCODING_RULE = /===?\s*'0'\s*&&\s*basis\s*===?\s*'\+'/;  // bit+basis → photon
+
+    it('no BB84 component re-implements the measurement or encoding rule', () => {
+        const files = collectSourceFiles(join(process.cwd(), 'components/bb84'));
+        expect(files.length).toBeGreaterThan(0); // guard against an empty scan
+        const offenders = files.filter(file => {
+            const src = readFileSync(file, 'utf8');
+            return MEASUREMENT_RULE.test(src) || ENCODING_RULE.test(src);
+        });
+        expect(offenders).toEqual([]);
     });
 });

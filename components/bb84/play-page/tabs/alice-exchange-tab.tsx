@@ -27,7 +27,7 @@ import {useSocket} from '@/components/providers/socket-provider';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
-import {mimicEveIntercept, simulateBobExchange} from '@/lib/bb84/protocol';
+import {encodePhoton, mimicEveIntercept, simulateBobExchange} from '@/lib/bb84/protocol';
 
 const AliceExchangeTab = ({photonNumber, polarIcons}: {
     photonNumber: number;
@@ -200,15 +200,10 @@ const AliceExchangeTab = ({photonNumber, polarIcons}: {
         basisInputs?: inputField[],
         bitsInputs?: inputField[],
     }, list: boolean, index?: number) => {
-        const isValid = (bit: string, basis: string,
-                         polar: string) => ((bit === '0' && basis === '+' &&
-                polar ===
-                '1') ||
-            (bit === '1' && basis === '+' && polar ===
-                '2') ||
-            (bit === '0' && basis === 'x' && polar ===
-                '3') ||
-            (bit === '1' && basis === 'x' && polar === '4'));
+        // A polarization is valid iff it is exactly the photon that this
+        // bit+basis encodes to. Physics lives in lib/bb84/protocol (ADR §13.3).
+        const isValid = (bit: string, basis: string, polar: string) =>
+            encodePhoton(bit, basis) === parseInt(polar);
         let newPolarList = prevStates.polarList ?? [...polarList];
         const bits = prevStates.bitsInputs ?? bitsInputs;
         const bases = prevStates.basisInputs ?? basisInputs;

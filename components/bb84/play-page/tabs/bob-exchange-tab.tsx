@@ -24,6 +24,7 @@ import {
 import {useSocket} from '@/components/providers/socket-provider';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
+import {measurePhoton} from '@/lib/bb84/protocol';
 
 const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
 
@@ -160,18 +161,10 @@ const BobExchangeTab = ({photonNumber}: { photonNumber: number }) => {
             const updatedMeasurements = [...measurements].map(
                 (measurement, index) => {
                     const basis = basisInputs[index].value;
-                    let newMeasurement = (Math.random() < 0.5) ? '0' : '1';
                     const photon = alicePhotons[index];
-                    if (photon == 1 && basis == '+')
-                        newMeasurement = '0';
-                    else if (photon == 2 && basis == '+')
-                        newMeasurement = '1';
-                    else if (photon == 3 && basis == 'x')
-                        newMeasurement = '0';
-                    else if (photon == 4 && basis == 'x')
-                        newMeasurement = '1';
+                    // Physics lives in lib/bb84/protocol (ADR §13.3), not here.
                     measurement = {...measurement};
-                    measurement.value = newMeasurement;
+                    measurement.value = measurePhoton(photon, basis);
                     return measurement;
                 });
             setMeasurements(updatedMeasurements);
