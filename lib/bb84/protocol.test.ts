@@ -13,7 +13,7 @@ import {
     getValidBits,
     mimicEveIntercept,
     simulateBobExchange,
-} from './solo-player';
+} from './protocol';
 
 describe('generators', () => {
     it('generateAliceBits: n bits, all 0/1', () => {

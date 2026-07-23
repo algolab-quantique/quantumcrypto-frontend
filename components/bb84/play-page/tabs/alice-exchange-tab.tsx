@@ -27,7 +27,7 @@ import {useSocket} from '@/components/providers/socket-provider';
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
-import {mimicEveIntercept, simulateBobExchange} from '@/lib/bb84/solo-player';
+import {mimicEveIntercept, simulateBobExchange} from '@/lib/bb84/protocol';
 
 const AliceExchangeTab = ({photonNumber, polarIcons}: {
     photonNumber: number;
