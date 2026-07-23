@@ -1142,6 +1142,34 @@ The backend's Eve role is narrow and, within that scope, sound:
 
 - [ ] **P3 — latent bug in the E91 Python twin:** `e91/consumers.py:508` `eveGeneratedBits` has **no `else` fallback** for an unexpected basis (the TS version has `outcome = 1` at `solo-player.ts:281`). On an unknown basis Python leaves `outcome` unbound → `UnboundLocalError` on the first iteration, or **silently reuses the previous photon's outcome** on later iterations. Unreachable today (bases are constrained to 1-4) but it is a real divergence between the two "synchronized" copies.
 
+#### K — 🔗 External Qiskit BB84 reference: an oracle + educational source (found 2026-07-22)
+A standalone real-quantum-circuit (Qiskit) BB84 challenge by the same author lives OUTSIDE this repo at
+`../hackathons/Sherhack/2026/side_quests/quantum_crypto_BB84_challenge/` (key files:
+`bb84_challenge_solution_good.py`, `encryption_algorithms.py`, `tutorials/tutorial_EN.md`). Read 2026-07-22.
+It **independently confirms** our work: its `eve_intercept_qubits` re-emits in the basis Eve measured in
+(`eve_bases[i]`) — exactly the `eveBases[index]` fix (Task 57 A) — and its `reveal_key_subset(0.2)` +
+`remove_revealed_key` mirrors the key-sacrifice of Task 53. Encoding bridge: reference base '0'=Z / '1'=X,
+states |0⟩|1⟩|+⟩|−⟩; our photons 1/2/3/4 = |0⟩/|1⟩/|+⟩/|−⟩, our '+'=Z / 'x'=X. Ibra also has E91 and DPS
+equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now" — Ibra 2026-07-22):
+
+- [ ] **K1 — Qiskit cross-check test (oracle).** A test asserting `mimicEveIntercept`'s disturbance
+  statistics match the reference's correct intercept-resend (~25% per sifted bit end-to-end). Belt-and-
+  suspenders: the fix is already confirmed 4 ways (reasoning, sim, browser, this reference) + Slice 4's
+  contracts. **Best built WITH/AFTER Slice 2.5** (against the extracted `lib/bb84/protocol.ts`), not before.
+- [ ] **K2 — mine the tutorials for in-app educational content.** TWO distinct scopes, do not conflate:
+  - **Scope A (small, aligned):** short explanatory NOTES beside simulations — the E91 CHSH "concept, not
+    statistics" note (→ finding 52-C) and the TEST_MODE photon-count tradeoff note (→ Task 57). The
+    tutorials are ready-made source text; E91/DPS versions exist too. Low risk, closes pedagogy gaps we
+    already found.
+  - **Scope B (big, UNDECIDED — needs a product discussion first):** porting the FULL tutorials (qubit /
+    superposition / Z-X bases / no-cloning, with Bloch spheres + LaTeX) as tutorial pages × 3 protocols
+    × 3 languages. Overlaps the existing `component.*.about.part*` content (210 keys in
+    `lang/quantumcrypto-lines.ts`, rendered by the monster pages `bb84_card` 1175 / `dps` 953 / `e91`
+    581 lines). Leans the app toward "course/lab" — the identity debate in
+    `docs/product-vision-game-experience.md` is unresolved, so this is a strategy call, NOT a slice.
+  - NOTE: `content/{lang}/*.md` files exist but are **empty stubs read by nothing** — if any content work
+    happens, decide whether to revive that markdown layer or keep using the lang-keys + pages approach.
+
 ---
 
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
