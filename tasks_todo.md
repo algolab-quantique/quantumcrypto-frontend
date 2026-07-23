@@ -1167,8 +1167,14 @@ equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now"
     `lang/quantumcrypto-lines.ts`, rendered by the monster pages `bb84_card` 1175 / `dps` 953 / `e91`
     581 lines). Leans the app toward "course/lab" — the identity debate in
     `docs/product-vision-game-experience.md` is unresolved, so this is a strategy call, NOT a slice.
-  - NOTE: `content/{lang}/*.md` files exist but are **empty stubs read by nothing** — if any content work
-    happens, decide whether to revive that markdown layer or keep using the lang-keys + pages approach.
+  - **NOTE — the empty `content/{lang}/*.md` are INTENTIONAL placeholders, do NOT delete as clutter**
+    (Ibra, 2026-07-22): the original plan was to move the localized protocol text OUT of the dictionary
+    (`lang/quantumcrypto-lines.ts` `component.*.about.part*`, 210 keys) INTO per-language markdown
+    (`content/en/bb84.md`, `fr`, `es`, …), so the app reads educational text straight from markdown
+    instead of the TS dictionary. Never executed — the dictionary works fine today and the migration is
+    deferred (future = undecided). So the stubs are a parked idea, not dead files. If Scope B (or any
+    content-source refactor) is ever taken up, this is the pre-existing plan to weigh: markdown-source vs
+    keep the lang-keys. Guard: any "root-level clutter"/cleanup pass (Task 47 P3) must NOT sweep these away.
 
 ---
 
