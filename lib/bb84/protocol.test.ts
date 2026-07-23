@@ -255,3 +255,44 @@ describe('ADR §13.3 conformance — physics stays in protocol.ts', () => {
         expect(offenders).toEqual([]);
     });
 });
+
+/**
+ * Golden-path anchor (Task 57 Slice 2.5c). The BB84-challenge idea: seed the RNG,
+ * run the WHOLE protocol end to end, and assert the EXACT key. A single tripwire
+ * over the entire pipeline — encode → (Eve) → measure → sift — so any change to
+ * any step, in any file, that alters the outcome fails loudly with a concrete diff.
+ * Expected values were computed offline from this same code + seed.
+ */
+describe('BB84 golden path (deterministic end-to-end)', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    const playGame = (photonNumber: number, withEve: boolean) => {
+        const aliceBits = generateAliceBits(photonNumber);
+        const aliceBases = generateAliceBases(photonNumber);
+        let photons = generateAlicePhotons(aliceBits, aliceBases);
+        if (withEve) {
+            photons = mimicEveIntercept(photons);
+        }
+        const [bobBases, bobBits] = simulateBobExchange(photons);
+        return {
+            aliceKey: getValidBits(aliceBits, bobBases, aliceBases).join(''),
+            bobKey: getValidBits(bobBits, bobBases, aliceBases).join(''),
+        };
+    };
+
+    it('clean channel: seed 0xB84 → the exact shared key, identical for both', () => {
+        vi.spyOn(Math, 'random').mockImplementation(mulberry32(0xB84));
+        const {aliceKey, bobKey} = playGame(20, false);
+        expect(aliceKey).toBe('101101010');
+        expect(bobKey).toBe('101101010'); // no Eve → bit-for-bit identical
+    });
+
+    it('with Eve: seed 0xB84 → the exact (diverging) keys', () => {
+        vi.spyOn(Math, 'random').mockImplementation(mulberry32(0xB84));
+        const {aliceKey, bobKey} = playGame(20, true);
+        expect(aliceKey).toBe('1110101010');
+        expect(bobKey).toBe('0100001110'); // Eve disturbed 4 of the 10 sifted bits
+    });
+});
