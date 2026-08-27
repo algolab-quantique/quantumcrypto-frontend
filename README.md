@@ -41,21 +41,33 @@ To run the QuantumCrypto frontend locally, follow these steps:
 6. Open your browser and visit `http://localhost:3000` to view the
    QuantumCrypto frontend.
 
-**Note:**
-- Make sure to also run the backend server locally for full
-functionality. You can find the backend repository [here](https://github.com/algolab-quantique/quantumcrypto-backend).
+## Running the full stack (for multiplayer)
 
-- Confirm that .env.local is present and contains the right values whenever you set up the project; otherwise the frontend will fail to reach the API or WebSocket server.
+Solo mode works with the frontend alone — the whole protocol is simulated in your browser.
+**Multiplayer needs the backend running.**
 
-To connect the frontend to the backend, create a `.env.local` file in the project root (or update it if it already exists):
+1. **Start the backend** — follow "Running Locally" in the
+   [backend repo](https://github.com/algolab-quantique/quantumcrypto-backend).
+   (It needs Redis as well; the steps are there.)
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000/ws
-```
+2. **Connect the frontend** — create a `.env.local` file in the project root
+   (or update it if it already exists):
 
-> The `/ws` suffix matters: the backend routes WebSockets under `ws/` (see
-> `bb84/routing.py`). Without it, multiplayer silently fails to connect.
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000/ws
+   ```
+
+   The `/ws` suffix is required — WebSocket routes are registered under `ws/`
+   (see `bb84/routing.py` in the backend), and nginx uses that same prefix in
+   production to apply the WebSocket upgrade headers. Without it, multiplayer
+   silently fails to connect.
+
+3. **Start the frontend** — `npm run dev`, then open http://localhost:3000
+
+**Testing multiplayer on one machine:** every tab of the same browser shares the same
+`localStorage`, so two tabs are **not** two players — the second overwrites the first.
+Use a normal window plus an incognito window (or two different browsers).
 
 ## Deploying
 

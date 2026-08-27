@@ -1265,6 +1265,55 @@ equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now"
 
 ---
 
+### 58. 🚀 Deployment readiness (opened 2026-08-27)
+
+**Status**: 🟡 IN PROGRESS — the path to getting a correct build in front of students.
+**Why now**: production has not been deployed since **2026-06-22** — *before* PR #22 (17 July).
+So production has **none** of the architecture work, **none** of the Eve fix, and still ships
+`TEST_MODE = true`. Students today are playing the broken Eve with test-mode photon counts.
+
+**The path, in order:**
+
+- [x] **1. `DEPLOYMENT_GUIDE.md` → private repo. ✅ DONE 2026-08-27.** It was untracked on one
+  laptop only (gitignored in both repos) — it could be lost and teammates could not find it. Now
+  **tracked in `cryptoweb-2.0-frontend`** (private, commit `3cee2ca` there) and deleted from this
+  public repo (`45f6fac`); `.gitignore` keeps a pointer comment. Verified it was committed there
+  *before* deleting here. rsync will not clobber it — the file no longer exists in the source, and
+  rsync without `--delete` leaves destination-only files alone.
+- [x] **2. Public deploy docs + a real bug fix. ✅ DONE 2026-08-27** (`727c978`, `+ README rewrite`).
+  **BUG:** the README told readers to set `NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000` — missing
+  the `/ws` prefix the backend routes on (`bb84/routing.py:8`), so anyone following it got silently
+  broken multiplayer. Fixed. Added a "Deploying" section (build/start, Node 18.17+, any Next.js
+  host, `NEXT_PUBLIC_*` baked in at build time) and a "Running the full stack" section (backend
+  pointer → `.env.local` → `npm run dev`, plus the two-browser rule for testing multi).
+  *Originally planned as a separate `DEPLOYING.md`; dropped because the README already covered
+  clone/install/env — a second file would have duplicated it and drifted.*
+- [ ] **3. TEST_MODE — the actual deploy blocker.** Design agreed in **Task 57**, **zero code
+  written**. Verified 2026-08-27: all three `*_TEST_MODE = true` still, no `QC_TEST_MODE` anywhere.
+  Sub-items: (A) the shared env flag, safe-by-absence · (B) `next.config.js` phase guard — the real
+  lock, since `next build` only *defaults* `NODE_ENV`, it does not force it · (C) `.env*` added to
+  the rsync excludes, else `.env.local` ships to prod · (D) CI test: production build ⇒ production
+  values · (E) BB84 copy hardcodes "16/10" in 3 languages → interpolate like E91 · (F) remove the
+  dead `BB84_TEST_MODE` import (`solo-game-modal.tsx:35` — used only in comments).
+  **Note:** A–D are one shared module, so doing BB84 alone is not cheaper than doing all three.
+  Deploying with only BB84 fixed still ships test values for E91 and DPS.
+- [ ] **4. Merge `ibra_architecture` → `development`.** 17 commits ahead, **0 behind**, 75 tests +
+  tsc + lint green, BB84 flows browser-verified. Clean fast-forward.
+- [ ] **5. Deploy** (rsync → `cryptoweb-2.0-frontend` → Amplify), then re-verify in production.
+
+**⚠️ Pushing `quantumcrypto--prod` triggers an AWS Amplify build.** The 2026-08-27 push of the
+guide did fire one; harmless, since only `.gitignore` and a `.md` changed (no app code).
+
+**Side findings while doing #2 (backend repo, committed there as `da12f1e`):** backend README had
+Redis listed *after* `runserver` (Channels needs it first); nothing documented what the frontend
+should point at; and `settings.py`'s `## Using this method.` comment sat above the **commented-out**
+InMemory channel layer while local Redis was the active one — actively misleading. All corrected.
+**docker-compose is broken** (Redis at `127.0.0.1` unreachable from inside the Django container —
+needs a `REDIS_HOST` env var); root cause + fix recorded in the **backend** `task_todo.md`, marked
+not urgent since nobody uses that path.
+
+---
+
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
 
 **Decision (Ibra, 2026-07-16):** when a concept already has a word somewhere in the app,
