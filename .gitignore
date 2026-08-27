@@ -37,4 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 # tasks_todo.md # we need to track our tasks and what we have done
-DEPLOYMENT_GUIDE.md
+
+# DEPLOYMENT_GUIDE.md moved 2026-08-27 to the private deploy repo
+# (cryptoweb-2.0-frontend), where it is tracked. It described our internal
+# dual-repo Amplify setup, which does not apply to public users of this repo.
