@@ -51,8 +51,32 @@ To connect the frontend to the backend, create a `.env.local` file in the projec
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000
+NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000/ws
 ```
+
+> The `/ws` suffix matters: the backend routes WebSockets under `ws/` (see
+> `bb84/routing.py`). Without it, multiplayer silently fails to connect.
+
+## Deploying
+
+`npm run build` produces a standard Next.js 14 production build, and `npm start` serves it. Any
+host that runs Next.js works — Vercel, AWS Amplify, Netlify, a container, or your own Node
+server. Node.js 18.17+ is required.
+
+The only host-specific step is setting the two variables above in your host's environment
+**before the build runs**: they are `NEXT_PUBLIC_*`, so they are baked into the client bundle at
+build time. Changing them later requires a rebuild. Use `https://` and `wss://` in production.
+
+Before deploying, run the same three checks CI runs on every push:
+
+```bash
+npm test          # unit tests (Vitest)
+npx tsc --noEmit  # type check
+npm run lint
+```
+
+> **Algolab teammates:** our own production deployment uses a separate private repository and is
+> documented there, not here — ask the team for `DEPLOYMENT_GUIDE.md`.
 
 ## Contributing
 
