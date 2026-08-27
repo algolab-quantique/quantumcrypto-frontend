@@ -1290,13 +1290,69 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
   clone/install/env — a second file would have duplicated it and drifted.*
 - [ ] **3. TEST_MODE — the actual deploy blocker.** Design agreed in **Task 57**, **zero code
   written**. Verified 2026-08-27: all three `*_TEST_MODE = true` still, no `QC_TEST_MODE` anywhere.
-  Sub-items: (A) the shared env flag, safe-by-absence · (B) `next.config.js` phase guard — the real
-  lock, since `next build` only *defaults* `NODE_ENV`, it does not force it · (C) `.env*` added to
-  the rsync excludes, else `.env.local` ships to prod · (D) CI test: production build ⇒ production
-  values · (E) BB84 copy hardcodes "16/10" in 3 languages → interpolate like E91 · (F) remove the
-  dead `BB84_TEST_MODE` import (`solo-game-modal.tsx:35` — used only in comments).
-  **Note:** A–D are one shared module, so doing BB84 alone is not cheaper than doing all three.
-  Deploying with only BB84 fixed still ships test values for E91 and DPS.
+  **Everything below is decided — next session is execution, no design thinking needed.**
+
+  **⚠️ It grew: this is not just a flag, it is the whole env-file convention.** The convention was
+  half-built and lost (`.env.sample` exists in the deploy repo only, with empty values), so today
+  `.env.local` is **git-TRACKED in BOTH repos** with `localhost` URLs. That is why cloning "just
+  works" — and also why localhost ships to production. The env convention is the *prerequisite*
+  for the flag to be safe.
+
+  **THE MECHANISM (clarified 2026-08-27 — an earlier explanation over-credited `NODE_ENV`):**
+  the switch is a **FILE, not a command**. `npm run dev` / `npm run build` are both used on laptops
+  AND servers, so the command can never be the mechanism. Test mode is on only if
+  `NEXT_PUBLIC_QC_TEST_MODE=true` exists in a `.env.local` — a file that lives **only on developer
+  machines**. **Absence = production.** `NODE_ENV` and the build guard are second/third nets for
+  the case where that file leaks to a server (which rsync was literally doing).
+
+  **THE TARGET CONVENTION:**
+
+  | File | Tracked? | Who uses it |
+  |---|---|---|
+  | `.env.example` | ✅ yes | the template — documents every var incl. the commented test flag |
+  | `.env.local` | ❌ **gitignored** | each developer's own copy |
+  | host env config | — | production (Amplify console, private server, Vercel…) |
+
+  **MIGRATION STEPS (safe — `--cached` keeps local files on disk, nothing breaks):**
+  1. create `.env.example` (tracked): the two URLs with dev defaults + a **commented**
+     `# NEXT_PUBLIC_QC_TEST_MODE=true` with a "DEV ONLY, never in production" note
+  2. `.gitignore`: add `.env.local` and `.env*.local` (today it only ignores `.env`)
+  3. `git rm --cached .env.local` — untracks, **keeps the file on disk**
+  4. README: `cp .env.example .env.local`, **plus how a colleague turns test mode on/off**
+     (uncomment one line in their own file — affects only them, cannot leak)
+  5. rsync command in the private `DEPLOYMENT_GUIDE.md`: add `--exclude='.env*'`
+  6. **deploy repo: `git rm --cached .env.local` there too** — see landmine below
+
+  **🚨 LANDMINE (found 2026-08-27):** `cryptoweb-2.0-frontend/.env.local` is **tracked and pushed**,
+  containing `http://localhost:8000`. Production builds from that repo. It only works today because
+  Amplify's console env vars override `.env` files (env vars already in `process.env` win — verified
+  in `@next/env`). That is luck, not design, and `NEXT_PUBLIC_*` are frozen into the client bundle
+  at build time. Untrack it.
+
+  **SUB-ITEMS:**
+  - **(A)** shared `QC_TEST_MODE` module, safe-by-absence:
+    `process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_QC_TEST_MODE === 'true'`
+  - **(B)** `next.config.js` phase guard — **the real lock**: during `PHASE_PRODUCTION_BUILD`,
+    **throw** if test mode would be live. Needed because `next build` only *defaults* `NODE_ENV`
+    (`node_modules/next/dist/bin/next:60`), it does not force it. Build fails loudly in the Amplify
+    log instead of silently shipping test values.
+  - **(C)** `.env*` → rsync excludes **+ untrack in both repos** (see migration 2/3/5/6). **Upgraded
+    to urgent** by the landmine above.
+  - **(D)** CI test: a production build ⇒ production values.
+  - **(E)** BB84 copy hardcodes "16/10" in 3 languages (`lang/quantumcrypto-lines.ts:46,548,1112`)
+    → interpolate like E91 already does.
+  - **(F)** remove the dead `BB84_TEST_MODE` import (`solo-game-modal.tsx:35` — comments only).
+  - **(G) DECIDED (Ibra, 2026-08-27):** DPS keeps `4 / 20 / 6` as production values **but must gain
+    the same two-value shape** as BB84/E91 — e.g. `DPS_SOLO_PHOTON_MIN = QC_TEST_MODE ? 4 : 4`.
+    Same numbers today, but standard structure, so changing one later is a one-line edit. This also
+    kills the currently-dead `DPS_TEST_MODE` (declared, never read).
+  - **(H) NEW:** add **`amplify.yml`** to the deploy repo. There is none — the build steps live only
+    in the AWS console, invisible, unversioned, and changeable by anyone with console access. We
+    cannot currently *prove* Amplify runs `npm run build`.
+
+  **SCOPE:** A–D are one shared module, so doing BB84 alone costs the same as all three — do all
+  three. Only **E** (BB84 copy) is protocol-specific. Deploying with only BB84 fixed would still
+  ship test values for E91 and DPS.
 - [ ] **4. Merge `ibra_architecture` → `development`.** 17 commits ahead, **0 behind**, 75 tests +
   tsc + lint green, BB84 flows browser-verified. Clean fast-forward.
 - [ ] **5. Deploy** (rsync → `cryptoweb-2.0-frontend` → Amplify), then re-verify in production.
