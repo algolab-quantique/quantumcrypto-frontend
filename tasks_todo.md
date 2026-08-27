@@ -5,6 +5,61 @@
 
 ---
 
+## 🗺️ ROADMAP TO "QUANTUMCRYPTO IS FINISHED" (added 2026-08-26)
+
+> **What this is:** the single view of everything remaining to complete the app — 3 protocols
+> × 2 modes × 2 Eve scenarios, one source of truth for the physics, the lifecycle migration
+> finished, everything manually verified, design polished.
+> **What this is NOT:** new tasks. Every line points at the task that already owns the work.
+> Estimates are in **working days for one developer**, at the pace actually measured on BB84.
+
+**Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
+working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
+contract, `lifecycle.ts`, test setup, CI). So **BB84 replication cost ≈ 13 days**, and that
+design cost is already paid. Remaining surface, measured by raw `localStorage` refs in
+components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one.
+
+| # | Workstream | Days | Owned by | Blocked by |
+|---|---|---|---|---|
+| 1 | Verify backend connectivity after VM migration | 0.5 | **Task 23** | — *(do FIRST: if broken it blocks 4, 5, 6, 7)* |
+| 2 | TEST_MODE env flag (production gate) | 1–2 | **Task 47 P1** + **Task 57** (design agreed, not built) | — |
+| 3 | Debug `console.log`s leaking key material | 0.5 | **Task 47 P2** | — |
+| 4 | **E91 lifecycle migration** | 8–12 | **Task 40 Phase 3** + **Task 26** + **Task 52** (pre-migration findings) | — |
+| 5 | **E91 physics** (biased Eve 52-D, honest Bell note 52-C, dead code 52-F) | 3–5 | **Task 52** | ⚠️ **BACKEND** — simulation duplicated in Python (`e91/consumers.py:480,507`) |
+| 6 | **DPS lifecycle migration** | 12–18 | **Task 40 Phase 4** + **Task 37** (nav guard) + **Task 44** (`localStorage.clear()`) | — |
+| 7 | **DPS physics** — build the missing solo Eve | 5–8 | **Task 38** | — *(frontend-only: DPS backend has no physics; build it sender-side per ADR §13.3)* |
+| 8 | Socket-provider refactor (multi orchestration → per-protocol handlers) | 10–15 | **Task 40 Phase 5** | 4 + 6 stable first. **Riskiest change in the app** |
+| 9 | Cleanup after migration (dead code, repo structure, nav guards) | 3–5 | **Task 41** + **Task 42** | 8 |
+| 10 | Extend the ADR §13.3 conformance guard to E91 + DPS | 1–2 | **Task 57** (guard exists, watches BB84 only) | 5 + 7 |
+| 11 | Manual test matrix — 3 protocols × 2 modes × 2 Eve scenarios = **12 flows**, each with refresh / restore / abandon edges (multi needs 2 browsers) | 6–10 | *see ⚠️ below* | 4, 6 |
+| 12 | Test phases 2–3 (component tests, then Playwright E2E) | 8–12 | **Task 47 P1** ("Remaining: phases 2–3 later") | — *(optional, but see note)* |
+| 13 | 50 dependabot vulnerabilities | 2–3 | **Task 47 P2** | — |
+| 14 | **Design / visual polish** | 5–10 | ⚠️ **NOT TRACKED — needs scoping first** | someone must define "polished" |
+
+**Totals (excluding #12, which is optional):**
+
+| Scenario | Days | Sprints (10 d) | Calendar |
+|---|---|---|---|
+| Optimistic — no surprises, backend responsive | ~56 | 5.5 | **~3 months** |
+| **Realistic** | **~70** | **7** | **~3.5 months** |
+| Pessimistic — backend delays, DPS surprises | ~90 | 9 | **~4.5 months** |
+
+**⚠️ Three honest caveats, recorded so they are not rediscovered later:**
+1. **Only #5 is backend-blocked.** E91 is the *only* protocol whose physics is duplicated in
+   Python — BB84 and DPS backends contain zero physics (verified: the only quantum math in the
+   whole backend is `sin(pi/8)**2` in `e91/consumers.py`). So if backend coordination is slow,
+   #4, #6, #7 and everything else can still proceed. Strategic option worth deciding: **move
+   E91's physics to the frontend** like BB84/DPS and delete the two-language duplication for
+   good (ADR §13.3 already marks it "grandfathered, not endorsed").
+2. **Every migration has found unknown bugs** — BB84 surfaced the phantom game, the missing key
+   sacrifice, the flag conflation and the 22-month Eve bug. That is the *pattern*, not bad luck.
+   DPS at 5× the surface is the real unknown; its range is wide for that reason.
+3. **#11 and #14 have no task yet.** #11 (the manual matrix) is deliberately left unowned until
+   #12 is decided — automating it may be cheaper than replaying 12 flows by hand every migration.
+   #14 (design polish) cannot be estimated honestly until someone defines the target.
+
+---
+
 ### 23. 🟡 INFRA: Verify Backend Connectivity After VM Migration
 
 **Status**: 🟡 INVESTIGATION — TODO  
