@@ -1350,6 +1350,14 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     in the AWS console, invisible, unversioned, and changeable by anyone with console access. We
     cannot currently *prove* Amplify runs `npm run build`.
 
+  **❌ CONSIDERED AND REJECTED — env schema validation (zod/envalid), 2026-08-27.** Do not
+  re-propose. It was suggested as a "senior team" upgrade and the justification was **wrong**:
+  it would NOT have caught the `/ws` bug we hit that day, because `ws://localhost:8000` and
+  `ws://localhost:8000/ws` are *both* valid URLs — the value was semantically wrong, not malformed.
+  Schema validation catches missing/malformed vars only. With **2 public `NEXT_PUBLIC_*` vars**
+  (no secrets), a missing one already fails loudly (`undefined/record_game_statistic`). Verdict:
+  ceremony, not safety. Revisit only if the app grows real secrets or many more variables.
+
   **SCOPE:** A–D are one shared module, so doing BB84 alone costs the same as all three — do all
   three. Only **E** (BB84 copy) is protocol-specific. Deploying with only BB84 fixed would still
   ship test values for E91 and DPS.
