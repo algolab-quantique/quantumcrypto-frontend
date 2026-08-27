@@ -1,5 +1,33 @@
 # Quantum Crypto Frontend - Issue Tracker & Plan
 
+## 👋 START HERE (new to this project?)
+
+This file is the **live tracker**: every open bug, decision and piece of work, newest at the
+bottom. Tasks are append-only — numbers are never reused, so a reference like "Task 40" is
+stable forever.
+
+**Read in this order:**
+1. **[`CLAUDE.md`](CLAUDE.md)** — how we work here (one slice at a time, gates, verification).
+   Read this before touching code.
+2. **🗺️ ROADMAP** (just below) — everything remaining to finish the app, with estimates,
+   each line pointing at the task that owns it.
+3. The task you need — find it with `grep "^### " tasks_todo.md`.
+
+**The app has two independent axes** — confusing them is how a 22-month physics bug survived
+every architecture review:
+
+| Axis | Question it answers | Document |
+|---|---|---|
+| **A — data lifecycle** | *Where does this data go? Does it survive a refresh?* | [`docs/shared-protocol-lifecycle-adr.md`](docs/shared-protocol-lifecycle-adr.md) |
+| **B — protocol physics** | *Is the number inside it physically correct?* | [`docs/protocol-physics.md`](docs/protocol-physics.md) |
+
+**Entry points by theme:** Architecture → **26, 40, 48** · Physics → **52, 57** ·
+BB84 → **45, 46, 49, 53** · E91 → **27, 28, 52** · DPS → **37, 38, 44** ·
+Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
+
+**Legend:** 🔴 open/high · 🟡 in progress or blocked · ⚪ low / future · ✅ done ·
+📋 recorded, not started · 🐛 bug · 💡 idea, not decided
+
 > [!NOTE]
 > Completed Tasks 1 to 22 and completed top-level Tasks 25, 29 to 36 were archived to `docs/tasks_archived.md`, which was **deleted from the tree on 2026-07-17** (status snapshots age into lies; git keeps everything). To read it: `git show 6bd4ee9:docs/tasks_archived.md`. The full story of every completed task also lives in the commit history.
 
