@@ -1377,8 +1377,22 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     themselves**. *Private deploy repo:* add `--exclude='.env*'` to the rsync command in
     `DEPLOYMENT_GUIDE.md`, and `git rm --cached .env.local` there (the localhost landmine).
     Gates only — no browser check needed.
-  - [ ] **SLICE 2 — the `QC_TEST_MODE` flag. ⚠️ BEHAVIOUR CHANGE → Ibra's browser check before
-    commit.** Covers sub-items **A** (shared module), **F** (delete the dead `BB84_TEST_MODE`
+  - [x] **SLICE 2 — the `QC_TEST_MODE` flag. ✅ DONE 2026-08-28 (`8ce9c8b`).** Created
+    `lib/test-mode.ts`; all three constants files now derive from `QC_TEST_MODE`; DPS gained the
+    two-value shape (`? 4 : 4` etc., same numbers, per Ibra's decision G) and lost its dead
+    `DPS_TEST_MODE`; removed the dead `BB84_TEST_MODE` import; stale comments in both solo modals
+    updated; `.env.example` + README document how a developer opts in.
+    **Verified all three scenarios before committing** — dev+no-flag → production values (10/16),
+    dev+flag → test values (4/6), **prod-build+flag-leaked → still production values**. That third
+    case is the whole point. **Browser-verified by Ibra:** BB84 solo form pre-fills 10 photons
+    locally (was 4); production still shows 4, correctly, since nothing is deployed yet.
+    Gates: 75 tests, tsc, lint green.
+    **Convention decision (Ibra, 2026-08-28):** stay with `.env.example` + `cp` to `.env.local` —
+    the dominant industry convention (Next.js docs, create-next-app, and near-universal across
+    Laravel/Rails/Node), so a newcomer searching for help finds abundant answers. Considered and
+    rejected: tracking a `.env.development` for zero-setup onboarding — valid and dev-only by Next's
+    load rules, but a less recognisable concept for one saved command.
+    ~~Original plan:~~ Covers sub-items **A** (shared module), **F** (delete the dead `BB84_TEST_MODE`
     import), **G** (DPS gains the two-value shape, same numbers). Rewires all three constants files.
     **⚠️ REMIND IBRA WHEN WE GET HERE:** after this lands, `npm run dev` yields **production**
     values by default (10 photons, not 4). To get test mode back he must uncomment
