@@ -1491,9 +1491,24 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
   **SCOPE:** A–D are one shared module, so doing BB84 alone costs the same as all three — do all
   three. Only **E** (BB84 copy) is protocol-specific. Deploying with only BB84 fixed would still
   ship test values for E91 and DPS.
-- [ ] **4. Merge `ibra_architecture` → `development`.** 17 commits ahead, **0 behind**, 75 tests +
-  tsc + lint green, BB84 flows browser-verified. Clean fast-forward.
-- [ ] **5. Deploy** (rsync → `cryptoweb-2.0-frontend` → Amplify), then re-verify in production.
+- [x] **4. Merge `ibra_architecture` → `development`. ✅ DONE 2026-08-28 — PR #23, merge commit
+  `3a195eb`.** 34 commits, 31 files, 0 behind (clean fast-forward), 84 tests + tsc + lint green,
+  CI green on the PR. Merged as a **merge commit, not squash**, so the 34 atomic commits survive in
+  history — squashing would have destroyed exactly the record this project's discipline exists to
+  produce. Required an admin bypass: branch protection wants one approving review and GitHub does
+  not let an author approve their own PR.
+- [x] **5. Deploy. ✅ DONE 2026-08-28 — Amplify deployment #14, `a1fd1b5`, build 2m50s, live at
+  https://quantumcrypto.app.** First deploy since **2026-06-22** — production had been running
+  pre-PR#22 code, so students were getting the broken Eve *and* test-mode photon counts.
+  **The build log confirms the guard worked as designed:** no `PRODUCTION BUILD REFUSED` (so
+  `NODE_ENV` was production) and no `QC_TEST_MODE` warning (so no flag leaked). It stayed silent
+  because nothing was misconfigured — which is the intended path. Pre-flight verified before
+  pushing: no `.env` file travelled (the new `--exclude='.env*'` works), `DEPLOYMENT_GUIDE.md`
+  untouched and still tracked, `protocol.ts` with the Eve fix present. Ibra verified in production.
+
+**✅ TASK 58 COMPLETE.** Students now get correct BB84 physics (Eve disturbs 25% of sifted bits,
+not ~50%), production photon counts (10, not 4), honest validation messages in all three
+languages, and the session-lifecycle architecture from PR #22 that had never actually shipped.
 
 **⚠️ Pushing `quantumcrypto--prod` triggers an AWS Amplify build.** The 2026-08-27 push of the
 guide did fire one; harmless, since only `.gitignore` and a `.md` changed (no app code).
