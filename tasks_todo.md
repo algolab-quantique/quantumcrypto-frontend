@@ -434,6 +434,17 @@ This is intentionally future work. It should not be guessed in the frontend only
 
 ### 38. ⚪ DPS: Eve Mode Support
 
+> **📌 Groundwork already laid (2026-08-28, Task 58 slice 4).** Two things are prepared so this
+> task is a value change, not a refactor:
+> 1. `dps-constants.ts` already exports `DPS_SOLO_PHOTON_MIN_WITH_EVE` and
+>    `DPS_SOLO_PHOTON_MIN_WITHOUT_EVE` (both currently `4`). Give the with-Eve case a higher
+>    minimum when Eve exists.
+> 2. `components/dps/home-page/solo-game-modal.tsx` uses the **simple** message
+>    (`component.createGame.keyMinSimple` + `fillPhotonMinimum`) because there is no Eve control on
+>    that form yet. **When you add the Eve checkbox, switch it to
+>    `component.createGame.keyMin` + `fillPhotonMinimums`** — the same shared key BB84 and DPS
+>    multiplayer already use. Both translations exist in all 3 languages.
+
 **Status**: ⏳ FUTURE
 **Date Added**: June 15, 2026
 **Priority**: ⚪ VERY LOW / after new architecture
@@ -1411,7 +1422,20 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     ~~Original plan:~~ Sub-items **B** (`next.config.js`
     `PHASE_PRODUCTION_BUILD` guard that throws if test mode would be live) and **D** (CI test:
     production build ⇒ production values).
-  - [ ] **SLICE 4 — validation-message copy (sub-item E, scope widened 2026-08-28).** Originally
+  - [x] **SLICE 4 — validation-message copy. ✅ DONE 2026-08-28 (`cc6754a`).** All three defects
+    fixed. Key layout grouped by **vocabulary**, not protocol (E91 measures pairs; BB84/DPS send
+    photons): `component.createGame.keyMin` → BB84 ×2 + DPS multi · `component.e91.createGame.keyMin`
+    → E91 ×2 · new `component.createGame.keyMinSimple` → DPS solo. Added
+    `fillPhotonMinimums`/`fillPhotonMinimum` to `lib/utils` and routed **all six** call sites through
+    them — including E91's two, which already worked via inline `.replace()` chains — because
+    forgetting a `.replace()` is exactly how DPS rendered a literal `{minWithEve}`.
+    **DPS solo keeps the simple message deliberately** (no Eve control exists yet, so the
+    with/without sentence would point at a missing control), but gained
+    `DPS_SOLO_PHOTON_MIN_WITH_EVE`/`_WITHOUT_EVE` (both 4) so **Task 38 becomes a value change plus
+    one key swap, not a refactor** — per Ibra's "prepare it properly now". Verified every variant
+    renders correctly in EN/FR/ES, including BB84 in test mode now saying **6/4 instead of 16/10**.
+    84 tests, tsc, lint green.
+    ~~Original plan:~~ Originally
     "BB84 only". Auditing the three protocols found **three different defects**, so the slice now
     covers BB84 **and** DPS. Verified state:
 
