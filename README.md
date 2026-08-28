@@ -50,18 +50,18 @@ Solo mode works with the frontend alone — the whole protocol is simulated in y
    [backend repo](https://github.com/algolab-quantique/quantumcrypto-backend).
    (It needs Redis as well; the steps are there.)
 
-2. **Connect the frontend** — create a `.env.local` file in the project root
-   (or update it if it already exists):
+2. **Connect the frontend** — copy the template:
 
-   ```env
-   NEXT_PUBLIC_API_URL=http://localhost:8000
-   NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000/ws
+   ```bash
+   cp .env.example .env.local
    ```
 
-   The `/ws` suffix is required — WebSocket routes are registered under `ws/`
-   (see `bb84/routing.py` in the backend), and nginx uses that same prefix in
-   production to apply the WebSocket upgrade headers. Without it, multiplayer
-   silently fails to connect.
+   The defaults already point at a backend running locally on port 8000, so
+   usually there is nothing to change. `.env.example` explains what each variable
+   does — including why `NEXT_PUBLIC_WEBSOCKET_URL` must end in `/ws`.
+
+   `.env.local` is **git-ignored on purpose**: it is your own machine's config.
+   Never commit it — in production these values come from the host instead.
 
 3. **Start the frontend** — `npm run dev`, then open http://localhost:3000
 
@@ -75,7 +75,8 @@ Use a normal window plus an incognito window (or two different browsers).
 host that runs Next.js works — Vercel, AWS Amplify, Netlify, a container, or your own Node
 server. Node.js 18.17+ is required.
 
-The only host-specific step is setting the two variables above in your host's environment
+The only host-specific step is setting `NEXT_PUBLIC_API_URL` and
+`NEXT_PUBLIC_WEBSOCKET_URL` in your host's environment
 **before the build runs**: they are `NEXT_PUBLIC_*`, so they are baked into the client bundle at
 build time. Changing them later requires a rebuild. Use `https://` and `wss://` in production.
 
