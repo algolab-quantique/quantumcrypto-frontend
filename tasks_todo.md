@@ -1320,6 +1320,25 @@ both: `solo-game-modal.tsx:120` and `create-game-modal.tsx:99`, both
 inside the error, so the student is guided *before* being corrected. Better UX, but touches
 layout in two modals — decide with Ibra before doing it.
 
+**🔬 WHY n/4? (Ibra asked "on what basis?", 2026-08-28 — answered with measurement.)**
+Full analysis + table now in **[docs/protocol-physics.md §8](docs/protocol-physics.md)**; both
+modal comments point there. Short version: validation bits are sacrificed from the **sifted** key,
+which averages only `n/2`, so `v = n/4` means *"about half the sifted key"*. A cap of `n/2` would
+equal the entire expected sifted key and makes **~60% of games restart** before they can be played
+(measured over 200 000 games; matches the ~66% Ibra hit by hand at 6 photons / 3 validation), while
+`n/4` keeps that under 4%. **`n/4` is a measured compromise, not a security bound** — the Qiskit
+reference sacrifices 20% of the sifted key, and real QKD derives the fraction from confidence
+bounds. Decision: **keep n/4**, now documented rather than folklore.
+
+- [ ] **59-D — teach the tradeoff, not just the cap (raised by the "on what basis?" question).**
+  The rule the student sees is a *constraint*; the interesting fact is the **tradeoff**: more
+  validation bits ⇒ better chance of catching Eve, but a shorter final key. Measured at n=16:
+  v=2 → 44% detection, v=4 → 68%, v=8 → 90% (but 60% of games then restart). That is a real BB84
+  lesson and the UI currently hides it. Candidate wording for 59-A, to decide with Ibra —
+  something like *"at most {max} (they are sacrificed from the sifted key: more bits detect Eve
+  better, but shorten your key)"*. Relates to the E91 52-C "explain the limitation in the
+  simulation" decision and to Task 57's K2 educational-notes idea.
+
 ---
 
 ### 58. 🚀 Deployment readiness (opened 2026-08-27)

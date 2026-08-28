@@ -93,9 +93,10 @@ const CreateGameModal = ({
                 BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
-            // Cap at photons/4, not /2 — same rationale as the solo modal:
-            // the sifted key averages half the photons, and validation bits
-            // are sacrificed from it (Solo/Multi Parity Principle).
+            // Cap at n/4 — same rationale as the solo modal (Solo/Multi Parity
+            // Principle): validation bits come out of the sifted key, which
+            // averages only n/2, so n/2 would consume it entirely and restart
+            // ~60% of games. Table + reasoning: docs/protocol-physics.md §8.
             (schema.validationBits > 0 && schema.validationBits <=
                 schema.photonNumber / 4)) || !schema.eve),
             {

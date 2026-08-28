@@ -180,7 +180,51 @@ The argument against: Axis A has momentum and a proven pilot.
 
 ---
 
-## 8. Verify any claim here yourself
+## 8. Why validation bits are capped at n/4 (measured, 2026-08-28)
+
+Both BB84 modals cap validation bits at `photonNumber / 4`. Ibra asked the right question — *on
+what basis?* — and the honest answer has two halves: **the ratio is not derived from BB84 theory,
+but the cap is justified by measurement.** Written here because the reasoning previously lived only
+in a code comment and would have been lost.
+
+**What the cap really says.** Validation bits are sacrificed from the **sifted** key, not from the
+photon count:
+
+```
+n photons → Bob's basis matches Alice's ~half the time → sifted ≈ n/2
+            validation bits are taken FROM the sifted key
+            final key = sifted − validation
+```
+
+So `v = n/4` means **"sacrifice about half of the sifted key"**. It is expressed against `n` only
+because that is what the form asks the student for.
+
+**Why not n/2.** `isKeyTooShort` (`lib/bb84/utils.ts`) restarts the game when
+`sifted ≤ validation`. Sifted length is random — `Binomial(n, ½)` — so a cap set at the *average*
+fails about half the time. Measured over 200 000 games per row:
+
+| n | cap | v | P(restart) | avg final key | P(catch Eve) = 1−(¾)ᵛ |
+|---|---|---|---|---|---|
+| 16 | **n/2** | 8 | **59.9%** | 2.0 | 90% |
+| 16 | **n/4** | 4 | **3.8%** | 4.2 | 68% |
+| 16 | n/8 | 2 | 0.2% | 6.0 | 44% |
+| 30 | n/2 | 15 | 57.3% | 2.5 | 99% |
+| 30 | **n/4** | 7 | **0.2%** | 8.0 | 87% |
+
+An `n/2` cap makes roughly **six games in ten restart before the student can play** — which matches
+what Ibra hit by hand (6 photons / 3 validation ⇒ ~66% restart).
+
+**The honest caveat.** `n/4` is a round number chosen as a compromise, not a security bound. It
+keeps restarts rare (0.2–5%), leaves a usable key, and still detects Eve ~68% of the time at the
+production minimum. For contrast, the Qiskit BB84 reference (Task 57 finding K) sacrifices **20%**
+of the sifted key, and real QKD derives the fraction from statistical confidence bounds rather than
+a fixed ratio.
+
+**The teaching point currently invisible to students:** more validation bits ⇒ better chance of
+catching Eve, but a shorter key. That tradeoff *is* the BB84 lesson, and the UI states only the
+cap. See Task 59.
+
+## 9. Verify any claim here yourself
 
 ```bash
 # every copy of the measurement rule
