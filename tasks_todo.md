@@ -1350,6 +1350,33 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     in the AWS console, invisible, unversioned, and changeable by anyone with console access. We
     cannot currently *prove* Amplify runs `npm run build`.
 
+  **📋 SLICE PLAN (agreed with Ibra 2026-08-28 — execute in order, one at a time).** This is TWO
+  concerns, not one, so per CLAUDE.md rule 2 it does not ship as a single commit: the env-file
+  convention is config hygiene, the flag is a behaviour change. Splitting them means a bug is
+  never ambiguous. Order matters — the flag *reads from* the `.env.local` that slice 1 establishes.
+
+  - [ ] **SLICE 1 — env convention. No behaviour change. Touches TWO repos → 2 commits.**
+    *Frontend:* create `.env.example` (tracked, dev defaults + commented `NEXT_PUBLIC_QC_TEST_MODE`);
+    `.gitignore` add `.env.local` + `.env*.local`; `git rm --cached .env.local` (keeps the file on
+    disk); README — `cp .env.example .env.local` **and how a colleague turns test mode on for
+    themselves**. *Private deploy repo:* add `--exclude='.env*'` to the rsync command in
+    `DEPLOYMENT_GUIDE.md`, and `git rm --cached .env.local` there (the localhost landmine).
+    Gates only — no browser check needed.
+  - [ ] **SLICE 2 — the `QC_TEST_MODE` flag. ⚠️ BEHAVIOUR CHANGE → Ibra's browser check before
+    commit.** Covers sub-items **A** (shared module), **F** (delete the dead `BB84_TEST_MODE`
+    import), **G** (DPS gains the two-value shape, same numbers). Rewires all three constants files.
+    **⚠️ REMIND IBRA WHEN WE GET HERE:** after this lands, `npm run dev` yields **production**
+    values by default (10 photons, not 4). To get test mode back he must uncomment
+    `NEXT_PUBLIC_QC_TEST_MODE=true` in his own `.env.local`. That is the intended design, but it
+    will feel different — say it *before* he opens the browser and wonders why the numbers moved.
+  - [ ] **SLICE 3 — safety nets. No behaviour change.** Sub-items **B** (`next.config.js`
+    `PHASE_PRODUCTION_BUILD` guard that throws if test mode would be live) and **D** (CI test:
+    production build ⇒ production values).
+  - [ ] **SLICE 4 — BB84 copy (sub-item E).** Interpolate the hardcoded "16/10" in 3 languages
+    (`lang/quantumcrypto-lines.ts:46,548,1112`) like E91 already does. Visible text → eyeball it.
+  - [ ] **SLICE 5 — `amplify.yml` (sub-item H).** Private deploy repo. Versions the build steps
+    that currently live only in the AWS console.
+
   **❌ CONSIDERED AND REJECTED — env schema validation (zod/envalid), 2026-08-27.** Do not
   re-propose. It was suggested as a "senior team" upgrade and the justification was **wrong**:
   it would NOT have caught the `/ws` bug we hit that day, because `ws://localhost:8000` and
