@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimums } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -91,9 +91,10 @@ const CreateGameModal = ({
         (!schema.eve &&
             (schema.photonNumber >= E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_MULTIPLAYER_PHOTON_MAX)),
         {
-            message: (localize('component.e91.createGame.keyMin') || '')
-                .replace('{minWithEve}', String(E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE))
-                .replace('{minWithoutEve}', String(E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE)),
+            message: fillPhotonMinimums(
+                localize('component.e91.createGame.keyMin'),
+                E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+                E91_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         });
 

@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimums } from '@/lib/utils';
 import React, { useState } from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -87,7 +87,10 @@ const CreateGameModal = ({
         (!schema.eve &&
             (schema.photonNumber >= BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= BB84_MULTIPLAYER_PHOTON_MAX)),
         {
-            message: localize('component.createGame.keyMin'),
+            message: fillPhotonMinimums(
+                localize('component.createGame.keyMin'),
+                BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+                BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
             // Cap at photons/4, not /2 — same rationale as the solo modal:

@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimums } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -83,7 +83,12 @@ const CreateGameModal = ({
         (!schema.eve &&
             (schema.photonNumber >= DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= DPS_MULTIPLAYER_PHOTON_MAX)),
         {
-            message: localize('component.e91.createGame.keyMin'),
+            // Was borrowing E91's key, which says "photon PAIRS" — DPS does not
+            // use entangled pairs. Now uses the shared photon-based message.
+            message: fillPhotonMinimums(
+                localize('component.createGame.keyMin'),
+                DPS_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
+                DPS_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         });
 

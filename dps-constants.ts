@@ -35,6 +35,17 @@ export const PLAYER_LEFT_EVENT = 'PLAYER_LEFT';
 /** Minimum number of photons allowed (solo mode) */
 export const DPS_SOLO_PHOTON_MIN = QC_TEST_MODE ? 4 : 4;
 
+/**
+ * Solo minimums split by Eve presence — prepared ahead of Task 38 (DPS has no
+ * solo Eve yet). Both currently equal DPS_SOLO_PHOTON_MIN, so nothing changes
+ * today; when Eve is implemented, give the with-Eve case a higher minimum here
+ * and switch the solo modal's message to `component.createGame.keyMin`, exactly
+ * as BB84 and E91 already do. Deciding the shape now (Ibra, 2026-08-28) means
+ * that work is a value change, not a refactor.
+ */
+export const DPS_SOLO_PHOTON_MIN_WITH_EVE = QC_TEST_MODE ? 4 : 4;
+export const DPS_SOLO_PHOTON_MIN_WITHOUT_EVE = QC_TEST_MODE ? 4 : 4;
+
 /** Maximum number of photons allowed (solo mode) */
 export const DPS_SOLO_PHOTON_MAX = QC_TEST_MODE ? 20 : 20;
 

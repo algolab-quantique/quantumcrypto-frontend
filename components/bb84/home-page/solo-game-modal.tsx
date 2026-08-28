@@ -1,5 +1,5 @@
 'use client';
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimums } from '@/lib/utils';
 import React, { useState } from 'react';
 import {
     Dialog,
@@ -106,7 +106,10 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
         (!schema.eve &&
             (schema.photonNumber >= BB84_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= BB84_SOLO_PHOTON_MAX)),
         {
-            message: localize('component.createGame.keyMin'),
+            message: fillPhotonMinimums(
+                localize('component.createGame.keyMin'),
+                BB84_SOLO_PHOTON_MIN_WITH_EVE,
+                BB84_SOLO_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
             // Cap at photons/4, not /2: the sifted key averages HALF the

@@ -66,7 +66,7 @@
 
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimums } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -216,9 +216,10 @@ const SoloGameModal = ({
         (!schema.eve &&
             (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITHOUT_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)),
         {
-            message: (localize('component.e91.createGame.keyMin') || '')
-                .replace('{minWithEve}', String(E91_SOLO_PHOTON_MIN_WITH_EVE))
-                .replace('{minWithoutEve}', String(E91_SOLO_PHOTON_MIN_WITHOUT_EVE)),
+            message: fillPhotonMinimums(
+                localize('component.e91.createGame.keyMin'),
+                E91_SOLO_PHOTON_MIN_WITH_EVE,
+                E91_SOLO_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         });
 
