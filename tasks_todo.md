@@ -1276,6 +1276,52 @@ equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now"
 
 ---
 
+### 59. 🎨 Validation-bits message makes the student do arithmetic (found 2026-08-28)
+
+**Status**: 🟡 OPEN — analysed, not started. **Priority**: P2 (UX / pedagogy, no correctness bug).
+**Origin**: Ibra, testing the freshly deployed BB84 solo modal.
+
+**The complaint, verbatim:** *"doit être au plus le quart du nombre de photons"* — the student
+must know the photon count, divide by four, and floor it **before they can know what to type**.
+Same framing problem as the `keyMin` message we fixed in Task 58 slice 4: a rule stated
+abstractly instead of a number stated concretely. Ibra's fix: **state the rule AND show the
+computed value**, so nobody has to do mental arithmetic in a form.
+
+Current text (identical in EN/FR/ES, `lang/quantumcrypto-lines.ts:64,567,1132`):
+> *"The validation bits must be at most a quarter of the photon count (they are sacrificed from
+> the sifted key)"*
+
+**Verified scope — the same key and the same rule are used by BOTH modes**, so one fix covers
+both: `solo-game-modal.tsx:120` and `create-game-modal.tsx:99`, both
+`validationBits > 0 && validationBits <= photonNumber / 4`.
+
+- [ ] **59-A — show the computed maximum.** `zod`'s `.refine()` accepts a *function* for its
+  second argument (`(value) => CustomErrorParams`), so the message can be built from the actual
+  parsed `photonNumber` — no `superRefine` rewrite needed. Add a `{max}` placeholder to the three
+  translations and a `fillValidationMax` helper beside `fillPhotonMinimums` in `lib/utils.ts`
+  (Task 58 slice 4 established that pattern; all six `keyMin` sites already use it).
+  **Note the flooring:** 10 photons ⇒ 10/4 = 2.5 ⇒ the largest valid integer is **2**. "A quarter
+  of 10" reads as 2.5 and invites typing 3, so the displayed number must be `Math.floor(n / 4)`.
+
+- [ ] **59-B — 🐛 REAL BUG found while analysing: the multiplayer form starts invalid.**
+  `create-game-modal.tsx:111` defaults `validationBits: 0`, but the rule requires `> 0` whenever
+  Eve is ticked. So a multiplayer host who ticks "Eve" gets an immediate validation error on a
+  field they have not touched. Solo does not have this: it pre-fills
+  `getDefaultValidationBits(photonNumber)` = `max(1, floor(n × 0.25))`, which is always valid.
+  **Fix:** give multi the same sensible default (Solo/Multi Parity Principle, ADR §11).
+
+- [ ] **59-C — P3, edge case, currently unreachable.** The rule is unsatisfiable when
+  `photonNumber < 4` (no integer is both `> 0` and `≤ 0.75`). Not reachable today because every
+  photon minimum is ≥ 4, but it means the form can in principle present an error with no valid
+  input. Guard it if the minimums ever drop, or clamp the message to say "at least 4 photons are
+  needed to use validation bits".
+
+**Also considered:** showing the maximum as a permanent hint under the field rather than only
+inside the error, so the student is guided *before* being corrected. Better UX, but touches
+layout in two modals — decide with Ibra before doing it.
+
+---
+
 ### 58. 🚀 Deployment readiness (opened 2026-08-27)
 
 **Status**: 🟡 IN PROGRESS — the path to getting a correct build in front of students.
