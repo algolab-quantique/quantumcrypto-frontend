@@ -7,7 +7,7 @@ import {
     generateAliceBits,
     generateAlicePhotons,
     mimicEveIntercept,
-} from '@/lib/bb84/solo-player';
+} from '@/lib/bb84/protocol';
 
 /**
  * The full Eve story of one solo GAME (not round) — written once at game

@@ -25,8 +25,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# local env files — each developer's own machine config, never committed.
+# `.env.example` IS tracked: it is the template new contributors copy from.
 .env
+.env.local
+.env*.local
+# Amplify's build writes console env vars into .env.production
+# (`env | grep -e NEXT_PUBLIC_ >> .env.production`). That happens on the build
+# server, but ignore it here so a local run of the same command can never be
+# committed by accident.
+.env.production
+.env.development
 
 
 # vercel
@@ -37,4 +46,7 @@ yarn-error.log*
 next-env.d.ts
 
 # tasks_todo.md # we need to track our tasks and what we have done
-DEPLOYMENT_GUIDE.md
+
+# DEPLOYMENT_GUIDE.md moved 2026-08-27 to the private deploy repo
+# (cryptoweb-2.0-frontend), where it is tracked. It described our internal
+# dual-repo Amplify setup, which does not apply to public users of this repo.

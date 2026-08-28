@@ -41,18 +41,68 @@ To run the QuantumCrypto frontend locally, follow these steps:
 6. Open your browser and visit `http://localhost:3000` to view the
    QuantumCrypto frontend.
 
-**Note:**
-- Make sure to also run the backend server locally for full
-functionality. You can find the backend repository [here](https://github.com/algolab-quantique/quantumcrypto-backend).
+## Running the full stack (for multiplayer)
 
-- Confirm that .env.local is present and contains the right values whenever you set up the project; otherwise the frontend will fail to reach the API or WebSocket server.
+Solo mode works with the frontend alone — the whole protocol is simulated in your browser.
+**Multiplayer needs the backend running.**
 
-To connect the frontend to the backend, create a `.env.local` file in the project root (or update it if it already exists):
+1. **Start the backend** — follow "Running Locally" in the
+   [backend repo](https://github.com/algolab-quantique/quantumcrypto-backend).
+   (It needs Redis as well; the steps are there.)
+
+2. **Connect the frontend** — copy the template:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   The defaults already point at a backend running locally on port 8000, so
+   usually there is nothing to change. `.env.example` explains what each variable
+   does — including why `NEXT_PUBLIC_WEBSOCKET_URL` must end in `/ws`.
+
+   `.env.local` is **git-ignored on purpose**: it is your own machine's config.
+   Never commit it — in production these values come from the host instead.
+
+3. **Start the frontend** — `npm run dev`, then open http://localhost:3000
+
+**Testing multiplayer on one machine:** every tab of the same browser shares the same
+`localStorage`, so two tabs are **not** two players — the second overwrites the first.
+Use a normal window plus an incognito window (or two different browsers).
+
+### Test mode (developers)
+
+By default the app uses **production** photon counts, which are the values students should
+see. While developing you may want fewer photons so a game finishes faster. Uncomment this
+line in your own `.env.local` and restart `npm run dev`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000
+NEXT_PUBLIC_QC_TEST_MODE=true
 ```
+
+`.env.local` is git-ignored, so this affects only your machine and can never reach
+production. Leaving it out is what gives you production values — see `lib/test-mode.ts`.
+
+## Deploying
+
+`npm run build` produces a standard Next.js 14 production build, and `npm start` serves it. Any
+host that runs Next.js works — Vercel, AWS Amplify, Netlify, a container, or your own Node
+server. Node.js 18.17+ is required.
+
+The only host-specific step is setting `NEXT_PUBLIC_API_URL` and
+`NEXT_PUBLIC_WEBSOCKET_URL` in your host's environment
+**before the build runs**: they are `NEXT_PUBLIC_*`, so they are baked into the client bundle at
+build time. Changing them later requires a rebuild. Use `https://` and `wss://` in production.
+
+Before deploying, run the same three checks CI runs on every push:
+
+```bash
+npm test          # unit tests (Vitest)
+npx tsc --noEmit  # type check
+npm run lint
+```
+
+> **Algolab teammates:** our own production deployment uses a separate private repository and is
+> documented there, not here — ask the team for `DEPLOYMENT_GUIDE.md`.
 
 ## Contributing
 

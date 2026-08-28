@@ -1152,7 +1152,7 @@ It converges toward `ProtocolSession` above; `completed` is an attribute, not a 
 | Protocol | The "Eve?" checkbox means | Mechanism |
 |---|---|---|
 | **BB84 solo** | Eve **is** present (deterministic) | `mimicEveIntercept` intercepts **every** photon with random bases; only *detection* is probabilistic (quantum physics: an intercepted photon reveals Eve through validation-bit mismatches with some probability). |
-| **BB84 multi** | Eve **may** be present (probabilistic!) | The create-game modal has a **"Probabilité d'Ève"** field (`evePercentage`, default 0.5) sent to the backend as `eve_percentage`; the backend draws and returns `game_has_eve` at `ROLES_EVENT`. **So BB84 is inconsistent with itself across modes** (found by Ibra 2026-07-14) — a Parity-Principle violation, see Task 51. |
+| **BB84 multi** | Eve **may** be present (probabilistic!) | The create-game modal has a **"Probabilité d'Ève"** field (`evePercentage`, default 0.5) sent to the backend as `eve_percentage`; the backend draws and returns `game_has_eve` at `ROLES_EVENT`. **So BB84 is inconsistent with itself across modes** (found by Ibra 2026-07-14) — a Parity-Principle violation, see Task 51. **PRESENCE is drawn by the backend, but the INTERCEPTION itself runs in the frontend — Alice's browser — before `sendPhotons`; the BB84 backend performs no physics at all (verified 2026-07-20). See §13.3 for the rule this now follows.** |
 | **E91** | Eve **may** be present (probabilistic) | `isEveActuallyPresent = eve && Math.random() < evePercentage`; `E91_EVE_PERCENTAGE_DEFAULT = 0.5` (min/max constants exist). The original draw is kept (`e91OriginalEvePresent`) for the results reveal. |
 | **DPS** | Eve **may** be present (probabilistic) | Same pattern; `DPS_EVE_PERCENTAGE_DEFAULT = 0.5`. |
 
@@ -1276,6 +1276,73 @@ plan of §6) that the provider merely calls; existing handler bodies move only w
 touched for another reason. First candidates when next touched: the `A/B_VALIDATED`
 bodies (modified twice in July 2026; extraction also makes them unit-testable).
 No big-bang extraction — §9 already warns Phase 5 is the riskiest change in the app.
+
+### 13.3 Protocol physics: ONE implementation, and the SENDER simulates the channel
+
+> **Scope note (added 2026-07-20).** This ADR governs the **session/data lifecycle** —
+> where form data goes, refresh, restore, `startFresh`, `abandon`. It does **not** govern
+> what the simulation computes. That second axis has its own document:
+> **[protocol-physics.md](protocol-physics.md)** — read it before touching any
+> `lib/{protocol}` simulation code. §13.3 below is the standing *rule*; the physics document
+> holds the audit, the target file structure, and the migration plan.
+
+**The rule.** Every protocol's physics — photon encoding, measurement, eavesdropping,
+correlation — lives in exactly ONE place: `lib/{protocol}/`. Components **import** it and
+never re-implement it. In multiplayer, **the transmitting client applies channel effects
+(Eve) before sending**; the backend relays already-transformed data and performs no physics.
+
+**Why the sender, and not the backend or the receiver** (DECIDED 2026-07-20, Ibra;
+evidence in Task 57 finding I):
+
+The tempting mapping is the physical one — Alice's device = Alice, backend = the channel
+where Eve taps, Bob's device = Bob. That is the most faithful picture and was seriously
+considered. It loses on one hard constraint:
+
+> **Solo mode can never use the backend** (no game code, no session, no round-trip).
+> Solo physics is therefore permanently frontend. Any design that puts multiplayer physics
+> in the backend *guarantees* two implementations of the same physics, in two languages.
+
+This is not hypothetical: **both candidate designs already exist in this codebase, and both
+produced duplication.**
+
+| Protocol | Multi physics runs in | Solo physics runs in | Copies of the same physics |
+|---|---|---|---|
+| **BB84** | Frontend — Alice's browser | Frontend | **2, both TypeScript** |
+| **E91** | **Backend** (`e91/consumers.py:480`, `:508`) | Frontend (`lib/e91/solo-player.ts`) | **2, TypeScript + Python** |
+
+BB84's two TypeScript copies drifted into an *identical* Eve bug (Task 57 A / A-bis).
+E91's cross-language pair is kept in sync by human discipline alone — its own TS docstring
+states it "strictly follows the backend's simulation logic (consumers.py)" — which is why
+the same basis-2 bias exists in both (Task 52-D), and why the Python copy has **already**
+drifted (missing `else` fallback — Task 57 finding I).
+
+**Why not the receiver (Bob's device):** the undisturbed photons would cross the network and
+be corrupted at the destination — the channel simulated *after* the channel. Conceptually
+backwards, and it would misreport anything that ever inspects what travels on the wire.
+
+**Accepted cost, recorded honestly.** The backend owns `eve_present` (it draws it) and feeds
+the results page, but no longer performs the attack. A client that fails to apply Eve — bug,
+tampering, stale version — would produce a results page reporting an Eve who never acted;
+server-authoritative physics cannot diverge that way. Accepted because (a) the threat model
+is a classroom, not an adversary, and (b) that divergence is exactly what `lib/{protocol}`
+unit tests close — **a risk one test suite can cover, versus a duplication no test can.**
+
+**Rules:**
+1. Physics lives in `lib/{protocol}/` — never in a component, never in the socket provider
+   (§13.2's sibling rule).
+2. A component needing physics **imports** it. A component-local copy is a defect regardless
+   of whether it currently behaves correctly.
+3. Solo and multi call the **same** function. If a mode needs different behavior that is a
+   parameter, not a second implementation (§11 Solo/Multi Parity Principle).
+4. The backend stays transport + orchestration (session, pairing, the `eve_present` draw,
+   validation indices). New physics does not go there.
+5. E91's backend physics is **grandfathered, not endorsed** — a migration target to resolve
+   when E91 migrates (Task 52). Until then any change to E91 physics must be applied to
+   BOTH copies in the same commit.
+
+**First conformance:** BB84 (Task 57 slices) — `mimicEveIntercept` corrected in
+`lib/bb84/solo-player.ts`, and the private copy in `alice-exchange-tab.tsx` deleted in favour
+of importing it.
 
 ---
 

@@ -43,8 +43,14 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.createGame.keyLength': 'Number of photons',
         'component.createGame.eve': 'Is Eve present?',
         'component.createGame.keyError': 'Only numbers between 10 and 30',
-        'component.createGame.keyMin': 'The minimum number of photons is 16' +
-            ' if Eve is present and 10 otherwise',
+        // SHARED by the photon-based protocols (BB84 solo+multi, DPS multi).
+        // E91 has its own key because it measures entangled PAIRS, not photons.
+        // {minWithEve}/{minWithoutEve} are substituted from the real constants —
+        // never hardcode the numbers here, they differ per protocol and mode.
+        'component.createGame.keyMin': 'The minimum number of photons is' +
+            ' {minWithEve} if Eve is present and {minWithoutEve} otherwise',
+        // For forms with NO Eve option (DPS solo, until Eve is implemented).
+        'component.createGame.keyMinSimple': 'The minimum number of photons is {min}',
         'component.createGame.keyMax': 'The maximum number of photons is 30',
         'component.createGame.ready': 'Ready!',
         'component.waitingRoom.connectionLostTitle': 'Connection lost',
@@ -546,7 +552,8 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.createGame.eve': 'Ève est-elle présente ?',
         'component.createGame.keyError': 'Seuls les chiffres entre 10 et 30 sont autorisés',
         'component.createGame.keyMin': 'Le nombre minimum de photons est' +
-            ' 16 si Ève est présente et 10 sinon',
+            ' {minWithEve} si Ève est présente et {minWithoutEve} sinon',
+        'component.createGame.keyMinSimple': 'Le nombre minimum de photons est {min}',
         'component.createGame.keyMax': 'La longueur maximale de la clé est 30',
         'component.createGame.ready': 'Prêt !',
         'component.waitingRoom.connectionLostTitle': 'Connexion perdue',
@@ -1109,8 +1116,9 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.createGame.eve': '¿Está presente Eve?',
         'component.createGame.keyError': 'Solo se permiten números entre 10' +
             ' y 30',
-        'component.createGame.keyMin': 'El número mínimo de fotones es 16' +
-            ' si Eve está presente y 10 en caso contrario',
+        'component.createGame.keyMin': 'El número mínimo de fotones es' +
+            ' {minWithEve} si Eve está presente y {minWithoutEve} en caso contrario',
+        'component.createGame.keyMinSimple': 'El número mínimo de fotones es {min}',
         'component.createGame.keyMax': 'El número máximo de fotones es 30',
         'component.createGame.ready': '¡Listo!',
         'component.waitingRoom.connectionLostTitle': 'Conexión perdida',

@@ -1,3 +1,5 @@
+import {QC_TEST_MODE} from '@/lib/test-mode';
+
 // DPS Web Socket Event Constants
 export const DPS_GAME_ID_EVENT = "DPS_GAME_ID_EVENT";
 export const DPS_PLAYER_COUNT_EVENT = "DPS_PLAYER_COUNT_EVENT";
@@ -14,27 +16,41 @@ export const PLAYER_LEFT_EVENT = 'PLAYER_LEFT';
 // DPS GAME CONFIGURATION CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Environment toggle for TEST vs PRODUCTION values (SOLO MODE ONLY).
- * Set to `true` during development for faster testing with fewer photons.
- * Set to `false` for production with realistic quantum simulation values.
- */
-export const DPS_TEST_MODE = true;  // TODO: Set to false for production
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Photon Number Limits - SOLO MODE
 // ─────────────────────────────────────────────────────────────────────────────
-// These values are used for solo mode only (no backend validation).
-// Controlled by DPS_TEST_MODE toggle above.
+// Solo mode only (no backend validation).
+//
+// Each value is written `QC_TEST_MODE ? <test> : <production>`. Test mode is
+// opt-in per developer via NEXT_PUBLIC_QC_TEST_MODE in a git-ignored .env.local;
+// absence means production. See lib/test-mode.ts for the full mechanism.
+//
+// NOTE (Ibra, 2026-08-28): DPS's test and production values are deliberately the
+// SAME today — the current numbers are considered fine for production, and DPS's
+// old `DPS_TEST_MODE` was dead code (declared, never read), so no production
+// values had ever been chosen. The two-value shape is kept anyway so DPS matches
+// BB84 and E91: changing a production value later is then a one-line edit rather
+// than a refactor. DPS also still has no solo Eve at all — see Task 38.
 
 /** Minimum number of photons allowed (solo mode) */
-export const DPS_SOLO_PHOTON_MIN = 4;
+export const DPS_SOLO_PHOTON_MIN = QC_TEST_MODE ? 4 : 4;
+
+/**
+ * Solo minimums split by Eve presence — prepared ahead of Task 38 (DPS has no
+ * solo Eve yet). Both currently equal DPS_SOLO_PHOTON_MIN, so nothing changes
+ * today; when Eve is implemented, give the with-Eve case a higher minimum here
+ * and switch the solo modal's message to `component.createGame.keyMin`, exactly
+ * as BB84 and E91 already do. Deciding the shape now (Ibra, 2026-08-28) means
+ * that work is a value change, not a refactor.
+ */
+export const DPS_SOLO_PHOTON_MIN_WITH_EVE = QC_TEST_MODE ? 4 : 4;
+export const DPS_SOLO_PHOTON_MIN_WITHOUT_EVE = QC_TEST_MODE ? 4 : 4;
 
 /** Maximum number of photons allowed (solo mode) */
-export const DPS_SOLO_PHOTON_MAX = 20;
+export const DPS_SOLO_PHOTON_MAX = QC_TEST_MODE ? 20 : 20;
 
 /** Default photon number for new solo games */
-export const DPS_SOLO_PHOTON_DEFAULT = 6;
+export const DPS_SOLO_PHOTON_DEFAULT = QC_TEST_MODE ? 6 : 6;
 
 /** localStorage key for draft solo photon number */
 export const DPS_SOLO_PHOTON_DRAFT_KEY = 'dpsSoloPhotonNumberDraft';

@@ -30,7 +30,7 @@
 
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, fillPhotonMinimum } from '@/lib/utils';
 import React, { useState } from 'react';
 import {
     Dialog,
@@ -120,7 +120,13 @@ const SoloGameModal = ({
         })
             .int()
             .min(DPS_SOLO_PHOTON_MIN, {
-                message: `Minimum ${DPS_SOLO_PHOTON_MIN} photons`,
+                // Simple form: DPS solo has no Eve option yet, so the shared
+                // "X with Eve, Y otherwise" message would point at a control
+                // that does not exist. When DPS Eve ships (Task 38), switch to
+                // component.createGame.keyMin + fillPhotonMinimums.
+                message: fillPhotonMinimum(
+                    localize('component.createGame.keyMinSimple'),
+                    DPS_SOLO_PHOTON_MIN),
             })
             .max(DPS_SOLO_PHOTON_MAX, {
                 message: localize('component.createGame.keyMax'),

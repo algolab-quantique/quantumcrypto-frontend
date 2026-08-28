@@ -1,3 +1,5 @@
+import {QC_TEST_MODE} from '@/lib/test-mode';
+
 // BB84 Web Socket Event Constants
 export const JOIN_EVENT = 'JOIN';
 export const START_EVENT = 'START';
@@ -24,33 +26,26 @@ export const RESTART_WITHOUT_EVE_EVENT = 'RESTART_WITHOUT_EVE';
 // ═══════════════════════════════════════════════════════════════════════════
 // BB84 GAME CONFIGURATION CONSTANTS - SOLO MODE
 // ═══════════════════════════════════════════════════════════════════════════
-/**
- * Environment toggle for TEST vs PRODUCTION values (SOLO MODE ONLY).
- * Set to `true` during development for faster testing with fewer photons.
- * Set to `false` for production with realistic quantum simulation values.
- * 
- * These values only affect solo gameplay setup form defaults.
- * No impact on multiplayer or WebSocket communication.
- */
-export const BB84_TEST_MODE = true;  // TODO: Set to false for production
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Photon Number Limits - SOLO MODE
 // ─────────────────────────────────────────────────────────────────────────────
-// These values are used for solo mode only (no backend validation).
-// Controlled by BB84_TEST_MODE toggle above.
+// Solo mode only (no backend validation).
+//
+// Each value is written `QC_TEST_MODE ? <test> : <production>`. Test mode is
+// opt-in per developer via NEXT_PUBLIC_QC_TEST_MODE in a git-ignored .env.local;
+// absence means production. See lib/test-mode.ts for the full mechanism.
 
 /** Maximum number of photons allowed (solo mode) */
 export const BB84_SOLO_PHOTON_MAX = 30;
 
 /** Minimum photons when Eve is enabled (more bits needed for sifting statistics) */
-export const BB84_SOLO_PHOTON_MIN_WITH_EVE = BB84_TEST_MODE ? 6 : 16;
+export const BB84_SOLO_PHOTON_MIN_WITH_EVE = QC_TEST_MODE ? 6 : 16;
 
 /** Minimum photons when Eve is disabled */
-export const BB84_SOLO_PHOTON_MIN_WITHOUT_EVE = BB84_TEST_MODE ? 4 : 10;
+export const BB84_SOLO_PHOTON_MIN_WITHOUT_EVE = QC_TEST_MODE ? 4 : 10;
 
 /** Default photon number for new solo games */
-export const BB84_SOLO_PHOTON_DEFAULT = BB84_TEST_MODE ? 4 : 10;
+export const BB84_SOLO_PHOTON_DEFAULT = QC_TEST_MODE ? 4 : 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Eve Presence Probability - SOLO MODE (Task 51, ADR §12)
