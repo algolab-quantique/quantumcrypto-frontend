@@ -1278,8 +1278,22 @@ equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now"
 
 ### 59. 🎨 Validation-bits message makes the student do arithmetic (found 2026-08-28)
 
-**Status**: 🟡 OPEN — analysed, not started. **Priority**: P2 (UX / pedagogy, no correctness bug).
+**Status**: 🟡 OPEN — analysed. **Priority**: P2 (UX / pedagogy) except **59-B, which is a real bug**.
 **Origin**: Ibra, testing the freshly deployed BB84 solo modal.
+
+**📋 SLICE ORDER (agreed with Ibra 2026-08-28):**
+
+| # | Slice | Why this position | Depends on |
+|---|---|---|---|
+| **1** | **59-B** — multi form starts invalid | real bug, independent, no design decision to make | — |
+| **2** | **59-A + 59-D _together_** | ⚠️ **same string** — doing them separately edits 3 translations twice, and bolting D onto A later produces a worse sentence than writing one on purpose | a wording decision from Ibra |
+| **3** | **59-C** — edge case | unreachable today (all photon minimums ≥ 4); fold into #2's message or leave as a note | #2 |
+
+**Connections worth knowing before choosing wording:** 59-A reuses the `fillPhotonMinimums`
+pattern from Task 58 slice 4 · 59-B is a **Solo/Multi Parity** violation (ADR §11) · **59-D is not
+really a copy fix — it is the first piece of "teach the concept" work**, the same conversation as
+**52-C** (E91: explain the Bell-test limitation honestly in a short game) and **57-K2** (mine the
+Qiskit tutorials for in-app notes). If those are ever done, they should share one voice.
 
 **The complaint, verbatim:** *"doit être au plus le quart du nombre de photons"* — the student
 must know the photon count, divide by four, and floor it **before they can know what to type**.
@@ -1303,7 +1317,14 @@ both: `solo-game-modal.tsx:120` and `create-game-modal.tsx:99`, both
   **Note the flooring:** 10 photons ⇒ 10/4 = 2.5 ⇒ the largest valid integer is **2**. "A quarter
   of 10" reads as 2.5 and invites typing 3, so the displayed number must be `Math.floor(n / 4)`.
 
-- [ ] **59-B — 🐛 REAL BUG found while analysing: the multiplayer form starts invalid.**
+- [x] **59-B — 🐛 the multiplayer form started invalid. ✅ DONE 2026-08-28.** Two changes, both
+  mirroring what solo already did (Solo/Multi Parity, ADR §11): `validationBits` now defaults to
+  `getDefaultValidationBits(BB84_MULTIPLAYER_PHOTON_DEFAULT)` instead of `0`, and `onEveChecked`
+  now updates the validation bits alongside the photon count it was already raising — it had been
+  raising photons but leaving the bits stale. Verified the default is valid at every photon count
+  (n=10→2, 16→4, 20→5, 30→7, all within `n/4`). Gates: 84 tests, tsc, lint green.
+  **Browser-verified by Ibra:** multiplayer now behaves like solo, and entering `0` correctly still
+  shows the error on submit. Original finding follows.
   `create-game-modal.tsx:111` defaults `validationBits: 0`, but the rule requires `> 0` whenever
   Eve is ticked. So a multiplayer host who ticks "Eve" gets an immediate validation error on a
   field they have not touched. Solo does not have this: it pre-fills
@@ -1331,6 +1352,20 @@ reference sacrifices 20% of the sifted key, and real QKD derives the fraction fr
 bounds. Decision: **keep n/4**, now documented rather than folklore.
 
 - [ ] **59-D — teach the tradeoff, not just the cap (raised by the "on what basis?" question).**
+  **✅ APPROACH DECIDED (Ibra, 2026-08-28): an (i) info icon with a hover tooltip next to the
+  validation-bits field** — *"few validation bits ⇒ Eve may slip through undetected; many ⇒ your
+  key gets short"*. **Keep the `n/4` rule and the `> 0` rule exactly as they are** — Ibra's call:
+  *"don't complicate things"*. The tooltip teaches the tradeoff without touching validation logic,
+  layout, or the error path, so it is additive and low-risk.
+  **Groundwork already present:** `components/ui/tooltip.tsx` exists and is already used in
+  `alice-exchange-tab`, `waiting-room` and `footer-v3` — so this reuses an established pattern
+  rather than introducing one. Needs the text in EN/FR/ES.
+  **Also settled while discussing:** the **lower** bound (`> 0` when Eve is on) is *necessary*, not
+  a preference — with 0 validation bits there is no validation step, so Eve can never be detected
+  and the game would always report "secure" while she is present. The **upper** bound (`≤ n/4`) is
+  the discretionary one: it is a UX guard against the restart loop, not physics, and the tooltip is
+  what compensates for the lesson it hides.
+  Original reasoning follows.
   The rule the student sees is a *constraint*; the interesting fact is the **tradeoff**: more
   validation bits ⇒ better chance of catching Eve, but a shorter final key. Measured at n=16:
   v=2 → 44% detection, v=4 → 68%, v=8 → 90% (but 60% of games then restart). That is a real BB84

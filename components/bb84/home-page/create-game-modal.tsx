@@ -32,6 +32,7 @@ import {
     BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE,
     BB84_MULTIPLAYER_PHOTON_MIN_WITHOUT_EVE,
     BB84_MULTIPLAYER_PHOTON_DEFAULT,
+    getDefaultValidationBits,
 } from '@/bb84-constants';
 
 const CreateGameModal = ({
@@ -109,7 +110,11 @@ const CreateGameModal = ({
         defaultValues: {
             photonNumber: BB84_MULTIPLAYER_PHOTON_DEFAULT,
             eve: false,
-            validationBits: 0,
+            // Was 0, which the schema rejects the moment Eve is ticked — the
+            // host saw an error on a field they had never touched. Solo has
+            // always pre-filled a valid value; this is the parity fix (59-B).
+            validationBits: getDefaultValidationBits(
+                BB84_MULTIPLAYER_PHOTON_DEFAULT),
             evePercentage: 0.5,
         },
     });
@@ -121,12 +126,18 @@ const CreateGameModal = ({
         // Detecting Eve needs more photons: when checking Eve with a photon
         // count below the with-Eve minimum, raise it automatically instead of
         // making the user fix a validation error by hand (same as solo modal).
-        if (checked === true) {
-            const photonNumber = form.getValues('photonNumber');
-            if (photonNumber < BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE) {
-                form.setValue('photonNumber', BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE);
-            }
+        let nextPhotonNumber = form.getValues('photonNumber');
+        if (checked === true
+            && nextPhotonNumber < BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE) {
+            nextPhotonNumber = BB84_MULTIPLAYER_PHOTON_MIN_WITH_EVE;
+            form.setValue('photonNumber', nextPhotonNumber);
         }
+        // Keep validation bits in step with the photon count, exactly as the
+        // solo modal does (Solo/Multi Parity Principle, ADR §11). Without this
+        // the field kept its previous value — and from a default of 0 that is
+        // instantly invalid, since the rule requires > 0 whenever Eve is on.
+        form.setValue('validationBits',
+            getDefaultValidationBits(nextPhotonNumber));
     };
 
     return (
