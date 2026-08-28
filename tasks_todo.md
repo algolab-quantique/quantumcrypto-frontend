@@ -1398,7 +1398,17 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     values by default (10 photons, not 4). To get test mode back he must uncomment
     `NEXT_PUBLIC_QC_TEST_MODE=true` in his own `.env.local`. That is the intended design, but it
     will feel different — say it *before* he opens the browser and wonders why the numbers moved.
-  - [ ] **SLICE 3 — safety nets. No behaviour change.** Sub-items **B** (`next.config.js`
+  - [x] **SLICE 3 — safety nets. ✅ DONE 2026-08-28 (`fad7c9c`).** `next.config.js` guard on
+    `PHASE_PRODUCTION_BUILD` + `lib/test-mode.test.ts` (5 tests). Suite now **80 tests / 6 files**.
+    **Design corrected during testing:** the guard originally made *both* checks fatal. Testing
+    immediately exposed that as wrong — Ibra still had the flag set from verifying slice 2, so
+    `npm run build` refused, and the README actively recommends that command for checking compile
+    errors. The refusal was also wrong on the merits: `NODE_ENV=production` forces `QC_TEST_MODE`
+    false, so that build was already correct. Final shape: **hard failure only when
+    `NODE_ENV !== 'production'`** (the one case that genuinely ships wrong values), **warning** when
+    the flag is set (still surfaces a leaked `.env.local` in the Amplify log, without blocking a
+    legitimate local build). Verified the guard in all four situations and by a real `npm run build`.
+    ~~Original plan:~~ Sub-items **B** (`next.config.js`
     `PHASE_PRODUCTION_BUILD` guard that throws if test mode would be live) and **D** (CI test:
     production build ⇒ production values).
   - [ ] **SLICE 4 — BB84 copy (sub-item E).** Interpolate the hardcoded "16/10" in 3 languages
