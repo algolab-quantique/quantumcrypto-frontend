@@ -1377,6 +1377,13 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     **Scope refinement:** `.env.example` deliberately does NOT yet document
     `NEXT_PUBLIC_QC_TEST_MODE` — that flag does not exist until slice 2, and documenting a
     variable that does nothing would mislead. It ships with the flag.
+    **⚠️ SIDE EFFECT, observed 2026-08-28 during the deploy — expect it once per person.**
+    Untracking `.env.local` means the merge commit *deletes* it. So on any machine whose local
+    branch still tracked the file, git recreates it on `checkout`, then removes it on the `pull`
+    that fast-forwards through the merge — the file silently vanishes. Happened on Ibra's machine
+    while switching to `development` to deploy; restored by re-copying. Harmless (no secrets, and
+    production reads the Amplify console), but surprising if unexplained, so the README now says
+    "if it disappears after a pull, run the `cp` again". Colleagues will hit this exactly once.
     **⚠️ BEFORE PUSHING THE DEPLOY REPO:** confirm `NEXT_PUBLIC_API_URL` and
     `NEXT_PUBLIC_WEBSOCKET_URL` are set in the **Amplify console**. They must be (production works
     today), but this commit removes the accidental `.env.local` fallback, and pushing that branch

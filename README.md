@@ -63,6 +63,9 @@ Solo mode works with the frontend alone — the whole protocol is simulated in y
    `.env.local` is **git-ignored on purpose**: it is your own machine's config.
    Never commit it — in production these values come from the host instead.
 
+   > If your `.env.local` ever disappears after a `git pull`, it is because it used
+   > to be committed and no longer is. Just run the `cp` again.
+
 3. **Start the frontend** — `npm run dev`, then open http://localhost:3000
 
 **Testing multiplayer on one machine:** every tab of the same browser shares the same
