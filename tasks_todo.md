@@ -1355,7 +1355,22 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
   convention is config hygiene, the flag is a behaviour change. Splitting them means a bug is
   never ambiguous. Order matters — the flag *reads from* the `.env.local` that slice 1 establishes.
 
-  - [ ] **SLICE 1 — env convention. No behaviour change. Touches TWO repos → 2 commits.**
+  - [x] **SLICE 1 — env convention. ✅ DONE 2026-08-28.** Frontend `e43bd5f`, deploy repo `eb483ba`
+    (deploy repo commit **NOT pushed** — see the Amplify check below). Created `.env.example`
+    (tracked, both URLs with working local defaults + why `/ws` is required); `.gitignore` now
+    ignores `.env.local` and `.env*.local` in **both** repos; `git rm --cached .env.local` in both
+    — **verified the file is still on disk and now reports as ignored**, so nobody's local setup
+    breaks; README step 2 is now `cp .env.example .env.local`, and the Deploying section names the
+    two variables explicitly (its "the two variables above" no longer pointed at anything);
+    `DEPLOYMENT_GUIDE.md` rsync gained `--exclude='.env*'`. Gates: 75 tests, tsc, lint green.
+    **Scope refinement:** `.env.example` deliberately does NOT yet document
+    `NEXT_PUBLIC_QC_TEST_MODE` — that flag does not exist until slice 2, and documenting a
+    variable that does nothing would mislead. It ships with the flag.
+    **⚠️ BEFORE PUSHING THE DEPLOY REPO:** confirm `NEXT_PUBLIC_API_URL` and
+    `NEXT_PUBLIC_WEBSOCKET_URL` are set in the **Amplify console**. They must be (production works
+    today), but this commit removes the accidental `.env.local` fallback, and pushing that branch
+    triggers an Amplify build.
+    ~~Original plan:~~
     *Frontend:* create `.env.example` (tracked, dev defaults + commented `NEXT_PUBLIC_QC_TEST_MODE`);
     `.gitignore` add `.env.local` + `.env*.local`; `git rm --cached .env.local` (keeps the file on
     disk); README — `cp .env.example .env.local` **and how a colleague turns test mode on for
