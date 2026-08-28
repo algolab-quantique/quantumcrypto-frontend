@@ -1411,8 +1411,30 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     ~~Original plan:~~ Sub-items **B** (`next.config.js`
     `PHASE_PRODUCTION_BUILD` guard that throws if test mode would be live) and **D** (CI test:
     production build ⇒ production values).
-  - [ ] **SLICE 4 — BB84 copy (sub-item E).** Interpolate the hardcoded "16/10" in 3 languages
-    (`lang/quantumcrypto-lines.ts:46,548,1112`) like E91 already does. Visible text → eyeball it.
+  - [ ] **SLICE 4 — validation-message copy (sub-item E, scope widened 2026-08-28).** Originally
+    "BB84 only". Auditing the three protocols found **three different defects**, so the slice now
+    covers BB84 **and** DPS. Verified state:
+
+    | Protocol | Number correct? | Localised? | Vocabulary shown |
+    |---|---|---|---|
+    | **E91** | ✅ interpolated `{minWithEve}` / `{minWithoutEve}` | ✅ EN/FR/ES | "photon **pairs**" ✅ correct |
+    | **BB84** | ❌ **"16"/"10" baked into the text** in all 3 languages (`lang/quantumcrypto-lines.ts:46,548,1112`); no `.replace()` at `solo-game-modal.tsx:109` or `create-game-modal.tsx` | ✅ EN/FR/ES | "photons" ✅ correct |
+    | **DPS solo** | ✅ interpolated | ❌ **hardcoded English** — `` message: `Minimum ${DPS_SOLO_PHOTON_MIN} photons` `` (`solo-game-modal.tsx:123`). FR/ES students see English. | "photons" |
+    | **DPS multi** | ✅ interpolated | ✅ but **borrows `component.e91.createGame.keyMin`** (`dps/home-page/create-game-modal.tsx:86`) | ❌ **shows "photon PAIRS"** — factually wrong, DPS does not use entangled pairs |
+
+    **Why BB84's is the worst:** the numbers only *happen* to be right in production (16/10). With
+    test mode on the real minimums are 6/4 while the message still says 16/10 — it actively
+    misleads. Ibra's framing: the message exists to *guide* the student, not let them guess and get
+    angry; a message that lies is worse than none.
+
+    **Also found:** BB84's key is `component.createGame.keyMin` — **no protocol prefix**, so it
+    reads as generic while its content is BB84-specific. That naming is what let DPS quietly borrow
+    E91's key. Key-naming approach to be decided with Ibra before implementing (see below).
+
+    **Vocabulary constraint (why one shared key is not obviously right):** E91 measures entangled
+    **pairs**; BB84 and DPS send individual **photons**. And DPS *solo* has no Eve at all
+    (`DPS_SOLO_PHOTON_MIN` is a single value, no with/without variant), so its message needs a
+    *simpler shape* than the with/without-Eve sentence the others use.
   - [ ] **SLICE 5 — `amplify.yml` (sub-item H).** Private deploy repo. Versions the build steps
     that currently live only in the AWS console.
 
