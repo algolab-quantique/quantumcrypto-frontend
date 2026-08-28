@@ -2,12 +2,7 @@
 // E91 GAME CONFIGURATION CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Environment toggle for TEST vs PRODUCTION values (SOLO MODE ONLY).
- * Set to `true` during development for faster testing with fewer photons.
- * Set to `false` for production with realistic quantum simulation values.
- */
-export const E91_TEST_MODE = true;  // TODO: Set to false for production
+import {QC_TEST_MODE} from '@/lib/test-mode';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Key Validation
@@ -22,20 +17,23 @@ export const E91_MIN_KEY_LENGTH = 2;
 // ─────────────────────────────────────────────────────────────────────────────
 // Photon Number Limits - SOLO MODE
 // ─────────────────────────────────────────────────────────────────────────────
-// These values are used for solo mode only (no backend validation).
-// Controlled by E91_TEST_MODE toggle above.
+// Solo mode only (no backend validation).
+//
+// Each value is written `QC_TEST_MODE ? <test> : <production>`. Test mode is
+// opt-in per developer via NEXT_PUBLIC_QC_TEST_MODE in a git-ignored .env.local;
+// absence means production. See lib/test-mode.ts for the full mechanism.
 
 /** Maximum number of photons allowed (solo mode) */
 export const E91_SOLO_PHOTON_MAX = 30;
 
 /** Minimum photons when Eve is enabled - solo mode (more needed for CHSH statistics) */
-export const E91_SOLO_PHOTON_MIN_WITH_EVE = E91_TEST_MODE ? 8 : 20;
+export const E91_SOLO_PHOTON_MIN_WITH_EVE = QC_TEST_MODE ? 8 : 20;
 
 /** Minimum photons when Eve is disabled - solo mode */
-export const E91_SOLO_PHOTON_MIN_WITHOUT_EVE = E91_TEST_MODE ? 4 : 10;
+export const E91_SOLO_PHOTON_MIN_WITHOUT_EVE = QC_TEST_MODE ? 4 : 10;
 
 /** Default photon number for new solo games */
-export const E91_SOLO_PHOTON_DEFAULT = E91_TEST_MODE ? 4 : 10;
+export const E91_SOLO_PHOTON_DEFAULT = QC_TEST_MODE ? 4 : 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Photon Number Limits - MULTIPLAYER MODE

@@ -40,8 +40,8 @@
  * Step 1: Game Settings
  *   - Player name (required, 2-10 characters)
  *   - Photon number: Controlled by E91_SOLO_PHOTON_* constants in e91-constants.ts
- *     - TEST MODE (E91_TEST_MODE=true): min 4 without Eve, min 8 with Eve
- *     - PRODUCTION (E91_TEST_MODE=false): min 10 without Eve, min 20 with Eve
+ *     - TEST MODE (QC_TEST_MODE on): min 4 without Eve, min 8 with Eve
+ *     - PRODUCTION (QC_TEST_MODE off): min 10 without Eve, min 20 with Eve
  *   - Eve checkbox (enables eavesdropper simulation)
  *   - Eve probability (E91_EVE_PERCENTAGE_MIN to E91_EVE_PERCENTAGE_MAX)
  *   - On submit:
@@ -173,7 +173,7 @@ const SoloGameModal = ({
     /**
      * Form validation schema using constants from e91-constants.ts
      * 
-     * Photon limits are controlled by E91_TEST_MODE in e91-constants.ts:
+     * Photon limits are controlled by QC_TEST_MODE (lib/test-mode.ts):
      * - TEST MODE: Lower values for faster testing
      * - PRODUCTION MODE: Higher values for realistic simulation
      * 
@@ -210,7 +210,7 @@ const SoloGameModal = ({
             message: localize('component.main.nameMax'),
         }),
     }).refine(schema =>
-        // Photon limits controlled by E91_TEST_MODE in e91-constants.ts
+        // Photon limits controlled by QC_TEST_MODE (lib/test-mode.ts)
         (schema.eve &&
             (schema.photonNumber >= E91_SOLO_PHOTON_MIN_WITH_EVE && schema.photonNumber <= E91_SOLO_PHOTON_MAX)) ||
         (!schema.eve &&

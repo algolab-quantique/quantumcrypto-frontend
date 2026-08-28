@@ -69,6 +69,19 @@ Solo mode works with the frontend alone — the whole protocol is simulated in y
 `localStorage`, so two tabs are **not** two players — the second overwrites the first.
 Use a normal window plus an incognito window (or two different browsers).
 
+### Test mode (developers)
+
+By default the app uses **production** photon counts, which are the values students should
+see. While developing you may want fewer photons so a game finishes faster. Uncomment this
+line in your own `.env.local` and restart `npm run dev`:
+
+```env
+NEXT_PUBLIC_QC_TEST_MODE=true
+```
+
+`.env.local` is git-ignored, so this affects only your machine and can never reach
+production. Leaving it out is what gives you production values — see `lib/test-mode.ts`.
+
 ## Deploying
 
 `npm run build` produces a standard Next.js 14 production build, and `npm start` serves it. Any

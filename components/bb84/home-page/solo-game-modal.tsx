@@ -32,7 +32,6 @@ import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
 import {
-    BB84_TEST_MODE,
     BB84_SOLO_PHOTON_MAX,
     BB84_SOLO_PHOTON_MIN_WITH_EVE,
     BB84_SOLO_PHOTON_MIN_WITHOUT_EVE,
@@ -129,13 +128,13 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
              * PRE-FILLED DEFAULTS STRATEGY
              * ════════════════════════════════════════════════════════════
              * 
-             * These defaults adapt based on BB84_TEST_MODE:
+             * These defaults adapt based on QC_TEST_MODE:
              * 
-             * TEST MODE (BB84_TEST_MODE = true):
+             * TEST MODE (QC_TEST_MODE on):
              *   - photonNumber: 4 → Quick test iterations, instant feedback
              *   - validationBitsLength: 1 → Minimal sifting overhead
              * 
-             * PRODUCTION (BB84_TEST_MODE = false):
+             * PRODUCTION (QC_TEST_MODE off):
              *   - photonNumber: 10 → Realistic quantum key distribution demo
              *                     ~5 bits after basis matching (sifting)
              *                     ~2-3 bits for validation/eavesdropping detection
