@@ -30,6 +30,12 @@ yarn-error.log*
 .env
 .env.local
 .env*.local
+# Amplify's build writes console env vars into .env.production
+# (`env | grep -e NEXT_PUBLIC_ >> .env.production`). That happens on the build
+# server, but ignore it here so a local run of the same command can never be
+# committed by accident.
+.env.production
+.env.development
 
 
 # vercel

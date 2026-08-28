@@ -1459,8 +1459,19 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     **pairs**; BB84 and DPS send individual **photons**. And DPS *solo* has no Eve at all
     (`DPS_SOLO_PHOTON_MIN` is a single value, no with/without variant), so its message needs a
     *simpler shape* than the with/without-Eve sentence the others use.
-  - [ ] **SLICE 5 — `amplify.yml` (sub-item H).** Private deploy repo. Versions the build steps
-    that currently live only in the AWS console.
+  - [x] **SLICE 5 — Amplify build visibility. ✅ DONE 2026-08-28** (deploy repo `c13edc1`, frontend
+    `.gitignore` below). **Sub-item H was REJECTED as originally written.** I proposed committing an
+    `amplify.yml`; Ibra pushed back — "it all works today, why create it?" — and he was right. A
+    repo file **overrides** the console, so committing one swaps a working mechanism for an
+    equivalent one and risks breaking deploys, purely to gain visibility. Config-as-code earns its
+    cost with many deployers or several environments; this is one deployer, one environment.
+    **Done instead, zero risk:** the console's build spec and both env vars are now recorded in the
+    private `DEPLOYMENT_GUIDE.md`, dated, with an instruction to update it when the console changes.
+    **Bonus finding:** the console runs `env | grep -e NEXT_PUBLIC_ >> .env.production` before
+    building (the standard Amplify/Next workaround, since `NEXT_PUBLIC_*` are baked in at build
+    time) — and **`.env.production` was NOT gitignored**. Added `.env.production` and
+    `.env.development` to the frontend `.gitignore`; verified every variant is now ignored except
+    `.env.example`, which stays tracked.
 
   **❌ CONSIDERED AND REJECTED — env schema validation (zod/envalid), 2026-08-27.** Do not
   re-propose. It was suggested as a "senior team" upgrade and the justification was **wrong**:
