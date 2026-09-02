@@ -16,28 +16,42 @@ import React, { useEffect, useState } from 'react';
 import SoloResultsTable from '@/components/e91/results-page/solo-results-table';
 import usePlayerStore from '@/store/player-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
-import { useRouter } from 'next/navigation';
+import { useProtocolSessionGuard } from '@/lib/protocol-lifecycle/use-protocol-session-guard';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { useLanguage } from '@/components/providers/language-provider';
 
 const E91SoloResultsPage = () => {
-    const router = useRouter();
     const { localize } = useLanguage();
 
+    // Task 40 Phase 3b-2: the shared guard replaces the hand-rolled
+    // isHydrated + playingSolo redirect. Three differences that matter:
+    // the route now requires a COMPLETED SOLO session (a flag alone no longer
+    // grants access); `hydrate` restores the stores from the checkpoint, so a
+    // refresh here shows the same numbers instead of an empty table; and it
+    // does NOT abandon on leave — leaving a results page must never destroy an
+    // active game. Same call shape as bb84/solo-results/page.tsx.
+    const { ready } = useProtocolSessionGuard(e91Adapter, {
+        require: { completed: true, mode: 'solo' },
+        failCloseTo: '/e91',
+        hydrate: true,
+    });
+
     // Player info
-    const { playerName, playerRole, playingSolo } = usePlayerStore();
+    const { playerName, playerRole } = usePlayerStore();
 
     // Game state from store (for gameSuccess and keyBits)
     const { gameSuccess, aliceValidBits, eveSpotted } = useE91RoomStore();
 
     // State for values read from localStorage
     const [elapsedTime, setElapsedTime] = useState(0);
-    const [isHydrated, setIsHydrated] = useState(false);
     const [originalEveEnabled, setOriginalEveEnabled] = useState(false);
     const [originalEveWasPresent, setOriginalEveWasPresent] = useState(false);
     const [eveWasDetected, setEveWasDetected] = useState(false);
 
     useEffect(() => {
-        setIsHydrated(true);
+        // Wait for the guard: until it resolves, the stores are not hydrated
+        // and this route may still turn out to be one the visitor may not see.
+        if (!ready) return;
 
         // Get game start time from localStorage
         const startTimeStr = localStorage.getItem('e91GameStartTime');
@@ -66,22 +80,11 @@ const E91SoloResultsPage = () => {
         if (eveDetectedStr) {
             setEveWasDetected(JSON.parse(eveDetectedStr));
         }
-    }, []);
+    }, [ready]);
 
-    // Redirect if not in solo mode or not hydrated yet
-    useEffect(() => {
-        if (isHydrated && !playingSolo) {
-            router.replace('/e91');
-        }
-    }, [isHydrated, playingSolo, router]);
-
-    // Show nothing while hydrating
-    if (!isHydrated) {
-        return null;
-    }
-
-    // Redirect if not in solo mode
-    if (!playingSolo) {
+    // Render-time gate: nothing paints until the guard resolves the session as
+    // a completed solo game. Anything else already left for /e91 from the hook.
+    if (!ready) {
         return null;
     }
 
