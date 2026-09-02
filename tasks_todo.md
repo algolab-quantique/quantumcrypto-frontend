@@ -687,12 +687,56 @@ and unused. *The expensive part of Phase 3 is already paid for.*
 has no equivalent of. That is the only *net-new design* work in Phase 3 — everything else is applying
 a pattern that already exists and is already tested.
 
-**Slice order (mirrors the BB84 phases that worked — 2a → 2b → 2c):**
-1. **3a** — `e91-game-form-v3.tsx`: cleanup/start → `abandon` + `startFresh`. Smallest, most isolated.
-2. **3b** — `solo-game.tsx`: restore → `restoreCheckpoint(e91Adapter)`. Browser-verify solo refresh.
-3. **3c** — `multi-game.tsx`: same, multiplayer. **Needs 2 browsers** (normal + incognito).
-4. **3d** — the two orphan keys (`e91GameStartTime`, `e91EveWasDetected`): fold into the adapter's
-   checkpoint or leave as deliberate exceptions. **Decide with evidence, do not guess.**
+**🔧 CORRECTION to the map above (same day, after reading `app/` and `socket-provider.tsx`).** The
+15-call figure counted `components/e91` **only**. The real Phase 3 surface is wider — but the extra
+is bounded and named:
+
+| Location | E91 refs | In Phase 3? |
+|---|---|---|
+| `components/e91/**` | 15 | ✅ yes |
+| `app/(main)/e91/play/page.tsx` | `clearE91LocalStorage()` + 2 flag writes | ✅ yes |
+| `lib/e91/utils.ts` → `clearE91LocalStorage` (6 `removeItem`, **10 call sites**) | 6 | ✅ yes — it is `clearProtocolStorage(e91Adapter)` re-implemented by hand |
+| `components/providers/socket-provider.tsx` | **11** | ❌ **NO — Phase 5** |
+| `app/(main)/page.tsx`, shared results page | 3 | ❌ no — cross-protocol |
+
+**❗ The socket-provider boundary, measured:** it still writes **11 BB84 keys**, **11 E91 keys** and
+**19 DPS keys**. BB84's count is *identical* to E91's. **Socket-provider was never part of Phase 2** —
+it is Phase 5, the "riskiest change in the app". So E91's 11 are out of scope here **for exactly the
+same reason BB84's 11 are still there**, and leaving them is conformance, not debt.
+
+**⚠️ This also settles a misreading worth recording: "BB84's migration is unfinished" is FALSE.**
+Evidence (2026-09-02): Phase 2a/2b/2c/2d are all ✅ (2d tested, `c894fbf`); **`getGameProgress()` no
+longer exists in BB84** — it survives only in `e91-game-form-v3.tsx:145` and
+`dps-game-form-v3.tsx:129`; `/bb84/play` and `/bb84/solo-results` both run
+`useProtocolSessionGuard(bb84Adapter, …)`. The 7 remaining BB84 calls are **deliberate**: 4 config
+writes in `solo-game-modal`, 2 per-tab input drafts in `bob-exchange-tab`, and 1 inside `readJSON` —
+a **read-only** session detector that Phase 2d *requires* to stay read-only (calling
+`restoreCheckpoint()` from the form page would mutate stores just to decide whether a dialog opens).
+13 → 7 is the designed end state, not an abandoned job.
+
+---
+
+**📋 PHASE 3 SLICE PLAN (agreed with Ibra 2026-09-02).** Mirrors the BB84 order that worked, one
+commit per slice, gates + browser check between each. Estimated 6 slices.
+
+| Slice | Files | What changes | Browser check |
+|---|---|---|---|
+| **3a** — cleanup / start *(mirrors 2a)* | `app/(main)/e91/play/page.tsx`, `e91-game-form-v3.tsx` (`clearSavedSession`), `solo-game-modal.tsx` | `clearE91LocalStorage()` + the two `setPlaying*` flag resets → **`abandon(e91Adapter)`**; game start → **`startFresh(e91Adapter)`** | leave a game → storage cleared, no rejoin offered; start a new game → clean slate |
+| **3b** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
+| **3c** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
+| **3d** — route guard *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; `playingSolo` read replaced by the hook's `mode` | direct URL entry with no session → leaves to `/`, no flash; corrupt `e91GameData` → fail-close |
+| **3e** — rejoin detection *(mirrors 2d — the big one)* | `e91-game-form-v3.tsx` | delete **`getGameProgress()`** (hand-reads 7 keys, no corrupt validation) and replace the effect with **read-only** detection, typed like BB84's `BB84SessionKind` | solo + multi rejoin, cancel→cleared, completed→no dialog |
+| **3f** — orphan keys | `solo-measurement-tab.tsx` (`e91GameStartTime`), `solo-CHSH-tab.tsx` (`e91EveWasDetected`) | fold into the adapter's checkpoint **or** keep as a documented exception (BB84 keeps `bob-exchange-tab`'s draft) | timer + Eve-detected flag survive a refresh |
+
+**Why this order:** 3a is pure deletion of duplicated logic with an existing replacement — smallest
+possible first commit. 3b is solo, so it needs one browser. 3c is the same pattern with the
+multiplayer risk added. 3d and 3e are the two that involve design, and both are *easier* after
+3a–3c because the manual code they replace is already gone. 3f is last because the decision needs
+what 3a–3e reveal.
+
+**Do NOT touch in Phase 3:** socket-provider's 11 E91 writes (Phase 5) · `app/(main)/page.tsx` and
+the shared results page (cross-protocol) · **52-A** and **52-B** (behaviour bugs you *will* see while
+testing 3b/3c — log them, do not fix them here) · **Task 60** and **52-C** (physics).
 
 **⚠️ Known E91 bugs that Phase 3 will drive past — do NOT fix them in these commits** (CLAUDE.md
 rule 2): **52-A** (CHSH restart leaves an empty transcript) and **52-B** (the security claim is never
