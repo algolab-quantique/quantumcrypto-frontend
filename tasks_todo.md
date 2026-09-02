@@ -722,7 +722,28 @@ commit per slice, gates + browser check between each. Estimated 6 slices.
 | Slice | Files | What changes | Browser check |
 |---|---|---|---|
 | **3a-1** — cleanup / start, **exact replacements** *(mirrors 2a)* ✅ **DONE `2a3fd38`** | `app/(main)/e91/play/page.tsx` (`cleanupActiveGame`), `e91-game-form-v3.tsx` (`clearSavedSession`, `onJoinGame`, `onCreateGame`) | `clearE91LocalStorage()` + the two `setPlaying*` resets → **`abandon`** / **`startFresh`** | ✅ Ibra browser-verified before commit: solo start, leave+confirm, restart clean, multi create + join (2 browsers) |
-| **3a-2** — the two that are **not** exact | `e91-game-form-v3.tsx` (`onCancelRejoin`, line 241), `solo-game-modal.tsx` (line 283) | both call `clearE91LocalStorage()` **without** the flag resets, so moving them to `abandon`/`startFresh` **adds** one — a behaviour change, hence its own slice (rule 2). `solo-game-modal` also calls `resetRoom()`+`resetProgress()` **twice** (once inside `clearE91LocalStorage`, once directly) — the helper removes the duplication | cancel a rejoin → no stale flags; start solo after a multi game → no stale `playingMultiplayer` |
+| **3a-2** — the two that are **not** exact ✅ **DONE `508596b`** | `e91-game-form-v3.tsx` (`onCancelRejoin`), `solo-game-modal.tsx` (`onStartSoloGame`) | both called `clearE91LocalStorage()` **without** the flag resets → `abandon` / `startFresh`. `solo-game-modal` also called `resetRoom()`+`resetProgress()` **twice** (once inside `clearE91LocalStorage`, once directly); the helper removes the duplication | ✅ Ibra browser-verified: rejoin-cancel then solo, solo after multi, solo restart. **The E91 home form now has zero hand-written storage calls.** |
+
+**✅ PHASE 3a COMPLETE.** Four `clearE91LocalStorage()` call sites remain app-wide, all outside 3a
+scope by design: the CHSH loss path (`solo-CHSH-tab.tsx:234`, behaviour-sensitive — sits next to
+52-A/52-B), `solo-results-table.tsx:64`, and two cross-protocol pages (`app/(main)/page.tsx:49`,
+the shared results page).
+
+**🔎 EVIDENCE FOR 3e, found by Ibra while verifying 3a-2 (2026-09-02).** Entering `/e91` directly in
+the URL bar during a **multiplayer** game offers a rejoin dialog; doing the same during a **solo**
+game offers nothing. Root cause confirmed by grep, and it is **the identical defect BB84 had before
+Phase 2d**:
+
+- `e91PlayerData` is written at **exactly one place** — `socket-provider.tsx:425`, a multiplayer-only
+  path. Solo never writes it.
+- The form's effect triggers on that raw key: `if (previousGameRaw) setRejoinDialogOpen(true)`
+  (`e91-game-form-v3.tsx:140`), so in solo the condition is never true.
+- BB84 post-2d branches on a **typed session kind** instead
+  (`if (kind === 'multiplayer' || kind === 'solo')`, `bb84-game-form-v3.tsx:177`).
+
+Phase 2d recorded the same conclusion for BB84 in its own words — *"Solo rejoin is currently ABSENT,
+not imperfect"*. **So 3e is net-new work for E91 too, not a refinement**, and the 8–12 day estimate
+should not be trimmed on account of it.
 | **3b** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
 | **3c** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
 | **3d** — route guard *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; `playingSolo` read replaced by the hook's `mode` | direct URL entry with no session → leaves to `/`, no flash; corrupt `e91GameData` → fail-close |
