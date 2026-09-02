@@ -744,17 +744,61 @@ Phase 2d**:
 Phase 2d recorded the same conclusion for BB84 in its own words — *"Solo rejoin is currently ABSENT,
 not imperfect"*. **So 3e is net-new work for E91 too, not a refinement**, and the 8–12 day estimate
 should not be trimmed on account of it.
-| **3b** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
-| **3c** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
-| **3d** — route guard *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; `playingSolo` read replaced by the hook's `mode` | direct URL entry with no session → leaves to `/`, no flash; corrupt `e91GameData` → fail-close |
+| **3b** — route guard **FIRST** *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; the `playingSolo` read becomes the hook's `mode`; add the `if (mode === null) return null` render gate | direct URL entry with no session → leaves, no flash; corrupt `e91GameData` → fail-close |
+| **3c** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
+| **3d** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
 | **3e** — rejoin detection *(mirrors 2d — the big one)* | `e91-game-form-v3.tsx` | delete **`getGameProgress()`** (hand-reads 7 keys, no corrupt validation) and replace the effect with **read-only** detection, typed like BB84's `BB84SessionKind` | solo + multi rejoin, cancel→cleared, completed→no dialog |
 | **3f** — orphan keys | `solo-measurement-tab.tsx` (`e91GameStartTime`), `solo-CHSH-tab.tsx` (`e91EveWasDetected`) | fold into the adapter's checkpoint **or** keep as a documented exception (BB84 keeps `bob-exchange-tab`'s draft) | timer + Eve-detected flag survive a refresh |
 
-**Why this order:** 3a is pure deletion of duplicated logic with an existing replacement — smallest
-possible first commit. 3b is solo, so it needs one browser. 3c is the same pattern with the
-multiplayer risk added. 3d and 3e are the two that involve design, and both are *easier* after
-3a–3c because the manual code they replace is already gone. 3f is last because the decision needs
-what 3a–3e reveal.
+**🔄 ORDER CORRECTED 2026-09-02 — the route guard moved from 4th to 2nd.** The original order put
+solo restore before the guard. That is backwards, and BB84 already paid for the mistake: doing the
+restore first forces a `missing`/`corrupted` branch **inside the component**, which the guard then
+makes unreachable. `bb84/play-page/solo-game.tsx:61-63` says so in its own words — *"PlayPage's
+render-time guard (Task 48 D4a) guarantees a restorable session before SoloGame mounts, so
+restoreCheckpoint cannot return missing/corrupted here — the old fail-close branch was dead code
+(D5b)."* Guard first ⇒ 3c and 3d are near-trivial, and no code is written to be deleted.
+
+**Why this order:** 3a was pure deletion with an existing replacement — smallest possible first
+commit. 3b (guard) is the load-bearing one and unblocks the two after it. 3c is solo, one browser.
+3d adds the multiplayer risk. 3e is the design-heavy rejoin work. 3f is last because its decision
+needs what 3a–3e reveal.
+
+**✅ 3b is confirmed feasible with ZERO new lifecycle code — `detectSession` already handles E91 by
+name** (`lifecycle.ts:154`): *"BB84/E91 solo: a local checkpoint with no player data at all."* E91
+solo writes `e91GameData` (`solo-game-modal`) and never `e91PlayerData` (only `socket-provider:425`
+does, multiplayer-only), so solo classifies correctly; multi writes both, so it classifies as multi.
+The hook's own docstring asks for exactly this: *"E91/DPS pages adopt this hook at replication
+instead of hand-copying the pattern."*
+
+**🔍 CRITICAL COMPARISON — what BB84's guard does well, and what E91 would INHERIT (Ibra's rule: copy
+BB84 because it works, not because it is automatically right).**
+
+*Sound, and worth copying:*
+- Policy is **pure and unit-tested** (`resolveSessionForRoute` over `detectSession`); the hook only
+  adds React mechanics. One implementation, adapter-parameterised.
+- **Fail-closed by default.** `solo` is returned only on positive evidence; an ambiguous multiplayer
+  state becomes `corrupt` rather than silently degrading into SoloGame.
+- The **render-time null gate** (`if (mode === null) return null`, `bb84/play/page.tsx:71`) prevents
+  both the flash *and* the wrong game component mounting for one render. Verified present — a first
+  read suggested it was missing and it is not.
+
+*Real weaknesses that adoption would replicate — recorded, not fixed here:*
+1. **`mode` sits BESIDE `playingSolo`/`playingMultiplayer` instead of replacing them.** The hook
+   writes the two booleans as a bridge (D5a). Task 40's own deferred list already warns: *"when
+   `mode` is introduced it must REPLACE the two booleans, NOT add a third field beside them — a third
+   field triples the drift surface."* Adopting the guard in E91 **doubles that surface** before the
+   replacement happens. Accepted deliberately: the alternative is hand-copying the pattern, which is
+   what the ADR forbids. Flagged so it is counted in the Phase 5 / mode-cleanup work.
+2. **A DPS-specific branch lives inside the shared classifier** (`lifecycle.ts:145-152`), gated on
+   `protocolId === 'dps'`. Documented as migration compatibility, but protocol-specific rules in
+   shared code tend to become permanent.
+3. **Stale docstring**: `detectSession`'s note (`lifecycle.ts:112-114`) says *"Slice D refactors
+   `restoreCheckpoint` to reuse this classifier so guard and page agree"* — but `restoreCheckpoint`
+   already carries *"Task 48 D1: classify via the single source of truth (detectSession)"*. The note
+   describes work that appears done. One-line doc fix, someday.
+4. **The guard does not disconnect the play socket when it fails closed** — it calls `abandon` and
+   navigates. Fine for solo; **verify during 3d** whether an open E91 multiplayer socket can survive
+   a fail-close (the phantom-game family, Task 48 slice 3a).
 
 **Do NOT touch in Phase 3:** socket-provider's 11 E91 writes (Phase 5) · `app/(main)/page.tsx` and
 the shared results page (cross-protocol) · **52-A** and **52-B** (behaviour bugs you *will* see while
