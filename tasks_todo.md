@@ -744,7 +744,8 @@ Phase 2d**:
 Phase 2d recorded the same conclusion for BB84 in its own words — *"Solo rejoin is currently ABSENT,
 not imperfect"*. **So 3e is net-new work for E91 too, not a refinement**, and the 8–12 day estimate
 should not be trimmed on account of it.
-| **3b** — route guard **FIRST** *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; the `playingSolo` read becomes the hook's `mode`; add the `if (mode === null) return null` render gate | direct URL entry with no session → leaves, no flash; corrupt `e91GameData` → fail-close |
+| **3b-1** — play route guard ✅ **DONE `6667b67`** | `app/(main)/e91/play/page.tsx` | `playingSolo` → the hook's `mode`; `if (mode === null) return null` render gate; missing/corrupt → `abandon` + leave to `/` | ✅ solo renders + survives refresh; `/e91/play` in fresh incognito paints nothing and leaves; multi create+join+refresh ×2; leave returns to `/e91` |
+| **3b-2** — solo-results route guard ✅ **DONE `eba215e`** | `app/(main)/e91/solo-results/page.tsx` | `isHydrated`+`playingSolo` redirect → `require: {completed: true, mode: 'solo'}`, `failCloseTo: '/e91'`, `hydrate: true`, **no** `abandonOnLeave` | ✅ win→results; **refresh now restores the table** instead of emptying it; direct URL and post-game URL both leave to `/e91` |
 | **3c** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
 | **3d** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
 | **3e** — rejoin detection *(mirrors 2d — the big one)* | `e91-game-form-v3.tsx` | delete **`getGameProgress()`** (hand-reads 7 keys, no corrupt validation) and replace the effect with **read-only** detection, typed like BB84's `BB84SessionKind` | solo + multi rejoin, cancel→cleared, completed→no dialog |
@@ -1264,6 +1265,7 @@ already has two known ones before starting.
 - [ ] **52-D — 🟠 P2: Eve's output is biased, which is physically impossible and student-visible.** `eveGenerateBits` (`lib/e91/solo-player.ts:261-289`) produces, measured over 100k samples per basis: basis '1' → **85.32%** zeros, basis '2' → **100.00%** zeros (hardcoded `outcome = 1`, commented "Basis 2: Deterministic (always 1)"), basis '3' → **85.46%** zeros, basis '4' → 50.21% zeros. Any measurement outcome on a maximally mixed state must be **50/50** — a biased marginal means the output encodes the basis instead of a measurement. **Same family as the BB84 bug: a constant output.** Student-visible tell: with Eve present, EVERY basis-2 result is `0` (verified: at 2-2 key positions Bob's bit is '0' 100% of the time), so a student can spot Eve by "all my 2s are zeros" rather than by Bell's inequality — which defeats the entire pedagogical point of E91. Fix: make Eve's outcome an unbiased 50/50 draw for all bases (that alone still gives S≈0 and still destroys the key correlation).
   **⬆️ SUPERSEDED 2026-09-02 by [Task 60](#60-🐛🔥-e91-eve-is-biased--and-the-same-bug-is-copy-pasted-in-two-repos-two-languages).** This entry assumed a frontend-only fix. The Python copy was then read: `e91/consumers.py:507` contains the identical `elif base == '2': outcome = 1`, so **multiplayer runs its own copy of this bug**. Two repos, two languages, one hand-copied function. Work it as Task 60, not here.
 - [ ] **52-E — 🟡 P3 (design note, not a bug): Eve is modelled as TOTAL decorrelation, not intercept-resend.** Measured S with Eve = **0.005**; a real intercept-resend attack on E91 halves the correlations, giving S ≈ 2√2/2 = **1.414** — still below the classical bound of 2, so still detectable, but not a flatline. The docstring (`:236-257`) is honest that this is a deliberate "Statistical Shortcut" matching the backend, and it does meet its stated goal (force S ≤ 2). Recording it because it makes Eve maximally obvious (same over-detection spirit as the BB84 bug) and because any future "how strong is Eve?" teaching lever lives here. Changing it requires a matching backend change — do not touch unilaterally.
+- [ ] **52-G — 🔴 P2: after a solo LOSS the results page is unreachable, because the next line undoes the previous one.** `solo-CHSH-tab.tsx:233-234` runs `setGameSuccess(true)` and then `clearE91LocalStorage()` — and `clearE91LocalStorage` calls `resetRoom()`, which does `set(initialState)`, putting `gameSuccess` straight back to `false` (and deleting `e91GameData`). The "see results" button is rendered only when `gameSuccess` is true (`e91-progression.tsx:101`), **so it never appears after a loss**. The code plainly intends the opposite — the comment right above says *"In solo mode, we just mark game as failed"*. Found 2026-09-02 while checking whether Phase 3b-2's `completed` requirement could break the loss path; it could not, because the path was already dead. Same file and same family as **52-A** (CHSH restart leaves an empty transcript): order-of-operations mistakes in the solo CHSH tab. **Fix vehicle:** the same canonical solo-round helper 52-A calls for. **Test that must fail first:** finish a solo game by losing, assert the results route is reachable and `gameSuccess` survives.
 - [ ] **52-F — P3 cleanup: `simulateSoloExchange` (`lib/e91/solo-player.ts:401-450`) is dead code**, documented as "currently NOT USED" at `:379`. It duplicates the Eve/entanglement branching that `solo-measurement-tab.tsx:155-190` actually performs — a second source of truth waiting to drift. Delete or wire it up during the E91 migration.
 
 ---
@@ -1949,6 +1951,40 @@ leaving an E91 game. It is the `isLeaving` → `Déconnexion...` screen renderin
 `cleanupActiveGame()` and `router.replace()`. Deliberate, pre-existing, and identical in BB84
 (`bb84/play/page.tsx:104`). Phase 3a-1 does strictly *less* work than the code it replaced (one
 `getState()` instead of two, everything synchronous), so it cannot have added latency.
+
+---
+
+### 62. 🐛 The solo results clock never stops — refreshing inflates the time and shrinks the score
+
+**Status**: 🔴 OPEN, not started. **Priority**: P2 (student-visible, affects the score they are shown).
+**Found**: Ibra, 2026-09-02, browser-verifying Phase 3b-2 — *"the value (Temps and Points) change when
+I refresh"*. **Affects BB84 and E91 alike.** **Axis**: neither — presentation over persisted state.
+
+**Mechanism, confirmed against Ibra's own screenshot:**
+
+- `e91GameStartTime` is written **once**, at the first measurement
+  (`solo-measurement-tab.tsx:145-146`), and **nothing ever records a game END time**.
+- The results page computes, on **every mount**:
+  `elapsedTime = (Date.now() - startTime) / 1000` (`e91/solo-results/page.tsx:57`).
+- The table then derives the score from it (`e91/results-page/solo-results-table.tsx:55`):
+  `score = Math.max(0, Math.round(keyLength * 10 - elapsedTime / 10))`.
+
+**So the clock keeps running after the game is over.** Every refresh reports a longer game and a
+lower score; leave the page open long enough and the score reaches **0**. Ibra's numbers check out
+exactly: keyLength 4, time 111 s → `40 - 11.1 = 28.9` → the **29** on screen.
+
+**BB84 has the identical defect** — `bb84/solo-results/page.tsx` runs the same
+`Date.now() - readSoloGameStartTime()` on mount, with no end time recorded either. So this is one
+bug in two places, not an E91 regression, and **not caused by Phase 3b** (3b-2 only changed who may
+view the page, not how the number is computed).
+
+**Fix direction (decide when scheduled):** record an end time when `gameSuccess` becomes true and
+freeze `elapsedTime` at that moment — the honest fix, since a finished game has a definite duration.
+Storing the computed elapsed value instead would work too but keeps a derived number in storage.
+Whichever is chosen, **do it once for both protocols**, not twice.
+
+**Test that must fail first (rule 5):** render the results view twice with a clock advanced between
+the two renders and assert the reported time and score are identical. That fails on today's code.
 
 ---
 
