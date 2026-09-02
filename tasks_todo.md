@@ -49,11 +49,11 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 
 | # | Workstream | Days | Owned by | Blocked by |
 |---|---|---|---|---|
-| 1 | Verify backend connectivity after VM migration | 0.5 | **Task 23** | — *(do FIRST: if broken it blocks 4, 5, 6, 7)* |
+| 1 | Verify backend connectivity after VM migration | 0.5 | **Task 23** | — *(**deployment concern, NOT a dev blocker** — see correction below)* |
 | 2 | TEST_MODE env flag (production gate) | 1–2 | **Task 47 P1** + **Task 57** (design agreed, not built) | — |
 | 3 | Debug `console.log`s leaking key material | 0.5 | **Task 47 P2** | — |
 | 4 | **E91 lifecycle migration** | 8–12 | **Task 40 Phase 3** + **Task 26** + **Task 52** (pre-migration findings) | — |
-| 5 | **E91 physics** (biased Eve 52-D, honest Bell note 52-C, dead code 52-F) | 3–5 | **Task 52** | ⚠️ **BACKEND** — simulation duplicated in Python (`e91/consumers.py:480,507`) |
+| 5 | **E91 physics** (biased Eve → **Task 60**, honest Bell note 52-C, dead code 52-F) | 3–5 | **Task 60** + **Task 52** | ⚠️ **BACKEND** — simulation duplicated in Python (`e91/consumers.py:480,507`). **Explicitly OUT of scope for #4** |
 | 6 | **DPS lifecycle migration** | 12–18 | **Task 40 Phase 4** + **Task 37** (nav guard) + **Task 44** (`localStorage.clear()`) | — |
 | 7 | **DPS physics** — build the missing solo Eve | 5–8 | **Task 38** | — *(frontend-only: DPS backend has no physics; build it sender-side per ADR §13.3)* |
 | 8 | Socket-provider refactor (multi orchestration → per-protocol handlers) | 10–15 | **Task 40 Phase 5** | 4 + 6 stable first. **Riskiest change in the app** |
@@ -86,6 +86,26 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
    #12 is decided — automating it may be cheaper than replaying 12 flows by hand every migration.
    #14 (design polish) cannot be estimated honestly until someone defines the target.
 
+**✅ DECISION 2026-09-02 (Ibra) — E91 = LIFECYCLE ONLY. The physics is a separate task.**
+Workstream **#4 is now the next thing worked on**, and it does **not** touch a single line of
+E91 simulation. Everything physics — the biased Eve (**Task 60**), the honest Bell note (**52-C**),
+the dead `simulateSoloExchange` (**52-F**) — stays in **#5**, to be scheduled separately.
+
+*Why this is the right cut:* #5 is the **only** backend-blocked workstream in the whole roadmap
+(Task 60 confirmed the Eve bug exists in Python too, so fixing it needs the backend owner).
+Keeping it out of #4 means the biggest remaining workstream is **100 % frontend and 100 %
+unblocked** — Ibra can do all of it alone, starting now. Mixing them would have made an 8–12 day
+job wait on someone else's calendar. It also honours CLAUDE.md rule 2: lifecycle refactor and
+physics change never share a commit, let alone a workstream.
+
+**🔧 CORRECTION 2026-09-02 — workstream #1 was wrongly marked a blocker.** It said *"do FIRST: if
+broken it blocks 4, 5, 6, 7"*. **That is wrong.** Ibra develops against a **local backend**
+(`http://127.0.0.1:8000`) running the same Django code, which is entirely sufficient to build and
+test the multiplayer lifecycle. The remote VM only affects **students in production**, and its
+production-only failure modes (nginx WebSocket upgrade, `wss://`, CORS) cannot be reproduced
+locally anyway. **Task 23 is a deployment concern, not a development prerequisite** — do it before
+the next production release, not before #4.
+
 ---
 
 ### 23. 🟡 INFRA: Verify Backend Connectivity After VM Migration
@@ -93,6 +113,11 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 **Status**: 🟡 INVESTIGATION — TODO  
 **Date Added**: May 20, 2026  
 **Priority**: 🟡 MEDIUM (may already be resolved — domain was re-pointed)
+
+> **Scope correction (2026-09-02):** this is a **deployment** check, **not** a prerequisite for any
+> migration work. Local development uses a local backend on `http://127.0.0.1:8000` running the same
+> Django code, which is enough to build and test multiplayer. Do this **before the next production
+> release**, so students are not the ones who discover it is broken.
 
 **Context**: The backend VM was physically changed, but the public domain name (e.g. `bb84.physc...`) was re-pointed to the new VM. Since the same domain is used, AWS Amplify environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`) should still be correct — no change needed in Amplify Console.
 
@@ -1027,9 +1052,11 @@ Special cases to leave alone:
   | 20 (production min with Eve) | 66.1% | 33.8% |
   | 30 (`E91_SOLO_PHOTON_MAX`) | 77.7% | 11.4% |
 
-  At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. **Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**
+  At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. ~~**Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**~~
+  **↑ ORDERING NOTE EXPIRED — verified 2026-09-02.** The flip happened in **Task 58** without 52-C being decided, and no harm was done: before Task 58, `e91-constants.ts` shipped `E91_TEST_MODE = true; // TODO: Set to false for production` (verified with `git show 8ce9c8b^`), so production ran the **4-photon** row — the worst in the table (6 % correct-reading rate). It now runs the **10-photon** row (37.5 %). The flip *improved* this, it did not endanger it. **52-C itself stays open and is unchanged by that**: at 10 photons, ~62 % of Eve-absent games still tell a correctly-reasoning student they lost. The agreed fix is still Ibra's July decision — **an explanatory Note, not more photons**. That is frontend-only UI work, needs no backend, and is **not** part of the E91 lifecycle migration.
 
 - [ ] **52-D — 🟠 P2: Eve's output is biased, which is physically impossible and student-visible.** `eveGenerateBits` (`lib/e91/solo-player.ts:261-289`) produces, measured over 100k samples per basis: basis '1' → **85.32%** zeros, basis '2' → **100.00%** zeros (hardcoded `outcome = 1`, commented "Basis 2: Deterministic (always 1)"), basis '3' → **85.46%** zeros, basis '4' → 50.21% zeros. Any measurement outcome on a maximally mixed state must be **50/50** — a biased marginal means the output encodes the basis instead of a measurement. **Same family as the BB84 bug: a constant output.** Student-visible tell: with Eve present, EVERY basis-2 result is `0` (verified: at 2-2 key positions Bob's bit is '0' 100% of the time), so a student can spot Eve by "all my 2s are zeros" rather than by Bell's inequality — which defeats the entire pedagogical point of E91. Fix: make Eve's outcome an unbiased 50/50 draw for all bases (that alone still gives S≈0 and still destroys the key correlation).
+  **⬆️ SUPERSEDED 2026-09-02 by [Task 60](#60-🐛🔥-e91-eve-is-biased--and-the-same-bug-is-copy-pasted-in-two-repos-two-languages).** This entry assumed a frontend-only fix. The Python copy was then read: `e91/consumers.py:507` contains the identical `elif base == '2': outcome = 1`, so **multiplayer runs its own copy of this bug**. Two repos, two languages, one hand-copied function. Work it as Task 60, not here.
 - [ ] **52-E — 🟡 P3 (design note, not a bug): Eve is modelled as TOTAL decorrelation, not intercept-resend.** Measured S with Eve = **0.005**; a real intercept-resend attack on E91 halves the correlations, giving S ≈ 2√2/2 = **1.414** — still below the classical bound of 2, so still detectable, but not a flatline. The docstring (`:236-257`) is honest that this is a deliberate "Statistical Shortcut" matching the backend, and it does meet its stated goal (force S ≤ 2). Recording it because it makes Eve maximally obvious (same over-detection spirit as the BB84 bug) and because any future "how strong is Eve?" teaching lever lives here. Changing it requires a matching backend change — do not touch unilaterally.
 - [ ] **52-F — P3 cleanup: `simulateSoloExchange` (`lib/e91/solo-player.ts:401-450`) is dead code**, documented as "currently NOT USED" at `:379`. It duplicates the Eve/entanglement branching that `solo-measurement-tab.tsx:155-190` actually performs — a second source of truth waiting to drift. Delete or wire it up during the E91 migration.
 
@@ -1620,6 +1647,64 @@ InMemory channel layer while local Redis was the active one — actively mislead
 **docker-compose is broken** (Redis at `127.0.0.1` unreachable from inside the Django container —
 needs a `REDIS_HOST` env var); root cause + fix recorded in the **backend** `task_todo.md`, marked
 not urgent since nobody uses that path.
+
+---
+
+### 60. 🐛🔥 E91 Eve is biased — and the SAME bug is copy-pasted in TWO repos, TWO languages
+
+**Status**: 🔴 OPEN, not started. **Priority**: **P1 physics** (Axis B), but **deliberately NOT
+part of the E91 lifecycle migration** — see the decision below.
+**Found**: 2026-09-02, verifying whether 52-D also existed in the Python copy. It does, identically.
+**Axis**: B (protocol physics). Promotes **52-D** from a frontend-only note to a cross-repo task.
+
+**The bug.** Eve's measurement outcome is not a measurement — it is partly a constant. Measuring a
+maximally mixed state must give **50/50 on every basis**. Measured over 100k samples per basis
+(running the real code):
+
+| basis | zeros produced | should be |
+|---|---|---|
+| 1 | 85.32 % | 50 % |
+| **2** | **100.00 %** | 50 % |
+| 3 | 85.46 % | 50 % |
+| 4 | 50.21 % | 50 % ✅ |
+
+Basis 2 is hardcoded. Bases 1 and 3 are biased 85/15 by reusing `sin²(π/8)` as if it were a
+measurement probability. Only basis 4 is right.
+
+**Where — both copies, verified by reading both files (2026-09-02):**
+
+| Repo | File | Code |
+|---|---|---|
+| frontend | `lib/e91/solo-player.ts` — `eveGenerateBits` | `} else if (base === '2') { outcome = 1; }` with the comment *"Basis 2: Deterministic (always 1)"* |
+| backend | `e91/consumers.py:507` — `eveGeneratedBits` | `elif base == '2': outcome = 1` |
+
+Note the names differ by one letter (`eveGenerate` vs `eveGenerated`) — the signature of a
+hand-copy, not a shared module. Backend call sites: `e91/consumers.py:343` (`alice_bits`) and
+`:358` (`bob_bits`).
+
+**Why it matters more than "a wrong number".** It is **student-visible and it defeats the lesson**.
+With Eve present, *every* basis-2 result is `0`. A student spots Eve by noticing *"all my 2s are
+zeros"* — instead of by the Bell inequality, which is the entire pedagogical point of E91. Same
+family as the BB84 Eve bug (Task 57): **a constant where a random draw belongs.**
+
+**Scope: BOTH modes are affected, from DIFFERENT code.** Solo runs the TypeScript copy; multiplayer
+runs the Python copy. Fixing one fixes half the app.
+
+**⚠️ DECISION REQUIRED WHEN THIS TASK STARTS (Ibra, 2026-09-02) — two options, decide then:**
+1. **Patch both copies** — fast, but keeps two sources of truth that will drift again.
+2. **Move E91's physics to the frontend** like BB84/DPS, delete the Python copy, and make the
+   backend a pure relay (ADR §13.3). Kills the duplication permanently. Bigger, needs the backend
+   owner. The ADR already marks the current state *"grandfathered, not endorsed"*.
+
+**Blocked by**: coordination with the backend owner (option 1 needs a Python change; option 2 needs
+their agreement to delete code). **This is exactly why the E91 lifecycle migration excludes it.**
+
+**Cross-refs**: **52-D** (the original frontend-only finding, now superseded by this task) ·
+**52-E** (Eve modelled as total decorrelation — same function, same visit) · **Task 57** (the BB84
+Eve bug, same disease) · **ADR §13.3** (one implementation, sender simulates the channel).
+
+**The test that must fail first (rule 5):** assert Eve's output is ~50/50 on every basis over a
+large sample. It fails on today's code at bases 1, 2 and 3. Write it in **both** repos.
 
 ---
 
