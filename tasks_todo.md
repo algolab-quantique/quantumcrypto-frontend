@@ -721,7 +721,8 @@ commit per slice, gates + browser check between each. Estimated 6 slices.
 
 | Slice | Files | What changes | Browser check |
 |---|---|---|---|
-| **3a** — cleanup / start *(mirrors 2a)* | `app/(main)/e91/play/page.tsx`, `e91-game-form-v3.tsx` (`clearSavedSession`), `solo-game-modal.tsx` | `clearE91LocalStorage()` + the two `setPlaying*` flag resets → **`abandon(e91Adapter)`**; game start → **`startFresh(e91Adapter)`** | leave a game → storage cleared, no rejoin offered; start a new game → clean slate |
+| **3a-1** — cleanup / start, **exact replacements** *(mirrors 2a)* ✅ **DONE `2a3fd38`** | `app/(main)/e91/play/page.tsx` (`cleanupActiveGame`), `e91-game-form-v3.tsx` (`clearSavedSession`, `onJoinGame`, `onCreateGame`) | `clearE91LocalStorage()` + the two `setPlaying*` resets → **`abandon`** / **`startFresh`** | ✅ Ibra browser-verified before commit: solo start, leave+confirm, restart clean, multi create + join (2 browsers) |
+| **3a-2** — the two that are **not** exact | `e91-game-form-v3.tsx` (`onCancelRejoin`, line 241), `solo-game-modal.tsx` (line 283) | both call `clearE91LocalStorage()` **without** the flag resets, so moving them to `abandon`/`startFresh` **adds** one — a behaviour change, hence its own slice (rule 2). `solo-game-modal` also calls `resetRoom()`+`resetProgress()` **twice** (once inside `clearE91LocalStorage`, once directly) — the helper removes the duplication | cancel a rejoin → no stale flags; start solo after a multi game → no stale `playingMultiplayer` |
 | **3b** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
 | **3c** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
 | **3d** — route guard *(mirrors Task 48 D4a / 54 F1)* | `app/(main)/e91/play/page.tsx`, `app/(main)/e91/solo-results/page.tsx` | adopt **`useProtocolSessionGuard(e91Adapter, {abandonOnLeave: true})`**; `playingSolo` read replaced by the hook's `mode` | direct URL entry with no session → leaves to `/`, no flash; corrupt `e91GameData` → fail-close |
@@ -1845,6 +1846,44 @@ Eve bug, same disease) · **ADR §13.3** (one implementation, sender simulates t
 
 **The test that must fail first (rule 5):** assert Eve's output is ~50/50 on every basis over a
 large sample. It fails on today's code at bases 1, 2 and 3. Write it in **both** repos.
+
+---
+
+### 61. 🐛 The leave-game dialog is hardcoded French — in BB84 **and** E91
+
+**Status**: 🔴 OPEN, not started. **Priority**: P2 (i18n correctness, student-visible).
+**Found**: 2026-09-02, while checking a delay Ibra felt when leaving an E91 game. The delay was
+nothing (see below); this was sitting next to it.
+**Axis**: neither A nor B — presentation. **Out of scope for the E91 lifecycle sprint.**
+
+**Both play routes render five untranslated French strings**, and **neither file calls `localize()`
+even once** (`grep -c localize` → 0 for both):
+
+| line | string |
+|---|---|
+| `app/(main)/bb84/play/page.tsx:82` · `e91/play/page.tsx:83` | `Quitter la partie ?` |
+| `:84` · `:85` | `Votre progression de cette partie sera effacée.` |
+| `:89` · `:90` | `Rester dans la partie` |
+| `:92` · `:93` | `Quitter la partie` |
+| `:104` · `:106` | `Déconnexion...` |
+
+**Impact:** a student playing in English or Spanish gets a French confirmation dialog at the moment
+they are deciding whether to throw away their game. **Not an E91 regression** — the same five strings
+sit in BB84, so this was copied when the E91 page was created. DPS is unaffected: its play page has
+no leave dialog (checked).
+
+**Fix:** four new keys + one for the disconnect screen, in `lang/quantumcrypto-lines.ts`, all three
+languages, then `localize()` in both files. Follow the **UI WORDING NOTE** below — one shared key per
+concept, reused by both protocols, not one key per protocol.
+
+**Related:** Task 58 slice 4 fixed a different family of copy defects (messages that stated the wrong
+rule). This one is messages that were never translated at all.
+
+**Not a bug, recorded so it is not re-investigated:** Ibra also reported *feeling* a delay when
+leaving an E91 game. It is the `isLeaving` → `Déconnexion...` screen rendering between
+`cleanupActiveGame()` and `router.replace()`. Deliberate, pre-existing, and identical in BB84
+(`bb84/play/page.tsx:104`). Phase 3a-1 does strictly *less* work than the code it replaced (one
+`getState()` instead of two, everything synchronous), so it cannot have added latency.
 
 ---
 
