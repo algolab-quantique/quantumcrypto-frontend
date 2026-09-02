@@ -98,7 +98,8 @@ import useE91GameStore from '@/store/e91/e91-game-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import { useRouter } from 'next/navigation';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
-import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
 import {
     E91_SOLO_PHOTON_MAX,
@@ -151,10 +152,9 @@ const SoloGameModal = ({
         setAliceBases,
         setBobBits,
         setBobBases,
-        resetRoom,
     } = useE91RoomStore();
 
-    const { pushLines, resetProgress } = useE91ProgressStore();
+    const { pushLines } = useE91ProgressStore();
 
     const { localize } = useLanguage();
     const router = useRouter();
@@ -279,10 +279,15 @@ const SoloGameModal = ({
         // Record game stats for analytics
         void recordGameStats('e91', 1, { silent: true });
 
-        // Clear previous game state
-        clearE91LocalStorage();
-        resetRoom();
-        resetProgress();
+        // Clear previous game state.
+        // Task 40 Phase 3a-2: the three calls this replaces reset the room and
+        // progress stores TWICE — clearE91LocalStorage() already did both
+        // internally — and never reset the player-mode flags, so a solo game
+        // started right after a multiplayer one inherited playingMultiplayer.
+        // startFresh does the clear, one reset of each, and both flags; it is
+        // the same call BB84's onStartSoloGame makes, and setPlayingSolo(true)
+        // below re-asserts solo mode afterwards.
+        startFresh(e91Adapter);
 
         // Determine if Eve is actually present based on probability
         // This matches multiplayer where server decides with the same probability

@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { cn } from '@/lib/utils';
@@ -238,7 +237,10 @@ const E91MainV3: React.FC = () => {
         }
     };
 
-    const onCancelRejoin = () => { setRejoinDialogOpen(false); clearE91LocalStorage(); };
+    // Task 40 Phase 3a-2: was clearE91LocalStorage() alone, which left
+    // playingSolo/playingMultiplayer set after declining a rejoin. abandon()
+    // clears them too — the same call BB84's onCancelRejoin makes.
+    const onCancelRejoin = () => { setRejoinDialogOpen(false); abandon(e91Adapter); };
     const onRejoin = () => { setRejoinDialogOpen(false); getGameProgress(); };
 
     return (
