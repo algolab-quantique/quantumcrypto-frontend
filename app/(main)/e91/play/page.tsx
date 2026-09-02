@@ -7,7 +7,8 @@ import E91ProgressionSidebar from '@/components/shared/e91-progression-sidebar';
 import E91Button from '@/components/e91/play-page/e91-button';
 import usePlayerStore from '@/store/player-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
-import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useRouter } from 'next/navigation';
 import {
@@ -44,9 +45,11 @@ const PlayPage = () => {
         setIsLeaving(true);
         setLeaveDialogOpen(false);
         disconnectPlayRoom();
-        clearE91LocalStorage();
-        usePlayerStore.getState().setPlayingSolo(false);
-        usePlayerStore.getState().setPlayingMultiplayer(false);
+        // Task 40 Phase 3a: `abandon(e91Adapter)` is exactly what the three
+        // lines below it used to be — clear the 11 e91* keys, reset the room
+        // and progress stores, then drop both player-mode flags. Same shape
+        // BB84 uses on its play route.
+        abandon(e91Adapter);
     }, [disconnectPlayRoom]);
 
     const leaveGame = useCallback((destination: string) => {

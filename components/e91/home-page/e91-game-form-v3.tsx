@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
@@ -81,11 +83,9 @@ const E91MainV3: React.FC = () => {
         }
     };
 
-    const clearSavedSession = () => {
-        clearE91LocalStorage();
-        setPlayingSolo(false);
-        setPlayingMultiplayer(false);
-    };
+    // Task 40 Phase 3a: identical to the three lines it replaces — clear the
+    // 11 e91* keys, reset room + progress, drop both player-mode flags.
+    const clearSavedSession = () => abandon(e91Adapter);
 
     useEffect(() => {
         const previousGameRaw = localStorage.getItem('e91PlayerData');
@@ -200,9 +200,9 @@ const E91MainV3: React.FC = () => {
         if (isWaitingRoomConnected) return;
 
         // Reset solo/multiplayer flags before joining a new game.
-        clearE91LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        // Task 40 Phase 3a: same three steps, now the shared helper — and the
+        // same call BB84's onJoinGame makes.
+        startFresh(e91Adapter);
 
         setGameCode(gamePIN);
         setPlayerName(playerName);
@@ -214,9 +214,9 @@ const E91MainV3: React.FC = () => {
         if (isWaitingRoomConnected) return;
 
         // Reset solo/multiplayer flags before creating a new game.
-        clearE91LocalStorage();
-        setPlayingMultiplayer(false);
-        setPlayingSolo(false);
+        // Task 40 Phase 3a: same three steps, now the shared helper — and the
+        // same call BB84's onCreateGame makes.
+        startFresh(e91Adapter);
 
         setCreatingGame(true);
         try {
