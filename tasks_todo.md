@@ -634,11 +634,74 @@ Special cases to leave alone:
 - [ ] BB84 replay currently routes to `/bb84` and relies on completed-game mount cleanup / next `startFresh`; later define explicit replay lifecycle behavior.
 - [x] `components/bb84/play-page/tabs/messaging-tab.tsx`: remove unused `clearBB84LocalStorage` import in a tiny cleanup.
 
-**Phase 3: E91 migration**
+**Phase 3: E91 migration** — 🟡 **SCOPED 2026-09-02, ready to start. Lifecycle ONLY** (physics is
+Task 60 / 52-C / 52-F, deliberately excluded — see the roadmap decision).
 - [ ] Migrate E91 cleanup/start/restore calls after BB84 is stable.
 - [ ] Preserve completed-game refresh behavior.
 - [ ] Preserve active-game leave guard.
 - [ ] Test E91 solo and multiplayer, including refresh/reconnect and results.
+
+**📐 PHASE 3 SURFACE MAP (measured 2026-09-02 — every number below came from a grep that is
+reproducible, not an estimate).**
+
+**⚠️ First, a correction to the roadmap's own numbers.** The roadmap says *"raw `localStorage` refs
+in components: BB84 15 · E91 22 (1.5×) · DPS 73 (5×)"*. Those were counted with `grep localStorage`,
+which **also counts comments** — and these files comment about `localStorage` a lot. Counting real
+call sites (`grep "localStorage\."`) gives a different picture:
+
+| | raw grep (roadmap) | **real call sites** |
+|---|---|---|
+| BB84 *(already migrated)* | 15 | **7** |
+| **BB84 before migration** (`git grep` at `ad00d26^`) | — | **13** |
+| **E91 (to migrate)** | 22 | **15** |
+| DPS | 73 | **72** |
+
+So **E91 is ~1.15× BB84's pre-migration surface, not 1.5×.** DPS's 5× multiplier survives the
+recount intact — that one was real.
+
+**Second: BB84's migration did NOT remove all `localStorage`, and Phase 3's target is not zero.**
+13 → 7. What was migrated is the **session lifecycle** (start / restore / abandon); what stayed is
+config seeding (`solo-game-modal`, 4 writes) and one per-tab UI draft (`bob-exchange-tab`, 2). Phase 3
+should reproduce that shape, not chase a zero.
+
+**Third: `lib/protocol-lifecycle/e91-adapter.ts` ALREADY EXISTS and is complete** — 11 storage keys,
+`resetRoom` / `restoreRoom` / `resetProgress` / `hydrateProgress` / `getRoomSnapshot` all wired to the
+real E91 stores. **All 11 keys verified in use** in the app (2026-09-02), so it is accurate, not
+aspirational. But **zero E91 components import `protocol-lifecycle` today** — the adapter is written
+and unused. *The expensive part of Phase 3 is already paid for.*
+
+**The file-by-file map** (E91 → what BB84 did to its counterpart):
+
+| E91 file | calls | BB84 counterpart went | Phase 3 target |
+|---|---|---|---|
+| `home-page/e91-game-form-v3.tsx` | 4 | 4 → 1 (`abandon`, `startFresh`) | **1** |
+| `play-page/solo-game.tsx` | 2 | 2 → 0 (`restoreCheckpoint`) | **0** |
+| `play-page/multi-game.tsx` | 1 | 1 → 0 (`restoreCheckpoint`) | **0** |
+| `home-page/solo-game-modal.tsx` | 5 | 4 → 4 *(config seeding, kept)* | **5, unchanged** |
+| `play-page/tabs/solo-measurement-tab.tsx` | 2 | *no counterpart* — `e91GameStartTime` | decide |
+| `play-page/tabs/solo-CHSH-tab.tsx` | 1 | *no counterpart* — `e91EveWasDetected` | decide |
+
+**Expected outcome: 15 → ~9**, mirroring BB84's 13 → 7.
+
+**E91's genuinely extra surface is small and named: 3 calls in the CHSH/measurement tabs**, which BB84
+has no equivalent of. That is the only *net-new design* work in Phase 3 — everything else is applying
+a pattern that already exists and is already tested.
+
+**Slice order (mirrors the BB84 phases that worked — 2a → 2b → 2c):**
+1. **3a** — `e91-game-form-v3.tsx`: cleanup/start → `abandon` + `startFresh`. Smallest, most isolated.
+2. **3b** — `solo-game.tsx`: restore → `restoreCheckpoint(e91Adapter)`. Browser-verify solo refresh.
+3. **3c** — `multi-game.tsx`: same, multiplayer. **Needs 2 browsers** (normal + incognito).
+4. **3d** — the two orphan keys (`e91GameStartTime`, `e91EveWasDetected`): fold into the adapter's
+   checkpoint or leave as deliberate exceptions. **Decide with evidence, do not guess.**
+
+**⚠️ Known E91 bugs that Phase 3 will drive past — do NOT fix them in these commits** (CLAUDE.md
+rule 2): **52-A** (CHSH restart leaves an empty transcript) and **52-B** (the security claim is never
+verified). Both are behaviour, not lifecycle. Expect to *see* them while testing 3b/3c; log what is
+seen, fix separately.
+
+**Honest caveat (roadmap caveat 2 applies):** a smaller surface count does **not** license dropping
+the 8–12 day estimate. Every migration so far uncovered unknown bugs — BB84 surfaced four. E91
+already has two known ones before starting.
 
 **Phase 4: DPS migration**
 - [ ] Migrate DPS cleanup/start/restore calls after E91 is stable.
@@ -1054,6 +1117,39 @@ Special cases to leave alone:
 
   At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. ~~**Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**~~
   **↑ ORDERING NOTE EXPIRED — verified 2026-09-02.** The flip happened in **Task 58** without 52-C being decided, and no harm was done: before Task 58, `e91-constants.ts` shipped `E91_TEST_MODE = true; // TODO: Set to false for production` (verified with `git show 8ce9c8b^`), so production ran the **4-photon** row — the worst in the table (6 % correct-reading rate). It now runs the **10-photon** row (37.5 %). The flip *improved* this, it did not endanger it. **52-C itself stays open and is unchanged by that**: at 10 photons, ~62 % of Eve-absent games still tell a correctly-reasoning student they lost. The agreed fix is still Ibra's July decision — **an explanatory Note, not more photons**. That is frontend-only UI work, needs no backend, and is **not** part of the E91 lifecycle migration.
+
+  **📖 WHAT 52-C ACTUALLY MEANS (plain-language, written 2026-09-02 because it kept being confused
+  with TEST_MODE).** It has **nothing** to do with the test/production pipeline — that pipeline is
+  finished, correct, and works (Task 58). 52-C would exist even if TEST_MODE had never been written.
+  **The analogy:** you want to know whether a coin is rigged, so you flip it **10 times** and get 7
+  heads. You conclude "rigged" — and you are wrong. The coin is fine; **10 flips is simply not enough
+  data to decide.** E91's Bell test is exactly that: S only means something after *many* measurements,
+  and the game offers 10 by default, 30 maximum. At that scale S is noise. TEST_MODE only made it
+  worse (4 photons); Task 58 improved it (10) without fixing it.
+
+  **🔒 THE REAL CONSTRAINT (Ibra, 2026-09-02): we cannot just raise the photon count.** The student
+  measures **manually, one photon at a time**. At 100 or 200 photons the game would never end. So
+  "more photons" is not a UX preference we rejected — it is **structurally impossible** in the current
+  interaction model. Any fix must therefore change *how* photons are produced, not just how many.
+
+  **Two candidate solutions (Ibra, 2026-09-02):**
+  1. **Explain the limitation** — an (i) tooltip or a visible notice telling the student that with so
+     few measurements S cannot decide the question, and that this limitation is itself part of the
+     physics lesson. Cheap, honest, teaches something true. Same voice as **59-D** and **57-K2**.
+  2. **⭐ IBRA'S PREFERENCE — hybrid manual/automatic.** The student plays ~10 photons **by hand** to
+     learn the mechanic; once those are done correctly, a button unlocks that runs the remaining
+     ~190 **automatically**. The student gets both: the gesture *and* a statistically meaningful S.
+     This solves the actual problem instead of apologising for it.
+
+  **Open questions before building option 2 (do not guess — measure, per CLAUDE.md rule 7):**
+  - **How many photons does S actually need?** 200 is a guess. Run the same simulation that produced
+    the table above at 100 / 200 / 500 and pick the number from the curve, not from intuition.
+  - Does the automatic batch reuse `sValues[]` (`solo-CHSH-tab.tsx:85`, already exists) or replace it?
+  - Multiplayer: both players would need to trigger their batch — or does the concept stay solo-only?
+  - Does the results table show 200 rows? Almost certainly not — needs a summary view.
+
+  **Option 2 is a real feature, not a copy fix** — it deserves its own task when scheduled, and it is
+  **not** part of the E91 lifecycle migration (workstream #4). Recorded here so the idea is not lost.
 
 - [ ] **52-D — 🟠 P2: Eve's output is biased, which is physically impossible and student-visible.** `eveGenerateBits` (`lib/e91/solo-player.ts:261-289`) produces, measured over 100k samples per basis: basis '1' → **85.32%** zeros, basis '2' → **100.00%** zeros (hardcoded `outcome = 1`, commented "Basis 2: Deterministic (always 1)"), basis '3' → **85.46%** zeros, basis '4' → 50.21% zeros. Any measurement outcome on a maximally mixed state must be **50/50** — a biased marginal means the output encodes the basis instead of a measurement. **Same family as the BB84 bug: a constant output.** Student-visible tell: with Eve present, EVERY basis-2 result is `0` (verified: at 2-2 key positions Bob's bit is '0' 100% of the time), so a student can spot Eve by "all my 2s are zeros" rather than by Bell's inequality — which defeats the entire pedagogical point of E91. Fix: make Eve's outcome an unbiased 50/50 draw for all bases (that alone still gives S≈0 and still destroys the key correlation).
   **⬆️ SUPERSEDED 2026-09-02 by [Task 60](#60-🐛🔥-e91-eve-is-biased--and-the-same-bug-is-copy-pasted-in-two-repos-two-languages).** This entry assumed a frontend-only fix. The Python copy was then read: `e91/consumers.py:507` contains the identical `elif base == '2': outcome = 1`, so **multiplayer runs its own copy of this bug**. Two repos, two languages, one hand-copied function. Work it as Task 60, not here.
