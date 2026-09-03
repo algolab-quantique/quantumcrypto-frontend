@@ -32,6 +32,8 @@ import useE91GameStore from '@/store/e91/e91-game-store';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
+import { restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { Minus } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
@@ -54,46 +56,31 @@ const SoloGame = () => {
 
     const {localize} = useLanguage();
     const {step, displayedLines, e91Tab} = useE91ProgressStore();
-    const {pushLines, setE91Tab, setStep, setDisplayedLines} = useE91ProgressStore();
+    const {pushLines, setE91Tab} = useE91ProgressStore();
     const {playerRole, playerName} = usePlayerStore();
-    const {photonNumber, gameHasEve, setPhotonNumber, setGameHasEve} = useE91GameStore();
-    const {utilizeValidBits, restoreGame} = useE91RoomStore();
+    const {photonNumber, gameHasEve} = useE91GameStore();
+    const {utilizeValidBits} = useE91RoomStore();
 
-    // Restore game state from localStorage on mount (for page refresh)
-    // AND initialize welcome messages if no saved state exists
+    // Restore game state on mount (page refresh recovery)
+    // OR initialize welcome messages for a fresh session
     useEffect(() => {
         // Prevent running twice (React StrictMode)
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
+        // Task 40 Phase 3c: PlayPage's render-time guard (3b-1) has already
+        // resolved the session as valid before SoloGame mounts, so
+        // restoreCheckpoint cannot return missing/corrupted here — the same
+        // reasoning BB84 recorded in D5b. One call now covers what four
+        // hand-rolled reads did: the room store, the progress store (step, tab,
+        // transcript) and, through the adapter's hydrateConfig, the photon
+        // count and the Eve flag.
+        restoreCheckpoint(e91Adapter);
 
-        // Restore E91 game data
-        const gameData = getItem('e91GameData');
-        if (gameData) {
-            restoreGame(gameData);
-        }
-
-        // Restore progress (step, tab)
-        const savedStep = getItem('e91Step');
-        if (savedStep !== null) {
-            setStep(savedStep);
-        }
-
-        const savedTab = localStorage.getItem('e91Tab');
-        if (savedTab) {
-            setE91Tab(savedTab);
-        }
-
-        // Restore displayed lines OR show welcome messages
-        const savedLines = getItem('e91DisplayedLines');
-        if (savedLines && savedLines.length > 0) {
-            setDisplayedLines(savedLines);
-        } else {
-            // No saved lines - show welcome messages
+        // The old code's implicit `else` — "no saved lines, so this must be a
+        // fresh game" — made explicit. The lifecycle restores state; it does
+        // not know E91's opening messages, and that is the right split.
+        if (useE91ProgressStore.getState().displayedLines.length === 0) {
             pushLines([
                 {
                     title: 'component.e91.measurement.welcome',
@@ -103,17 +90,6 @@ const SoloGame = () => {
                     content: 'component.e91.measurement.start',
                 },
             ]);
-        }
-
-        // Restore game config
-        const savedPhotonNumber = getItem('e91PhotonNumber');
-        if (savedPhotonNumber) {
-            setPhotonNumber(savedPhotonNumber);
-        }
-
-        const savedGameHasEve = getItem('e91GameHasEve');
-        if (savedGameHasEve !== null) {
-            setGameHasEve(savedGameHasEve);
         }
     }, []);
 
