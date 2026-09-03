@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { abandon, detectSession, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
@@ -47,6 +47,7 @@ const E91MainV3: React.FC = () => {
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
     const [rejoinDialogOpen, setRejoinDialogOpen] = useState(false);
+    const [detectedKind, setDetectedKind] = useState<'solo' | 'multi' | null>(null);
     const [flipFace, setFlipFace] = useState<'front' | 'solo' | 'multi'>('front');
     const [soloModalOpen, setSoloModalOpen] = useState(false);
     const { localize } = useLanguage();
@@ -60,75 +61,51 @@ const E91MainV3: React.FC = () => {
     } = usePlayerStore();
     const router = useRouter();
 
-    const getSavedItem = (key: string) => {
-        const item = localStorage.getItem(key);
-        if (!item) return null;
-
-        try {
-            return JSON.parse(item);
-        } catch {
-            return null;
-        }
-    };
-
-    // Task 40 Phase 3a: identical to the three lines it replaces — clear the
-    // 11 e91* keys, reset room + progress, drop both player-mode flags.
-    const clearSavedSession = () => abandon(e91Adapter);
-
+    // Task 40 Phase 3e-2: read-only session detection for the /e91 form page,
+    // now the SHARED classifier instead of a hand-rolled one. `detectSession`
+    // mutates nothing — /e91/play (restoreCheckpoint) stays the only restore
+    // owner; this effect only decides which affordance to show.
+    //
+    // Three behaviours change, all of them aligning E91 with BB84:
+    //
+    // 1. A SOLO session is no longer destroyed. The old `hasOrphanGameData`
+    //    (gameData present, playerData absent) is EXACTLY the shape of a solo
+    //    game, so landing on /e91 mid-solo-game called abandon() and wiped it.
+    //    The shared classifier names that shape `solo` (lifecycle.ts:154).
+    // 2. A COMPLETED session keeps its checkpoint, so browser-Forward back into
+    //    the results restores them instead of fail-closing (BB84 Slice D2). The
+    //    landing page `/` still clears completed E91 data on mount.
+    // 3. No more auto-redirect. A live socket used to bounce the player
+    //    straight back to /e91/play; now the rejoin dialog is always offered, so
+    //    browser-Back lands on /e91 and the player chooses.
     useEffect(() => {
-        const previousGameRaw = localStorage.getItem('e91PlayerData');
-        const gameDataRaw = localStorage.getItem('e91GameData');
-        const previousGame = getSavedItem('e91PlayerData');
-        const gameData = getSavedItem('e91GameData');
-        const hasCorruptSavedSession = Boolean(
-            (previousGameRaw && !previousGame) ||
-            (gameDataRaw && !gameData)
-        );
-        const hasInvalidPlayerData = Boolean(
-            previousGame && (
-                !previousGame.gameCode ||
-                !previousGame.role ||
-                !previousGame.room
-            )
-        );
-        const hasOrphanGameData = Boolean(gameData && !previousGame);
-        const gameCompleted = gameData && gameData.gameSuccess === true;
-        const hasActiveSession = Boolean(
-            previousGame?.gameCode &&
-            previousGame?.role &&
-            previousGame?.room &&
-            usePlayerStore.getState().playingMultiplayer
-        );
+        const detected = detectSession(e91Adapter);
 
-        if (hasCorruptSavedSession || hasInvalidPlayerData || hasOrphanGameData) {
-            clearSavedSession();
+        // Unrecoverable: clear it, and close any stray socket (no-op if closed).
+        if (detected.kind === 'corrupt') {
+            disconnectPlayRoom();
+            abandon(e91Adapter);
             return;
         }
 
-        // If the game was already completed, clean up stale data.
-        // Do NOT redirect to play page — there's nothing to resume.
-        if (gameCompleted) {
-            clearSavedSession();
-            return;
-        }
-
-        // If WebSocket is still connected AND game is NOT completed,
-        // redirect to the play page (active game still in progress).
-        if (isPlayRoomConnected && hasActiveSession) {
-            router.push('/e91/play');
-            return;
-        }
-
-        if (isPlayRoomConnected && !hasActiveSession) {
+        // Completed: KEEP the checkpoint, only drop the connection.
+        if ((detected.kind === 'solo' || detected.kind === 'multi') && detected.completed) {
             disconnectPlayRoom();
             return;
         }
 
-        // If there's player data from an interrupted game, offer to rejoin.
-        if (previousGameRaw) {
+        // Live play socket but nothing recoverable: clean up the stray socket.
+        if (isPlayRoomConnected && detected.kind === 'none') {
+            disconnectPlayRoom();
+            return;
+        }
+
+        // Recoverable (socket alive or not): offer an explicit rejoin.
+        if (detected.kind === 'solo' || detected.kind === 'multi') {
+            setDetectedKind(detected.kind);
             setRejoinDialogOpen(true);
         }
-    }, [isPlayRoomConnected]);
+    }, [isPlayRoomConnected, disconnectPlayRoom]);
 
     const formSchema = z.object({
         playerName: z.string({
@@ -202,8 +179,15 @@ const E91MainV3: React.FC = () => {
     // replacing would leave a stale forward entry and break Back/Forward.
     const onRejoin = () => {
         setRejoinDialogOpen(false);
-        setPlayingMultiplayer(true);
-        setPlayingSolo(false);
+        // 3e-2: solo is now a reachable kind, so the mode comes from what was
+        // detected rather than being hardcoded to multiplayer.
+        if (detectedKind === 'multi') {
+            setPlayingMultiplayer(true);
+            setPlayingSolo(false);
+        } else if (detectedKind === 'solo') {
+            setPlayingSolo(true);
+            setPlayingMultiplayer(false);
+        }
         router.push('/e91/play');
     };
 
