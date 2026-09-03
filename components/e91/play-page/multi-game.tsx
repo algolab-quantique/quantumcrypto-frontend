@@ -11,9 +11,11 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
-import { hydrateE91ProgressStore, useE91ProgressStore } from '@/store/e91/e91-progress-store';
+import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
+import { restoreCheckpoint } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import {
     Minus,
     Tally1, Tally2, Tally3, Tally4,
@@ -44,9 +46,9 @@ const Game = () => {
     const { localize } = useLanguage();
     const { step, displayedLines, e91Tab } = useE91ProgressStore();
     const { pushLines, setE91Tab } = useE91ProgressStore();
-    const { playerRole, playerName, playingMultiplayer, setPlayingMultiplayer } = usePlayerStore();
-    const { photonNumber, gameHasEve, setPhotonNumber, setGameHasEve, setGameCode, setValidationBitsLength } = useE91GameStore();
-    const { utilizeValidBits, restoreGame } = useE91RoomStore();
+    const { playerRole, playerName } = usePlayerStore();
+    const { photonNumber, gameHasEve, setGameHasEve, setGameCode } = useE91GameStore();
+    const { utilizeValidBits } = useE91RoomStore();
     const { isPlayRoomConnected, playRoomConnecting, connectToPlayRoom } = useSocket();
 
     // Restore game state from localStorage on mount (for page refresh)
@@ -56,78 +58,46 @@ const Game = () => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const getItem = (key: string) => {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : null;
-        };
+        // ── Page refresh: restore state and reconnect if needed ─────────────
+        // Task 40 Phase 3d: PlayPage's render-time guard (3b-1) and its flag
+        // bridge guarantee a valid multiplayer session before MultiGame mounts,
+        // so the old `playingMultiplayer &&` gate and the invalid-playerData
+        // fail-close underneath it were unreachable — removed for the same
+        // reason BB84 removed them in D5b.
+        //
+        // One restoreCheckpoint now covers what nine hand-rolled reads did: the
+        // room store, the progress store, and — through the adapter's
+        // hydrateConfig — the photon count, the Eve flag and the validation-bit
+        // length. The player identity comes back typed on the result instead of
+        // being dug out of a raw JSON blob.
+        if (!isPlayRoomConnected) {
+            const result = restoreCheckpoint(e91Adapter);
+            const session = result.kind === 'active' || result.kind === 'completed'
+                ? result.multiplayerSession
+                : undefined;
 
-        // If we have a multiplayer session but WebSocket is disconnected, try to restore
-        if (playingMultiplayer && !isPlayRoomConnected) {
-            const playerData = getItem('e91PlayerData');
-
-            if (!playerData?.gameCode || !playerData?.role || !playerData?.room) {
-                setPlayingMultiplayer(false);
-
-                if (displayedLines.length === 0 && (playerRole === 'A' || playerRole === 'B')) {
-                    pushLines([
-                        {
-                            title: 'component.e91.measurement.welcome',
-                        },
-                        {
-                            title: 'component.game.step1',
-                            content: 'component.e91.measurement.start',
-                        },
-                    ]);
+            if (session) {
+                setGameCode(session.gameCode);
+                usePlayerStore.getState().setPlayerRole(session.role);
+                if (typeof session.partner === 'string') {
+                    usePlayerStore.getState().setPartner(session.partner);
                 }
-                return;
-            }
+                if (typeof session.playerName === 'string') {
+                    usePlayerStore.getState().setPlayerName(session.playerName);
+                }
+                if (typeof session.gameHasEve === 'boolean') {
+                    setGameHasEve(session.gameHasEve);
+                }
 
-            // Restore E91 game data
-            const gameData = getItem('e91GameData');
-
-            if (gameData) {
-                restoreGame(gameData);
-            }
-
-            hydrateE91ProgressStore();
-
-            // Restore game config
-            const savedPhotonNumber = getItem('e91PhotonNumber');
-            if (savedPhotonNumber) {
-                setPhotonNumber(savedPhotonNumber);
-            }
-
-            const savedGameHasEve = getItem('e91GameHasEve');
-            if (savedGameHasEve !== null) {
-                setGameHasEve(savedGameHasEve);
-            }
-
-            const savedValidationBitsLength = getItem('e91ValidationBitsLength');
-            if (savedValidationBitsLength) {
-                setValidationBitsLength(savedValidationBitsLength);
-            }
-
-            // Restore player identity and reconnect WebSocket if needed
-            setGameCode(playerData.gameCode);
-            // Restore player role and partner from saved data
-            if (playerData.role) {
-                usePlayerStore.getState().setPlayerRole(playerData.role);
-            }
-            if (playerData.partner) {
-                usePlayerStore.getState().setPartner(playerData.partner);
-            }
-            if (playerData.playerName) {
-                usePlayerStore.getState().setPlayerName(playerData.playerName);
-            }
-            if (playerData.gameHasEve !== undefined) {
-                setGameHasEve(playerData.gameHasEve);
-            }
-
-            // Only reconnect WebSocket if game is still in progress.
-            // Completed games restore the félicitations screen locally —
-            // the user navigates to results explicitly via "Voir les résultats".
-            if (!gameData?.gameSuccess && !playRoomConnecting) {
-                connectToPlayRoom('e91', playerData.gameCode, playerData.role, playerData.room);
+                // Only reconnect WebSocket if game is still in progress.
+                // Completed games restore the félicitations screen locally —
+                // the user navigates to results explicitly via "Voir les résultats".
+                // `kind === 'active'` is the typed form of the old
+                // `!gameData?.gameSuccess`; the !playRoomConnecting guard is
+                // kept as-is, it prevents a duplicate connect.
+                if (result.kind === 'active' && !playRoomConnecting) {
+                    connectToPlayRoom('e91', session.gameCode, session.role, session.room);
+                }
             }
         } else if (displayedLines.length === 0) {
             // Normal initialization - show welcome messages

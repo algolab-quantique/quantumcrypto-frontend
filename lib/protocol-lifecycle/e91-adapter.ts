@@ -45,16 +45,22 @@ export const e91Adapter: ProtocolAdapter = {
     // Task 40 Phase 3c: the two config values E91's solo restore has always
     // re-read by hand, moved here so restoreCheckpoint covers them and the
     // component does not have to. Mirrors bb84Adapter.hydrateConfig.
-    // `e91ValidationBitsLength` is deliberately NOT here: only the multiplayer
-    // rejoin path restores it today, so adding it would change behaviour on the
-    // solo path. Revisit in Phase 3d.
+    // `e91ValidationBitsLength` joined them in Phase 3d, once the multiplayer
+    // restore needed it too. It is a no-op for solo rather than a behaviour
+    // change: the key is written only by socket-provider.tsx:318, a
+    // multiplayer-only path, so `readConfigValue` returns undefined in solo
+    // games and nothing is set.
     hydrateConfig: () => {
         const gameStore = useE91GameStore.getState();
         const photonNumber = readConfigValue('e91PhotonNumber');
         const gameHasEve = readConfigValue('e91GameHasEve');
+        const validationBitsLength = readConfigValue('e91ValidationBitsLength');
 
         if (typeof photonNumber === 'number') gameStore.setPhotonNumber(photonNumber);
         if (typeof gameHasEve === 'boolean') gameStore.setGameHasEve(gameHasEve);
+        if (typeof validationBitsLength === 'number') {
+            gameStore.setValidationBitsLength(validationBitsLength);
+        }
     },
     getRoomSnapshot: () => toSerializableSnapshot(
         useE91RoomStore.getState() as unknown as RoomSnapshot,
