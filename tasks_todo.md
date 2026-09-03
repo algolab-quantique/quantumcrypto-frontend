@@ -2005,6 +2005,94 @@ the two renders and assert the reported time and score are identical. That fails
 
 ---
 
+### 63. 🔴 The insufficient-key restart loses the game's configuration — Eve silently changes
+
+**Status**: 🔴 OPEN, analysed, not started. **Priority**: **P1** — it changes the physics a student
+plays against, without telling them. **Found**: Ibra, 2026-09-03, testing Phase 3d.
+**Axis**: **B (physics)** by consequence, though the trigger is a UI reset. **Frontend-only.**
+
+**How it was found:** Ibra noticed the *messages* were wrong after a short-key restart. Chasing that
+turned up the real defect underneath: **the restart resets the room store, and `evePresent` lives in
+that store.** His own words framed it — *"when we click restart we need to clear all and start fresh,
+but keep the info about num photons, is Eve here or not"*. The code does not keep it.
+
+```ts
+// store/e91/e91-room-store.ts (BB84's is identical in shape)
+const initialState = { evePresent: false, ... };
+resetRoom: () => { localStorage.removeItem('…GameData'); set(initialState); }
+```
+
+`basis-tab.tsx` / `solo-basis-tab.tsx` call `resetRoom()` and **never restore `evePresent`**.
+`photonNumber` survives only because it lives in a *different* store (the game store), which is luck,
+not design.
+
+**Verified matrix — the same missing line, three different symptoms, because the physics lives in
+different places:**
+
+| | Physics runs | After a short-key restart | Verified at |
+|---|---|---|---|
+| **BB84 solo** | frontend | ✅ **correct** — the reference implementation | `lib/bb84/solo-round.ts:139` |
+| **BB84 multi** | frontend (sender simulates, ADR §13.3) | ❌ **Eve stops intercepting** — Alice sends clean photons | `alice-exchange-tab.tsx:162` (`evePresent ? … : …`) |
+| **E91 solo** | frontend | ❌ **Eve stops intercepting** — `gameHasEve && evePresent` goes false | `solo-measurement-tab.tsx:159,179` |
+| **E91 multi** | **backend (Python)** | ❌ **Eve keeps intercepting, the UI forgets her** | `socket-provider.tsx:422` sets it; nothing restores it |
+
+E91 multi is the nastiest of the three: the backend was never told about the restart, so it keeps
+applying Eve to the bits while the frontend believes she is absent. Visible consequences:
+`basis-tab.tsx:270` leaves the "Eve read N bits" counter at **0**, and `CHSH-tab.tsx:178,259` never
+push the confirmation a student gets for correctly declaring the channel unsafe.
+
+**BB84 solo is the reference, and it is already right** — Task 49-A built it deliberately:
+
+```ts
+export const restartSoloRound = (options?: {withoutEve?: boolean}) => {
+    const {photonNumber} = useBB84GameStore.getState();
+    const evePresent = options?.withoutEve ? false
+        : useBB84RoomStore.getState().evePresent;   // 1. read BEFORE the reset
+    useBB84RoomStore.getState().resetRoom();        // 2. reset
+    useBB84ProgressStore.getState().resetProgress();
+    useBB84RoomStore.getState().setEvePresent(evePresent);   // 3. restore
+    beginSoloRound(photonNumber, evePresent);                // 4. regenerate + welcome lines
+};
+```
+
+Task 49-A's own note says why: *"KEEP Eve as it was — this restart is bad luck, not Eve-detection."*
+
+**A second, cosmetic defect found in the same sweep:** `solo-basis-tab.tsx:126` pushes the welcome
+line as `{ content: … }` where the fresh start (`solo-game.tsx:86`) uses `{ title: … }`. Only `title`
+gets the bold/highlight span in the feed renderer, so the restarted game's "Bienvenue dans E91 !"
+renders as plain text. **One word, and it is the proof that copy-drift is real here** — the same two
+lines exist in four places today (`solo-game.tsx`, `multi-game.tsx`, `socket-provider.tsx:1142`,
+`solo-basis-tab.tsx`) and a fifth was about to be added.
+
+**And the missing welcome lines Ibra started from** (browser-verified by him, 2026-09-03): BB84 multi
+and E91 multi push **nothing at all** after the restart — the transcript is empty but for the static
+header. BB84 solo is correct; E91 solo is correct but unstyled (the defect above).
+
+**📋 SLICE PLAN (agreed with Ibra 2026-09-03):**
+
+| Slice | What | Verification |
+|---|---|---|
+| **63-A** | `lib/e91/round.ts` → `restartE91Round()`: read config → reset → restore config → push welcome. Modelled on `restartSoloRound`. **Pure refactor, no call site changed yet.** | unit test + mutation check |
+| **63-B** | E91 **solo** calls it — fixes the Eve loss **and** the `content`/`title` defect at once | solo game with Eve → restart → Eve still intercepts, welcome line styled |
+| **63-C** | E91 **multi** calls it | **2 browsers** |
+| **63-D** | BB84 **multi**: same treatment (its solo is already right) | **2 browsers**, Eve on |
+| **63-E** | 📌 **DELIBERATELY NOT DONE — decided with Ibra.** Telling the partner a restart happened. Needs a backend event, and the sprint is frontend-only. **The desync therefore remains**: each player restarts independently, and if one continues without waiting, the other is left behind. Recorded as a known limitation, not an oversight. Same family as **49-B**. |
+
+**Test that must fail first (rule 5), and an honest note on its limits:** call `restartE91Round()` in
+a game with Eve, assert `evePresent` survived and the transcript holds the welcome lines. Prove the
+test really catches the bug by deleting the `setEvePresent` restore line and checking it goes red
+(the mutation method used for the build guard in Task 58). **What this test cannot prove is that the
+components actually call the helper** — only component tests could, and those are testing-strategy
+phases 2–3, not started. So 63-B/C/D still need the browser checks above; the test guards the helper,
+not its adoption.
+
+**Cross-refs:** **49-A** (the reference implementation, and why Eve must survive) · **49-B** (the
+uncoordinated multi restart — 63-E is its E91 twin) · **52-A** (restart leaving an empty transcript,
+same file family) · **57** (BB84's Eve bug: a physics flag silently wrong) · **60** (E91's physics
+duplicated in Python, which is *why* E91 multi's symptom is the inverse of solo's).
+
+---
+
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
 
 **Decision (Ibra, 2026-07-16):** when a concept already has a word somewhere in the app,
