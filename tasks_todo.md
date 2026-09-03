@@ -746,9 +746,9 @@ not imperfect"*. **So 3e is net-new work for E91 too, not a refinement**, and th
 should not be trimmed on account of it.
 | **3b-1** — play route guard ✅ **DONE `6667b67`** | `app/(main)/e91/play/page.tsx` | `playingSolo` → the hook's `mode`; `if (mode === null) return null` render gate; missing/corrupt → `abandon` + leave to `/` | ✅ solo renders + survives refresh; `/e91/play` in fresh incognito paints nothing and leaves; multi create+join+refresh ×2; leave returns to `/e91` |
 | **3b-2** — solo-results route guard ✅ **DONE `eba215e`** | `app/(main)/e91/solo-results/page.tsx` | `isHydrated`+`playingSolo` redirect → `require: {completed: true, mode: 'solo'}`, `failCloseTo: '/e91'`, `hydrate: true`, **no** `abandonOnLeave` | ✅ win→results; **refresh now restores the table** instead of emptying it; direct URL and post-game URL both leave to `/e91` |
-| **3c** — solo restore *(mirrors 2b)* | `components/e91/play-page/solo-game.tsx` | the hand-rolled `getItem` block → **`restoreCheckpoint(e91Adapter)`**; keep the welcome-lines fallback | refresh mid solo game → step, tab and transcript all return |
+| **3c** — solo restore ✅ **DONE `2927974`** | `components/e91/play-page/solo-game.tsx`, `lib/protocol-lifecycle/e91-adapter.ts` | 4 hand-rolled reads → one **`restoreCheckpoint(e91Adapter)`**; the implicit `else` becomes an explicit `displayedLines.length === 0` check; **`e91Adapter` gains the `hydrateConfig` it was missing** (`e91PhotonNumber`, `e91GameHasEve`) — without it `restoreCheckpoint` would have dropped both on refresh | ✅ fresh game shows welcome + step-1; refresh restores step/tab/transcript; **play continues correctly after the refresh, with and without Eve** (the test that actually exercises `hydrateConfig`) |
 | **3d** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
-| **3e** — rejoin detection *(mirrors 2d — the big one)* | `e91-game-form-v3.tsx` | delete **`getGameProgress()`** (hand-reads 7 keys, no corrupt validation) and replace the effect with **read-only** detection, typed like BB84's `BB84SessionKind` | solo + multi rejoin, cancel→cleared, completed→no dialog |
+| **3e** — rejoin detection *(mirrors 2d — the big one)* | `e91-game-form-v3.tsx` | delete **`getGameProgress()`** (hand-reads 7 keys, no corrupt validation) and replace the effect with **read-only** detection, typed like BB84's `BB84SessionKind`. **Also fix the completed-session branch — see below** | solo + multi rejoin, cancel→cleared, completed→no dialog, **and browser-Forward back into a finished game's results** |
 | **3f** — orphan keys | `solo-measurement-tab.tsx` (`e91GameStartTime`), `solo-CHSH-tab.tsx` (`e91EveWasDetected`) | fold into the adapter's checkpoint **or** keep as a documented exception (BB84 keeps `bob-exchange-tab`'s draft) | timer + Eve-detected flag survive a refresh |
 
 **🔄 ORDER CORRECTED 2026-09-02 — the route guard moved from 4th to 2nd.** The original order put
@@ -804,6 +804,23 @@ BB84 because it works, not because it is automatically right).**
 **Do NOT touch in Phase 3:** socket-provider's 11 E91 writes (Phase 5) · `app/(main)/page.tsx` and
 the shared results page (cross-protocol) · **52-A** and **52-B** (behaviour bugs you *will* see while
 testing 3b/3c — log them, do not fix them here) · **Task 60** and **52-C** (physics).
+
+**🔎 SECOND FINDING FOR 3e — E91 destroys a completed session that BB84 preserves.** Raised by Ibra
+from memory (*"in BB84 when we click back we go to /bb84, forward goes back to the table"*) and
+confirmed by reading both forms:
+
+| landing on the protocol home with a **completed** game | |
+|---|---|
+| **BB84** (`bb84-game-form-v3.tsx:163`) | `if (kind === 'completed') { disconnectPlayRoom(); return; }` — the checkpoint is **kept** |
+| **E91** (`e91-game-form-v3.tsx:121`) | `if (gameCompleted) { clearSavedSession(); return; }` — the checkpoint is **destroyed** |
+
+BB84's comment states the intent outright: *"Completed session on the home page (Slice D2): KEEP the
+checkpoint so a browser-Forward back into /bb84/play restores the félicitation screen instead of
+fail-closing."* So in E91 today, Back to `/e91` wipes the session and Forward into the results
+fail-closes — the results route is **not** yet the URL-addressable, Back/Forward-safe page BB84's is
+(its own docstring calls that the *Navigation Invariant*). Fix it in 3e: same file, same effect, same
+decision. Note it is **not** enough to change the branch alone — check what `app/(main)/page.tsx:46-49`
+does with `e91GameData` on the landing page too.
 
 **⚠️ Known E91 bugs that Phase 3 will drive past — do NOT fix them in these commits** (CLAUDE.md
 rule 2): **52-A** (CHSH restart leaves an empty transcript) and **52-B** (the security claim is never
