@@ -16,8 +16,6 @@ import { abandon, startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { cn } from '@/lib/utils';
 import useE91GameStore from '@/store/e91/e91-game-store';
-import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
-import useE91RoomStore from '@/store/e91/e91-room-store';
 import usePlayerStore from '@/store/player-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, Gamepad2, Users } from 'lucide-react';
@@ -45,7 +43,6 @@ const E91MainV3: React.FC = () => {
         isWaitingRoomConnected,
         waitingRoomConnecting,
         isPlayRoomConnected,
-        connectToPlayRoom,
         disconnectPlayRoom,
     } = useSocket();
     const [creatingGame, setCreatingGame] = useState(false);
@@ -53,22 +50,14 @@ const E91MainV3: React.FC = () => {
     const [flipFace, setFlipFace] = useState<'front' | 'solo' | 'multi'>('front');
     const [soloModalOpen, setSoloModalOpen] = useState(false);
     const { localize } = useLanguage();
-    const {
-        setGameCode,
-        setGameHasEve,
-        setValidationBitsLength,
-        setPhotonNumber,
-    } = useE91GameStore();
+    const { setGameCode } = useE91GameStore();
     const {
         setPlayerName,
         setPlayerRole,
-        setPartner,
         setIsAdmin,
         setPlayingSolo,
         setPlayingMultiplayer,
     } = usePlayerStore();
-    const { setE91Tab, setStep, setDisplayedLines } = useE91ProgressStore();
-    const { restoreGame } = useE91RoomStore();
     const router = useRouter();
 
     const getSavedItem = (key: string) => {
@@ -141,44 +130,6 @@ const E91MainV3: React.FC = () => {
         }
     }, [isPlayRoomConnected]);
 
-    const getGameProgress = () => {
-        const previousGame = getSavedItem('e91PlayerData');
-        if (previousGame) {
-            const { gameCode, role, partner, gameHasEve, playerName } = previousGame;
-            setGameHasEve(gameHasEve);
-            setGameCode(gameCode);
-            setPartner(partner);
-            setPlayerRole(role);
-            setPlayerName(playerName);
-            if (role && previousGame.room) {
-                setPlayingMultiplayer(true);
-                setPlayingSolo(false);
-            }
-        }
-
-        const stepJSON = getSavedItem('e91Step');
-        if (stepJSON) setStep(stepJSON);
-
-        const tab = localStorage.getItem('e91Tab');
-        if (tab) setE91Tab(tab);
-
-        const photonNumber = getSavedItem('e91PhotonNumber');
-        if (photonNumber) setPhotonNumber(photonNumber);
-
-        const validationBitsLength = getSavedItem('e91ValidationBitsLength');
-        if (validationBitsLength) setValidationBitsLength(validationBitsLength);
-
-        const previousDisplayedLines = getSavedItem('e91DisplayedLines');
-        if (previousDisplayedLines) setDisplayedLines(previousDisplayedLines);
-
-        const gameDataJSON = getSavedItem('e91GameData');
-        if (gameDataJSON) restoreGame(gameDataJSON);
-
-        if (previousGame && previousGame.role && previousGame.room) {
-            connectToPlayRoom('e91', useE91GameStore.getState().gameCode, previousGame.role, previousGame.room);
-        }
-    };
-
     const formSchema = z.object({
         playerName: z.string({
             required_error: localize('component.main.nameRequired'),
@@ -241,7 +192,20 @@ const E91MainV3: React.FC = () => {
     // playingSolo/playingMultiplayer set after declining a rejoin. abandon()
     // clears them too — the same call BB84's onCancelRejoin makes.
     const onCancelRejoin = () => { setRejoinDialogOpen(false); abandon(e91Adapter); };
-    const onRejoin = () => { setRejoinDialogOpen(false); getGameProgress(); };
+    // Task 40 Phase 3e-1: the form page no longer restores anything itself. It
+    // sets the mode flags and routes; /e91/play owns restoreCheckpoint and the
+    // multiplayer reconnect (wired in 3d), exactly as BB84's onRejoin does.
+    // The deleted getGameProgress() hand-read seven keys with no corrupt-data
+    // validation and opened the socket from the form page — two owners for one
+    // job, and the timing coupling the ADR calls out.
+    // push, not replace: /e91 and /e91/play are both real destinations, so
+    // replacing would leave a stale forward entry and break Back/Forward.
+    const onRejoin = () => {
+        setRejoinDialogOpen(false);
+        setPlayingMultiplayer(true);
+        setPlayingSolo(false);
+        router.push('/e91/play');
+    };
 
     return (
         <>
