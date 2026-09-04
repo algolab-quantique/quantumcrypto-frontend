@@ -35,6 +35,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { markSoloEveDetected } from '@/lib/e91/solo-session';
 
 // Helper function to move to messaging tab
 const moveToExchangeTab = (playerRole: string, pushLines: (lines: Line[]) => void, setE91Tab: (tab: string) => void, setStep: (step: E91GameStep) => void) => {
@@ -220,7 +221,7 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
             setEveSpotted(true);
             setValidated(true);
             // Store detection flag for results page (persists across game restart)
-            localStorage.setItem('e91EveWasDetected', JSON.stringify(true));
+            markSoloEveDetected();
         } else {
             pushLines([
                 {

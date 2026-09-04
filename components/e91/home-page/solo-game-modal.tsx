@@ -101,6 +101,7 @@ import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
+import { recordSoloGameStart } from '@/lib/e91/solo-session';
 import {
     E91_SOLO_PHOTON_MAX,
     E91_SOLO_PHOTON_MIN_WITH_EVE,
@@ -308,8 +309,9 @@ const SoloGameModal = ({
         // Save game config to localStorage for page refresh persistence
         localStorage.setItem('e91PhotonNumber', JSON.stringify(photonNumber));
         localStorage.setItem('e91GameHasEve', JSON.stringify(eve));
-        localStorage.setItem('e91OriginalEvePresent', JSON.stringify(isEveActuallyPresent)); // For results page
-        localStorage.setItem('e91EveWasDetected', JSON.stringify(false)); // Reset detection flag
+        // Task 40 Phase 3f: the two results-page facts (did Eve intercept, was
+        // she caught) go through the helper that also owns reading them.
+        recordSoloGameStart(isEveActuallyPresent);
         localStorage.setItem('e91GameData', JSON.stringify({ evePresent: isEveActuallyPresent }));
 
         // Navigate to play page - simulation data generated on-demand there.

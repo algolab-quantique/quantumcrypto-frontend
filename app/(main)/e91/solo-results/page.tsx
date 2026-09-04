@@ -16,6 +16,10 @@ import React, { useEffect, useState } from 'react';
 import SoloResultsTable from '@/components/e91/results-page/solo-results-table';
 import usePlayerStore from '@/store/player-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
+import {
+    readSoloEveRecord,
+    readSoloGameStartTime,
+} from '@/lib/e91/solo-session';
 import { useProtocolSessionGuard } from '@/lib/protocol-lifecycle/use-protocol-session-guard';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { useLanguage } from '@/components/providers/language-provider';
@@ -42,7 +46,11 @@ const E91SoloResultsPage = () => {
     // Game state from store (for gameSuccess and keyBits)
     const { gameSuccess, aliceValidBits, eveSpotted } = useE91RoomStore();
 
-    // State for values read from localStorage
+    // Task 40 Phase 3f: the game-scope Eve facts and the start time now come
+    // from lib/e91/solo-session instead of four inline localStorage reads.
+    // This page no longer touches localStorage at all. Same values, same
+    // sources — the helper reads the same three keys this effect used to read
+    // by hand, so nothing about what the table shows changes.
     const [elapsedTime, setElapsedTime] = useState(0);
     const [originalEveEnabled, setOriginalEveEnabled] = useState(false);
     const [originalEveWasPresent, setOriginalEveWasPresent] = useState(false);
@@ -53,33 +61,19 @@ const E91SoloResultsPage = () => {
         // and this route may still turn out to be one the visitor may not see.
         if (!ready) return;
 
-        // Get game start time from localStorage
-        const startTimeStr = localStorage.getItem('e91GameStartTime');
-        if (startTimeStr) {
-            const startTime = parseInt(startTimeStr, 10);
-            const endTime = Date.now();
-            const elapsed = (endTime - startTime) / 1000; // seconds
-            setElapsedTime(elapsed);
+        // NOTE: recomputing from `Date.now()` on every mount is what makes the
+        // reported time grow on each refresh — Task 62. Left as-is here on
+        // purpose; Phase 3f moves the read, it does not change the number.
+        const startTime = readSoloGameStartTime();
+        if (startTime !== null) {
+            setElapsedTime((Date.now() - startTime) / 1000);
         }
 
-        // Read ORIGINAL Eve configuration from localStorage
-        // These are set at game start and NOT reset on game restart
-        const gameHasEveStr = localStorage.getItem('e91GameHasEve');
-        if (gameHasEveStr) {
-            setOriginalEveEnabled(JSON.parse(gameHasEveStr));
-        }
-
-        // Check if Eve was actually present (from original game data)
-        const originalEveStr = localStorage.getItem('e91OriginalEvePresent');
-        if (originalEveStr) {
-            setOriginalEveWasPresent(JSON.parse(originalEveStr));
-        }
-
-        // Check if Eve was detected (stored when user clicks "not secure")
-        const eveDetectedStr = localStorage.getItem('e91EveWasDetected');
-        if (eveDetectedStr) {
-            setEveWasDetected(JSON.parse(eveDetectedStr));
-        }
+        // Set at game start and deliberately NOT reset by a restart.
+        const eveRecord = readSoloEveRecord();
+        setOriginalEveEnabled(eveRecord.enabled);
+        setOriginalEveWasPresent(eveRecord.drawn);
+        setEveWasDetected(eveRecord.detected);
     }, [ready]);
 
     // Render-time gate: nothing paints until the guard resolves the session as

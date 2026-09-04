@@ -33,6 +33,7 @@ import { E91GameStep, inputField } from '@/types';
 import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { markSoloGameStarted } from '@/lib/e91/solo-session';
 // Solo simulation functions
 import {
     generateBases,
@@ -141,10 +142,10 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
      * 3. Apply Eve interception if gameHasEve is true
      */
     const onMeasurement = () => {
-        // Record game start time for results page elapsed time calculation
-        if (!localStorage.getItem('e91GameStartTime')) {
-            localStorage.setItem('e91GameStartTime', Date.now().toString());
-        }
+        // Record game start time for results page elapsed time calculation.
+        // Task 40 Phase 3f: the "only if not already set" guard now lives in
+        // the helper, so re-measuring cannot restart the clock.
+        markSoloGameStarted();
 
         const playerBases = basisInputs.map(({ value }) => value);
         let playerBits: string[];
