@@ -2070,12 +2070,45 @@ lines exist in four places today (`solo-game.tsx`, `multi-game.tsx`, `socket-pro
 and E91 multi push **nothing at all** after the restart — the transcript is empty but for the static
 header. BB84 solo is correct; E91 solo is correct but unstyled (the defect above).
 
+**🔍 THREE REFINEMENTS from Ibra's Phase 3f browser testing (2026-09-03) — all change the plan:**
+
+**(a) The two restarts must treat Eve in OPPOSITE ways.** The finding above says "the restart loses
+Eve", which is true for the insufficient-key restart and **wrong** for the Eve-detected one:
+
+| Restart | Eve must | Why |
+|---|---|---|
+| insufficient key (`basis-tab`, `solo-basis-tab`) | **survive** | bad luck, not a detection — Task 49-A's words |
+| Eve detected (`solo-CHSH-tab`, `CHSH-tab`) | **be removed** | the Task 49-C decision: switch her off so students finish the protocol instead of looping detect→restart |
+
+BB84 encodes exactly this with `restartSoloRound({withoutEve: true})`. **63-A's helper needs the same
+option**, or fixing one restart breaks the other. Ibra found it by playing the detected-Eve path,
+which the original write-up had not exercised.
+
+**(b) The `content`/`title` defect is in TWO places, not one.** `solo-CHSH-tab.tsx:258` carries the
+same `{content: 'component.e91.measurement.welcome'}` as `solo-basis-tab.tsx:126`, so the welcome
+line renders unstyled after *either* solo restart. Two hand-copies, one drift — more evidence for
+routing both through the helper.
+
+**(c) E91 never tells the student the new round has no Eve — BB84 does.** Verified in the language
+files:
+
+| | message shown when Eve is detected |
+|---|---|
+| **BB84** (`component.gameRestart.eveDescription`) | *"La clé est compromise — on la jette et on recommence l'échange, **cette fois sans Ève**."* |
+| **E91** (`component.e91.restart.unsecured.description`) | *"Ève a été démasquée"* — says she was caught, **not** that she is now gone |
+
+That sentence is the "honest short Eve message" Task 49-C added to BB84; E91 never got it. Raised by
+Ibra from memory (*"je pense qu'on a mis un message… mais où, je ne sais pas"*) and confirmed — it
+exists, in the other protocol. **Add an E91 equivalent in all three languages** (see the UI WORDING
+NOTE below: reuse the concept, do not invent a second vocabulary for it).
+
 **📋 SLICE PLAN (agreed with Ibra 2026-09-03):**
 
 | Slice | What | Verification |
 |---|---|---|
-| **63-A** | `lib/e91/round.ts` → `restartE91Round()`: read config → reset → restore config → push welcome. Modelled on `restartSoloRound`. **Pure refactor, no call site changed yet.** | unit test + mutation check |
-| **63-B** | E91 **solo** calls it — fixes the Eve loss **and** the `content`/`title` defect at once | solo game with Eve → restart → Eve still intercepts, welcome line styled |
+| **63-A** | `lib/e91/round.ts` → **`restartE91Round(options?: {withoutEve?: boolean})`**: read config → reset → restore config (or drop Eve when asked) → push welcome. Modelled on `restartSoloRound`, **including its `withoutEve` option** — see refinement (a). **Pure refactor, no call site changed yet.** | unit tests for BOTH modes + mutation check |
+| **63-B** | E91 **solo** calls it — **two call sites**: `solo-basis-tab` (default, Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect | solo with Eve → short-key restart → Eve still intercepts; detected-Eve restart → Eve gone; welcome line styled in both |
+| **63-B bis** | The missing E91 message: *"…on recommence, cette fois sans Ève"*, 3 languages — see refinement (c) | the detected-Eve restart says so on screen |
 | **63-C** | E91 **multi** calls it | **2 browsers** |
 | **63-D** | BB84 **multi**: same treatment (its solo is already right) | **2 browsers**, Eve on |
 | **63-E** | 📌 **DELIBERATELY NOT DONE — decided with Ibra.** Telling the partner a restart happened. Needs a backend event, and the sprint is frontend-only. **The desync therefore remains**: each player restarts independently, and if one continues without waiting, the other is left behind. Recorded as a known limitation, not an oversight. Same family as **49-B**. |
