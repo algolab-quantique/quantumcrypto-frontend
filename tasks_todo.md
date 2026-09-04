@@ -390,6 +390,15 @@ This is intentionally future work. It should not be guessed in the frontend only
 **Priority**: 🔴 HIGH  
 **Depends On**: E91 multiplayer backend event contract / room-level restart semantics.
 
+> **🔗 This IS the "notify the partner" work referenced from [Task 63](#63--the-insufficient-key-restart-loses-the-games-configuration--eve-silently-changes).**
+> Rediscovered on 2026-09-03 while testing Phase 3d, written up there as "63-E", then found to be
+> already specified here — three months earlier, with the backend contract, the restart epoch and the
+> stale-message rule already worked out. Task 63 no longer duplicates it: its **Step 4** leaves a
+> live, documented `notifyPartner()` no-op for this task to fill.
+> **It applies to BB84 as well**, not only E91: BB84's own multi short-key restart is equally
+> uncoordinated (`basis-tab.tsx:122-127`, "known desync, tracked as Task 49-B"). Whoever does this
+> should do it once for both.
+
 **Context**: In E91 multiplayer, if the valid shared key is too short after basis classification, one player can see the "key too small, restart" flow before the other player reaches the same checkpoint. The restart is currently too local/client-driven, so Alice and Bob can diverge.
 
 **Observed broken scenarios**:
@@ -2117,16 +2126,90 @@ Ibra from memory (*"je pense qu'on a mis un message… mais où, je ne sais pas"
 exists, in the other protocol. **Add an E91 equivalent in all three languages** (see the UI WORDING
 NOTE below: reuse the concept, do not invent a second vocabulary for it).
 
-**📋 SLICE PLAN (agreed with Ibra 2026-09-03):**
+---
 
-| Slice | What | Verification |
+## 🎯 THE RULE THIS TASK EXISTS TO ESTABLISH (Ibra, 2026-09-04)
+
+> **A protocol behaviour is changed in ONE place.**
+>
+> *"Protocol X, with Eve, Eve detected, restart (tell the player it restarts without Eve), continue,
+> and at the end the results table shows the number of rounds. This is true in BB84, so it must be
+> the same in E91, in DPS, and in every future protocol — and not just the same pipeline, the same
+> exact code. Imagine we later decide that a restart keeps Eve according to the probability: we
+> change it once and it works everywhere, instead of going protocol by protocol, forgetting one, and
+> then searching and guessing. That is bad."*
+
+This reframes the task. The first plan (a `lib/e91/round.ts` "modelled on" `lib/bb84/solo-round.ts`)
+was **a second copy of the same mechanism in a second folder** — precisely the thing that produced
+every bug listed here. Ibra caught it. The task is now: **build the shared restart, with BB84 as the
+first client and E91 as the second.**
+
+**⚠️ Scope decision (Ibra, 2026-09-04): E91's physics is NOT touched.** It stays in Python. Where a
+protocol cannot supply a hook, the hook is left unimplemented **and named**, so the gap is visible
+instead of rediscovered. See Step 4.
+
+**⚠️ On "commented-out code for later": rejected, and why.** Ibra suggested writing the partner
+notification and leaving it commented so a future developer just uncomments it. Same goal, better
+mechanism: **leave the seam, not the pipe.** `notifyPartner()` exists, is typed, and is actually
+called — it just does nothing yet, with a doc comment saying what it needs. Commented-out code is
+never compiled, never type-checked, never tested; in six months it no longer builds. A live no-op
+hook cannot rot.
+
+---
+
+**📐 WHAT IS COMMON AND WHAT IS NOT** (read from `lib/bb84/solo-round.ts:139-149`, the reference):
+
+```ts
+const {photonNumber} = useBB84GameStore.getState();     // 1. read config      SPECIFIC
+const evePresent = options?.withoutEve                   // 2. THE POLICY       COMMON
+    ? false : useBB84RoomStore.getState().evePresent;
+incrementSoloRoundCount();                               // 3. count the round  COMMON
+useBB84RoomStore.getState().resetRoom();                 // 4. reset            COMMON
+useBB84ProgressStore.getState().resetProgress();         // 5. reset            COMMON
+useBB84RoomStore.getState().setEvePresent(evePresent);   // 6. re-assert Eve    COMMON
+beginSoloRound(photonNumber, evePresent);                // 7. regenerate + welcome  SPECIFIC
+```
+
+Step 2 is the line Ibra wants to be able to change once. Steps 1 and 7 are the only pluggable parts,
+and step 7 is asymmetric: **BB84 solo Bob** must pre-generate Alice's photons, while **E91 solo**
+generates everything at "Measure" — so E91's hook only pushes the welcome transcript.
+
+**🔎 THERE ARE THREE COPIES OF THE RESTART, NOT TWO** (found 2026-09-04, reading for this plan):
+
+| | Where | What it does |
 |---|---|---|
-| **63-A** | `lib/e91/round.ts` → **`restartE91Round(options?: {withoutEve?: boolean})`**: read config → reset → restore config (or drop Eve when asked) → push welcome. Modelled on `restartSoloRound`, **including its `withoutEve` option** — see refinement (a). **Pure refactor, no call site changed yet.** | unit tests for BOTH modes + mutation check |
-| **63-B** | E91 **solo** calls it — **two call sites**: `solo-basis-tab` (default, Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect | solo with Eve → short-key restart → Eve still intercepts; detected-Eve restart → Eve gone; welcome line styled in both |
-| **63-B bis** | The missing E91 message: *"…on recommence, cette fois sans Ève"*, 3 languages — see refinement (c) | the detected-Eve restart says so on screen |
-| **63-C** | E91 **multi** calls it | **2 browsers** |
-| **63-D** | BB84 **multi**: same treatment (its solo is already right) | **2 browsers**, Eve on |
-| **63-E** | 📌 **DELIBERATELY NOT DONE — decided with Ibra.** Telling the partner a restart happened. Needs a backend event, and the sprint is frontend-only. **The desync therefore remains**: each player restarts independently, and if one continues without waiting, the other is left behind. Recorded as a known limitation, not an oversight. Same family as **49-B**. |
+| 1 | `basis-tab` / `solo-basis-tab` (short key) | local reset |
+| 2 | `CHSH-tab` / `solo-CHSH-tab` / `bb84-progression` (Eve detected, solo) | local reset |
+| 3 | **`socket-provider.tsx:1128-1165`** (the multiplayer event) | resets **inline, by hand, for BB84 and E91 separately** |
+
+The third was not counted before. **And BB84 multi has the same Eve-loss bug as E91**: its `else`
+branch does a bare `resetRoom(); resetProgress();`, while `alice-exchange-tab.tsx:162` branches on
+`evePresent` to decide whether to intercept.
+
+---
+
+**📋 STEP PLAN (agreed with Ibra 2026-09-04). ~6 days, with a defined exit after Step 1.**
+
+| Step | What | Est. | Verification |
+|---|---|---|---|
+| **0** | This tracker rewrite. Reconcile with **Task 28** (see below). | ½ h | — |
+| **1** ⟵ **DECISION POINT** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holding common steps 2–6. Adapter gains **`beginRound(config, eve)`**. BB84 points it at its existing `beginSoloRound`. **BB84 SOLO ONLY, behaviour-preserving** — wiring BB84 multi would *fix a bug*, which is no longer an extraction (that is Step 4). | 2 d | BB84's existing `solo-round.test.ts` stays green + browser: BB84 solo short-key and Eve-detected restarts |
+| **2** | **E91 solo becomes the second client.** Two call sites: `solo-basis-tab` (default — Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect. | 1 d | solo with Eve → short-key restart → she still intercepts; detected restart → she is gone; welcome line styled in both |
+| **3** | The missing E91 message — *"…on recommence, cette fois sans Ève"* — 3 languages. See refinement (c). | ½ d | the detected-Eve restart says it on screen |
+| **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
+| **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
+| **6** | Round counter for E91 + the results-table column, matching BB84's. | ½ d | play, restart twice, results shows 3 |
+
+**Why Step 1 is the exit:** if the extraction is not clean in ~2 days, stop there. The orchestrator
+exists, BB84 still works, and E91 can be fixed the direct way with nothing wasted. It is a decision
+with a date, not a gamble.
+
+**🔗 RECONCILED WITH TASK 28** (opened 2026-06-10 — *"E91 Multiplayer: Short-Key Restart Must Be
+Synchronized"*). What used to be written here as "63-E" is **Task 28**, which already specifies the
+backend event contract, the restart epoch, and the stale-message rule. It is **not duplicated here**.
+Step 4 leaves the `notifyPartner()` seam that Task 28 will fill. Until then the desync stands: each
+player restarts alone, and a player who continues without waiting leaves the other behind — a known,
+documented limitation, not an oversight. Same family as **49-B**.
 
 **Test that must fail first (rule 5), and an honest note on its limits:** call `restartE91Round()` in
 a game with Eve, assert `evePresent` survived and the transcript holds the welcome lines. Prove the
