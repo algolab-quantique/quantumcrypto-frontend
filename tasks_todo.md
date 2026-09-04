@@ -2193,16 +2193,54 @@ branch does a bare `resetRoom(); resetProgress();`, while `alice-exchange-tab.ts
 | Step | What | Est. | Verification |
 |---|---|---|---|
 | **0** | This tracker rewrite. Reconcile with **Task 28** (see below). | ½ h | — |
-| **1** ⟵ **DECISION POINT** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holding common steps 2–6. Adapter gains **`beginRound(config, eve)`**. BB84 points it at its existing `beginSoloRound`. **BB84 SOLO ONLY, behaviour-preserving** — wiring BB84 multi would *fix a bug*, which is no longer an extraction (that is Step 4). | 2 d | BB84's existing `solo-round.test.ts` stays green + browser: BB84 solo short-key and Eve-detected restarts |
+| **1** ✅ **DONE `298af4a`** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holds the five common steps; a new **`RoundAdapter`** (`getEvePresent`, `setEvePresent`, `beginRound`, optional `incrementRoundCount`) holds what is protocol-specific. BB84 solo only, behaviour-preserving. No per-protocol wrapper: callers name the shared function, which also broke an import cycle | ✅ BB84's 9 tests pass **with every assertion untouched** + Ibra browser-verified both paths and a normal start — see the decoded evidence below |
 | **2** | **E91 solo becomes the second client.** Two call sites: `solo-basis-tab` (default — Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect. | 1 d | solo with Eve → short-key restart → she still intercepts; detected restart → she is gone; welcome line styled in both |
 | **3** | The missing E91 message — *"…on recommence, cette fois sans Ève"* — 3 languages. See refinement (c). | ½ d | the detected-Eve restart says it on screen |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
-| **6** | Round counter for E91 + the results-table column, matching BB84's. | ½ d | play, restart twice, results shows 3 |
+| **6** | **Full results-table parity for E91**, not just the counter — see below. | 1 d | play, restart, results tells the same story BB84's does |
+
+**📊 STEP 6 WIDENED (Ibra, 2026-09-04).** It said "round counter + column". Comparing the two tables
+side by side after his Step 1 testing, E91 is missing more than that:
+
+| | BB84 | E91 |
+|---|---|---|
+| columns | Joueurs · **Itération** · Ève présente · Ève détectée · **Verdict** · Temps · Longueur · Score | Salle · Ève présente · Ève détectée · Temps · Longueur · Points |
+| closing line | *"🎉 Félicitations ! Vous avez détecté Ève — l'échange a été rejoué sans elle."* / *"⚠️ …Ève était présente et vous ne l'avez PAS détectée : votre clé est compromise !"* | — none |
+
+E91 has **no Itération, no Verdict, and no closing sentence** — and that sentence is the pedagogical
+payload: it is where the student learns what their result meant. Ibra's words: *"the results table is
+good, this is what I mean to do for E91 also — but now we are doing it as a single source of truth
+for all."* So Step 6 covers the whole story, not one column, and should reuse BB84's wording rather
+than invent a second vocabulary (see the UI WORDING NOTE). Overlaps **Task 56** (results-page story
+parity) — check it before starting.
 
 **Why Step 1 is the exit:** if the extraction is not clean in ~2 days, stop there. The orchestrator
 exists, BB84 still works, and E91 can be fixed the direct way with nothing wasted. It is a decision
-with a date, not a gamble.
+with a date, not a gamble. **→ Step 1 landed clean on 2026-09-04. Continue.**
+
+**🔬 STEP 1 EVIDENCE (decoded from the room state of Ibra's two browser runs, 2026-09-04).** Worth
+keeping: it is the first end-to-end confirmation of the Task 57 Eve fix from real gameplay, and it
+proves the `withoutEve` policy actually reaches the physics rather than only flipping a flag.
+
+*Run 1 — insufficient-key restart, Eve preserved (6 photons).* Comparing each `alicePhoton` against
+what `aliceBits` + `aliceBases` should encode, **2 of 6 photons were altered (33 %)**. The model says
+25 %; at n=6 that is inside the noise. Before Task 57, Eve indexed a 2-element basis array with an
+index running to n, produced `undefined`, and altered ~50 %. Of the 3 sifted bits only one had been
+touched, and Bob's random outcome happened to match Alice — so with **one** validation bit
+(`1 − (3/4)¹ = 25 %` detection) she slipped through, exactly as the formula predicts. The table said
+so honestly: *Eve present, not detected, key compromised*.
+
+*Run 2 — Eve-detected restart, `withoutEve: true` (15 photons).* **All 15 photons match their
+encoding exactly — zero alterations.** Eve is genuinely absent from the new round, not merely flagged
+absent. The 4 sifted bits agree perfectly on both sides, and 4 sifted − 1 validation = 3 key bits,
+so the Task 53 sacrifice is intact too.
+
+**Small inconsistency noticed in both dumps, not fixed:** `aliceCipher` / `aliceCipherSolo` are one
+element longer than `keyBits`, because they are built from the key *before* the validation bits are
+sacrificed and never recomputed. Harmless today — both readers (`messaging-tab.tsx:135` and `:243`)
+index into it, so the extra entry is never used — but it is a length mismatch that will mislead
+whoever iterates it. Worth a line in Task 53's family if anyone touches that code.
 
 **🔗 RECONCILED WITH TASK 28** (opened 2026-06-10 — *"E91 Multiplayer: Short-Key Restart Must Be
 Synchronized"*). What used to be written here as "63-E" is **Task 28**, which already specifies the
