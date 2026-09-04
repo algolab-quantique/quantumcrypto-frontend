@@ -5,6 +5,8 @@ import {
     useBB84ProgressStore,
 } from '@/store/bb84/bb84-progress-store';
 
+import {beginSoloRound, incrementSoloRoundCount} from '@/lib/bb84/solo-round';
+
 import {toSerializableSnapshot} from './snapshot';
 import type {ProtocolAdapter, RoomSnapshot} from './types';
 
@@ -57,4 +59,19 @@ export const bb84Adapter: ProtocolAdapter = {
     getRoomSnapshot: () => toSerializableSnapshot(
         useBB84RoomStore.getState() as unknown as RoomSnapshot,
     ),
+
+    // ── Round level (Task 63 Step 1) ────────────────────────────────────────
+    // BB84 is the reference implementation the shared restartRound was
+    // extracted from, so these are the pieces its own restartSoloRound used to
+    // call inline. Behaviour is unchanged; only the caller moved.
+    round: {
+        getEvePresent: () => useBB84RoomStore.getState().evePresent,
+        setEvePresent: value => useBB84RoomStore.getState().setEvePresent(value),
+        incrementRoundCount: incrementSoloRoundCount,
+        // Reads its own config, as the hook's contract requires.
+        beginRound: evePresent => {
+            const {photonNumber} = useBB84GameStore.getState();
+            beginSoloRound(photonNumber, evePresent);
+        },
+    },
 };

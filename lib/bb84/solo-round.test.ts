@@ -10,8 +10,17 @@ import {
     beginSoloRound,
     readSoloEveRecord,
     recordSoloGameStart,
-    restartSoloRound,
 } from './solo-round';
+import {restartRound} from '@/lib/protocol-lifecycle/round';
+import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
+
+/**
+ * Task 63 Step 1: these tests used to call a BB84-specific restartRound(bb84Adapter).
+ * That wrapper is gone — the same seven steps now run through the SHARED
+ * restartRound, with BB84's own part behind bb84Adapter.round. Only the
+ * invocation below changed; every assertion is untouched, which is what makes
+ * this file the proof that the extraction preserved BB84's behaviour.
+ */
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
@@ -51,18 +60,18 @@ describe('beginSoloRound', () => {
     });
 });
 
-describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
+describe('restartRound on BB84 (Task 49-A: same config, fresh randomness)', () => {
     it('regenerates photons for Bob — the original stuck-game bug', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84RoomStore.getState().setEvePresent(false);
-        restartSoloRound();
+        restartRound(bb84Adapter);
         expect(useBB84RoomStore.getState().alicePhotons).toHaveLength(4);
     });
 
     it('preserves the Eve DRAW across a bad-luck restart (flag split)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound();
+        restartRound(bb84Adapter);
         expect(useBB84RoomStore.getState().evePresent).toBe(true);
     });
 
@@ -70,7 +79,7 @@ describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84GameStore.setState({gameHasEve: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
+        restartRound(bb84Adapter, {withoutEve: true});
         expect(useBB84RoomStore.getState().evePresent).toBe(false);
         // The validation mechanic must stay: skipping it would leak the answer.
         expect(useBB84GameStore.getState().gameHasEve).toBe(true);
@@ -80,8 +89,8 @@ describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84GameStore.setState({gameHasEve: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
-        restartSoloRound(); // bad luck in the clean round
+        restartRound(bb84Adapter, {withoutEve: true});
+        restartRound(bb84Adapter); // bad luck in the clean round
         expect(useBB84RoomStore.getState().evePresent).toBe(false);
     });
 });
@@ -99,8 +108,8 @@ describe('SoloEveRecord (Task 51 ph.2: the game\'s Eve story)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         recordSoloGameStart({enabled: true, percentage: 1, drawn: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
-        restartSoloRound();
+        restartRound(bb84Adapter, {withoutEve: true});
+        restartRound(bb84Adapter);
         const record = readSoloEveRecord();
         expect(record?.rounds).toBe(3);
         expect(record?.drawn).toBe(true);

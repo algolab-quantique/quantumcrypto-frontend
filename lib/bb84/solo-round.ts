@@ -43,7 +43,8 @@ export const markSoloEveDetected = () => {
         JSON.stringify({...record, detected: true}));
 };
 
-const incrementSoloRoundCount = () => {
+/** Exported for bb84Adapter.incrementRoundCount (Task 63 Step 1). */
+export const incrementSoloRoundCount = () => {
     const record = readSoloEveRecord();
     if (!record) return;
     localStorage.setItem(SOLO_EVE_RECORD_KEY,
@@ -117,33 +118,21 @@ export const beginSoloRound = (photonNumber: number, eve: boolean) => {
     ]);
 };
 
-/**
- * Restart the current SOLO round with the same configuration — photon number,
- * validation length, Eve presence — but fresh randomness (Task 49-A).
+/*
+ * `restartSoloRound` used to live here. Task 63 Step 1 moved its seven steps
+ * into the shared `restartRound(adapter, options)`
+ * (lib/protocol-lifecycle/round.ts), and callers now name that function
+ * directly — `restartRound(bb84Adapter, {withoutEve: true})`.
  *
- * Flag semantics (Task 51): `gameHasEve` is the CHECKBOX (the game includes
- * the validation mechanic — flow) and is never changed by restarts, so the
- * new round still validates; `evePresent` is the DRAW (she actually
- * intercepts — physics). A bad-luck restart preserves the current draw:
- * `resetRoom()` wipes it (and the persisted checkpoint), so it is captured
- * first and re-asserted; the store mutations then rebuild the checkpoint
- * exactly like a fresh solo start.
+ * No BB84-flavoured wrapper was kept, for two reasons. It would have to import
+ * bb84Adapter, which imports `beginSoloRound` from this file: a module cycle.
+ * And the point of the extraction is that a reader of the call site sees the
+ * SHARED function — a wrapper per protocol is how three copies of a restart
+ * came to exist in the first place.
  *
- * `withoutEve` (Task 49-C, Eve-detected restart): switch her PRESENCE off for
- * the new round — the historical, deliberate semantic (a guaranteed-present
- * Eve would loop detect→restart forever; students must be able to complete
- * the protocol — see ADR §12). The validation mechanic stays: the student
- * re-validates and confirms the channel is now clean, exactly like the
- * multiplayer coordinated restart.
+ * What stays BB84's own is `beginSoloRound` above, reached through
+ * `bb84Adapter.beginRound`. The behaviour is unchanged: same order, same flag
+ * semantics (Task 51: `gameHasEve` is the checkbox and restarts never touch it;
+ * `evePresent` is the draw, preserved on a bad-luck restart and cleared by
+ * `withoutEve` for the Eve-detected one, Task 49-C).
  */
-export const restartSoloRound = (options?: {withoutEve?: boolean}) => {
-    const {photonNumber} = useBB84GameStore.getState();
-    const evePresent = options?.withoutEve
-        ? false
-        : useBB84RoomStore.getState().evePresent;
-    incrementSoloRoundCount();
-    useBB84RoomStore.getState().resetRoom();
-    useBB84ProgressStore.getState().resetProgress();
-    useBB84RoomStore.getState().setEvePresent(evePresent);
-    beginSoloRound(photonNumber, evePresent);
-};

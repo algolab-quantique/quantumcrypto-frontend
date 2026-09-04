@@ -14,7 +14,8 @@ import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {abandon} from '@/lib/protocol-lifecycle/lifecycle';
 import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
 import {toast} from 'sonner';
-import {markSoloEveDetected, restartSoloRound} from '@/lib/bb84/solo-round';
+import {markSoloEveDetected} from '@/lib/bb84/solo-round';
+import {restartRound} from '@/lib/protocol-lifecycle/round';
 import GameRestartDialog from '@/components/bb84/play-page/game-restart-dialog';
 
 const Bb84Progression = () => {
@@ -73,7 +74,7 @@ const Bb84Progression = () => {
     // players restart.
     const onEveReplay = () => {
         if (playingSolo) {
-            restartSoloRound({withoutEve: true});
+            restartRound(bb84Adapter, {withoutEve: true});
             toast.message('Game restarted', {
                 description: localize('component.validation.gameRestarted'),
             });
