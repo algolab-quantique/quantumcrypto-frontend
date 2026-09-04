@@ -312,8 +312,14 @@ const SoloGameModal = ({
         localStorage.setItem('e91EveWasDetected', JSON.stringify(false)); // Reset detection flag
         localStorage.setItem('e91GameData', JSON.stringify({ evePresent: isEveActuallyPresent }));
 
-        // Navigate to play page - simulation data generated on-demand there
-        router.replace('/e91/play');
+        // Navigate to play page - simulation data generated on-demand there.
+        // Task 40 Phase 3e-3: push, not replace. The rule from BB84 Slice 2a is
+        // "replace transient screens, PUSH real destinations", and /e91 is a real
+        // destination. Replacing it removed /e91 from history, so browser-Back
+        // from a game jumped straight to '/' — skipping the rejoin dialog and,
+        // for a finished game, landing on the one page that used to clear it.
+        // BB84's solo modal has always pushed (solo-game-modal.tsx:213).
+        router.push('/e91/play');
     };
 
     /**
