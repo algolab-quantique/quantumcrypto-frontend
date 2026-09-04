@@ -2194,7 +2194,7 @@ branch does a bare `resetRoom(); resetProgress();`, while `alice-exchange-tab.ts
 |---|---|---|---|
 | **0** | This tracker rewrite. Reconcile with **Task 28** (see below). | ½ h | — |
 | **1** ✅ **DONE `298af4a`** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holds the five common steps; a new **`RoundAdapter`** (`getEvePresent`, `setEvePresent`, `beginRound`, optional `incrementRoundCount`) holds what is protocol-specific. BB84 solo only, behaviour-preserving. No per-protocol wrapper: callers name the shared function, which also broke an import cycle | ✅ BB84's 9 tests pass **with every assertion untouched** + Ibra browser-verified both paths and a normal start — see the decoded evidence below |
-| **2** | **E91 solo becomes the second client.** Two call sites: `solo-basis-tab` (default — Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect. | 1 d | solo with Eve → short-key restart → she still intercepts; detected restart → she is gone; welcome line styled in both |
+| **2** | **E91 solo becomes the second client.** Two call sites: `solo-basis-tab` (default — Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect. ⚠️ E91's `beginRound` only pushes the transcript **for now** — it looks trivial because pair generation is misplaced inside "Measure", which is **Task 64**, deliberately not folded in here. | 1 d | solo with Eve → short-key restart → she still intercepts; detected restart → she is gone; welcome line styled in both |
 | **3** | The missing E91 message — *"…on recommence, cette fois sans Ève"* — 3 languages. See refinement (c). | ½ d | the detected-Eve restart says it on screen |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
@@ -2261,6 +2261,76 @@ not its adoption.
 uncoordinated multi restart — 63-E is its E91 twin) · **52-A** (restart leaving an empty transcript,
 same file family) · **57** (BB84's Eve bug: a physics flag silently wrong) · **60** (E91's physics
 duplicated in Python, which is *why* E91 multi's symptom is the inverse of solo's).
+
+---
+
+### 64. 🧹 E91's "Measure" button does four unrelated things — one of them backwards
+
+**Status**: 🔴 OPEN, analysed, not started. **Priority**: P2 — no student-visible breakage confirmed
+yet, but it holds a latent transcript bug and it is why E91 cannot line up with BB84 structurally.
+**Found**: Ibra, 2026-09-04, on hearing that E91 "generates everything when you click Measure" —
+*"this should only do one logical thing, the measurement itself. I really don't like when we mix
+things."* He was right, and the analysis found more than he asked about.
+**Axis**: mostly A (flow/ownership), with a pedagogical consequence on B.
+
+**`onMeasurement` (`solo-measurement-tab.tsx:144`, and its multiplayer twin `measurement-tab.tsx`)
+currently does four unrelated jobs:**
+
+```ts
+const onMeasurement = () => {
+    markSoloGameStarted();                    // 1. stamp the GAME's start clock
+    ...
+    partnerBases = generateBases(...);        // 2. CREATE the entangled-pair source —
+    partnerBits  = ...;                       //    the partner's bases AND bits
+    ...
+    setAliceBases(playerBases);               // 3. measure: apply MY chosen bases
+    ...
+    setTimeout(() => pushLines([...]), 2000); // 4. a UI message, on an uncancelled timer
+};
+```
+
+**(1) Why job 2 is the real problem.** In E91 a *source* emits entangled pairs and the two players
+measure **independently**. Here one player's click creates the pair *and* picks the partner's bases,
+then measures. That is backwards, and it teaches the student the opposite of the physics: that
+measuring is what creates the pair.
+
+**(2) It also explains a wrong claim made during Task 63 planning.** The plan says E91 has nothing to
+regenerate at round start, so its `beginRound` is trivial. That is not simplicity — it is the
+symptom. **BB84 generates Alice's photons in `beginSoloRound`, i.e. at the start of the round, where
+it belongs.** If E91 generated its pairs there too, the two protocols would be structurally
+symmetric and `beginRound` would mean the same thing in both.
+
+**(3) Uncancelled timers — a latent transcript bug, in BOTH tabs.** Neither is cleaned up on unmount:
+
+| timer | what it does after unmount |
+|---|---|
+| `onMeasurement`'s 2 s `pushLines` | pushes "share your bases" into **whatever transcript exists then** — and `pushLines` persists to localStorage, so a stale line survives into the next round |
+| `revealPhotons`' animation timers (`solo-measurement-tab.tsx:258,267`) | the last one calls `setPhotonsRevealed(true)` — a **persisted store write** landing on a round that may already have been restarted |
+
+A restart, a tab switch or a refresh inside those two seconds is enough. This is exactly the
+*"the messages are not what they should be"* family Ibra reported on 2026-09-03.
+
+**The fix, three parts — each its own slice:**
+1. **Move pair generation into `beginRound`**, so a round's physics exists before anyone measures,
+   and E91 becomes symmetric with BB84.
+2. **`onMeasurement` only measures** — the clock stamp and the transcript line move out.
+3. **Make the timers cancellable** (or drop the artificial delay), in both measurement tabs.
+
+**⚠️ Scope note — this does NOT breach "do not touch E91's physics" (Ibra, 2026-09-04).** Part 1
+changes *when* the existing generation runs, not what it computes: the same
+`generateBases` / `generateEntangledBits` / `eveGenerateBits` calls, moved to round start. The
+simulation itself is untouched, and E91 multiplayer stays with the Python backend (**Task 60**).
+
+**Do NOT fold this into Task 63 Step 2.** Step 2 wires E91 to the shared `restartRound` — bounded and
+verifiable on its own. Mixing a flow redesign into it is the exact thing CLAUDE.md rule 2 forbids,
+and it would make a failed browser test impossible to attribute.
+
+**Test that must fail first (rule 5):** measure, then restart within two seconds, and assert the new
+round's transcript contains only its own opening lines. That fails today.
+
+**Cross-refs:** **63** (the shared restart — part 1 makes E91's `beginRound` meaningful) ·
+**52-A** (a restart leaving a wrong transcript, same family) · **60** (why multiplayer cannot follow
+part 1 yet).
 
 ---
 
