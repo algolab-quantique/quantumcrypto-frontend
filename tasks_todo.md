@@ -751,7 +751,22 @@ should not be trimmed on account of it.
 | **3e-1** — the form stops restoring ✅ **DONE `bab4b81`** | `e91-game-form-v3.tsx` | **`getGameProgress()` deleted** — it hand-read 7 keys with no corrupt validation *and* opened the socket from the form page. `onRejoin` now sets the flags and routes; `/e91/play` owns restore + reconnect (wired in 3d). `push`, not `replace`. −51/+15 lines | ✅ multi: play, refresh, `/e91` → dialog → rejoin restores with the partner still connected; close clears |
 | **3e-2** — the shared classifier ✅ **DONE `b115623`** | `e91-game-form-v3.tsx` | hand-rolled detection → **`detectSession(e91Adapter)`**. **The form now has ZERO `localStorage` calls** (4 at the start of Phase 3). Three behaviour changes: solo sessions are no longer destroyed, completed sessions keep their checkpoint, and the auto-redirect is replaced by an explicit dialog | ✅ mid-solo-game `/e91` now offers rejoin and restores intact; declining clears; `/e91/play` by URL after closing the tab restores |
 | **3e-3** — navigation, so 3e-2 could actually show ✅ **DONE `a47ce52`** | `app/(main)/page.tsx`, `e91/home-page/solo-game-modal.tsx` | landing page stops clearing completed E91 data (**its old comment had already scheduled this for "their migration"**); solo modal `replace` → **`push`** so `/e91` stays in history | ✅ finished game: Back → `/e91`, Forward → results return; mid-game Back → dialog, Forward → game; decline → Forward correctly fail-closes; **BB84 re-checked** since `page.tsx` is shared |
-| **3f** — orphan keys | `solo-measurement-tab.tsx` (`e91GameStartTime`), `solo-CHSH-tab.tsx` (`e91EveWasDetected`) | fold into the adapter's checkpoint **or** keep as a documented exception (BB84 keeps `bob-exchange-tab`'s draft) | timer + Eve-detected flag survive a refresh |
+| **3f** — orphan keys ✅ **DONE `b118020`** | new **`lib/e91/solo-session.ts`** + 4 call sites (start modal, measurement tab, solo CHSH tab, solo results page) | the answer was neither "fold into the checkpoint" nor "document the exception" but **give them an owner**, mirroring `lib/bb84/solo-round.ts`: `recordSoloGameStart` / `markSoloEveDetected` / `markSoloGameStarted` / `readSoloEveRecord` / `readSoloGameStartTime`. **The results page now has zero `localStorage` calls**; the 3 that remain in E91 are config seeding in the solo modal, the same shape BB84 keeps. 8 unit tests | ✅ Eve detected / Eve undetected / no Eve — the results table shows the same values as before in all three; refresh and Back/Forward unaffected |
+
+**✅ PHASE 3 COMPLETE (2026-09-03).** E91's lifecycle now runs on the shared machinery: `abandon` /
+`startFresh` for cleanup and start, `restoreCheckpoint` for solo and multiplayer restore,
+`useProtocolSessionGuard` on both routes, `detectSession` for rejoin, and `lib/e91/solo-session.ts`
+for the game-scope facts. **Direct `localStorage` calls in E91 components and routes: 15 → 3**, and
+those three are deliberate.
+
+**What Phase 3 uncovered but did NOT fix** (logged, per rule 2 — behaviour bugs never share a commit
+with a lifecycle refactor): **Task 61** (untranslated leave dialog) · **Task 62** (the results clock
+never stops) · **Task 63** (the insufficient-key restart silently changes Eve) · **52-G** (a solo
+loss makes the results page unreachable). Every migration so far has surfaced unknown bugs — roadmap
+caveat 2 held again, and this time four of them.
+
+**Still open in Task 40 after this:** Phase 4 (DPS) and Phase 5 (socket-provider), plus the E91
+writes socket-provider still owns, which are Phase 5 by design.
 
 **🔄 ORDER CORRECTED 2026-09-02 — the route guard moved from 4th to 2nd.** The original order put
 solo restore before the guard. That is backwards, and BB84 already paid for the mistake: doing the
