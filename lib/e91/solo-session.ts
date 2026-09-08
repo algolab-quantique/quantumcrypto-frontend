@@ -24,6 +24,8 @@
 
 const EVE_ENABLED_KEY = 'e91GameHasEve';
 const EVE_PRESENT_KEY = 'e91OriginalEvePresent';
+const EVE_PERCENTAGE_KEY = 'e91EvePercentage';
+const ROUND_COUNT_KEY = 'e91RoundCount';
 const EVE_DETECTED_KEY = 'e91EveWasDetected';
 const GAME_START_TIME_KEY = 'e91GameStartTime';
 
@@ -50,20 +52,43 @@ export type SoloEveRecord = {
      * while this key is cleared with the rest of the session.
      */
     enabled: boolean;
+    /** The probability the player chose for the draw. Shown on the results page
+     *  so a student can see the odds their game was played against. */
+    percentage: number;
     /** Did Eve actually intercept? The draw made at game start. */
     drawn: boolean;
     /** Did the player catch her? Flipped when they declare the channel unsafe. */
     detected: boolean;
+    /** 1 + the number of restarts, of any kind. GAME scope: it survives the
+     *  resets a restart performs, which is why it lives outside the room
+     *  snapshot (Task 63). */
+    rounds: number;
 };
 
 /**
  * Persist the game-start Eve facts. Called once from the solo start modal.
  * `detected` starts false; a restart does not rewrite either value.
  */
-export const recordSoloGameStart = (evePresent: boolean) => {
+export const recordSoloGameStart = (
+    evePresent: boolean,
+    evePercentage: number,
+) => {
     if (!isBrowser()) return;
     localStorage.setItem(EVE_PRESENT_KEY, JSON.stringify(evePresent));
     localStorage.setItem(EVE_DETECTED_KEY, JSON.stringify(false));
+    localStorage.setItem(EVE_PERCENTAGE_KEY, JSON.stringify(evePercentage));
+    localStorage.setItem(ROUND_COUNT_KEY, JSON.stringify(1));
+};
+
+/**
+ * Bump the rounds counter. Called by the shared `restartRound` through the
+ * adapter, BEFORE the resets — the counter must outlive them, which is exactly
+ * why it is a key of its own rather than a field of the room snapshot.
+ */
+export const incrementSoloRoundCount = () => {
+    if (!isBrowser()) return;
+    const current = readJSON<number>(ROUND_COUNT_KEY) ?? 1;
+    localStorage.setItem(ROUND_COUNT_KEY, JSON.stringify(current + 1));
 };
 
 /** Flip the detection flag. Survives the restart that follows detection. */
@@ -84,8 +109,12 @@ export const markSoloGameStarted = () => {
 
 export const readSoloEveRecord = (): SoloEveRecord => ({
     enabled: readJSON<boolean>(EVE_ENABLED_KEY) ?? false,
+    percentage: readJSON<number>(EVE_PERCENTAGE_KEY) ?? 0,
     drawn: readJSON<boolean>(EVE_PRESENT_KEY) ?? false,
     detected: readJSON<boolean>(EVE_DETECTED_KEY) ?? false,
+    // A game recorded before this key existed reads as its first round, which
+    // is what it was.
+    rounds: readJSON<number>(ROUND_COUNT_KEY) ?? 1,
 });
 
 /**

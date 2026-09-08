@@ -10,6 +10,7 @@
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
+    incrementSoloRoundCount,
     markSoloEveDetected,
     markSoloGameStarted,
     readSoloEveRecord,
@@ -27,13 +28,13 @@ afterEach(() => {
 
 describe('recordSoloGameStart', () => {
     it('stores the draw and starts undetected', () => {
-        recordSoloGameStart(true);
+        recordSoloGameStart(true, 0.5);
 
         expect(readSoloEveRecord()).toMatchObject({drawn: true, detected: false});
     });
 
     it('records an absent Eve as absent, not as missing data', () => {
-        recordSoloGameStart(false);
+        recordSoloGameStart(false, 0.5);
 
         expect(readSoloEveRecord()).toMatchObject({drawn: false, detected: false});
     });
@@ -45,17 +46,68 @@ describe('recordSoloGameStart', () => {
      */
     it('reports the checkbox separately from the draw', () => {
         localStorage.setItem('e91GameHasEve', JSON.stringify(true));
-        recordSoloGameStart(false);
+        recordSoloGameStart(false, 0.5);
 
-        expect(readSoloEveRecord()).toEqual({
+        expect(readSoloEveRecord()).toMatchObject({
             enabled: true, drawn: false, detected: false,
         });
     });
 });
 
+describe('incrementSoloRoundCount', () => {
+    /**
+     * The counter is what the results table's Iteration column reports, and it
+     * must survive the resets a restart performs — which is why it is a key of
+     * its own rather than a field of the room snapshot (Task 63).
+     */
+    /**
+     * Written against a STALE counter on purpose. Asserting `rounds === 1` on
+     * empty storage proves nothing: the reader falls back to 1 when the key is
+     * missing, so that version passed even with the initialisation deleted —
+     * caught by mutation, and it is exactly the vacuous test rule 5 warns about.
+     * Starting from 4 makes the assertion depend on the write actually happening.
+     */
+    it('resets the counter when a new game starts', () => {
+        localStorage.setItem('e91RoundCount', JSON.stringify(4));
+
+        recordSoloGameStart(true, 0.5);
+
+        expect(readSoloEveRecord().rounds).toBe(1);
+    });
+
+    it('counts each restart', () => {
+        recordSoloGameStart(true, 0.5);
+
+        incrementSoloRoundCount();
+        incrementSoloRoundCount();
+
+        expect(readSoloEveRecord().rounds).toBe(3);
+    });
+
+    /**
+     * A game that began before this key existed has no counter. It reads as its
+     * first round, which is what it was — rather than 0, or NaN from a bad parse.
+     */
+    it('treats a game with no counter as its first round', () => {
+        expect(readSoloEveRecord().rounds).toBe(1);
+
+        incrementSoloRoundCount();
+
+        expect(readSoloEveRecord().rounds).toBe(2);
+    });
+});
+
+describe('the Eve probability', () => {
+    it('is recorded at game start so the results page can show the odds', () => {
+        recordSoloGameStart(true, 0.7);
+
+        expect(readSoloEveRecord().percentage).toBe(0.7);
+    });
+});
+
 describe('markSoloEveDetected', () => {
     it('flips detection without disturbing the draw', () => {
-        recordSoloGameStart(true);
+        recordSoloGameStart(true, 0.5);
 
         markSoloEveDetected();
 
@@ -99,7 +151,7 @@ describe('reading before anything was written', () => {
     });
 
     it('reports Eve as absent and undetected', () => {
-        expect(readSoloEveRecord()).toEqual({
+        expect(readSoloEveRecord()).toMatchObject({
             enabled: false, drawn: false, detected: false,
         });
     });
@@ -108,7 +160,7 @@ describe('reading before anything was written', () => {
         localStorage.setItem('e91OriginalEvePresent', '{not json');
         localStorage.setItem('e91GameStartTime', 'not a number');
 
-        expect(readSoloEveRecord()).toEqual({
+        expect(readSoloEveRecord()).toMatchObject({
             enabled: false, drawn: false, detected: false,
         });
         expect(readSoloGameStartTime()).toBeNull();

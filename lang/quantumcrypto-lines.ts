@@ -316,7 +316,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         // BB84 Solo Results Page (Task 51 ph.2 — lives here, not in
         // bb84-lines: /bb84/solo-results is not a play|solo route, so the
         // language provider serves the QUANTUMCRYPTO dictionary, like E91's.)
-        'component.bb84.results.title': 'Solo game results',
+        'component.bb84.results.title': 'BB84 Solo Game Results',
         'component.bb84.results.room': 'Players',
         'component.bb84.results.evePresent': 'Eve present?',
         'component.bb84.results.eveDetected': 'Eve detected?',
@@ -871,7 +871,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.home': 'Menu Principal',
 
         // BB84 Solo Results Page FR (Task 51 ph.2)
-        'component.bb84.results.title': 'Résultats de la partie solo',
+        'component.bb84.results.title': 'Résultats BB84 Mode Solo',
         'component.bb84.results.room': 'Joueurs',
         'component.bb84.results.evePresent': 'Ève présente ?',
         'component.bb84.results.eveDetected': 'Ève détectée ?',
@@ -1388,7 +1388,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.home': 'Menú Principal',
 
         // BB84 Solo Results Page ES (Task 51 ph.2)
-        'component.bb84.results.title': 'Resultados de la partida en solitario',
+        'component.bb84.results.title': 'Resultados BB84 Modo Solo',
         'component.bb84.results.room': 'Jugadores',
         'component.bb84.results.evePresent': '¿Eva presente?',
         'component.bb84.results.eveDetected': '¿Eva detectada?',

@@ -303,7 +303,7 @@ const SoloGameModal = ({
         localStorage.setItem('e91GameHasEve', JSON.stringify(eve));
         // Task 40 Phase 3f: the two results-page facts (did Eve intercept, was
         // she caught) go through the helper that also owns reading them.
-        recordSoloGameStart(isEveActuallyPresent);
+        recordSoloGameStart(isEveActuallyPresent, evePercentage);
         localStorage.setItem('e91GameData', JSON.stringify({ evePresent: isEveActuallyPresent }));
 
         // Navigate to play page - simulation data generated on-demand there.

@@ -1,5 +1,6 @@
 import useE91RoomStore, {type E91RoomStateSchema} from '@/store/e91/e91-room-store';
 import useE91GameStore from '@/store/e91/e91-game-store';
+import {incrementSoloRoundCount} from '@/lib/e91/solo-session';
 import {
     hydrateE91ProgressStore,
     useE91ProgressStore,
@@ -36,6 +37,8 @@ export const e91Adapter: ProtocolAdapter = {
         'e91GameHasEve',
         'e91GameStartTime',
         'e91OriginalEvePresent',
+        'e91EvePercentage',
+        'e91RoundCount',
         'e91EveWasDetected',
     ],
     resetRoom: () => useE91RoomStore.getState().resetRoom(),
@@ -70,6 +73,9 @@ export const e91Adapter: ProtocolAdapter = {
     round: {
         getEvePresent: () => useE91RoomStore.getState().evePresent,
         setEvePresent: value => useE91RoomStore.getState().setEvePresent(value),
+        // Task 63 Step 6c: E91 finally counts its rounds, so its results table
+        // can show the Iteration column BB84's has had since Task 56.
+        incrementRoundCount: incrementSoloRoundCount,
 
         /**
          * E91's opening transcript, and nothing else.
@@ -98,7 +104,5 @@ export const e91Adapter: ProtocolAdapter = {
             ]);
         },
 
-        // No incrementRoundCount yet: E91 has no rounds counter to bump, and no
-        // column to show it in. That is Task 63 Step 6 (results-table parity).
     },
 };

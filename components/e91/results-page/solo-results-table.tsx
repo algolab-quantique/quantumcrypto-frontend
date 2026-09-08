@@ -23,7 +23,6 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Home, RotateCcw } from 'lucide-react';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
-import usePlayerStore from '@/store/player-store';
 
 interface SoloResultsTableProps {
     playerName: string;
@@ -107,7 +106,11 @@ const SoloResultsTable = ({
                 <Table>
                     <TableHeader className="bg-card top-0 sticky">
                         <TableRow className="text-sm md:text-lg">
+                            {/* Task 63 Step 6c: same column anatomy and order as
+                                BB84's, so a student who plays both reads the
+                                same table twice. */}
                             <TableHead>{localize('component.e91.results.room')}</TableHead>
+                            <TableHead>{localize('component.results.iteration')}</TableHead>
                             <TableHead>{localize('component.e91.results.evePresent')}</TableHead>
                             <TableHead>{localize('component.e91.results.eveDetected')}</TableHead>
                             <TableHead>{localize('component.results.verdict')}</TableHead>
@@ -119,6 +122,7 @@ const SoloResultsTable = ({
                     <TableBody>
                         <TableRow>
                             <TableCell>{roomDisplay}</TableCell>
+                            <TableCell>{eveRecord.rounds}</TableCell>
                             <TableCell>
                                 {eveRecord.drawn
                                     ? localize('component.e91.results.yes') || 'Yes'
@@ -150,11 +154,17 @@ const SoloResultsTable = ({
                 "Congratulations!" over a compromised key. Now the celebration
                 only appears where it is earned. Same three sentences BB84
                 shows, from the same shared keys. */}
-            <div className="text-center">
+            <div className="text-center space-y-1">
                 <p className={`text-xl font-bold ${
                     keyCompromised ? 'text-red-500' : 'text-green-500'}`}>
                     {localize(revealKey)}
                 </p>
+                {eveRecord.enabled && (
+                    <p className="text-sm text-muted-foreground">
+                        {localize('component.createGame.evePercentage.label')}
+                        {' : '}{eveRecord.percentage}
+                    </p>
+                )}
             </div>
 
             {/* Action Buttons */}

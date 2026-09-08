@@ -54,7 +54,7 @@ const E91SoloResultsPage = () => {
     // facts the table is supposed to report separately.
     const [elapsedTime, setElapsedTime] = useState(0);
     const [eveRecord, setEveRecord] = useState<SoloEveRecord>({
-        enabled: false, drawn: false, detected: false,
+        enabled: false, percentage: 0, drawn: false, detected: false, rounds: 1,
     });
 
     useEffect(() => {
