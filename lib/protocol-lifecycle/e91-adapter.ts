@@ -65,4 +65,40 @@ export const e91Adapter: ProtocolAdapter = {
     getRoomSnapshot: () => toSerializableSnapshot(
         useE91RoomStore.getState() as unknown as RoomSnapshot,
     ),
+
+    // ── Round level (Task 63 Step 2) ────────────────────────────────────────
+    round: {
+        getEvePresent: () => useE91RoomStore.getState().evePresent,
+        setEvePresent: value => useE91RoomStore.getState().setEvePresent(value),
+
+        /**
+         * E91's opening transcript, and nothing else.
+         *
+         * It looks trivial next to BB84's, which also regenerates Alice's
+         * photons here. That is NOT because E91 needs less: its pair generation
+         * is misplaced inside the "Measure" button, so no round physics exists
+         * to rebuild at this point. Moving it here — which is what makes the two
+         * protocols symmetric — is **Task 64**, deliberately kept out of this
+         * slice.
+         *
+         * `title` on the welcome line, not `content`: only `title` gets the
+         * bold/highlight span in the transcript renderer. The two hand-copies
+         * this replaces (`solo-basis-tab.tsx` and `solo-CHSH-tab.tsx`) had both
+         * drifted to `content`, so the restarted game's greeting rendered as
+         * plain text — the drift that argued for centralising this in the first
+         * place.
+         */
+        beginRound: () => {
+            useE91ProgressStore.getState().pushLines([
+                {title: 'component.e91.measurement.welcome'},
+                {
+                    title: 'component.game.step1',
+                    content: 'component.e91.measurement.start',
+                },
+            ]);
+        },
+
+        // No incrementRoundCount yet: E91 has no rounds counter to bump, and no
+        // column to show it in. That is Task 63 Step 6 (results-table parity).
+    },
 };

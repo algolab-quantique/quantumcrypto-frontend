@@ -33,6 +33,8 @@ import React, { useEffect, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PhotonCategories from '@/components/e91/play-page/photon-types';
 import { E91_MIN_KEY_LENGTH } from '@/e91-constants';
+import { restartRound } from '@/lib/protocol-lifecycle/round';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 
 // Helper function to move to messaging tab (same as CHSH-tab.tsx)
 const moveToExchangeTab = (playerRole: string, pushLines: (lines: any[]) => void, setE91Tab: (tab: string) => void, setStep: (step: E91GameStep) => void, stepNumber: string = '3') => {
@@ -62,12 +64,10 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
     const {
         setStep,
         pushLines,
-        resetProgress,
         setE91Tab,
     } = useE91ProgressStore();
 
     const {
-        resetRoom, 
         setAliceValidBits,
         setBobValidBits,
         setAliceInvalidBits,
@@ -117,15 +117,17 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
         }
     }, [bits.length]);
 
+    /**
+     * Insufficient-key restart: bad luck, not a detection — so Eve survives it.
+     * Task 63 Step 2: the reset + welcome sequence this used to spell out now
+     * runs through the shared `restartRound`, which is also what preserves
+     * `evePresent`. The old code called `resetRoom()` and never re-asserted it,
+     * so a restart here silently removed Eve from a game that still claimed to
+     * have her.
+     */
     const restartGame = () => {
-        resetRoom();
-        resetProgress();
+        restartRound(e91Adapter);
         setRestartModalOpen(false);
-        // Add initial welcome messages (in multiplayer, server sends these)
-        pushLines([
-            { content: 'component.e91.measurement.welcome' },
-            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
-        ]);
     };
 
     useEffect(() => {

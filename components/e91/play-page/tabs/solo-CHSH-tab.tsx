@@ -11,8 +11,6 @@
  * UI is IDENTICAL to multiplayer CHSH-tab.tsx
  */
 
-// Use E91-specific dialog with correct translation keys (component.e91.*)
-import GameRestartDialog from '@/components/e91/play-page/game-restart-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +34,8 @@ import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { markSoloEveDetected } from '@/lib/e91/solo-session';
+import { restartRound } from '@/lib/protocol-lifecycle/round';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 
 // Helper function to move to messaging tab
 const moveToExchangeTab = (playerRole: string, pushLines: (lines: Line[]) => void, setE91Tab: (tab: string) => void, setStep: (step: E91GameStep) => void) => {
@@ -84,7 +84,6 @@ const DraggableButton = ({ index, value, setIsDragging }: { index: number, value
 
 const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcons: any[] }) => {
     const [sValues, setSValues] = useState<number[]>([]);
-    const [restartModalOpen, setRestartModalOpen] = useState(false);
     const [sValueStarted, setSvalueStarted] = useState(false);
 
     const [espAB, setEspAB] = useState<number[]>([]);
@@ -131,7 +130,6 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
     } = useE91RoomStore();
 
     const {
-        resetRoom,
         setGameSuccess,
         setEveSpotted,
         setValidated
@@ -139,7 +137,6 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
 
     const {
         pushLines,
-        resetProgress,
         setE91Tab,
         setStep,
     } = useE91ProgressStore();
@@ -236,29 +233,23 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
         }
     };
 
-    /**
-     * SOLO MODE: Restart game without Eve (no socket call)
-     * Also reset local component state for fresh game
+    /*
+     * A `restartGameWithoutEve` used to sit here, wired to the GameRestartDialog
+     * below. Task 63 Step 2 deleted it: the dialog never opened.
+     * `setRestartModalOpen(true)` appears nowhere in this file, and in the
+     * multiplayer twin (`CHSH-tab.tsx`) the two calls that would open it are
+     * COMMENTED OUT (:188, :269) — so solo was copied from an already-disabled
+     * path and never even inherited the commented lines.
+     *
+     * The live Eve-detected restart for E91 solo is the button in
+     * `e91-progression.tsx`, which mirrors BB84's `bb84-progression.tsx`. Two
+     * entry points per protocol, one per cause — short key, and Eve caught.
+     *
+     * The dialog element itself is gone with it: keeping dead UI alive only to
+     * satisfy a handler that can never fire is worse than removing both. The
+     * translation keys it used (`component.e91.restart.unsecured*`) are still
+     * pushed as transcript lines by `onUnsecure`, so nothing is orphaned.
      */
-    const restartGameWithoutEve = () => {
-        resetRoom();
-        resetProgress();
-        setRestartModalOpen(false);
-
-        // Reset local CHSH state for fresh game
-        setEspAB([]);
-        setEspApB([]);
-        setEspApBp([]);
-        setEspABp([]);
-        setButtonState({});
-        setSvalueStarted(false);
-
-        // Add initial welcome messages (in multiplayer, server sends these)
-        pushLines([
-            { content: 'component.e91.measurement.welcome' },
-            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
-        ]);
-    };
 
     const handleDrop = (zone: string, index: number, value: number) => {
         let correctValue = aliceInvalidBits[index] === bobInvalidBits[index] ? 1 : -1;
@@ -311,10 +302,6 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
 
     return (
         <>
-            <GameRestartDialog restartModalOpen={restartModalOpen}
-                title={localize('component.e91.restart.unsecured')}
-                description={localize('component.e91.restart.unsecured.description')}
-                onConfirm={restartGameWithoutEve} />
             <div className="block border text-card-foreground border-secondary bg-card shadow-lg rounded-lg">
                 <DndProvider backend={HTML5Backend}>
                     <div className="chsh-table" style={{ overflow: isDragging ? "hidden" : "auto" }}>
