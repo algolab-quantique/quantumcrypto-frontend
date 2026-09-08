@@ -29,6 +29,12 @@ import usePlayerStore from '@/store/player-store';
 beforeEach(() => {
     localStorage.clear();
     usePlayerStore.getState().resetPlayer();
+    // Task 63 Step 4a: these are SOLO restarts, and now they have to say so.
+    // Preparing the partner's data is solo-only — in multiplayer the real Alice
+    // produces her photons — so restartRound reads this flag before calling
+    // prepareRound. The suite used to pass without it, because generation was
+    // unconditional; the flag being required is the point of the change.
+    usePlayerStore.getState().setPlayingSolo(true);
     useBB84RoomStore.getState().resetRoom();
     useBB84ProgressStore.getState().resetProgress();
     useBB84GameStore.setState({gameHasEve: false, photonNumber: 4});
@@ -113,5 +119,54 @@ describe('SoloEveRecord (Task 51 ph.2: the game\'s Eve story)', () => {
         const record = readSoloEveRecord();
         expect(record?.rounds).toBe(3);
         expect(record?.drawn).toBe(true);
+    });
+});
+
+/**
+ * Task 63 Step 4a. The multiplayer branch exists but nothing calls it yet —
+ * Steps 4b and 4c wire the components. These tests are what makes it safe to
+ * wire: they pin the two things that must differ, before any UI depends on them.
+ */
+describe('restartRound on BB84 in MULTIPLAYER', () => {
+    beforeEach(() => {
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayerRole('B');
+    });
+
+    /**
+     * The reason the mode matters at all. In multiplayer the real Alice
+     * produces her own photons; generating them locally would overwrite hers
+     * with fabricated ones — Bob would play against a partner that does not
+     * exist, and the two clients would silently disagree about the round.
+     */
+    it('does NOT fabricate Alice\'s photons — she is a real player', () => {
+        restartRound(bb84Adapter);
+
+        const room = useBB84RoomStore.getState();
+        expect(room.alicePhotons).toHaveLength(0);
+        expect(room.aliceBits).toHaveLength(0);
+        expect(room.aliceBases).toHaveLength(0);
+    });
+
+    /**
+     * And because nothing was generated, Bob is told he is WAITING for the
+     * photons rather than that they have arrived. The transcript follows what
+     * exists, not what mode we are in.
+     */
+    it('tells Bob he is waiting, not that photons arrived', () => {
+        restartRound(bb84Adapter);
+
+        const lines = useBB84ProgressStore.getState().displayedLines;
+        expect(lines).toHaveLength(2);
+        expect(lines.map(line => line.content))
+            .not.toContain('component.bobExchange.photonsArrived');
+    });
+
+    it('still restores the Eve draw, exactly as solo does', () => {
+        useBB84RoomStore.getState().setEvePresent(true);
+
+        restartRound(bb84Adapter);
+
+        expect(useBB84RoomStore.getState().evePresent).toBe(true);
     });
 });

@@ -90,15 +90,36 @@ export interface RoundAdapter {
     setEvePresent: (value: boolean) => void;
 
     /**
-     * Start a fresh round: regenerate whatever this protocol must have ready
-     * before the player acts, then push its opening transcript.
+     * Produce the data a fresh round needs before the player can act — SOLO
+     * ONLY. Absent when there is nothing to produce.
      *
-     * Deliberately asymmetric between protocols — BB84's solo Bob needs Alice's
-     * photons generated up front, while E91 generates everything when the
-     * player clicks Measure, so E91's implementation only pushes lines. Reading
-     * this protocol's own config (photon count and friends) belongs here too.
+     * The asymmetry is the point, and it is not "solo does more": in solo the
+     * app plays the partner, so it must generate the partner's side; in
+     * multiplayer a real peer or the backend produces it, and there is nothing
+     * to call. **In solo we call, in multiplayer we listen** — the multiplayer
+     * equivalent of this hook is not a function but the socket event handled in
+     * socket-provider.
+     *
+     * `restartRound` therefore calls this only in solo mode, which is why no
+     * adapter has to write an empty else-branch. Reading this protocol's own
+     * config (photon count and friends) belongs here.
+     *
+     * BB84 solo generates Alice's photons for Bob. E91 has none yet — its pair
+     * generation is misplaced inside the "Measure" button (**Task 64**), which
+     * is why its hook is absent rather than empty.
      */
-    beginRound: (evePresent: boolean) => void;
+    prepareRound?: (evePresent: boolean) => void;
+
+    /**
+     * Push the round's opening lines.
+     *
+     * `prepared` says whether `prepareRound` just ran, because the transcript
+     * depends on it rather than on the mode as such: BB84's solo Bob is told
+     * "Alice's photons have arrived" precisely because they were just
+     * generated, while in multiplayer he is told he is waiting for them. The
+     * difference in what he reads is CAUSED by the difference in what exists.
+     */
+    openRoundTranscript: (context: {prepared: boolean}) => void;
 
     /** Bump the "rounds played" counter shown on the results page. Optional:
      *  a protocol that does not show one has nothing to bump. */

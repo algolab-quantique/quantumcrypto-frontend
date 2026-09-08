@@ -14,15 +14,17 @@
  * welcome transcript was pushed with the wrong field in two E91 copies.
  *
  * WHAT IS COMMON lives here: the Eve policy, the round counter, both resets,
- * re-asserting the draw. WHAT IS SPECIFIC is behind `adapter.beginRound`:
- * regenerating the round and pushing the protocol's opening lines.
+ * re-asserting the draw, and the solo/multiplayer decision. WHAT IS SPECIFIC is
+ * behind two adapter hooks — `prepareRound` (produce the round's data) and
+ * `openRoundTranscript` (say what just happened). Step 4a split them because
+ * fusing them is how the mode leaked into a hook that never modelled it.
  *
- * NOT here yet, on purpose:
- * - Telling the partner that a restart happened. That needs a backend event and
- *   is specified in **Task 28**; the seam arrives with multiplayer in Step 4.
- * - Multiplayer callers at all. Step 1 extracts BB84 SOLO behaviour unchanged;
- *   wiring multi would *fix* a bug, which is a different kind of commit.
+ * NOT here yet, on purpose: telling the partner that a restart happened. That
+ * needs a backend event and is specified in **Task 28**. Until then each player
+ * restarts alone — a known, documented limitation.
  */
+
+import usePlayerStore from '@/store/player-store';
 
 import type {ProtocolAdapter} from './types';
 
@@ -55,8 +57,7 @@ export const restartRound = (
         throw new Error(
             `restartRound: ${adapter.protocolId} has no round adapter. A protocol ` +
             'must say how a fresh round starts before it can restart one. ' +
-            'E91 multiplayer cannot, while its physics lives in the backend ' +
-            '(Task 60); DPS has no Eve mechanic yet (Task 38).',
+            'DPS has no Eve mechanic yet (Task 38).',
         );
     }
 
@@ -78,10 +79,26 @@ export const restartRound = (
     // store writes recreate the checkpoint exactly like a fresh start does.
     round.setEvePresent(evePresent);
 
-    // NOTE ON ORDER: beginRound reads this protocol's own config (photon count
-    // and friends) AFTER the two resets, whereas BB84's inline version read it
-    // before. Identical today — config lives in the game store, which neither
-    // reset touches — but if a protocol ever resets its own config store, that
-    // reset must not run between here and the read.
-    round.beginRound(evePresent);
+    // THE MODE DECISION, in one place (Task 63 Step 4a).
+    //
+    // Only solo prepares a round's data, because only solo has to play the
+    // partner. In multiplayer a real peer or the backend produces it and there
+    // is nothing to call — the round begins when an event ARRIVES, not when we
+    // ask for it. Keeping this here rather than inside each adapter is what
+    // stops the same `if (playingSolo)` from being written once per protocol.
+    //
+    // `playingSolo` survives a restart: only abandon/startFresh reset the mode
+    // flags, and the route guard re-asserts them from the resolved session.
+    //
+    // NOTE ON ORDER: prepareRound reads this protocol's own config (photon
+    // count and friends) AFTER the two resets, whereas BB84's inline version
+    // read it before. Identical today — config lives in the game store, which
+    // neither reset touches — but if a protocol ever resets its own config
+    // store, that reset must not run between here and the read.
+    const prepared = usePlayerStore.getState().playingSolo
+        && Boolean(round.prepareRound);
+
+    if (prepared) round.prepareRound!(evePresent);
+
+    round.openRoundTranscript({prepared});
 };

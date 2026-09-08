@@ -80,7 +80,29 @@ export const readSoloGameStartTime = (): number | null => {
  * Used by the solo start modal, the Eve restart, and the insufficient-key
  * restart. Do not copy these blocks inline.
  */
+/**
+ * Task 63 Step 4a split this in two. It used to do both jobs at once —
+ * generate the partner's side AND write the opening transcript — which is how
+ * the mode leaked into a hook named `beginRound`: in solo the two always
+ * happen together, so nobody had to notice they were different things.
+ *
+ * `beginSoloRound` remains as their composition, because a solo game start
+ * genuinely wants both, and the start modal calls it.
+ */
 export const beginSoloRound = (photonNumber: number, eve: boolean) => {
+    prepareSoloRound(photonNumber, eve);
+    pushRoundWelcome({prepared: true});
+};
+
+/**
+ * Generate what a solo round needs before the player can act. SOLO ONLY: in
+ * multiplayer the real Alice produces her own photons, and calling this there
+ * would overwrite hers with fabricated ones.
+ *
+ * Only Bob needs it — Alice generates her photons through her own UI in both
+ * modes, so for her this is just the stale-input cleanup.
+ */
+export const prepareSoloRound = (photonNumber: number, eve: boolean) => {
     // A new round must not inherit the previous round's in-progress inputs:
     // bob-exchange-tab re-hydrates its basis form from this key on mount
     // (bob-exchange-tab.tsx ~:84), so a stale value refills the "choose your
@@ -90,25 +112,46 @@ export const beginSoloRound = (photonNumber: number, eve: boolean) => {
         localStorage.removeItem('bb84BobBasisInputs');
     }
 
+    if (usePlayerStore.getState().playerRole !== 'B') return;
+
+    const room = useBB84RoomStore.getState();
+    const aliceBits = generateAliceBits(photonNumber);
+    const aliceBases = generateAliceBases(photonNumber);
+    let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
+    if (eve) {
+        alicePhotons = mimicEveIntercept(alicePhotons);
+    }
+    room.setAliceBits(aliceBits);
+    room.setAliceBases(aliceBases);
+    room.setAlicePhotons(alicePhotons);
+};
+
+/**
+ * The round's opening lines.
+ *
+ * `prepared` is why Bob reads two different things. When the photons were just
+ * generated for him (solo), he is told they have ARRIVED and is sent straight
+ * to step 1. When they have not (multiplayer), he is told he is WAITING for
+ * them — because he is. Alice's transcript is the same either way: she
+ * generates her own photons through her UI in both modes.
+ *
+ * So the transcript does not branch on the mode; it branches on what exists.
+ */
+export const pushRoundWelcome = ({prepared}: {prepared: boolean}) => {
     const pushLines = useBB84ProgressStore.getState().pushLines;
 
     if (usePlayerStore.getState().playerRole === 'B') {
-        const room = useBB84RoomStore.getState();
-        const aliceBits = generateAliceBits(photonNumber);
-        const aliceBases = generateAliceBases(photonNumber);
-        let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
-        if (eve) {
-            alicePhotons = mimicEveIntercept(alicePhotons);
-        }
-        room.setAliceBits(aliceBits);
-        room.setAliceBases(aliceBases);
-        room.setAlicePhotons(alicePhotons);
-        pushLines([
-            {title: 'component.exchange.welcome'},
-            {content: 'component.bobExchange.waiting'},
-            {content: 'component.bobExchange.photonsArrived'},
-            {title: 'component.game.step1', content: 'component.bobExchange.choose'},
-        ]);
+        pushLines(prepared
+            ? [
+                {title: 'component.exchange.welcome'},
+                {content: 'component.bobExchange.waiting'},
+                {content: 'component.bobExchange.photonsArrived'},
+                {title: 'component.game.step1', content: 'component.bobExchange.choose'},
+            ]
+            : [
+                {title: 'component.exchange.welcome'},
+                {content: 'component.bobExchange.waiting'},
+            ]);
         return;
     }
 
