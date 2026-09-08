@@ -70,13 +70,15 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.decsion.unsecured': 'The channel was deemed unsafe by ',
         'component.e91.decsion.secured': 'The channel was deemed safe by ',
         'component.e91.restart.unsecured': 'Channel compromised',
-        // Task 63 Step 3: the second sentence reuses BB84's wording
-        // (component.gameRestart.eveDescription) so the two protocols say the
-        // same thing the same way. Without it, E91 restarted without Eve and
-        // never told the player — they only learned it by noticing she was gone.
-        'component.e91.restart.unsecured.description': ' Eve has been found out.' +
-            ' The key is compromised — discard it and restart the exchange,' +
-            ' this time without Eve.',
+        'component.e91.restart.unsecured.description': ' Eve has been found out',
+        // Task 63 Step 3: pushed as its OWN line, and as a `title`, because the
+        // transcript renderer highlights titles only — the player must not miss
+        // that the next round has no Eve. Same words as BB84's
+        // component.gameRestart.eveDescription: `localize` resolves keys inside
+        // the current protocol's dictionary only, so the text has to be repeated
+        // here rather than shared. Keep the two in step by hand.
+        'component.e91.restart.withoutEve': 'The key is compromised — discard it' +
+            ' and restart the exchange, this time without Eve.',
         'component.e91.gameLoss.title': 'You lose!',
         'component.e91.gameLoss': ' Eve did not interfere on this channel',
         'component.e91.validation.invalid.start': 'Drag the correct value (+1 or -1) to the appropriate container' +
@@ -175,9 +177,9 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.decsion.unsecured': 'Le canal a été jugé non sécure par ',
         'component.e91.decsion.secured': 'Le canal a été jugé sécure par ',
         'component.e91.restart.unsecured': 'Canal compromis',
-        'component.e91.restart.unsecured.description': ' Ève a été démasquée.' +
-            ' La clé est compromise — on la jette et on recommence l\'échange,' +
-            ' cette fois sans Ève.',
+        'component.e91.restart.unsecured.description': ' Ève a été démasquée',
+        'component.e91.restart.withoutEve': 'La clé est compromise — on la jette' +
+            ' et on recommence l\'échange, cette fois sans Ève.',
         'component.e91.gameLoss.title': 'Vous avez perdu!',
         'component.e91.gameLoss': ' Ève n\'a pas interféré sur ce canal',        
         'component.e91.validation.invalid.start': 'Glissez la bonne valeur (+1 or -1) vers le contenant approprié' +
@@ -273,13 +275,13 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.decsion.unsecured': 'El canal fue considerado inseguro por ',
         'component.e91.decsion.secured': 'El canal fue considerado seguro por ',
         'component.e91.restart.unsecured': 'Canal comprometido',
+        'component.e91.restart.unsecured.description': ' Eve ha sido descubierta',
         // "Eve", not "Eva": E91's Spanish calls her Eve everywhere, while BB84's
         // calls her Eva. Staying consistent inside this protocol rather than
         // half-renaming her mid-sentence; the cross-protocol mismatch is a
         // separate cleanup, recorded in the UI WORDING NOTE.
-        'component.e91.restart.unsecured.description': ' Eve ha sido descubierta.' +
-            ' La clave está comprometida — se descarta y se reinicia el' +
-            ' intercambio, esta vez sin Eve.',
+        'component.e91.restart.withoutEve': 'La clave está comprometida — se' +
+            ' descarta y se reinicia el intercambio, esta vez sin Eve.',
         'component.e91.gameLoss.title': '¡Perdiste!',
         'component.e91.gameLoss': ' Eve no interfirió en este canal',
         'component.e91.validation.invalid.start': 'Arrastra el valor correcto (+1 o -1) al contenedor' +

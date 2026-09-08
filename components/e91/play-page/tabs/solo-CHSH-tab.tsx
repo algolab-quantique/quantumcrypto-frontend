@@ -212,7 +212,11 @@ const SoloCHSHTab = ({ playerRole, polarIcons }: { playerRole: string, polarIcon
                 {
                     title: 'component.e91.restart.unsecured',
                     content: 'component.e91.restart.unsecured.description'
-                }
+                },
+                // Task 63 Step 3: its own line, and a `title`, so the renderer
+                // highlights it — the player must not miss that the next round
+                // has no Eve.
+                {title: 'component.e91.restart.withoutEve'}
             ]);
             setButtonsActivated(false);
             setEveSpotted(true);

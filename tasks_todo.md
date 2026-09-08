@@ -2417,6 +2417,15 @@ find BB84 exactly where they left it.
 
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
 
+> **⚠️ CONSTRAINT found 2026-09-04 — "reuse the same localization key" is NOT possible across
+> protocols, so this note's rule has to be kept by hand.** `localize`
+> (`language-provider.tsx:70`) resolves a key inside **one** dictionary, chosen from the URL: on
+> `/e91/play` only `e91Lines` is consulted, and a missing key falls back to printing the key string
+> itself. So E91 cannot reference `component.gameRestart.eveDescription` from `bb84-lines.ts` — the
+> player would see the raw key. Shared wording must be **duplicated per protocol dictionary and kept
+> in step manually**. Worth revisiting if the dictionaries are ever merged with a protocol-scoped
+> override; until then, a grep before writing new copy is the only safeguard.
+>
 > **🔤 Open inconsistency found 2026-09-04 (Task 63 Step 3): Eve has two Spanish names.**
 > BB84's Spanish calls her **"Eva"** (`component.gameRestart.eveTitle`: *"¡Eva fue detectada!"*);
 > E91's Spanish calls her **"Eve"**, in all four places it names her. A Spanish-speaking student
