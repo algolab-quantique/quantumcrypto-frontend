@@ -2228,7 +2228,36 @@ copied differs in kind. Check that the thing you are copying does the same job b
 | **3** ✅ **DONE** | The missing E91 message. Extended `component.e91.restart.unsecured.description` in all 3 languages, **reusing BB84's exact wording** (`component.gameRestart.eveDescription`) per the UI WORDING NOTE. One key change covers **solo and multiplayer** — both CHSH tabs push it | ✅ detect Eve → the transcript now says the exchange restarts without her, right above the Restart button |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
-| **6** | **Full results-table parity for E91**, not just the counter — see below. | 1 d | play, restart, results tells the same story BB84's does |
+| **6a** ✅ **DONE `500737a`** | `lib/bb84/eve-story.ts` → **`lib/eve-story.ts`**, and `classifySoloEnding` now takes a structural `EveOutcome {drawn, detected}` so any protocol can pass its own record. Six results keys lose their `bb84` prefix → `component.results.*`. Pure refactor | ✅ BB84's 12 tests came along **unedited** and pass |
+| **6b** ✅ **DONE `a6b1835`** | E91's table gains the **Verdict** column and one reveal sentence per ending, from the shared classifier and the shared keys. **The unconditional "🎉 Congratulations" is gone** — it used to celebrate a compromised key | ✅ Ibra played all three endings: absent, caught, missed. Verdict and sentence correct in each |
+| **6c** ✅ **DONE `f88647e`** | **Iteration** column (E91 counts rounds through the shared `restartRound`), the **Eve probability** line, and BB84's title finally names its protocol | ✅ fresh game, probability 0.7, restart → Iteration 2, probability shown; BB84's title corrected |
+
+**✅ STEP 6 COMPLETE (2026-09-08).** E91's solo results table now has BB84's column anatomy, its
+verdict, its three reveal sentences and its probability line — from **shared** code and **shared**
+translation keys, not a copy.
+
+**🔎 Three findings from Step 6, worth keeping:**
+
+**(a) The table conflated the two Eve flags** — `evePresent = drawn || enabled` ORed the DRAW with
+the CHECKBOX, so a game whose checkbox was ticked but whose draw came up empty reported *"Eve
+present: yes"*. Invisible in every test so far, because testing always used probability 1, where the
+two are equal. Exactly the conflation Task 51 exists to prevent, and it survived because the props
+were booleans instead of the record.
+
+**(b) The failure branch was already dead.** E91's results page rendered
+`gameSuccess ? success : failure`, but the route guard requires a *completed* session — so
+`gameSuccess` was always true by the time the page rendered. Both keys are removed.
+
+**(c) A second vacuous test, caught only by mutation.** The round-counter test asserted
+`rounds === 1` on empty storage; the reader falls back to 1 when the key is missing, so it passed
+with the initialisation deleted. Rewritten to start from a stale counter of 4. **Two such tests in
+one session, both the same shape: an assertion that holds for the wrong reason.** The lesson is not
+"write more tests" — it is that a regression test is only proven by watching it fail.
+
+**⚠️ Still divergent, recorded not fixed:** E91's Replay uses `router.replace` where BB84 pushes, and
+E91's Home button destroys the session where BB84's navigates without clearing — so a finished E91
+game cannot be reached again with browser-Forward, while a BB84 one can. Same family as 3e-3.
+Navigation, not table content, so it needs its own slice and its own browser test.
 
 **📊 STEP 6 WIDENED (Ibra, 2026-09-04).** It said "round counter + column". Comparing the two tables
 side by side after his Step 1 testing, E91 is missing more than that:
