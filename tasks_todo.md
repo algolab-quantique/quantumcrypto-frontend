@@ -2239,7 +2239,24 @@ copied differs in kind. Check that the thing you are copying does the same job b
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. **Two real bugs found while planning it — see below.** | 1 d | **2 browsers**, detected-Eve restart in multi |
 
-**🔴 TWO BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5, not yet fixed).**
+**🔴 (5-iii) MULTIPLAYER HAS NO PROTECTION AGAINST THE 52-C TRAP — reproduced by Ibra 2026-09-08.**
+
+Solo was deliberately protected: `handleSoloRestart` turns the Eve CHECKBOX off after a detection,
+so the CHSH tab disappears and the student cannot be punished for reading a meaningless S. That is
+the documented divergence from BB84 in `e91-progression.tsx`.
+
+**The multiplayer path has no equivalent.** The socket handler sets `evePresent` to false but never
+touches `gameHasEve` (checked: no mention of it in `socket-provider.tsx:1128-1152`), so the CHSH tab
+comes back for the Eve-free round. Ibra played it: second round, no Eve, clicked "Not secure", and
+got **"You lose! Eve did not interfere on this channel"** — then `onUnsecure`'s else branch ran
+`clearE91LocalStorage()`, taking the session with it (**52-G**).
+
+So the same trap is closed in solo and open in multi, for no reason other than the two restarts
+being written in different places. **Whoever does Step 5 must decide it explicitly** — either mirror
+solo's checkbox-off, or fix 52-C and 52-G and remove the protection from both. Do not let the
+routing change decide it by accident.
+
+**🔴 TWO OTHER BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5).**
 
 **(5-i) An E91 restart resets BB84.** `restartWithoutEve()` is called at `socket-provider.tsx:1165`
 — **outside** the `if (gameType === 'e91') … else if (gameType === 'bb84')`, so it runs for **every**

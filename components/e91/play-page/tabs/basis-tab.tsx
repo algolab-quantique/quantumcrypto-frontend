@@ -25,6 +25,8 @@ import { moveToExchangeTab } from './validation-tab';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PhotonCategories from '@/components/e91/play-page/photon-types';
 import { E91_MIN_KEY_LENGTH } from '@/e91-constants';
+import { restartRound } from '@/lib/protocol-lifecycle/round';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 
 const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: number, playerRole: string, polarIcons: any[] }) => {
 
@@ -39,12 +41,10 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
     const {
         setStep,
         pushLines,
-        resetProgress,
         setE91Tab,
     } = useE91ProgressStore();
 
     const {
-        resetRoom,
         setCompared,
         setAlicePreference,
         setBobPreference,
@@ -120,9 +120,25 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
     }, [bits]);
 
 
+    /**
+     * Insufficient-key restart in MULTIPLAYER: bad luck, not a detection, so
+     * Eve survives it — same rule as solo (Task 63 Step 4c).
+     *
+     * Two things this fixes, both of which Ibra saw on 2026-09-03. The old
+     * `resetRoom()` wiped `evePresent` and nothing put it back, so Eve stopped
+     * being reported even though the backend kept applying her: the "Eve read N
+     * bits" counter stayed at 0 and the detection confirmation never appeared.
+     * And nothing pushed an opening transcript, so the restarted round began
+     * with an empty progression panel.
+     *
+     * `restartRound` does NOT prepare a round here: in multiplayer the backend
+     * produces the pairs. In solo we call, in multiplayer we listen.
+     *
+     * Still NOT done, deliberately: the partner is not told. Each player
+     * restarts alone — Task 28.
+     */
     const restartGame = () => {
-        resetRoom();
-        resetProgress();
+        restartRound(e91Adapter);
         setRestartModalOpen(false);
     };
 
