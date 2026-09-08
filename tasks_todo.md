@@ -2227,7 +2227,30 @@ restart. **Align with BB84 once 52-C and 52-G are fixed.**
 copied differs in kind. Check that the thing you are copying does the same job before copying it.*
 | **3** ✅ **DONE** | The missing E91 message. Extended `component.e91.restart.unsecured.description` in all 3 languages, **reusing BB84's exact wording** (`component.gameRestart.eveDescription`) per the UI WORDING NOTE. One key change covers **solo and multiplayer** — both CHSH tabs push it | ✅ detect Eve → the transcript now says the exchange restarts without her, right above the Restart button |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
-| **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
+| **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. **Two real bugs found while planning it — see below.** | 1 d | **2 browsers**, detected-Eve restart in multi |
+
+**🔴 TWO BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5, not yet fixed).**
+
+**(5-i) An E91 restart resets BB84.** `restartWithoutEve()` is called at `socket-provider.tsx:1165`
+— **outside** the `if (gameType === 'e91') … else if (gameType === 'bb84')`, so it runs for **every**
+protocol. And it is BB84-specific (`lib/bb84/utils.ts:83`): it removes `bb84PhotonNumber`,
+`bb84GameData`, `bb84Step`, `bb84Tab`, `bb84BobBasisInputs`, then resets both BB84 stores. So a
+player who restarts an E91 multiplayer game after detecting Eve **loses their BB84 session** —
+silently, in another protocol, with no way to connect cause and effect.
+
+Same family as the DPS `localStorage.clear()` that **Task 54 F2** removed for exactly this reason:
+one protocol must never reach into another's data. It survived because the call sits one indentation
+level out from the branch that would have scoped it.
+
+**(5-ii) The handler deletes the photon count.** Both branches remove `*PhotonNumber`, which is
+CONFIG, not round state. It survives in memory, so the current round is fine — but the adapter's
+`hydrateConfig` reads that key, so a **refresh after a coordinated restart** loses the photon count.
+
+**Both are fixed by the same move**, which is the argument for Step 5 beyond tidiness:
+`restartRound` clears nothing but the room checkpoint and the progress keys, and it is
+adapter-scoped, so it cannot touch another protocol. Do **5a** (lift `restartWithoutEve` out of the
+shared path) as its own slice first — it is a one-line bug fix and testable on its own, while
+rerouting the handler is a refactor.
 | **6a** ✅ **DONE `500737a`** | `lib/bb84/eve-story.ts` → **`lib/eve-story.ts`**, and `classifySoloEnding` now takes a structural `EveOutcome {drawn, detected}` so any protocol can pass its own record. Six results keys lose their `bb84` prefix → `component.results.*`. Pure refactor | ✅ BB84's 12 tests came along **unedited** and pass |
 | **6b** ✅ **DONE `a6b1835`** | E91's table gains the **Verdict** column and one reveal sentence per ending, from the shared classifier and the shared keys. **The unconditional "🎉 Congratulations" is gone** — it used to celebrate a compromised key | ✅ Ibra played all three endings: absent, caught, missed. Verdict and sentence correct in each |
 | **6c** ✅ **DONE `f88647e`** | **Iteration** column (E91 counts rounds through the shared `restartRound`), the **Eve probability** line, and BB84's title finally names its protocol | ✅ fresh game, probability 0.7, restart → Iteration 2, probability shown; BB84's title corrected |
