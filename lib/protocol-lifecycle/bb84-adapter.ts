@@ -5,11 +5,8 @@ import {
     useBB84ProgressStore,
 } from '@/store/bb84/bb84-progress-store';
 
-import {
-    incrementSoloRoundCount,
-    prepareSoloRound,
-    pushRoundWelcome,
-} from '@/lib/bb84/solo-round';
+import {incrementSoloRoundCount, prepareSoloRound} from '@/lib/bb84/solo-round';
+import {pushRoundWelcome} from '@/lib/bb84/round-transcript';
 
 import {toSerializableSnapshot} from './snapshot';
 import type {ProtocolAdapter, RoomSnapshot} from './types';

@@ -95,10 +95,15 @@ export const restartRound = (
     // read it before. Identical today — config lives in the game store, which
     // neither reset touches — but if a protocol ever resets its own config
     // store, that reset must not run between here and the read.
-    const prepared = usePlayerStore.getState().playingSolo
-        && Boolean(round.prepareRound);
-
-    if (prepared) round.prepareRound!(evePresent);
+    // Structured so the compiler PROVES the guard rather than being told to
+    // trust it. The first version computed a boolean and then used a non-null
+    // assertion — the construction that crashes the day someone reorders these
+    // three lines.
+    let prepared = false;
+    if (usePlayerStore.getState().playingSolo && round.prepareRound) {
+        round.prepareRound(evePresent);
+        prepared = true;
+    }
 
     round.openRoundTranscript({prepared});
 };

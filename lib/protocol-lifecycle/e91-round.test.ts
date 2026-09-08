@@ -22,11 +22,18 @@ import {beforeEach, describe, expect, it} from 'vitest';
 import {restartRound} from './round';
 import {e91Adapter} from './e91-adapter';
 import useE91RoomStore from '@/store/e91/e91-room-store';
+import usePlayerStore from '@/store/player-store';
 import useE91GameStore from '@/store/e91/e91-game-store';
 import {useE91ProgressStore} from '@/store/e91/e91-progress-store';
 
 beforeEach(() => {
     localStorage.clear();
+    usePlayerStore.getState().resetPlayer();
+    // Stated rather than inherited (Task 63 Step 4a). These cases pass in either
+    // mode today, because E91 has no `prepareRound` for the mode to gate — but
+    // they passed for that reason by ACCIDENT, and the day Task 64 gives E91 one,
+    // their meaning would change with nobody noticing. Solo is what they mean.
+    usePlayerStore.getState().setPlayingSolo(true);
     useE91RoomStore.getState().resetRoom();
     useE91ProgressStore.getState().resetProgress();
 });
