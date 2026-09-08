@@ -67,7 +67,7 @@
 'use client';
 
 import { cn, fillPhotonMinimums } from '@/lib/utils';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -234,14 +234,6 @@ const SoloGameModal = ({
         },
     });
 
-    // Update default photon count when Eve checkbox changes
-    useEffect(() => {
-        if (eveChecked) {
-            form.setValue('photonNumber', E91_SOLO_PHOTON_MIN_WITH_EVE);
-        } else {
-            form.setValue('photonNumber', E91_SOLO_PHOTON_DEFAULT);
-        }
-    }, [eveChecked, form]);
 
     // ═══════════════════════════════════════════════════════════════════════
     // HANDLERS
@@ -333,6 +325,15 @@ const SoloGameModal = ({
     ) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons, so ticking her RAISES a count that
+        // is too low — it does not replace one the player chose. The effect
+        // this replaces overwrote the field in both directions: typing 12 and
+        // ticking Eve dropped it to the with-Eve minimum, and unticking then
+        // dropped it again to the default. Same rule as BB84's solo modal.
+        if (checked === true &&
+            form.getValues('photonNumber') < E91_SOLO_PHOTON_MIN_WITH_EVE) {
+            form.setValue('photonNumber', E91_SOLO_PHOTON_MIN_WITH_EVE);
+        }
     };
 
     // ═══════════════════════════════════════════════════════════════════════
