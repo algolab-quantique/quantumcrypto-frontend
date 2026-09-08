@@ -19,6 +19,7 @@ import useE91RoomStore from '@/store/e91/e91-room-store';
 import {
     readSoloEveRecord,
     readSoloGameStartTime,
+    type SoloEveRecord,
 } from '@/lib/e91/solo-session';
 import { useProtocolSessionGuard } from '@/lib/protocol-lifecycle/use-protocol-session-guard';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
@@ -43,18 +44,18 @@ const E91SoloResultsPage = () => {
     // Player info
     const { playerName, playerRole } = usePlayerStore();
 
-    // Game state from store (for gameSuccess and keyBits)
-    const { gameSuccess, aliceValidBits, eveSpotted } = useE91RoomStore();
+    const { aliceValidBits } = useE91RoomStore();
 
-    // Task 40 Phase 3f: the game-scope Eve facts and the start time now come
-    // from lib/e91/solo-session instead of four inline localStorage reads.
-    // This page no longer touches localStorage at all. Same values, same
-    // sources — the helper reads the same three keys this effect used to read
-    // by hand, so nothing about what the table shows changes.
+    // Task 40 Phase 3f: the game-scope Eve facts and the start time come from
+    // lib/e91/solo-session, so this page touches no localStorage of its own.
+    // Task 63 Step 6b: the record is passed to the table WHOLE rather than
+    // spread into booleans — the old props ORed the draw with the checkbox and
+    // ORed the persisted detection with a store flag, both of which blurred
+    // facts the table is supposed to report separately.
     const [elapsedTime, setElapsedTime] = useState(0);
-    const [originalEveEnabled, setOriginalEveEnabled] = useState(false);
-    const [originalEveWasPresent, setOriginalEveWasPresent] = useState(false);
-    const [eveWasDetected, setEveWasDetected] = useState(false);
+    const [eveRecord, setEveRecord] = useState<SoloEveRecord>({
+        enabled: false, drawn: false, detected: false,
+    });
 
     useEffect(() => {
         // Wait for the guard: until it resolves, the stores are not hydrated
@@ -70,10 +71,7 @@ const E91SoloResultsPage = () => {
         }
 
         // Set at game start and deliberately NOT reset by a restart.
-        const eveRecord = readSoloEveRecord();
-        setOriginalEveEnabled(eveRecord.enabled);
-        setOriginalEveWasPresent(eveRecord.drawn);
-        setEveWasDetected(eveRecord.detected);
+        setEveRecord(readSoloEveRecord());
     }, [ready]);
 
     // Render-time gate: nothing paints until the guard resolves the session as
@@ -93,11 +91,9 @@ const E91SoloResultsPage = () => {
             <SoloResultsTable
                 playerName={playerName || 'Player'}
                 playerRole={playerRole}
-                evePresent={originalEveWasPresent || originalEveEnabled}
-                eveSpotted={eveWasDetected || eveSpotted}
+                eveRecord={eveRecord}
                 elapsedTime={elapsedTime}
                 keyLength={keyLength}
-                gameSuccess={gameSuccess}
             />
         </div>
     );

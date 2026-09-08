@@ -310,8 +310,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.keyLength': 'Key Length',
         'component.e91.results.yes': 'Yes',
         'component.e91.results.no': 'No',
-        'component.e91.results.success': '🎉 Congratulations! Game completed successfully!',
-        'component.e91.results.failure': '❌ Game ended.',
         'component.e91.results.replay': 'Play Again',
         'component.e91.results.home': 'Main Menu',
 
@@ -869,8 +867,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.keyLength': 'Longueur de Clé',
         'component.e91.results.yes': 'Oui',
         'component.e91.results.no': 'Non',
-        'component.e91.results.success': '🎉 Félicitations ! Partie terminée avec succès !',
-        'component.e91.results.failure': '❌ Partie terminée.',
         'component.e91.results.replay': 'Rejouer',
         'component.e91.results.home': 'Menu Principal',
 
@@ -1388,8 +1384,6 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.results.keyLength': 'Longitud de Clave',
         'component.e91.results.yes': 'Sí',
         'component.e91.results.no': 'No',
-        'component.e91.results.success': '🎉 ¡Felicidades! ¡Juego completado con éxito!',
-        'component.e91.results.failure': '❌ Juego terminado.',
         'component.e91.results.replay': 'Jugar de Nuevo',
         'component.e91.results.home': 'Menú Principal',
 

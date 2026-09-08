@@ -17,6 +17,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useLanguage } from '@/components/providers/language-provider';
+import { classifySoloEnding } from '@/lib/eve-story';
+import type { SoloEveRecord } from '@/lib/e91/solo-session';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Home, RotateCcw } from 'lucide-react';
@@ -26,21 +28,25 @@ import usePlayerStore from '@/store/player-store';
 interface SoloResultsTableProps {
     playerName: string;
     playerRole: string;
-    evePresent: boolean;
-    eveSpotted: boolean;
+    /**
+     * The game's Eve story, as recorded at start and updated on detection.
+     * Task 63 Step 6b replaced two loose booleans with it: the old props were
+     * `evePresent = drawn || enabled` and `eveSpotted = detected || storeFlag`,
+     * and the first ORed the DRAW with the CHECKBOX — so a game whose checkbox
+     * was on but whose draw came up empty reported "Eve present: yes". That is
+     * the Task 51 conflation the two flags exist to prevent.
+     */
+    eveRecord: SoloEveRecord;
     elapsedTime: number;
     keyLength: number;
-    gameSuccess: boolean;
 }
 
 const SoloResultsTable = ({
     playerName,
     playerRole,
-    evePresent,
-    eveSpotted,
+    eveRecord,
     elapsedTime,
     keyLength,
-    gameSuccess,
 }: SoloResultsTableProps) => {
     const { localize } = useLanguage();
     const router = useRouter();
@@ -54,9 +60,35 @@ const SoloResultsTable = ({
     // Faster completion + more key bits = higher score
     const score = Math.max(0, Math.round((keyLength * 10) - (elapsedTime / 10)));
 
+    // Task 63 Step 6b: the same shared, unit-tested classifier BB84's results
+    // page uses (lib/eve-story.ts) — one answer to "how did this game end?" for
+    // every protocol, kept out of the view so it can be tested.
+    //
+    // How E91 reaches each ending differs from BB84's, though the endings are
+    // the same three. BB84's MISSED comes from a validation draw that happens
+    // to agree; E91's comes from a DECISION — the student reads S, judges the
+    // channel safe, and finishes the game with Eve still listening.
+    const ending = classifySoloEnding(eveRecord);
+    const keyCompromised = ending === 'missed';
+    const revealKey = {
+        absent: 'component.results.revealAbsent',
+        caught: 'component.results.revealCaught',
+        missed: 'component.results.revealMissed',
+    }[ending];
+
+    // ⚠️ Both handlers still diverge from BB84's, and the comment that used to
+    // justify the first is now stale: it said the completed checkpoint "serves
+    // as a signal for the form page to clean up properly", but since Phase 3e-2
+    // the form page KEEPS a completed session instead of clearing it.
+    //
+    // BB84 pushes to /bb84 and its Home button navigates without clearing
+    // anything (ADR §11: session data dies by user intent, not as a side effect
+    // of navigation). E91 replaces, and its Home button destroys the session —
+    // so a finished E91 game cannot be reached again with browser Forward, while
+    // a BB84 one can. Left alone here on purpose: this slice is about what the
+    // table SAYS, and changing navigation is its own change with its own test.
+    // Recorded in Task 63 Step 6.
     const handleReplay = () => {
-        // Don't clear localStorage here — e91GameData.gameSuccess=true
-        // serves as a signal for the form page to clean up properly
         router.replace('/e91');
     };
 
@@ -78,6 +110,7 @@ const SoloResultsTable = ({
                             <TableHead>{localize('component.e91.results.room')}</TableHead>
                             <TableHead>{localize('component.e91.results.evePresent')}</TableHead>
                             <TableHead>{localize('component.e91.results.eveDetected')}</TableHead>
+                            <TableHead>{localize('component.results.verdict')}</TableHead>
                             <TableHead>{localize('component.e91.results.time')} (s)</TableHead>
                             <TableHead>{localize('component.e91.results.keyLength')}</TableHead>
                             <TableHead>{localize('component.e91.results.score')}</TableHead>
@@ -87,14 +120,21 @@ const SoloResultsTable = ({
                         <TableRow>
                             <TableCell>{roomDisplay}</TableCell>
                             <TableCell>
-                                {evePresent
+                                {eveRecord.drawn
                                     ? localize('component.e91.results.yes') || 'Yes'
                                     : localize('component.e91.results.no') || 'No'}
                             </TableCell>
                             <TableCell>
-                                {eveSpotted
+                                {eveRecord.detected
                                     ? localize('component.e91.results.yes') || 'Yes'
                                     : localize('component.e91.results.no') || 'No'}
+                            </TableCell>
+                            <TableCell className={keyCompromised
+                                ? 'text-red-500 font-bold'
+                                : 'text-green-500 font-bold'}>
+                                {localize(keyCompromised
+                                    ? 'component.results.keyCompromised'
+                                    : 'component.results.keySecure')}
                             </TableCell>
                             <TableCell>{Math.ceil(elapsedTime)}</TableCell>
                             <TableCell>{keyLength}</TableCell>
@@ -104,17 +144,17 @@ const SoloResultsTable = ({
                 </Table>
             </div>
 
-            {/* Game Status Message */}
+            {/* The reveal — one sentence per ending, and the pedagogical point
+                of a probabilistic Eve (ADR §12). This used to celebrate any
+                finished game, so a student who never spotted Eve was told
+                "Congratulations!" over a compromised key. Now the celebration
+                only appears where it is earned. Same three sentences BB84
+                shows, from the same shared keys. */}
             <div className="text-center">
-                {gameSuccess ? (
-                    <p className="text-xl text-green-500 font-bold">
-                        {localize('component.e91.results.success') || '🎉 Congratulations! Game completed successfully!'}
-                    </p>
-                ) : (
-                    <p className="text-xl text-red-500 font-bold">
-                        {localize('component.e91.results.failure') || '❌ Game ended.'}
-                    </p>
-                )}
+                <p className={`text-xl font-bold ${
+                    keyCompromised ? 'text-red-500' : 'text-green-500'}`}>
+                    {localize(revealKey)}
+                </p>
             </div>
 
             {/* Action Buttons */}
