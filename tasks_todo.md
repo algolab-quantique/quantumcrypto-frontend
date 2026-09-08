@@ -2225,7 +2225,7 @@ restart. **Align with BB84 once 52-C and 52-G are fixed.**
 
 *The general lesson: "copy BB84" is right for the restart mechanics and wrong when the step being
 copied differs in kind. Check that the thing you are copying does the same job before copying it.*
-| **3** | The missing E91 message — *"…on recommence, cette fois sans Ève"* — 3 languages. See refinement (c). | ½ d | the detected-Eve restart says it on screen |
+| **3** ✅ **DONE** | The missing E91 message. Extended `component.e91.restart.unsecured.description` in all 3 languages, **reusing BB84's exact wording** (`component.gameRestart.eveDescription`) per the UI WORDING NOTE. One key change covers **solo and multiplayer** — both CHSH tabs push it | ✅ detect Eve → the transcript now says the exchange restarts without her, right above the Restart button |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
 | **6** | **Full results-table parity for E91**, not just the counter — see below. | 1 d | play, restart, results tells the same story BB84's does |
@@ -2416,6 +2416,14 @@ find BB84 exactly where they left it.
 ---
 
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
+
+> **🔤 Open inconsistency found 2026-09-04 (Task 63 Step 3): Eve has two Spanish names.**
+> BB84's Spanish calls her **"Eva"** (`component.gameRestart.eveTitle`: *"¡Eva fue detectada!"*);
+> E91's Spanish calls her **"Eve"**, in all four places it names her. A Spanish-speaking student
+> playing both protocols meets two characters.
+> Step 3 stayed consistent *inside* E91 rather than half-renaming her mid-sentence. Picking one name
+> app-wide is a small, separate cleanup — and exactly what this note exists to prevent. Check DPS
+> too before choosing.
 
 **Decision (Ibra, 2026-07-16):** when a concept already has a word somewhere in the app,
 REUSE it (ideally reuse the same localization key) instead of inventing a friendlier
