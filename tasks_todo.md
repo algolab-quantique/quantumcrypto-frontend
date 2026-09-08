@@ -2194,7 +2194,37 @@ branch does a bare `resetRoom(); resetProgress();`, while `alice-exchange-tab.ts
 |---|---|---|---|
 | **0** | This tracker rewrite. Reconcile with **Task 28** (see below). | ½ h | — |
 | **1** ✅ **DONE `298af4a`** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holds the five common steps; a new **`RoundAdapter`** (`getEvePresent`, `setEvePresent`, `beginRound`, optional `incrementRoundCount`) holds what is protocol-specific. BB84 solo only, behaviour-preserving. No per-protocol wrapper: callers name the shared function, which also broke an import cycle | ✅ BB84's 9 tests pass **with every assertion untouched** + Ibra browser-verified both paths and a normal start — see the decoded evidence below |
-| **2** | **E91 solo becomes the second client.** Two call sites: `solo-basis-tab` (default — Eve survives) and `solo-CHSH-tab` (`{withoutEve: true}`). Fixes the Eve loss **and** both copies of the `content`/`title` defect. ⚠️ E91's `beginRound` only pushes the transcript **for now** — it looks trivial because pair generation is misplaced inside "Measure", which is **Task 64**, deliberately not folded in here. | 1 d | solo with Eve → short-key restart → she still intercepts; detected restart → she is gone; welcome line styled in both |
+| **2** ✅ **DONE `6217731`** | E91 solo is the second client. Call sites turned out to be **three, not two** — Ibra found the third by clicking the progression-sidebar button instead of the CHSH dialog — and a **fourth was dead code**, deleted. Fixes the Eve loss and all three copies of the `content`/`title` defect. ⚠️ E91's `beginRound` only pushes the transcript for now; it looks trivial because pair generation is misplaced inside "Measure" (**Task 64**) | ✅ repeated short-key restarts with Eve surviving; post-detection restart shows the welcome highlighted. 7 tests, all three defect-guards mutation-checked |
+
+**🔎 STEP 2 — THREE THINGS WORTH KEEPING (2026-09-04):**
+
+**(a) Reviewing my own diff could not have found the missing call site.** A diff shows what changed,
+never what was missed. The check that would have worked is searching for every caller *before*
+wiring — `grep "e91.measurement.welcome"` returned three restart copies, not two. **Rule for next
+time: search for all call sites first, review the diff second. Both, not either.**
+
+**(b) A fourth copy was dead.** `solo-CHSH-tab`'s `restartGameWithoutEve` was wired to a dialog that
+never opens — `setRestartModalOpen(true)` appears nowhere in the file, and in the multiplayer twin
+(`CHSH-tab.tsx`) the two calls that would open it are **commented out** (`:188`, `:269`). Solo was
+copied from an already-disabled path and never even inherited the commented lines. Deleted with its
+dialog, state and import.
+
+**(c) ⚠️ `setGameHasEve(false)` stays in E91's `handleSoloRestart` — a DELIBERATE divergence from
+BB84.** Removing it to "match BB84" was tried and reverted the same day, and the reason is the most
+useful thing this step produced:
+
+> BB84's post-restart check is **deterministic** — compare the validation bits, they match or they
+> do not. E91's is **statistical** — S is noisy at the photon counts the game offers.
+
+Keeping the checkbox on brings the CHSH tab back for the Eve-free round. Per **52-C**'s measured
+table, at 10 photons only 37.5 % of Eve-absent games show |S| > 2 — so **~62 % of the time** the
+student correctly reads S ≤ 2, clicks "not secure", lands in `onUnsecure`'s else branch, is declared
+a **LOSS**, and `clearE91LocalStorage()` takes the results page with it (**52-G**). They reasoned
+correctly and the game punished them. Turning the checkbox off keeps that path unreachable after a
+restart. **Align with BB84 once 52-C and 52-G are fixed.**
+
+*The general lesson: "copy BB84" is right for the restart mechanics and wrong when the step being
+copied differs in kind. Check that the thing you are copying does the same job before copying it.*
 | **3** | The missing E91 message — *"…on recommence, cette fois sans Ève"* — 3 languages. See refinement (c). | ½ d | the detected-Eve restart says it on screen |
 | **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. | 1 d | **2 browsers**, detected-Eve restart in multi |
@@ -2331,6 +2361,57 @@ round's transcript contains only its own opening lines. That fails today.
 **Cross-refs:** **63** (the shared restart — part 1 makes E91's `beginRound` meaningful) ·
 **52-A** (a restart leaving a wrong transcript, same family) · **60** (why multiplayer cannot follow
 part 1 yet).
+
+---
+
+### 65. ✅ E91 modals overwrote the photon count the player typed
+
+**Status**: ✅ **DONE 2026-09-04, `d2a9540`**. **Found**: Ibra, typing 12 and watching it become 8.
+
+An effect on the Eve checkbox set `photonNumber` **unconditionally, in both directions**:
+
+```ts
+useEffect(() => {
+    if (eveChecked) form.setValue('photonNumber', E91_..._MIN_WITH_EVE);  // 12 → 8
+    else            form.setValue('photonNumber', E91_..._DEFAULT);        // then → 4
+}, [eveChecked, form]);
+```
+
+Tick Eve, your value is replaced by the minimum. Untick, it is replaced again by the default. The
+player's own input never survived a checkbox click.
+
+**BB84's solo modal already had the right rule** — raise only when the current count is *below* the
+with-Eve minimum, never touch it on untick — so this was E91 catching up, not a new design. **The
+same defect sat in both E91 modals**, solo and multiplayer create-game; the multiplayer one was a
+copy. Both fixed together.
+
+The effect also ran its `else` branch on mount, redundantly with the form's `defaultValues`, so
+nothing was lost by deleting it.
+
+**Verified**: 12 stays 12 on tick and on untick; 4 still rises to the minimum on tick. Both modals.
+
+**Family**: same shape as **59-B** (the BB84 multiplayer form starting in an invalid state) — modal
+handlers that fight the user instead of helping them.
+
+---
+
+### 📌 NOT A BUG: other protocols' data stays in localStorage while you play
+
+**Recorded 2026-09-04** because it looks alarming and will be re-reported otherwise. Ibra, starting
+an E91 game, saw all the `bb84*` keys still sitting in localStorage next to the `e91*` ones.
+
+**That is correct and deliberate.** `startFresh(adapter)` clears only the keys the adapter lists,
+all of which are that protocol's own. A BB84 session belongs to BB84 and survives until the player
+starts a new BB84 game or quits one — the ADR §11 Navigation Invariant: *session data is destroyed
+by user intent, never as a side effect*.
+
+It is also a **fix, not an accident**: DPS used to call `localStorage.clear()` on partner-left,
+which wiped every protocol's data including BB84's kept completed sessions. Task 54 F2 replaced it
+with `clearDPSLocalStorage()`, and the comment explaining why is still at
+`socket-provider.tsx:1181`.
+
+Consequence worth knowing: a student can leave a BB84 game unfinished, play E91, and come back to
+find BB84 exactly where they left it.
 
 ---
 
