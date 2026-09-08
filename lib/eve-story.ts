@@ -1,13 +1,29 @@
 /**
  * The Eve-story classification (Task 56) — ONE pure home for "how did this
- * game end?", consumed by both results pages and fully unit-tested, because
- * several endings are practically impossible to force manually (e.g. the
- * MISSED ending needs Eve present AND validation bits that happen to match).
+ * game end?", consumed by every protocol's results page and fully unit-tested,
+ * because several endings are practically impossible to force manually (e.g.
+ * the MISSED ending needs Eve present AND validation bits that happen to match).
+ *
+ * Task 63 Step 6a moved this out of `lib/bb84/`: the question it answers is not
+ * BB84's. It sits at the root of `lib/` with the other cross-protocol modules
+ * (`utils.ts`, `test-mode.ts`), and E91 now asks it too. Nothing about the
+ * logic changed — BB84's existing tests came along unedited and still pass.
  */
 
-import type {SoloEveRecord} from './solo-round';
-
 export type EveEnding = 'absent' | 'caught' | 'missed';
+
+/**
+ * The two facts an ending depends on. Deliberately structural rather than a
+ * protocol's own record type: BB84's carries `percentage` and `rounds` as well,
+ * E91's does not, and neither matters here. A protocol passes whatever record
+ * it keeps, as long as it can answer these two questions.
+ */
+export type EveOutcome = {
+    /** Did Eve actually intercept? The draw, not the checkbox (Task 51). */
+    drawn: boolean;
+    /** Did the player catch her? */
+    detected: boolean;
+};
 
 /**
  * Solo: the ending comes from the game's persisted Eve record.
@@ -15,7 +31,7 @@ export type EveEnding = 'absent' | 'caught' | 'missed';
  * - drawn + detected → caught (replayed clean, key secure)
  * - drawn + undetected → missed (completed with her listening — compromised)
  */
-export const classifySoloEnding = (record: SoloEveRecord | null): EveEnding => {
+export const classifySoloEnding = (record: EveOutcome | null): EveEnding => {
     if (!record?.drawn) return 'absent';
     return record.detected ? 'caught' : 'missed';
 };

@@ -8,8 +8,14 @@
 
 import {describe, expect, it} from 'vitest';
 import {classifySoloEnding, deriveRoomEveStory} from './eve-story';
-import type {SoloEveRecord} from './solo-round';
+import type {SoloEveRecord} from '@/lib/bb84/solo-round';
 
+/**
+ * Task 63 Step 6a: still built from BB84's full record, on purpose. The
+ * classifier now takes the structural `EveOutcome` so E91 can pass its own,
+ * smaller record — and these cases keep proving that a protocol's richer record
+ * is still accepted, with the extra fields ignored.
+ */
 const record = (overrides: Partial<SoloEveRecord>): SoloEveRecord => ({
     enabled: true,
     percentage: 0.5,

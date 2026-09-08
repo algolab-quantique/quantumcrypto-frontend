@@ -270,20 +270,16 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.shortKey.restart': 'La longitud de tu clave es demasiado corta, puedes reiniciar el juego ahora.',
         'component.e91.restart': 'Reiniciar',
         'component.e91.moveToMessaging': 'Intercambiar un mensaje',
-        'component.e91.evePresent': '¡Eve estuvo presente!',
-        'component.e91.evePresent.stats': ' Eve ha leído con éxito este número de bits: ',
+        'component.e91.evePresent': '¡Eva estuvo presente!',
+        'component.e91.evePresent.stats': ' Eva ha leído con éxito este número de bits: ',
         'component.e91.decsion.unsecured': 'El canal fue considerado inseguro por ',
         'component.e91.decsion.secured': 'El canal fue considerado seguro por ',
         'component.e91.restart.unsecured': 'Canal comprometido',
-        'component.e91.restart.unsecured.description': ' Eve ha sido descubierta',
-        // "Eve", not "Eva": E91's Spanish calls her Eve everywhere, while BB84's
-        // calls her Eva. Staying consistent inside this protocol rather than
-        // half-renaming her mid-sentence; the cross-protocol mismatch is a
-        // separate cleanup, recorded in the UI WORDING NOTE.
+        'component.e91.restart.unsecured.description': ' Eva ha sido descubierta',
         'component.e91.restart.withoutEve': 'La clave está comprometida — se' +
-            ' descarta y se reinicia el intercambio, esta vez sin Eve.',
+            ' descarta y se reinicia el intercambio, esta vez sin Eva.',
         'component.e91.gameLoss.title': '¡Perdiste!',
-        'component.e91.gameLoss': ' Eve no interfirió en este canal',
+        'component.e91.gameLoss': ' Eva no interfirió en este canal',
         'component.e91.validation.invalid.start': 'Arrastra el valor correcto (+1 o -1) al contenedor' +
             ' correspondiente para cada par de fotones. Recordatorio: multiplica los resultados de' +
             ' medición de Alice y Bob para determinar este valor.',

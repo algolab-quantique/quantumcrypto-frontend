@@ -73,7 +73,7 @@ const Bb84ResultsTable = ({rooms, players}: ResultsTableProps) => {
                         <TableHead>{localize('component.results.iteration')}</TableHead>
                         <TableHead>{localize('component.bb84.results.evePresent')}</TableHead>
                         <TableHead>{localize('component.bb84.results.eveDetected')}</TableHead>
-                        <TableHead>{localize('component.bb84.results.verdict')}</TableHead>
+                        <TableHead>{localize('component.results.verdict')}</TableHead>
                         <TableHead>{localize('component.bb84.results.time')}</TableHead>
                     </TableRow>
                 </TableHeader>
