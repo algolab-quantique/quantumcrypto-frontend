@@ -1361,6 +1361,25 @@ already has two known ones before starting.
 **Status**: ✅ DONE 2026-07-17 (core verified; caught-case display pending 49-B). Solo gained the celebration (then merged into reveal-led single phrases — polish slice); multi gained localized headers + derived **« Ève détectée ? »** and colored **Verdict** columns (derivation: only the coordinated Eve-restart removes Eve, so last-iteration-with-Eve ⇒ compromise; earlier-Eve-then-clean ⇒ caught). **VERIFIED by Ibra:** no-Eve room → vert « Clé sécurisée »; missed case → rouge « Clé compromise ! ». Caught-case display unverifiable until the 49-B multi-restart bug is fixed. Shared neutral key `component.results.gameSuccess` replaces the e91-named one on the shared results page.
 Multi results show a generic "🎉 Félicitations ! Partie terminée avec succès !"; solo results show the Eve reveal ("Ève était absente — votre clé est sécurisée"). Mirrored gaps: solo lacks the celebration line; **multi lacks the Eve reveal** (Parity Principle: both modes should tell the same story). Multi's table is backend-fed and the backend knows `game_has_eve`, so a multi reveal is feasible — touches the multi results component (+ maybe payload). Small UX slice, with 49-B/backend session or at replication.
 
+**🔴 REOPENED 2026-09-09 — it is worse than "lacks the reveal": it CELEBRATES a compromised key.**
+Ibra finished an E91 multiplayer game and sent the screenshot: **Ève présente: Yes · Ève détectée: No**
+— and underneath, *"🎉 Félicitations ! Partie terminée avec succès !"*. He was told he won a game in
+which Eve listened to the whole exchange undetected.
+
+That is the exact defect **Task 63 Step 6b** removed from the solo page (`a6b1835`). It survives in
+multi because the message is not the protocol's — it lives on the **shared** page,
+`app/(main)/games/[gameType]/[gameCode]/results/page.tsx:238`, and fires on `hasFinishedRooms` alone:
+no Eve term, no verdict term. **So all three protocols celebrate every finished game**, BB84 multi
+included. Raises this from a "small UX slice" to the same class as 6b.
+
+**⚠️ One design question must be answered BEFORE any code.** Solo's sentence is about *your* game.
+The multi page is a classroom leaderboard listing **every** room, so "your key is compromised" needs
+to know which row is yours — `playerName` from the store is the obvious candidate but is not verified
+to match the backend's player records, and the **admin/monitor** view has no row of its own at all
+(`isAdmin` already branches to a different message). Decide the audience first: a per-row verdict
+column (Step 6d, no ownership needed) is a strictly smaller change than a personal closing sentence,
+and may be enough. Do 6d first and re-look.
+
 ---
 
 ### 57. 🔬 TEST_MODE review → became the PROTOCOL PHYSICS investigation (2026-07-20)
@@ -2236,7 +2255,19 @@ restart. **Align with BB84 once 52-C and 52-G are fixed.**
 *The general lesson: "copy BB84" is right for the restart mechanics and wrong when the step being
 copied differs in kind. Check that the thing you are copying does the same job before copying it.*
 | **3** ✅ **DONE** | The missing E91 message. Extended `component.e91.restart.unsecured.description` in all 3 languages, **reusing BB84's exact wording** (`component.gameRestart.eveDescription`) per the UI WORDING NOTE. One key change covers **solo and multiplayer** — both CHSH tabs push it | ✅ detect Eve → the transcript now says the exchange restarts without her, right above the Restart button |
-| **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. | 1 d | **2 browsers**, Eve on, both protocols |
+| **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. **→ SPLIT INTO 4a / 4b / 4c, below.** | 1 d | **2 browsers**, Eve on, both protocols |
+| **4a** ✅ **DONE `7c545be` + `a926db4`** | Step 4 could not be done as written: E91 multi has no round to prepare, and the single `beginRound` hook fused two jobs — *produce the round's data* and *say what just happened*. Split into **`prepareRound`** (solo only) and **`openRoundTranscript`** (always), with the solo/multi decision moved INTO `restartRound` so it is written once instead of once per protocol. `pushRoundWelcome` moved to `lib/bb84/round-transcript.ts` because multi needs it too. `a926db4` fixed three flaws a harsh review found afterwards | ✅ gates green; behaviour-preserving, so no separate browser run — it was exercised by 4c's |
+| **4b** ⬜ **NOT DONE — and it is now a live bug** | BB84 multi still hand-resets: `components/bb84/play-page/tabs/basis-tab.tsx:125-126` is a bare `resetRoom(); resetProgress();`, so **BB84 multi still loses Eve on a short-key restart** — the exact defect 4c just fixed for E91. E91 multi is now AHEAD of BB84 multi. Deferred on purpose: this call site also carries the stale-basis-form decision (**Task 49-B**) and the uncoordinated-partner desync, so it is not a one-line move | **2 browsers**, BB84, Eve on, force a short key |
+| **4c** ✅ **DONE — but the commit is mislabeled, see below** | E91 multi's `basis-tab.tsx` short-key restart now calls `restartRound(e91Adapter)`. No `prepareRound` in multi: the backend produces the pairs. Partner still not told → **Task 28** | ✅ Ibra, 2026-09-09, E91 multi: short key → restart → played to the end, **no crash**, results table reported Eve present. ⚠️ *Partial*: that table's `eve_present` comes from the **backend**, so it does not by itself prove the FRONTEND kept her — the frontend proof is the "Ève a lu N bits" counter (`basis-tab.tsx:270`) being non-zero. Still unchecked |
+
+**⚠️ RULE-2 VIOLATION, recorded so `git bisect` is not misled (found 2026-09-09).** Step 4c's code
+shipped **inside** commit `e8a2270`, whose message is `docs(tracker): multiplayer has no protection
+against the 52-C trap`. That commit changed `basis-tab.tsx` (+24/−4) as well as the tracker, and its
+message never mentions it. Anyone bisecting E91's multiplayer restart will skip straight past the
+commit that changed it. **Not rewritten** — the branch is pushed, and rewriting shared history to fix
+a label costs more than this note. The lesson is the one CLAUDE.md rule 2 already states: a commit
+does one kind of thing, and the message is the index. It failed here because the code change was
+staged while writing the docs commit, and nothing checks the message against the diff.
 | **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. **Two real bugs found while planning it — see below.** | 1 d | **2 browsers**, detected-Eve restart in multi |
 
 **🔴 (5-iii) MULTIPLAYER HAS NO PROTECTION AGAINST THE 52-C TRAP — reproduced by Ibra 2026-09-08.**
@@ -2307,7 +2338,60 @@ one session, both the same shape: an assertion that holds for the wrong reason.*
 **⚠️ Still divergent, recorded not fixed:** E91's Replay uses `router.replace` where BB84 pushes, and
 E91's Home button destroys the session where BB84's navigates without clearing — so a finished E91
 game cannot be reached again with browser-Forward, while a BB84 one can. Same family as 3e-3.
-Navigation, not table content, so it needs its own slice and its own browser test.
+Navigation, not table content, so it needs its own slice and its own browser test. **→ now Step 7.**
+
+---
+
+### ➕ STEP 6d — the MULTIPLAYER results table never caught up (found 2026-09-09)
+
+**How it was found:** Ibra played E91 multi to the end and sent a screenshot. Step 6 compared E91
+**solo** against BB84 **solo** and fixed that. Nobody compared the *multi* tables — and E91 multi is
+the one table of the four that has never been touched.
+
+| | BB84 multi (`bb84-results-table.tsx`, Task 56) | E91 multi (`e91-results-table.tsx`) |
+|---|---|---|
+| columns | Salle · **Itération** · Ève présente · Ève détectée · **Verdict** · Temps | Salle · Ève présente · Ève détectée · Temps · Points |
+| Yes / No | `localize('component.bb84.results.yes'/'no')` | **hardcoded `'Yes'` / `'No'`** (`e91-results-row.tsx:16,19`) |
+| verdict | shared `deriveRoomEveStory` | **none** |
+
+**One design point, not a copy job.** E91's backend sends a real `eve_detected` per iteration; BB84's
+does not, so `deriveRoomEveStory` infers detection positionally (*"Eve in an earlier iteration but not
+the last ⇒ caught"*). Writing a second E91-only rule would break the rule this whole task exists to
+establish. **Teach the shared classifier to prefer a real `eve_detected` when the iteration carries
+one, and keep the positional inference as the fallback** — one function, two data situations. It is
+pure and already unit-tested, so the new branch gets a test that fails first.
+
+Overlaps **Task 56**. Keep "Points" — it is E91's own column, BB84 has no score.
+
+---
+
+### ➕ STEP 7 — Back from the results page (found 2026-09-09, Ibra)
+
+**What he saw:** in BB84 solo, Back from the results table returns to the félicitation screen with all
+its messages, and Back again reaches `/bb84`. In E91 it does not. **The cause is one word, and it is a
+SOLO divergence** — he had compared BB84 *solo* against E91 *multi*:
+
+| | → results | Back returns to the last step? |
+|---|---|---|
+| BB84 solo | `router.push` — `bb84-progression.tsx:108` | ✅ |
+| **E91 solo** | `router.replace` — `e91-progression.tsx:96` | ❌ **the divergence** |
+| BB84 multi | `router.replace` — `bb84-progression.tsx:100` | ❌ |
+| E91 multi | `router.replace` — `e91-progression.tsx:98` | ❌ |
+
+BB84's own comment names the rule it follows: *"Push (real destination): Back restores the
+félicitation, per the Navigation Invariant"* (ADR §11 — *session data is destroyed only by explicit
+user intent, never as a side-effect of navigation*). The two play pages are structurally identical
+(same `useProtocolSessionGuard`, same render-time gate) and E91 has kept completed sessions since
+Phase 3e-2, so `push` should behave in E91 exactly as it does in BB84 — verify, do not assume.
+
+**7a** — E91 solo `replace` → `push`. One word. Browser check in a **fresh tab** (see the fossil-history
+note at the bottom of this file, or old entries will fake the result).
+**7b** — the two E91-solo-results buttons in the same file: Replay `replace`s where BB84 pushes, and
+Home destroys the session where BB84's does not (the note above). Same file, different behaviour,
+so it is a second slice.
+**7c** — **multi Back: leave it, track it.** Both protocols agree here, so it is not an E91 defect, and
+returning to a finished play route with a closed socket is a different problem with its own risks.
+Decide it with **Task 42** (navigation-guard alignment), not inside E91's catch-up.
 
 **📊 STEP 6 WIDENED (Ibra, 2026-09-04).** It said "round counter + column". Comparing the two tables
 side by side after his Step 1 testing, E91 is missing more than that:
@@ -2536,6 +2620,24 @@ clean.
 
 **Rule: always verify navigation-chain behavior in a FRESH tab** (or after restarting
 the browser tab), so the history stack starts empty.
+
+### 🧪 LOCAL TESTING NOTE: Stale Dev-Server Modules After a Cross-Module Rename
+
+**Not a code bug** — testing methodology (learned 2026-09-08, Task 63 Step 4c).
+
+Ibra hit `TypeError: round.openRoundTranscript is not a function` at `round.ts:108` while testing the
+E91 multi restart. The file on disk was **correct**: `e91-adapter.ts` defined `openRoundTranscript`,
+`tsc` passed (it could not, if a required `RoundAdapter` member were missing), and
+`e91-round.test.ts` drove that exact path green. The dev server had been running throughout Step 4a,
+which **renamed a field across two modules that import each other** (`beginRound` →
+`prepareRound` + `openRoundTranscript`). Fast Refresh reloaded the caller and kept a cached copy of
+the adapter — so the new caller met the old object. It did not reproduce after a restart, and the
+same flow then played to the end.
+
+**Rule: after a rename that crosses module boundaries, `rm -rf .next && npm run dev` before
+believing a runtime error.** And the diagnostic order that settled it in one step: does the FILE
+have it → does `tsc` pass → does a TEST drive that exact path. If all three say yes, the running
+process is stale, not the code.
 
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
