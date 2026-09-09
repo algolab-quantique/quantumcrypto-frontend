@@ -10,34 +10,24 @@
  *                            if a room ever had two
  *
  * So an E91 room holds **one iteration for its whole life**, and a restart
- * overwrites it instead of appending. Three consequences live in this file:
+ * overwrites it instead of appending. Two consequences:
  *
- * 1. **No Itération column.** It could only ever print "1". The previous
- *    developer removed it for this reason in Nov 2024 (`64dc201`) — correctly,
- *    though nobody wrote down why, so it was nearly re-added in Sept 2026.
+ * 1. **No Itération column** — it could only ever print "1". The previous
+ *    developer removed it for this reason in Nov 2024 (`64dc201`), correctly,
+ *    but nobody wrote down why, so it was nearly re-added in Sept 2026.
  *    Restoring solo's round counter here needs the backend to create an
- *    iteration per restart → tracked with Task 28.
+ *    iteration per restart → **Task 28**.
  *
- * 2. **`deriveRoomEveStory` must NOT be used here.** BB84's classifier infers
- *    detection POSITIONALLY — "Eve in an earlier iteration but not the last ⇒
- *    caught" — which needs several iterations. Fed E91's single mutated one it
- *    reports "Eve was never present" for a student who actually caught her.
- *
- * 3. **`drawn` ORs the two fields.** After a detection the backend leaves
- *    `eve_present=false, eve_detected=true`, so `eve_present` alone made this
- *    table print "Ève présente: No · Ève détectée: Yes" — she was never there
- *    and you caught her. `eve_present || eve_detected` recovers what the
- *    mutation erased.
- *
- * With those two facts the room's ending is the SAME question solo asks, so it
- * goes through the SAME shared classifier (`lib/eve-story.ts`) and prints the
- * same verdict vocabulary — not a second copy of the rule.
+ * 2. **How the flags must be read is NOT decided here.** `deriveRoomEnding`
+ *    (`lib/eve-story.ts`) owns it, is unit-tested, and its docstring carries
+ *    the reasoning — including why `deriveRoomEveStory`, BB84's positional
+ *    classifier, gives the wrong answer for E91. This file only displays.
  */
 
 import React from 'react';
 import {TableCell, TableRow} from '@/components/ui/table';
 import {useLanguage} from '@/components/providers/language-provider';
-import {classifySoloEnding} from '@/lib/eve-story';
+import {deriveRoomEnding} from '@/lib/eve-story';
 
 interface E91ResultsRowProps {
     room: any;
@@ -52,14 +42,17 @@ const E91ResultsRow = ({room, player1, player2}: E91ResultsRowProps) => {
     // threw; BB84's row has guarded it since Task 56.
     const iterations: any[] = room.iterations ?? [];
 
-    // `.some` rather than reading `iterations[0]`: correct for the single
-    // iteration the backend keeps today, and still correct on the day it can
-    // append one per restart. Nothing here assumes the count.
-    const drawn = iterations.some(
-        ({eve_present, eve_detected}: any) => !!eve_present || !!eve_detected);
-    const detected = iterations.some(({eve_detected}: any) => !!eve_detected);
+    const ending = deriveRoomEnding(iterations);
 
-    const keyCompromised = classifySoloEnding({drawn, detected}) === 'missed';
+    // The two flags the columns show are the two the ending was built from, so
+    // they are read back OUT of it rather than re-derived here. Recomputing
+    // `eve_present || eve_detected` in this file is how the rule would end up
+    // living in two places and drifting — the defect this whole task exists to
+    // stop. classifySoloEnding's definition makes the inverse exact:
+    // absent = not drawn · caught = drawn + detected · missed = drawn, missed.
+    const drawn = ending !== 'absent';
+    const detected = ending === 'caught';
+    const keyCompromised = ending === 'missed';
 
     const yesNo = (value: boolean) => localize(value
         ? 'component.e91.results.yes' : 'component.e91.results.no');

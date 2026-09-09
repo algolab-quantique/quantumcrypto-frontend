@@ -36,7 +36,41 @@ export const classifySoloEnding = (record: EveOutcome | null): EveEnding => {
     return record.detected ? 'caught' : 'missed';
 };
 
-export type RoomIteration = {eve_present?: boolean; elapsed_time?: number};
+export type RoomIteration = {
+    eve_present?: boolean;
+    eve_detected?: boolean;
+    elapsed_time?: number;
+};
+
+/**
+ * Multi, for a backend that RECORDS the detection — E91's does, BB84's does not.
+ * Use this whenever `eve_detected` exists; use `deriveRoomEveStory` below only
+ * where it does not.
+ *
+ * Two facts about E91's backend make the OR necessary rather than tidy
+ * (`e91/consumers.py`, read 2026-09-09):
+ *
+ *   create_room()          → creates exactly ONE iteration per room
+ *   'RESTART_WITHOUT_EVE'  → MUTATES it: eve_present = False
+ *
+ * So a student who catches Eve leaves the room reading
+ * `eve_present=false, eve_detected=true` — she is erased from the only record
+ * of her. Reading `eve_present` alone therefore reports "Eve was never here"
+ * about the exact game where the student won, which is what the E91
+ * multiplayer table printed until Task 63 Step 6d. **She must have been drawn
+ * to have been detected**, so the OR recovers what the mutation erased.
+ *
+ * `.some` rather than reading `iterations[0]`: correct for the single iteration
+ * the backend keeps today, and still correct on the day it appends one per
+ * restart (Task 28). Nothing here assumes the count.
+ */
+export const deriveRoomEnding = (iterations: RoomIteration[]): EveEnding => {
+    const drawn = iterations.some(
+        iteration => !!iteration?.eve_present || !!iteration?.eve_detected);
+    const detected = iterations.some(iteration => !!iteration?.eve_detected);
+
+    return classifySoloEnding({drawn, detected});
+};
 
 /**
  * Multi: derived from the backend's iterations, no backend change needed.
