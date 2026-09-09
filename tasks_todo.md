@@ -1984,6 +1984,34 @@ family as the BB84 Eve bug (Task 57): **a constant where a random draw belongs.*
 **Scope: BOTH modes are affected, from DIFFERENT code.** Solo runs the TypeScript copy; multiplayer
 runs the Python copy. Fixing one fixes half the app.
 
+**✅ CONFIRMED IN REAL PLAY 2026-09-09 — the first evidence from a game rather than from reading.**
+Ibra sent two solo room dumps (12 and 20 photons, Eve present in both) after noticing *"all the bits
+message like they are 0 (zeros hahah)"*. Alice's bits are fair at **17/32 = 53 %** ones; Bob's are
+**5/32 = 15.6 %** — `P = 5.7 × 10⁻⁵` under a fair coin. Per basis the match to the table above is
+exact: basis 2 → **0 ones out of 10**, basis 3 → 2/11 (model 15 %), basis 4 → 3/11 (model 50 %).
+Alice is spared only because she gets `generateRandomBits`; whoever is the PARTNER goes through
+`eveGenerateBits`.
+
+**And it is worse than "a wrong number" in a way the earlier write-up understated:** the bias reaches
+the *sifted key the student is shown at the end*. In dump 1 `bobValidBits` is `[0,0,0]`; in dump 2
+both sides are `[0,0,0]`. The student's takeaway from a game with Eve is *"my key is all zeros"* —
+not the Bell inequality.
+
+**Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
+
+1. **Keep the phenomenological model, remove the bias.** Eve's intercept-resend destroys the
+   *correlation*, but Bob's *marginal* outcome must stay 50/50 in every basis — measuring a
+   maximally mixed state cannot favour one result. So every branch becomes a fair coin, and the
+   per-basis table disappears. Smallest possible change, preserves CHSH ≤ 2, and directly kills the
+   "all my 2s are zeros" giveaway. **Recommended first move.**
+2. **Simulate the attack properly** — Eve measures in a random basis, the state projects, Bob
+   measures at the angle between the two, giving a genuinely reduced correlation. Correct, teaches
+   the real mechanism, and would let the CHSH tab show the honest intermediate S. Much bigger, and
+   it is really the "move E91 physics to the frontend" option below wearing a different hat.
+
+*Option 1 is a one-line change in each language and would fix what the student sees today; option 2
+is the right end state. They are not exclusive — 1 now, 2 with workstream #5.*
+
 **⚠️ DECISION REQUIRED WHEN THIS TASK STARTS (Ibra, 2026-09-02) — two options, decide then:**
 1. **Patch both copies** — fast, but keeps two sources of truth that will drift again.
 2. **Move E91's physics to the frontend** like BB84/DPS, delete the Python copy, and make the
@@ -2317,6 +2345,15 @@ we go through val tab."*
   there the player clicks Restart *after* reading. **Check (a) first** — it is one console read of
   `useE91RoomStore.getState().evePresent` at the moment of the click, and if true it means Step 4c
   fixed the restart while the initial draw is still lost somewhere else.
+
+  **If it is (b), the fix belongs in the shared pipeline and is small.** Solo works only because the
+  player reads the notice and *then* clicks Restart; multiplayer restarts both players the moment
+  the second one declares, so a line pushed before the reset can never survive it. Pushing it
+  *after* is exactly what `restartRound` is positioned to do — it already receives `withoutEve:
+  true` and already calls `openRoundTranscript` after both resets. Passing the option through to
+  that hook would make "tell the player this round has no Eve" a property of the restart itself,
+  in one place, for every protocol — instead of a line each caller remembers to push first. That is
+  the same argument as Step 1, applied to the message rather than to Eve. Fold it into **Step 5**.
 
 **🔴 TWO OTHER BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5).**
 
@@ -2652,30 +2689,44 @@ handlers that fight the user instead of helping them.
 
 ---
 
-### 66. 🔴 E91 multi: the final key is all zeros, and the score says the key is EMPTY
+### 66. ↩️ RETRACTED — "the key is all zeros" is Task 60, and "the key is empty" was my error
 
-**Status**: 🔴 OPEN, symptom confirmed by Ibra 2026-09-09, cause not investigated. **Frontend-first**
-(the display and the score are frontend), but it may end in the backend payload. **Found**: playing
-E91 multi to the end.
+**Status**: ↩️ **RETRACTED the same day it was opened (2026-09-09).** Kept, not deleted, so nobody
+re-opens it. Two claims, one right and already owned elsewhere, one wrong.
 
-**Symptom (Ibra):** *"when we play with eve, and we declare it is secure (and it is not haha) all the
-bits message like they are 0 (zeros hahah) the key."*
+**Claim A — "the final key is all zeros" → REAL, and it is [Task 60](#60).** Not a new bug. Task 60
+found by *reading both copies* on 2026-09-02 that Eve's outcome is partly a constant: basis 2 is
+hardcoded to `outcome = 1`, bases 1 and 3 are biased 85/15 by reusing `sin²(π/8) ≈ 0.1464` as if it
+were a measurement probability. **Ibra's two solo dumps are the first confirmation from real play**,
+and they match the model basis by basis:
 
-**Why this is probably not just a display bug.** The key shown at the end is
-`keyBits = aliceValidBits` (`messaging-tab.tsx:42`), and the score is
-`aliceValidBits.length * 5` (`messaging-tab.tsx:110`). Ibra's two verified runs scored **10** and
-**0 points** — and 0 points means `aliceValidBits.length === 0`, i.e. the store field is EMPTY, not
-merely rendered wrong. The same field feeds the solo results table's "Key Length" column, which
-showed a healthy 3–4 in his solo screenshots. **So multiplayer appears to reach the end of the
-protocol with no sifted key at all**, and both the zeros and the score follow from that.
+| | Alice | Bob |
+|---|---|---|
+| ones | 17/32 = **53 %** ✅ | 5/32 = **15.6 %** ❌ |
 
-**Where to start:** who writes `aliceValidBits` in multiplayer (`socket-provider.tsx` vs the
-validation tab), and whether the CHSH split leaves anything behind. Compare against solo, which is
-correct. Do **not** touch the E91 simulation (scope decision 2026-09-02) — this is about which bits
-reach the store, not how they are computed.
+`P(≤5 ones in 32 fair flips) = 5.7 × 10⁻⁵` — not luck. And per basis, against Task 60's table:
 
-**Ordering note:** worth doing BEFORE the remaining Task 63 steps if it turns out multi has never
-produced a real key — a restart pipeline is worth little on a game whose output is empty.
+| Bob's basis | dump 1 | dump 2 | model |
+|---|---|---|---|
+| 2 | 0/5 ones | 0/5 ones | **0 %** (hardcoded) |
+| 3 | 1/3 | 1/8 | 15 % |
+| 4 | 0/4 | 3/7 | 50 % ✅ |
+
+Alice escapes because with `playerRole === 'A'` she gets `generateRandomBits`; only the partner's
+bits go through `eveGenerateBits`. **So the zeros the player sees at the end are Eve's bias, exactly
+as Task 60 predicted.** Nothing to add there but this confirmation — moved into Task 60.
+
+**Claim B — "the score is 0, so multi produces no key at all" → WRONG, and it was mine.** I inferred
+it from ONE run scoring 0 points (`score += aliceValidBits.length * 5`). Two things I did not check
+before writing it down: the other verified multi run scored **10** — a 2-bit key — and E91's sifting
+rate is low anyway (Ibra's own solo dumps: **3 valid bits from 12 photons, 3 from 20**, ≈ 15–25 %).
+A 0-bit key in a short run is ordinary bad luck, not a defect. **Multiplayer does produce keys.**
+
+*The lesson is the one this project keeps re-learning, this time committed by me: one data point plus
+a plausible story is not a finding. The check that would have caught it — "does the other run agree?"
+— was available in the same two screenshots I was looking at.* A short key IS worth a separate look
+one day, but as a **game-design** question (photon counts too low to be fun), not a bug — and Task
+52-C already owns that.
 
 ---
 
