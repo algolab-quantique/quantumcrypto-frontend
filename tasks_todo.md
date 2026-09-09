@@ -2301,6 +2301,23 @@ being written in different places. **Whoever does Step 5 must decide it explicit
 solo's checkbox-off, or fix 52-C and 52-G and remove the protection from both. Do not let the
 routing change decide it by accident.
 
+**🔁 CONFIRMED AGAIN 2026-09-09, with a second symptom next to it.** Ibra, playing E91 multi:
+*"when we declare not secure — in solo we say we restart without eve, and there is no validation CHSH
+tab. In multi I think we restart without eve, but there is no message telling that as in solo, also
+we go through val tab."*
+
+- **The returning tab is 5-iii**, exactly as recorded above.
+- **The missing message is NEW, and it is not missing code.** Both CHSH tabs push the identical two
+  lines — `CHSH-tab.tsx:262-270` and `solo-CHSH-tab.tsx:211-219`, same keys, same `title`/`content`
+  shape since Step 3. So multiplayer *runs* the push and the player still does not see it. Two
+  hypotheses, neither verified: (a) `evePresent` is false in the multiplayer frontend, so
+  `onUnsecure` takes the **else** branch and pushes the game-loss lines instead — the original
+  Task 63 symptom, "the backend keeps applying Eve while the UI forgets her"; or (b) the coordinated
+  restart's `resetProgress()` wipes the transcript before it can be read, which solo avoids because
+  there the player clicks Restart *after* reading. **Check (a) first** — it is one console read of
+  `useE91RoomStore.getState().evePresent` at the moment of the click, and if true it means Step 4c
+  fixed the restart while the initial draw is still lost somewhere else.
+
 **🔴 TWO OTHER BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5).**
 
 **(5-i) An E91 restart resets BB84.** `restartWithoutEve()` is called at `socket-provider.tsx:1165`
@@ -2421,7 +2438,19 @@ and the empty-iterations guard. Do it with (i) — same file, same afternoon.
 
 Keep "Points" — it is E91's own column, BB84 has no score. Overlaps **Task 56**.
 
-**🆕 The multi results TITLE does not name the protocol (Ibra, 2026-09-09).** Solo says *"Résultats E91
+**✅ STEP 6d AND THE TITLE COMPLETE `78bfb19` (2026-09-09).** Verified by Ibra in E91 multi, in both
+languages: Eve present + undetected → *"Key compromised!"* with the red *"…you did NOT detect her"*;
+Eve absent → *"Clé sécurisée"* with the green *"Ève était absente"*. Column and sentence agree.
+
+*Two hours of that slice were spent on a phantom:* Ibra tested twice and saw the OLD title and the
+OLD message while the table showed the NEW code. The dev server was innocent — the compiled route
+carried `titleMulti` and no longer contained the old call, and the edits predated the server start.
+He had run the multiplayer test in a **second browser pointed somewhere other than the local dev
+server**, which also explains why one screenshot was English and the other French. **Rule for
+multiplayer testing: confirm BOTH windows are on `localhost:3000` before reporting a result** —
+added to the testing notes at the bottom of this file.
+
+**🆕 The multi results TITLE does not name the protocol (Ibra, 2026-09-09).** ✅ done in `78bfb19`. Solo says *"Résultats E91
 Mode Solo"* / *"Résultats BB84 Mode Solo"*; the shared multi page says only *"Résultats de la partie
 EEUZ1"* — no protocol, no mode. Step 6c fixed exactly this for BB84's solo title and the multi page was
 never looked at. Note `localize(str, extra)` has **no interpolation** — it appends `" " + extra` — so
@@ -2623,6 +2652,33 @@ handlers that fight the user instead of helping them.
 
 ---
 
+### 66. 🔴 E91 multi: the final key is all zeros, and the score says the key is EMPTY
+
+**Status**: 🔴 OPEN, symptom confirmed by Ibra 2026-09-09, cause not investigated. **Frontend-first**
+(the display and the score are frontend), but it may end in the backend payload. **Found**: playing
+E91 multi to the end.
+
+**Symptom (Ibra):** *"when we play with eve, and we declare it is secure (and it is not haha) all the
+bits message like they are 0 (zeros hahah) the key."*
+
+**Why this is probably not just a display bug.** The key shown at the end is
+`keyBits = aliceValidBits` (`messaging-tab.tsx:42`), and the score is
+`aliceValidBits.length * 5` (`messaging-tab.tsx:110`). Ibra's two verified runs scored **10** and
+**0 points** — and 0 points means `aliceValidBits.length === 0`, i.e. the store field is EMPTY, not
+merely rendered wrong. The same field feeds the solo results table's "Key Length" column, which
+showed a healthy 3–4 in his solo screenshots. **So multiplayer appears to reach the end of the
+protocol with no sifted key at all**, and both the zeros and the score follow from that.
+
+**Where to start:** who writes `aliceValidBits` in multiplayer (`socket-provider.tsx` vs the
+validation tab), and whether the CHSH split leaves anything behind. Compare against solo, which is
+correct. Do **not** touch the E91 simulation (scope decision 2026-09-02) — this is about which bits
+reach the store, not how they are computed.
+
+**Ordering note:** worth doing BEFORE the remaining Task 63 steps if it turns out multi has never
+produced a real key — a restart pipeline is worth little on a game whose output is empty.
+
+---
+
 ### 📌 NOT A BUG: other protocols' data stays in localStorage while you play
 
 **Recorded 2026-09-04** because it looks alarming and will be re-reported otherwise. Ibra, starting
@@ -2703,6 +2759,26 @@ same flow then played to the end.
 believing a runtime error.** And the diagnostic order that settled it in one step: does the FILE
 have it → does `tsc` pass → does a TEST drive that exact path. If all three say yes, the running
 process is stale, not the code.
+
+### 🧪 LOCAL TESTING NOTE: Check BOTH Windows Point at the Dev Server
+
+**Not a code bug** — testing methodology (learned 2026-09-09, Task 63 Step 6d).
+
+Multiplayer needs two browsers, and the second one is easy to leave pointed at a deployed or older
+address. Ibra reported the results page showing the OLD title and OLD message twice in a row, after
+a clean `rm -rf .next && npm run dev`. It cost roughly two hours. The code was never at fault:
+
+- the dev server's cwd was the repo and it started AFTER the edits;
+- the compiled route `.next/server/app/(main)/games/…/results/page.js` contained the new
+  `titleMulti` key and no longer contained the old `component.results.title` call;
+- only one source line rendered that heading, and it was the new one.
+
+**Two tells that a window is on the wrong frontend:** the language differs between the two windows
+for no reason, and old strings appear that no longer exist anywhere in the source.
+
+**Rule: before reporting a multiplayer result, check the address bar of BOTH windows.** And the
+diagnostic order that settles "is my code even running": does the FILE have it → does `tsc` pass →
+is the string in `.next/server/app/…/page.js` → only then suspect the browser.
 
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
