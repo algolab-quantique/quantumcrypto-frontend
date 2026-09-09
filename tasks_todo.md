@@ -1997,6 +1997,34 @@ the *sifted key the student is shown at the end*. In dump 1 `bobValidBits` is `[
 both sides are `[0,0,0]`. The student's takeaway from a game with Eve is *"my key is all zeros"* —
 not the Bell inequality.
 
+**🔴 MULTIPLAYER IS STRICTLY WORSE THAN SOLO (third dump, 30 photons, 2026-09-09).** Ibra noticed the
+two modes fail differently — *"it seems solo gives 1s, and multi gives 0s"* — and the reason turns
+out to be structural, not random:
+
+| | whose bits go through the biased function | result |
+|---|---|---|
+| **solo** | the PARTNER's only — the player's own come from `generateRandomBits` | half the game is honest |
+| **multi** | **BOTH** — the Python copy is called for `alice_bits` (`:343`) *and* `bob_bits` (`:358`) | nothing is honest |
+
+And the two sides are not equally damaged, because **the bias is per-basis and the two sides use
+different bases**:
+
+| | bases available | fair basis among them | measured ones |
+|---|---|---|---|
+| Alice | 1, 2, 3 | **none** | **1/30 = 3 %** |
+| Bob | 2, 3, 4 | basis 4 | 11/30 = 37 % |
+
+Basis 4 is the only branch that is right, and **Alice never uses it**. So Alice in multiplayer is the
+worst case in the whole application: ~93 % zeros, and in this dump `aliceValidBits` and
+`bobValidBits` are both `[0,0,0,0,0]` — a five-bit key of nothing, on both sides. The model predicts
+2.0 ones for Alice (observed 1) and 8.1 for Bob (observed 11), so the fit holds in the Python copy
+too.
+
+**Consequence for planning:** the frontend one-liner (option 1 below) fixes **solo only**. E91
+multiplayer's physics is the Python copy, so the mode where the bug is worst is the mode that needs
+the backend owner. That is the strongest argument yet for option 2 — moving E91's physics to the
+frontend — since option 1 applied to one repo leaves the worse half broken.
+
 **Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
 
 1. **Keep the phenomenological model, remove the bias.** Eve's intercept-resend destroys the
