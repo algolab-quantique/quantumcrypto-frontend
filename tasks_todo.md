@@ -98,6 +98,27 @@ unblocked** — Ibra can do all of it alone, starting now. Mixing them would hav
 job wait on someone else's calendar. It also honours CLAUDE.md rule 2: lifecycle refactor and
 physics change never share a commit, let alone a workstream.
 
+**🗓️ SPRINT-PLANNING OPTION (Ibra, 2026-09-09, ahead of his team-lead meeting): swap workstream #6
+for #7 — do DPS's SIMULATION instead of DPS's lifecycle migration.** Checked the backend today
+before answering, and the answer is **yes, it can be done correctly**:
+
+- **DPS's backend contains no physics at all.** Every `random` call in `dps/consumers.py` is
+  bookkeeping — `random.shuffle(players)` (`:154`), `random.choices` for the Eve draw (`:164`),
+  `random.sample` for validation indices (`:313`). No `sin`, `cos`, `sqrt` anywhere. Same for BB84.
+  The **only** quantum math in the entire backend is E91's `sin(pi/8)**2`.
+- So DPS physics would be **100 % frontend, 100 % unblocked, and built once** — no second copy to
+  drift, which is exactly the trap E91 is in (**Task 60**). ADR §13.3 already prescribes the shape:
+  the sender simulates the channel.
+- It is also **greenfield rather than repair**: DPS has an Eve *checkbox* and an `eve_present` field
+  but no interception behaviour at all (**Task 38**), so there is no legacy model to preserve —
+  unlike E91, where a placeholder must be replaced under a running game.
+
+**Honest counterweight, for the meeting:** #6 (DPS lifecycle) is the biggest remaining workstream at
+12–18 days and DPS carries **5× BB84's** raw `localStorage` surface. Doing #7 first does not shrink
+it; it defers it. The argument for swapping is not cost, it is **risk and dependency** — #7 is
+unblocked and finishable alone, while #6's size makes it the likeliest thing to run past
+**2026-09-30**. Choose deliberately, and say which one is being deferred.
+
 **🔧 CORRECTION 2026-09-02 — workstream #1 was wrongly marked a blocker.** It said *"do FIRST: if
 broken it blocks 4, 5, 6, 7"*. **That is wrong.** Ibra develops against a **local backend**
 (`http://127.0.0.1:8000`) running the same Django code, which is entirely sufficient to build and
@@ -2024,6 +2045,31 @@ too.
 multiplayer's physics is the Python copy, so the mode where the bug is worst is the mode that needs
 the backend owner. That is the strongest argument yet for option 2 — moving E91's physics to the
 frontend — since option 1 applied to one repo leaves the worse half broken.
+
+**❓ "IS IT ONLY WITH EVE?" — YES. Measured, 200 000 samples per case (2026-09-09, Ibra's question
+for his sprint planning).** Running the real code from `lib/e91/solo-player.ts`:
+
+| | Eve absent | Eve present |
+|---|---|---|
+| Alice (bases 1,2,3) | **50.0 %** ones ✅ | **9.8 %** ❌ |
+| Bob (bases 2,3,4) | **50.0 %** ones ✅ | **21.5 %** ❌ |
+
+The Eve-free path (`generateEntangledBits`) is **marginally fair**: same basis copies the partner's
+bit, different bases match it 85.4 % of the time and flip it 14.6 %. Applied to a fair partner bit,
+both give 50/50 out. So **no Eve-free game is affected by this** — nothing a student plays without
+Eve is distorted by it, and the fix cannot break those games either.
+
+**A SECOND defect in the same branch, visible in the Python (`e91/consumers.py:341,356`):** with Eve,
+the two sides are generated **independently** — `alice_bits = eveGeneratedBits(alice_bases)` and
+`bob_bits = eveGeneratedBits(bob_bases)`, neither looking at the other. A real intercept-resend
+*reduces* the correlation (Eve's basis matches sometimes); this removes it entirely. So Eve does not
+merely bias the bits, she deletes the correlation the Bell test is supposed to measure. Both defects
+live in the same branch and option 1 must fix both, not just the marginals.
+
+**⚠️ Do NOT tell the team "E91 is broken".** The precise statement is: *E91 is correct when Eve is
+absent, and its Eve simulation is a placeholder that biases the bits and destroys the correlation
+instead of modelling interception.* The Eve-free half of the game — which is what a first lesson
+uses — is sound.
 
 **Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
 
