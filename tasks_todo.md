@@ -2763,6 +2763,61 @@ handlers that fight the user instead of helping them.
 
 ---
 
+### 67. 🔴🔥 E91 multiplayer writes into BB84's storage during NORMAL play — five unguarded handlers
+
+**Status**: 🔴 OPEN, **cause proven, not fixed**. **Priority**: **P1** — cross-protocol data loss, and
+it needs no restart, no Eve, no edge case: it happens in every E91 multiplayer game.
+**Found**: 2026-09-09, when Ibra browser-tested Step 5a and BB84's storage had changed anyway.
+**Axis**: A (lifecycle). **Frontend-only.**
+
+**How it was found.** Step 5a scoped `restartWithoutEve()` to BB84, and Ibra checked whether his BB84
+data survived an E91 multiplayer game. It did not: `bb84GameData` had become `{"evePresent":false}`.
+That value is the clue — `restartWithoutEve` writes `{}`, so **a different writer was involved**.
+
+**The cause.** `store/bb84/bb84-room-store.ts:99` persists on EVERY mutation
+(`localStorage.setItem('bb84GameData', JSON.stringify(next))`), and five handlers in
+`socket-provider.tsx` mutate that store with **no `gameType` guard at all**:
+
+| line | event | E91's backend sends it? |
+|---|---|---|
+| 639 | `A_PHOTONS_EVENT` | ✅ |
+| 765 | `A_KEY_EVENT` | ✅ |
+| 864 | `B_KEY_EVENT` | ✅ |
+| 945 | `A_VALIDATED_EVENT` | ✅ |
+| 985 | `B_VALIDATED_EVENT` | ✅ |
+
+All five names were confirmed present in `e91/consumers.py`, so these are **not theoretical** — an
+E91 game relays every one of them, the BB84 handler runs, and BB84's store is written. Ibra was
+playing as **Bob**, and `A_PHOTONS_EVENT` is gated on `playerRole === 'B'`, which fits his dump
+exactly.
+
+**A sixth, more direct one:** `SWAP_ROLES_AND_RESTART_EVENT` (`:1379`) touches BB84 stores from
+*inside* an `e91` guard.
+
+**Why it survived.** The socket provider is one giant switch shared by three protocols, where the
+`gameType` check is a convention rather than a structure — some cases have it, some do not, and
+nothing makes the difference visible. Same family as the DPS `localStorage.clear()` removed by
+**Task 54 F2** and as 5-i, fixed the same day in `d5dc490`: *one protocol reaching into another's
+data.* Three instances now, one cause.
+
+**Possible fixes, in increasing order of ambition:**
+
+1. **Guard the five handlers** — add the `gameType` check each one is missing. Smallest, honest,
+   and leaves the convention exactly as fragile as it was.
+2. **Route every store write through the adapter** (`ProtocolAdapter` is already adapter-scoped by
+   construction, which is why 5b is worth doing). A handler that cannot name a protocol cannot leak
+   into one.
+3. **Task 40 Phase 5** — the socket-provider refactor into per-protocol handlers, which is the real
+   answer and is already the roadmap's riskiest item (10–15 days).
+
+**Recommended:** (1) now as a guarded slice with a test per handler, because the data loss is live
+and (3) is months away. It also makes (2)/(3) safer by pinning the expected behaviour first.
+
+**⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
+against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
 ### 66. ↩️ RETRACTED — "the key is all zeros" is Task 60, and "the key is empty" was my error
 
 **Status**: ↩️ **RETRACTED the same day it was opened (2026-09-09).** Kept, not deleted, so nobody
