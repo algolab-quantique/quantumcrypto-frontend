@@ -1372,13 +1372,27 @@ multi because the message is not the protocol's — it lives on the **shared** p
 no Eve term, no verdict term. **So all three protocols celebrate every finished game**, BB84 multi
 included. Raises this from a "small UX slice" to the same class as 6b.
 
-**⚠️ One design question must be answered BEFORE any code.** Solo's sentence is about *your* game.
-The multi page is a classroom leaderboard listing **every** room, so "your key is compromised" needs
-to know which row is yours — `playerName` from the store is the obvious candidate but is not verified
-to match the backend's player records, and the **admin/monitor** view has no row of its own at all
-(`isAdmin` already branches to a different message). Decide the audience first: a per-row verdict
-column (Step 6d, no ownership needed) is a strictly smaller change than a personal closing sentence,
-and may be enough. Do 6d first and re-look.
+**⚠️ The design question is now ANSWERED (2026-09-09).** It was: solo's sentence is about *your* game,
+but the multi page is a classroom leaderboard listing **every** room — so "your key is compromised"
+must know which row is yours. `playerName` looked like the only handle and would break on two students
+with the same name. **`store/player-store.ts` also keeps `playerId: number | null`, and rooms carry
+numeric `player1` / `player2`** — so ownership is an exact id match, no name comparison:
+
+```ts
+const myRoom = rooms.find(r => r.player1 === playerId || r.player2 === playerId);
+```
+
+The **admin/monitor** has no room of its own; `playerId` finds none and `isAdmin` already branches to
+its own message, so that case falls out correctly instead of needing a special case.
+
+**Step 6d landed first and confirms the shape of the fix:** every row now carries a truthful per-row
+Verdict, from `classifySoloEnding` fed by `drawn = eve_present || eve_detected`. The closing sentence
+is the same classifier applied to `myRoom` — the same three sentences solo shows, from the same keys.
+**Not** `deriveRoomEveStory`, for the reason recorded under Step 6d.
+
+**Still verified by Ibra on 2026-09-09, after 6d:** the table row now reads *Ève présente Oui · Ève
+détectée Non · Clé compromise !* and the green *"🎉 Félicitations ! Partie terminée avec succès !"* is
+still printed underneath it. The table and the sentence directly contradict each other on screen.
 
 ---
 
@@ -2354,14 +2368,65 @@ the one table of the four that has never been touched.
 | Yes / No | `localize('component.bb84.results.yes'/'no')` | **hardcoded `'Yes'` / `'No'`** (`e91-results-row.tsx:16,19`) |
 | verdict | shared `deriveRoomEveStory` | **none** |
 
-**One design point, not a copy job.** E91's backend sends a real `eve_detected` per iteration; BB84's
-does not, so `deriveRoomEveStory` infers detection positionally (*"Eve in an earlier iteration but not
-the last ⇒ caught"*). Writing a second E91-only rule would break the rule this whole task exists to
-establish. **Teach the shared classifier to prefer a real `eve_detected` when the iteration carries
-one, and keep the positional inference as the fallback** — one function, two data situations. It is
-pure and already unit-tested, so the new branch gets a test that fails first.
+**✅ DONE `79380df` (2026-09-09).** Verified by Ibra in the browser, E91 multi: **Ève présente Oui ·
+Ève détectée Non · Verdict rouge « Clé compromise ! »**, in French.
 
-Overlaps **Task 56**. Keep "Points" — it is E91's own column, BB84 has no score.
+**🔬 WHAT THE BACKEND CAN SAY — read, not guessed (`e91/consumers.py`, 2026-09-09).** Ibra pushed back
+on the plan (*"I feel like we already went through this"*) and he was right twice over.
+
+```python
+create_room()          → E91Iteration.objects.create(room=room, eve_present=…)   # exactly ONE
+'RESTART_WITHOUT_EVE'  → iteration.eve_present = False                            # MUTATES it
+get_iteration(room)    → E91Iteration.objects.get(room=room)                      # .get() RAISES on two
+```
+
+**An E91 room holds one iteration for its whole life.** Three things follow, and all three contradict
+the plan written the day before:
+
+**(a) The Itération column was right to be deleted.** `git log` found `64dc201` *"Remove iteration from
+leaderboards"* (noblechap, 2024-11-20) — the column existed and was removed deliberately, from E91's
+two files only, with no reason recorded. The reason is the backend: it could only ever print "1".
+Nobody knew, so Task 56 added one to BB84 in July 2026 and this step nearly re-added it here. **It is
+not a display choice — it is blocked** until the backend appends an iteration per restart (**Task 28**).
+
+**(b) `deriveRoomEveStory` must NOT be used for E91.** It infers detection POSITIONALLY (*"Eve in an
+earlier iteration but not the last ⇒ caught"*), which needs several iterations. Fed E91's single
+mutated one, it reports *"Eve was never present, key secure"* for a student who actually caught her —
+right verdict, erased story. **The plan from 2026-09-08 (teach it to prefer `eve_detected`) is
+withdrawn**: the shared function that fits is `classifySoloEnding`, the one E91 solo already uses.
+
+**(c) A third defect nobody had seen.** After a detection the backend leaves
+`eve_present=false, eve_detected=true`, so the table printed **"Ève présente: Non · Ève détectée: Oui"**
+— *she was never there and you caught her*. Fixed with `drawn = eve_present || eve_detected`, which
+recovers what the mutation erased.
+
+*The lesson, and it is the second time this week: **`git log` is part of reading the code.** The file
+showed a missing column; the history showed a decision. Reading only the file was about to undo
+someone's deliberate work for the second time in 22 months.*
+
+**📌 TWO REVIEW FINDINGS FROM 6d — agreed with Ibra to track, not fix now:**
+
+**(i) `classifySoloEnding` is now called from a MULTIPLAYER component.** The logic was never
+solo-specific (it takes a structural `{drawn, detected}`), but the name is now false. Same naming leak
+already fixed twice in this task — `beginRound` → `prepareRound`/`openRoundTranscript`, and
+`pushRoundWelcome` moved out of `solo-round.ts`. **Rename to `classifyEnding`**: touches
+`lib/eve-story.ts`, its test, and both solo results tables. Pure rename, own commit, ~10 min.
+
+**(ii) The new rule lives in JSX where no test can reach it.** `drawn = eve_present || eve_detected`
+is *behaviour* — it is the exact thing that was wrong — and CLAUDE.md rule 5 says a bug fix carries
+the test that would have caught it. This one does not, because it sits inside a component and
+component tests do not exist yet (testing-strategy phases 2–3). **Extract `deriveRoomEnding(iterations)`
+into `lib/eve-story.ts` with unit tests** (~15 min): the three endings, the post-restart mutation case,
+and the empty-iterations guard. Do it with (i) — same file, same afternoon.
+
+Keep "Points" — it is E91's own column, BB84 has no score. Overlaps **Task 56**.
+
+**🆕 The multi results TITLE does not name the protocol (Ibra, 2026-09-09).** Solo says *"Résultats E91
+Mode Solo"* / *"Résultats BB84 Mode Solo"*; the shared multi page says only *"Résultats de la partie
+EEUZ1"* — no protocol, no mode. Step 6c fixed exactly this for BB84's solo title and the multi page was
+never looked at. Note `localize(str, extra)` has **no interpolation** — it appends `" " + extra` — so
+either add `component.<protocol>.results.titleMulti` per protocol (9 dictionary entries, mirrors the
+existing solo keys, each language reads naturally) or compose two keys in JSX. **Recommend the former.**
 
 ---
 
