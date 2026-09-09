@@ -38,16 +38,10 @@ const E91ResultsTable = ({rooms, players}: ResultsTableProps) => {
             <Table>
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg">
-                        {/* Same column order as E91 solo and BB84 multi, so a
-                            student reads one table twice. Two of solo's
-                            columns are missing and cannot be filled from the
-                            frontend: **Itération** (the backend keeps one
-                            iteration per room and mutates it on restart) and
-                            **Longueur de clé** (E91Iteration has no such
-                            field — it stores alice_bits/bases and bob_bits/
-                            bases, so a length could be DERIVED, but sifting
-                            them is physics, not display). See the header
-                            comment in e91-results-row.tsx and Task 28. */}
+                        {/* Solo's columns, minus the two the backend cannot
+                            supply: Itération (one iteration per room — see
+                            e91-results-row.tsx) and Longueur de clé (no such
+                            field on E91Iteration). Both need Task 28. */}
                         <TableHead>{localize('component.e91.results.room')}</TableHead>
                         <TableHead>{localize('component.e91.results.evePresent')}</TableHead>
                         <TableHead>{localize('component.e91.results.eveDetected')}</TableHead>

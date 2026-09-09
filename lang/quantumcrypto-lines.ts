@@ -307,6 +307,9 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page
         'component.e91.results.title': 'E91 Solo Game Results',
+        'component.e91.results.titleMulti': 'E91 Multiplayer Game Results',
+        'component.bb84.results.titleMulti': 'BB84 Multiplayer Game Results',
+        'component.dps.results.titleMulti': 'DPS Multiplayer Game Results',
         'component.e91.results.keyLength': 'Key Length',
         'component.e91.results.yes': 'Yes',
         'component.e91.results.no': 'No',
@@ -864,6 +867,9 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page FR
         'component.e91.results.title': 'Résultats E91 Mode Solo',
+        'component.e91.results.titleMulti': 'Résultats E91 Mode Multijoueur',
+        'component.bb84.results.titleMulti': 'Résultats BB84 Mode Multijoueur',
+        'component.dps.results.titleMulti': 'Résultats DPS Mode Multijoueur',
         'component.e91.results.keyLength': 'Longueur de Clé',
         'component.e91.results.yes': 'Oui',
         'component.e91.results.no': 'Non',
@@ -1381,6 +1387,9 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page ES
         'component.e91.results.title': 'Resultados E91 Modo Solo',
+        'component.e91.results.titleMulti': 'Resultados E91 Modo Multijugador',
+        'component.bb84.results.titleMulti': 'Resultados BB84 Modo Multijugador',
+        'component.dps.results.titleMulti': 'Resultados DPS Modo Multijugador',
         'component.e91.results.keyLength': 'Longitud de Clave',
         'component.e91.results.yes': 'Sí',
         'component.e91.results.no': 'No',

@@ -16,6 +16,7 @@ import { clearE91LocalStorage } from '@/lib/e91/utils';
 import { useSocket } from '@/components/providers/socket-provider';
 import { abandon } from '@/lib/protocol-lifecycle/lifecycle';
 import { bb84Adapter } from '@/lib/protocol-lifecycle/bb84-adapter';
+import { classifySoloEnding, deriveRoomEveRecord } from '@/lib/eve-story';
 
 
 interface ResultsTableProps {
@@ -107,7 +108,7 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
     const [players, setPlayers] = useState([]);
     const [gameType, setGameType] = useState('');
     const router = useRouter();
-    const { playerName, isAdmin } = usePlayerStore();
+    const { playerId, isAdmin } = usePlayerStore();
     const { localize } = useLanguage();
     const { disconnectPlayRoom } = useSocket();
 
@@ -210,6 +211,39 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
         room.iterations?.some((iter: any) => iter.elapsed_time > 0)
     );
 
+    // The closing sentence, the same three solo shows (Task 56). This page used
+    // to celebrate EVERY finished game, including one Eve had listened to
+    // undetected — the defect Step 6b removed from solo, still alive here
+    // because the message belongs to the shared page, not the protocol.
+    //
+    // Which row is the player's: `playerId` is numeric and so are the rooms'
+    // `player1`/`player2`, so ownership is an exact match. It must also have
+    // FINISHED — `hasFinishedRooms` is true as soon as ANY room in the class is
+    // done, and the waiting room routes here too.
+    const myRoom = rooms.find(room =>
+        (room.player1 === playerId || room.player2 === playerId) &&
+        room.iterations?.some((iter: any) => iter.elapsed_time > 0));
+
+    const eveRecord = deriveRoomEveRecord(myRoom?.iterations ?? []);
+    const ending = classifySoloEnding(eveRecord);
+    const keyCompromised = ending === 'missed';
+    const revealKey = {
+        absent: 'component.results.revealAbsent',
+        caught: 'component.results.revealCaught',
+        missed: 'component.results.revealMissed',
+    }[ending];
+
+    // No room of one's own (a monitor, or a visitor whose playerId was never
+    // set) → keep the neutral message rather than announce "Eve was absent"
+    // about a game we know nothing about.
+    //
+    // ⚠️ DPS gets this sentence too and cannot yet earn it: its iterations have
+    // no `eve_detected` because it has no detection mechanic, so a DPS game
+    // with Eve always reads "missed". True, but only because catching her is
+    // impossible. Left deliberately (Ibra, 2026-09-09) — Task 38 fixes it here
+    // with no change to this file.
+    const showReveal = !isAdmin && myRoom !== undefined;
+
     if (connectionStatus === 'Connecting') return null;
 
     if (shouldRedirectHome) return null;
@@ -219,7 +253,10 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
     return (
         <div className="mt-5 p-4 space-y-6">
             <h1 className="text-center text-3xl font-bold">
-                {localize('component.results.title') || 'Results for game'}{' '}
+                {/* Names the protocol and the mode, like the solo
+                    titles do; gameType comes from the backend payload and the
+                    page renders nothing until it arrives. */}
+                {localize(`component.${gameType}.results.titleMulti`)}{' '}
                 <span className="text-highlight">{params.gameCode}</span>
             </h1>
             <>
@@ -234,14 +271,23 @@ const GameResultsPage = ({ params }: GameResultsPageProps) => {
                     </div>
                 )}
 
-                {/* Success Message - Only show when games are finished */}
+                {/* The reveal — one sentence per ending, the same three the
+                    solo results pages show, from the same keys. Only the
+                    celebration is earned now; it used to be unconditional. */}
                 {hasFinishedRooms && (
                     <div className="text-center">
-                        <p className="text-xl text-green-500 font-bold">
-                            {isAdmin
-                                ? (localize('component.results.gamesFinished') || '✅ Some games have finished!')
-                                : (localize('component.results.gameSuccess') || '🎉 Congratulations! Game completed successfully!')}
-                        </p>
+                        {showReveal ? (
+                            <p className={`text-xl font-bold ${keyCompromised
+                                ? 'text-red-500' : 'text-green-500'}`}>
+                                {localize(revealKey)}
+                            </p>
+                        ) : (
+                            <p className="text-xl text-green-500 font-bold">
+                                {isAdmin
+                                    ? localize('component.results.gamesFinished')
+                                    : localize('component.results.gameSuccess')}
+                            </p>
+                        )}
                     </div>
                 )}
 
