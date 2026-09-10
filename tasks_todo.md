@@ -98,6 +98,39 @@ unblocked** — Ibra can do all of it alone, starting now. Mixing them would hav
 job wait on someone else's calendar. It also honours CLAUDE.md rule 2: lifecycle refactor and
 physics change never share a commit, let alone a workstream.
 
+**🚩 SPRINT DECISION PROPOSED 2026-09-10 (Ibra, pending team-lead approval): FINISH BB84 + E91,
+DEFER DPS ENTIRELY.** Not the swap considered yesterday (DPS simulation instead of DPS lifecycle) —
+**both** DPS workstreams (#6 and #7) come out of the remaining sprint. Ibra's reasoning: *"it is
+better to finish and have a good correct version of bb84 and e91 than to work on dps."*
+
+**What made the case.** Ibra checked the deployed app (`https://quantumcrypto.app/`) on 2026-09-10,
+played one E91 multiplayer game, and reproduced the whole family of bugs in **production**. These are
+not branch-only defects — students meet them today. Meanwhile `ibra_architecture` is **56 commits
+ahead of `development`**, carrying **17 user-visible fixes** that are written, tested and undeployed.
+
+**Consequence for ordering: merge and deploy FIRST.** It is the cheapest item in the plan and the
+only one that improves what students actually use, today. Everything else competes for the same
+15 working days to **2026-09-30**.
+
+| | days |
+|---|---|
+| Merge `ibra_architecture` → `development` + deploy | 0.5–1 |
+| **Task 67** — five unguarded socket handlers + a test each | 0.5 |
+| Finish **Task 63** — 5b, 4b, 7a/7b | 2–2.5 |
+| **Task 60** — the Eve physics ⚠️ **needs the backend owner** | 2–5 |
+| **Tasks 61, 62, 64, 52-G** | 2–3 |
+| Manual matrix: 2 protocols × 2 modes × 2 Eve = **8 flows** | 2–3 |
+| **Total** | **9–15** |
+
+**It fits, with one dependency that must start immediately.** Task 60 is the only item Ibra cannot do
+alone — E91's Eve lives in Python as well as TypeScript — and it is also the one his team lead will
+care most about, because it is the bug that defeats the lesson. **Open that conversation in the same
+meeting**, or it becomes the reason the sprint misses 30 September.
+
+**What is explicitly NOT happening, so it is not rediscovered as an oversight:** DPS's lifecycle
+migration (#6, 12–18 d) and DPS's simulation (#7, 5–8 d) are both deferred past 2026-09-30. DPS keeps
+its Eve checkbox with no interception behind it (**Task 38**) and its 73 raw `localStorage` calls.
+
 **🗓️ SPRINT-PLANNING OPTION (Ibra, 2026-09-09, ahead of his team-lead meeting): swap workstream #6
 for #7 — do DPS's SIMULATION instead of DPS's lifecycle migration.** Checked the backend today
 before answering, and the answer is **yes, it can be done correctly**:
