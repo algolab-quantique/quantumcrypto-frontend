@@ -2104,6 +2104,68 @@ absent, and its Eve simulation is a placeholder that biases the bits and destroy
 instead of modelling interception.* The Eve-free half of the game — which is what a first lesson
 uses — is sound.
 
+**📐 SYMMETRY — Ibra, 2026-09-10, verified in both repos. Track it: it changes how the fix is
+written, and it is a gift when the single-source-of-truth work comes.**
+
+E91 is not BB84. There is no sender and no receiver — Alice and Bob do **the same thing**, and either
+may go first. The code already honours that, in both languages:
+
+| | |
+|---|---|
+| `solo-measurement-tab.tsx:155-207` | Alice's branch generates Bob's side; Bob's branch generates Alice's. **Both sides are produced in ONE place**, whichever role the player holds |
+| `e91/consumers.py:341,356` | the no-Eve path is **order-independent**: whoever measures first gets fair random bits, the second correlates against the first. `A_MEASURE` and `B_MEASURE` are mirror images |
+
+**Why it matters now:** the correct Eve needs one draw shared by both sides, so it fits solo with no
+restructuring at all. **Why it matters later:** when E91's physics becomes one module, solo will not
+need a role branch — it will call the same function twice. The `if (playerRole === 'A') … else …`
+in the measurement tab is then pure duplication to delete, not a design to preserve. Note it in the
+single-source-of-truth work so nobody re-implements the branch out of habit.
+
+**🧪 CHECKED AGAINST A REAL QISKIT E91 (2026-09-10).** Ibra provided the authoritative workshop
+he co-wrote: `/Users/chei2402/Documents/github/CMAI-E91` — `Part_1_CHSH` and `Part_2_E91`, real
+circuits on Aer, not a probability table. Comparing it to our game:
+
+**What our app already gets RIGHT — the skeleton is genuine E91, not an invention:**
+
+| | reference (`02_E91_Protocol_SOLUTION.ipynb`) | our app |
+|---|---|---|
+| Alice's bases | `['0','45','90']` | 1, 2, 3 = 0°, 45°, 90° ✅ |
+| Bob's bases | `['45','90','135']` | 2, 3, 4 ✅ |
+| key pairs | (45,45) and (90,90) | matching bases 2-2, 3-3 ✅ |
+| CHSH pairs | Alice{0,90} × Bob{45,135} | E(1,2), E(1,4), E(3,2), E(3,4) ✅ |
+| S formula | same four terms | **identical** ✅ |
+
+**What is WRONG, and it is three things, not one:**
+
+1. **Eve is invented** (this task). The reference's `create_eavesdropped_state` measures the Bell pair
+   and **re-prepares a product state** — real intercept-resend. Ours is a per-basis bias table.
+2. **The sample size is ~100× too small.** The reference runs **2000 pairs** (800 with Eve) to get a
+   stable S. Our game runs **10–30 photons**. That is the mechanism behind **52-C** — the Bell test
+   cannot mean anything at n=20, whatever the physics does.
+3. **The threshold is wrong.** The reference deliberately uses **|S| > 2.5**, not 2.0, and says why:
+   *statistical noise in finite-shot experiments*. Our app tests against 2.0, so noise alone flips
+   the verdict. 52-C measured the consequence: only 37.5 % of Eve-free games show |S| > 2.
+
+*So the honest verdict is not "this is not E91". The protocol skeleton is correct and matches the
+reference exactly. The Eve model is fabricated, and the game is played at a sample size where the
+Bell test is noise. Fixing Eve without also fixing (2) and (3) leaves the lesson broken.*
+
+**🎯 WHICH EVE — decided by measurement, not preference.** The reference has Eve measure in a
+FIXED basis (computational, 0°); BB84's `mimicEveIntercept` and Ibra's own description have her pick
+a **random** basis per pair. Both restore the classical bound, but they are not equally good:
+
+| | S with Eve | key errors, basis 45 | basis 90 |
+|---|---|---|---|
+| no Eve | 2.828 | 0 % | 0 % |
+| Eve, FIXED basis (reference) | 1.414 | 25 % | **50 %** |
+| Eve, RANDOM basis (BB84-style) | 1.414 | **25 %** | **25 %** |
+
+The fixed-basis Eve is **asymmetric**: pairs measured at 90° come out pure noise while 45° pairs stay
+75 % correct. That is a per-basis giveaway — the same *kind* of tell as the bug we are removing, where
+a student spots Eve by staring at one basis instead of by the Bell test. **Choose the RANDOM-basis
+Eve**: uniform 25 %, identical to BB84's disturbance, and it matches what `mimicEveIntercept` already
+does in this codebase.
+
 **Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
 
 1. **Keep the phenomenological model, remove the bias.** Eve's intercept-resend destroys the
