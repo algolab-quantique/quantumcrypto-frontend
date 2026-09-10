@@ -2142,13 +2142,39 @@ circuits on Aer, not a probability table. Comparing it to our game:
 2. **The sample size is ~100× too small.** The reference runs **2000 pairs** (800 with Eve) to get a
    stable S. Our game runs **10–30 photons**. That is the mechanism behind **52-C** — the Bell test
    cannot mean anything at n=20, whatever the physics does.
-3. **The threshold is wrong.** The reference deliberately uses **|S| > 2.5**, not 2.0, and says why:
-   *statistical noise in finite-shot experiments*. Our app tests against 2.0, so noise alone flips
-   the verdict. 52-C measured the consequence: only 37.5 % of Eve-free games show |S| > 2.
+3. ~~**The threshold is wrong.**~~ **❌ I GOT THIS WRONG — corrected 2026-09-10, same day.** I
+   wrote that "our app tests against 2.0". **It tests against nothing.** There is no threshold
+   constant anywhere in E91: `solo-CHSH-tab.tsx` computes `sValue`, renders it in a table, and offers
+   two buttons — `component.e91.button.secure` and `.unsecure`. **The STUDENT is the threshold.**
+   That is a better design than a hidden constant, and I should have checked before asserting.
+
+   The real defect is the one underneath: **the tab gives the student no guidance whatsoever.** It
+   shows a number and two buttons — no statement of the classical bound (2), no quantum maximum
+   (2√2 ≈ 2.828), no warning that at 10–30 photons the value is noisy. The reference's own comment
+   spells out the interpretation the game never offers:
+
+   > `|S| < 2.0` classical · `2.0 < |S| < 2.5` caution, may be noise or insufficient statistics ·
+   > `|S| > 2.5` robust violation
+
+   **Ibra's decision (2026-09-10): do not change the photon count. Explain it.** His words: *"the
+   important thing is the physics should be correct, so if a student wants to see the code they will
+   find it correct. About that, we can just add (i) information, or an alert, to inform the user
+   about this statistical situation, so he learns better."* The small sample stops being a bug and
+   becomes the lesson — *this is why real experiments run thousands of pairs* — provided the game
+   says so. **That is a UI slice, separate from the physics fix.** 52-C's measured 37.5 % is the
+   number to quote in it.
 
 *So the honest verdict is not "this is not E91". The protocol skeleton is correct and matches the
 reference exactly. The Eve model is fabricated, and the game is played at a sample size where the
 Bell test is noise. Fixing Eve without also fixing (2) and (3) leaves the lesson broken.*
+
+**📍 WHO MAKES THE PAIRS (Ibra, 2026-09-10) — worth knowing before restructuring anything.** In
+E91 the entangled pairs come from a **source in the middle** that sends one particle to Alice and one
+to Bob. That source *"could be a real third party, or Bob can play this role, or Alice could play it,
+or even Eve can"*. This is why our solo code is free to generate both sides in one place and still be
+faithful to the protocol — the generator is not "Alice cheating", it is the source, and the protocol
+does not care who runs it. It is also why **there is no sender and no receiver to preserve** when the
+physics is unified: any of the three can hold the source, so the single module simply produces a pair.
 
 **🎯 WHICH EVE — decided by measurement, not preference.** The reference has Eve measure in a
 FIXED basis (computational, 0°); BB84's `mimicEveIntercept` and Ibra's own description have her pick
