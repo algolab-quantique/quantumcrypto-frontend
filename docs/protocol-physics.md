@@ -367,8 +367,9 @@ particles carrying what she read.
 
 She cannot avoid being seen, and the reason is worth stating precisely:
 
-1. **Her measurement destroys the entanglement.** What she forwards is no longer an
-   entangled pair — it is two ordinary particles, each prepared along *her* angle.
+1. **Her measurement destroys the entanglement.** She cannot forward what she measured —
+   it no longer exists. What she sends is a *new*, ordinary pair she prepares herself, both
+   particles along *her* angle, carrying the value she read.
 2. **The two particles now carry definite values along a single angle.** Their correlation
    therefore factorises — each side's result depends only on its own angle and hers — and a
    factorised correlation is exactly what "classical" means here. **This holds whether or not
@@ -442,6 +443,14 @@ measured it. In particular **Eve is not part of its vocabulary** — "a pair Eve
 statement about history, not about the object, and an object that recorded it would be
 answering the very question the Bell test exists to ask.
 
+**The analogy that makes it click:** a quantum circuit *is itself a simulation*, and our
+object is the same idea with the arithmetic left out. In a circuit you **build** entanglement
+with gates (`H` then `CNOT`); we simply mark the pair `entangled`. In a circuit **measuring
+destroys it** and leaves classical bits behind; we mark the pair `collapsed` and record what
+those bits are. And in a circuit, **measuring an already-measured pair returns the same
+thing again** — the state is gone, only the result remains. Ours behaves identically, for
+the same reason.
+
 **Its state** is therefore one of exactly two things, both physical:
 
 | state | what it holds | why |
@@ -453,25 +462,32 @@ answering the very question the Bell test exists to ask.
 produces one mid-flight in our game today, but if a second eavesdropper were added tomorrow
 she would produce the same state, and nothing in the object would change.
 
-**Its behaviour** — three operations, and deliberately nothing else:
+**Its behaviour** — two ways to make one, two ways to read one, and nothing else:
 
 | | |
 |---|---|
-| **measure one side** at an angle | → one bit *(and, in reality, collapses the pair)* |
+| **create entangled** | → a new `entangled` pair. Anyone may do this: a third party, Alice, Bob, or Eve |
+| **create collapsed**, given an angle and a bit | → a new `collapsed` pair, prepared in that definite state |
+| **measure one side** at an angle | → one bit |
 | **measure both sides** at two angles | → two bits, correlated per 10.3 |
-| **intercept** | → a **new** pair: `collapsed`, carrying the angle used and the bit read |
 
 There is deliberately **no way to read bits out of a pair without measuring it**, because in
 the protocol there is nothing to read. A pair is not a container of two bits waiting to be
 collected; it is a thing that *produces* bits when measured, differently depending on the
-angles used. That is what makes 10.5 expressible at all: `intercept` takes a pair and
-returns a pair, exactly as Eve does.
+angles used.
 
-> **Why `intercept` must take the pair it is given.** It would be simpler to let Eve invent
-> two bits. But then she is not intercepting anything — she is fabricating the round, and
-> her behaviour no longer depends on what she received. Handing her the pair keeps the step
-> honest, and keeps it composable: intercepting an already-`collapsed` pair degrades it
-> correctly instead of silently starting over.
+> **There is no "intercept" operation, and that is the point.** An earlier draft gave the
+> object a single `intercept` step that took a pair and returned a modified one. That is not
+> what happens — and a quantum circuit says so plainly. Measuring **destroys** the pair;
+> nothing can then "forward a modified version" of it. What Eve does is two ordinary things
+> in sequence: she **measures** what arrived, and she **creates a new pair** — not entangled
+> — prepared along her angle with the bit she read, and sends that.
+>
+> So her attack is a *composition of the primitives above*, not a primitive of its own. This
+> is the same discipline BB84 already follows, where Eve is literally
+> `encodePhoton(measurePhoton(photon, b), b)` — measure, then prepare. Building her out of
+> the two operations is what makes "re-emit in the wrong basis" unrepresentable rather than
+> merely fixed.
 
 #### Who can see this state? Nobody in the game
 
@@ -501,8 +517,8 @@ ROUND 1 — no Eve, and the bases happen to match
 
 ROUND 2 — Eve intercepts, and the bases still match
    source                  pair = entangled
-   Eve intercepts at 0°    she measures it → reads 0
-                           pair = collapsed{ angle 0°, bit 0 }     ← she forwards THIS
+   Eve measures at 0°      reads 0 — the entangled pair is now destroyed
+   Eve creates a new pair  collapsed{ angle 0°, bit 0 }   ← she sends THIS one instead
    Alice measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 0
    Bob   measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 1   ← this one flipped
    announced (45°, 45°)    → KEY.  Alice 0, Bob 1.   THEY DISAGREE
@@ -512,13 +528,14 @@ ROUND 2 — Eve intercepts, and the bases still match
 
 ROUND 3 — Eve intercepts, and she happens to pick Alice's angle
    source                  pair = entangled
-   Eve intercepts at 45°   reads 1 → pair = collapsed{ 45°, 1 }
+   Eve measures at 45°     reads 1 → she creates and sends collapsed{ 45°, 1 }
    Alice measures at 45°   Δ = 0   → never flips → 1      Eve knows this bit exactly
    Bob   measures at 135°  Δ = 90° → flips with p = 0.5   → coin flip
    announced (45°, 135°)   → discarded (not a key pair, not a CHSH pair)
 
-   Sharing an angle wins Eve that one bit — and still leaves the pair collapsed.
-   The correlation it would have contributed to S is gone either way.
+   Sharing an angle wins Eve that one bit — and the pair Alice and Bob receive is
+   still an ordinary, unentangled one. The correlation it would have contributed
+   to S is gone either way.
 ```
 
 ### 10.9 Our adaptation — the steps
@@ -529,6 +546,9 @@ Language-independent. Each step names the protocol step it implements.
 createEntangledPairs(n)                     -- 10.6 step 1
     return n entangled pairs                   (identical: an entangled pair carries nothing)
 
+createCollapsedPair(angle, bit)             -- a pair prepared in a definite state
+    return a collapsed pair carrying (angle, bit)
+
 generateRandomBases(n, availableAngles)     -- 10.6 step 2
     return n angles drawn uniformly from availableAngles
 
@@ -538,10 +558,10 @@ measureOneSide(pair, angle)                 -- the single-particle half of 10.3
     else:
         return pair.bit, flipped with probability sin²((angle − pair.angle) / 2)
 
-interceptAndResend(pair)                    -- 10.5, Eve
+eavesdrop(pair)                             -- 10.5, Eve. NOT a primitive: two steps
     angle = a uniformly random angle
-    bit   = measureOneSide(pair, angle)        -- she measures what she was given
-    return a collapsed pair carrying (angle, bit)
+    bit   = measureOneSide(pair, angle)        -- 1. she measures what arrived (destroying it)
+    return createCollapsedPair(angle, bit)     -- 2. she prepares and sends a NEW pair
 
 measurePair(pair, aliceAngle, bobAngle)     -- 10.6 step 3
     if pair is entangled:
@@ -591,4 +611,6 @@ staring at that angle instead of by the Bell test — which would defeat the ent
 | Statistics, not state vectors | a browser has no simulator; every E91 observable is a statistic (10.7) | the physics is exact where it is observable, and absent where it is not |
 | **\|Φ⁺⟩**, so matching angles give **identical** results | the key can be used directly, with no inversion step | a treatment using the singlet \|Ψ⁻⟩ would give *opposite* results on matching angles and require one side to flip. Both are valid E91; ours is the simpler one to play |
 | Eve picks a **new random angle for every pair** | it is the strongest simple attack, and it is basis-independent | her disturbance is a uniform **25 %** at every angle. Letting her reuse one fixed angle would leave a per-angle signature a student could exploit — detectable, but for the wrong reason |
+| **No noise model** | our pairs and detectors are perfect; a real experiment has both | an undisturbed run reaches the ideal 2√2 exactly. Worth knowing before comparing a student's number to a published one — though at our sample size, **sampling noise dwarfs anything a detector would add** |
+| **Eve always uses intercept-and-resend**, one pair at a time | it is the attack E91 is taught with, and the one the Bell test is built to catch | other strategies exist and are out of scope. A student should not conclude that S ≤ 2 is the signature of *every* possible eavesdropper |
 | **10–30 pairs**, where a real experiment uses thousands | the student sets each round by hand; it is a game, not a lab | **S is very noisy at this size** — with ~20 pairs each of the four correlations rests on about two rounds, so S ≈ 2.83 **± 1.4** and can fall below 2 with nobody listening. We do **not** raise the count. We explain it, and we let the student judge the rounds rather than a threshold judge for them |
