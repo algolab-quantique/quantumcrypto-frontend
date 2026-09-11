@@ -446,28 +446,35 @@ answering the very question the Bell test exists to ask.
 **The analogy that makes it click:** a quantum circuit *is itself a simulation*, and our
 object is the same idea with the arithmetic left out. In a circuit you **build** entanglement
 with gates (`H` then `CNOT`); we simply mark the pair `entangled`. In a circuit **measuring
-destroys it** and leaves classical bits behind; we mark the pair `collapsed` and record what
-those bits are. And in a circuit, **measuring an already-measured pair returns the same
-thing again** — the state is gone, only the result remains. Ours behaves identically, for
-the same reason.
+destroys it** and leaves classical bits behind. And in a circuit, **preparing a fresh pair
+without entangling gates** gives you an ordinary `product` pair — which is exactly what Eve
+builds and forwards. Our object is those same three moves with the arithmetic left out.
 
 **Its state** is therefore one of exactly two things, both physical:
 
 | state | what it holds | why |
 |---|---|---|
 | **`entangled`** | **nothing** | neither particle has a value or a direction yet. The only thing true of an undisturbed pair is *that it is undisturbed* — so all `entangled` pairs are interchangeable, which is exactly why a source can hand out n identical ones |
-| **`collapsed`** | an **angle** and a **bit** | somebody measured it. The entanglement is gone and the two particles now carry a definite value along one definite angle. Those two facts are the complete description of what a later measurement will see |
+| **`product`** | an **angle** and a **bit** | an ordinary, unentangled pair: both particles carry a definite value along one definite angle. Those two facts are the complete description of what a measurement will see |
 
-`collapsed` says *what happened to the pair*, not *who did it*. Eve is the only one who
-produces one mid-flight in our game today, but if a second eavesdropper were added tomorrow
-she would produce the same state, and nothing in the object would change.
+`product` is the standard name for "not entangled": the joint state factorises into one
+state per particle. It says *what the pair is*, not *who made it or why* — Eve is the only
+one who makes one mid-flight in our game today, but a source could hand out product pairs
+directly and nothing in the object would change.
+
+> **Why there is no `collapsed` state.** Measuring *does* collapse an entangled pair — but
+> our model never needs to represent the result, because **no pair is ever measured twice**.
+> Without Eve, one `measurePair` call consumes the pair and it is done. With Eve, she
+> measures the entangled pair and then **builds a new `product` pair** rather than passing on
+> the one she destroyed. "Collapsed" is the name of an *event*, and events do not need to be
+> stored — only states do.
 
 **Its behaviour** — two ways to make one, two ways to read one, and nothing else:
 
 | | |
 |---|---|
 | **create entangled** | → a new `entangled` pair. Anyone may do this: a third party, Alice, Bob, or Eve |
-| **create collapsed**, given an angle and a bit | → a new `collapsed` pair, prepared in that definite state |
+| **create product**, given an angle and a bit | → a new, unentangled pair prepared in that definite state |
 | **measure one side** at an angle | → one bit |
 | **measure both sides** at two angles | → two bits, correlated per 10.3 |
 
@@ -518,7 +525,7 @@ ROUND 1 — no Eve, and the bases happen to match
 ROUND 2 — Eve intercepts, and the bases still match
    source                  pair = entangled
    Eve measures at 0°      reads 0 — the entangled pair is now destroyed
-   Eve creates a new pair  collapsed{ angle 0°, bit 0 }   ← she sends THIS one instead
+   Eve creates a new pair  product{ angle 0°, bit 0 }   ← she sends THIS one instead
    Alice measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 0
    Bob   measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 1   ← this one flipped
    announced (45°, 45°)    → KEY.  Alice 0, Bob 1.   THEY DISAGREE
@@ -528,7 +535,7 @@ ROUND 2 — Eve intercepts, and the bases still match
 
 ROUND 3 — Eve intercepts, and she happens to pick Alice's angle
    source                  pair = entangled
-   Eve measures at 45°     reads 1 → she creates and sends collapsed{ 45°, 1 }
+   Eve measures at 45°     reads 1 → she creates and sends product{ 45°, 1 }
    Alice measures at 45°   Δ = 0   → never flips → 1      Eve knows this bit exactly
    Bob   measures at 135°  Δ = 90° → flips with p = 0.5   → coin flip
    announced (45°, 135°)   → discarded (not a key pair, not a CHSH pair)
@@ -546,8 +553,8 @@ Language-independent. Each step names the protocol step it implements.
 createEntangledPairs(n)                     -- 10.6 step 1
     return n entangled pairs                   (identical: an entangled pair carries nothing)
 
-createCollapsedPair(angle, bit)             -- a pair prepared in a definite state
-    return a collapsed pair carrying (angle, bit)
+createProductPair(angle, bit)             -- a pair prepared in a definite state
+    return an unentangled (product) pair carrying (angle, bit)
 
 generateRandomBases(n, availableAngles)     -- 10.6 step 2
     return n angles drawn uniformly from availableAngles
@@ -561,7 +568,7 @@ measureOneSide(pair, angle)                 -- the single-particle half of 10.3
 eavesdrop(pair)                             -- 10.5, Eve. NOT a primitive: two steps
     angle = a uniformly random angle
     bit   = measureOneSide(pair, angle)        -- 1. she measures what arrived (destroying it)
-    return createCollapsedPair(angle, bit)     -- 2. she prepares and sends a NEW pair
+    return createProductPair(angle, bit)     -- 2. she prepares and sends a NEW pair
 
 measurePair(pair, aliceAngle, bobAngle)     -- 10.6 step 3
     if pair is entangled:
@@ -614,3 +621,80 @@ staring at that angle instead of by the Bell test — which would defeat the ent
 | **No noise model** | our pairs and detectors are perfect; a real experiment has both | an undisturbed run reaches the ideal 2√2 exactly. Worth knowing before comparing a student's number to a published one — though at our sample size, **sampling noise dwarfs anything a detector would add** |
 | **Eve always uses intercept-and-resend**, one pair at a time | it is the attack E91 is taught with, and the one the Bell test is built to catch | other strategies exist and are out of scope. A student should not conclude that S ≤ 2 is the signature of *every* possible eavesdropper |
 | **10–30 pairs**, where a real experiment uses thousands | the student sets each round by hand; it is a game, not a lab | **S is very noisy at this size** — with ~20 pairs each of the four correlations rests on about two rounds, so S ≈ 2.83 **± 1.4** and can fall below 2 with nobody listening. We do **not** raise the count. We explain it, and we let the student judge the rounds rather than a threshold judge for them |
+
+### 10.12 When the two sides measure at different times
+
+Solo measures both sides in one call. **Multiplayer cannot**: Alice and Bob are different
+browsers, and each measures when its own player clicks. This section is how that is resolved
+without changing any physics above.
+
+#### The two cases are not equally hard, and the reason is the physics
+
+| the pair is | is it local? | can each side be computed alone? |
+|---|---|---|
+| **`product`** (Eve has been here) | **yes** — each particle carries a definite value along a known angle | **Yes.** Both sides are independent given `(angle, bit)`. Each computes `measureOneSide` whenever its player clicks, in any order, with no reference to the other |
+| **`entangled`** | **no** — the outcome depends on *both* angles | **No.** The second side to measure must know the first's **angle** |
+
+That asymmetry is not an accident of our design. **Eve's whole effect is to destroy a
+non-local correlation**, so a pair she has touched is an ordinary local object — and local
+objects are precisely the ones each side can evaluate alone. Her attack makes the simulation
+*easier*, for the same reason it makes the key insecure.
+
+#### Resolving an entangled pair: first one gets a coin, second one follows
+
+```
+when a side measures an ENTANGLED pair:
+    if the other side has not measured yet:
+        my bit = a fair coin                       -- nothing to correlate with yet
+    else:
+        my bit = their bit, flipped with probability sin²((my angle − their angle) / 2)
+```
+
+**No waiting and no synchronisation.** Whoever clicks first is served immediately; whoever
+clicks second is drawn against the first. This is **exact**, not an approximation: two binary
+results are completely determined by their two rates and their correlation, so this produces
+the identical joint distribution to measuring both at once.
+
+> ⚠️ **We are moving information the real protocol does not.** In reality nothing travels
+> between Alice's detector and Bob's — their results are correlated without any signal. Our
+> second measurement genuinely *reads* the first one's angle and bit. That is an artefact of
+> simulating a non-local correlation on one machine, and it is invisible to the players. It
+> is recorded here so that a future developer does not mistake it for a claim about physics.
+
+#### Why you cannot design the ordering away
+
+It is tempting to remove the dependency: pre-draw each round's outcomes when the pair is
+created, store them, and let each side read its own. **That cannot work, and the reason is
+Bell's theorem.** A scheme in which each particle carries pre-stored instructions and ignores
+the other side's angle is a *local hidden-variable model*, and such a model is bounded by
+**S ≤ 2**. Ours must reach **2√2**.
+
+So the dependency of the second measurement on the first is not sloppiness to be refactored
+out — **it is the fingerprint of entanglement in the code.** Any implementation that reaches
+2√2 has it somewhere.
+
+#### The consequence: a race condition, and the only correct fix
+
+Two players can click *Measure* at the same instant. Both handlers then ask "has the other
+side measured yet?", **both read "no"**, and both take the fair-coin branch. Two independent
+coins, no correlation — a key with ~50 % errors and an S near 0, in a game with no
+eavesdropper. Silent, rare, and indistinguishable from bad luck.
+
+> **This is live today.** `e91/consumers.py` reads `iteration.bob_bits`, decides, and saves,
+> with **no transaction and no row lock** (verified 2026-09-11: no `select_for_update`, no
+> `transaction.atomic` anywhere in the file). The window is milliseconds — but a classroom
+> runs many rounds, and rare events happen.
+
+**The fix is serialisation, not cleverness.** The read-decide-write must be atomic, so the
+second handler cannot observe the state the first is in the middle of changing:
+
+```
+in a transaction, taking a row lock on the round:
+    re-read the other side's bits
+    decide: fair coin, or correlated against them
+    write
+```
+
+Anything else — reordering, retrying, comparing timestamps — either reintroduces the race or
+smuggles in the local model the previous section rules out. **The product case needs none of
+this**: both sides are independent, so there is nothing to serialise.
