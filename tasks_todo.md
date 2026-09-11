@@ -2884,6 +2884,51 @@ handlers that fight the user instead of helping them.
 
 ---
 
+### 69. 📐 `docs/protocol-physics.md` has no BB84 section — reorganise it by protocol
+
+**Status**: 🟡 OPEN, agreed 2026-09-11. **Priority**: after the E91 physics fix — it is a
+document reorganisation, and moving sections while rewriting one of them would mix two concerns.
+**Frontend docs only, no code.**
+
+**Ibra's finding, reading the new E91 section:** *"in this file we can find a section for E91, but no
+section (clear title and entry) for BB84? I know there is BB84 content, but there are multiple
+section entries and I cannot tell which one(s) are for BB84."* He is right — §10 is the only part of
+the file organised **by protocol**. Everything before it is organised by *topic* or by *history*:
+
+| § | what it actually is |
+|---|---|
+| 1 | why the document exists (the two axes) — **keep, it is the frame** |
+| 2 · 3 | how the codebase got here; the duplication audit — **history** |
+| 4 | the one-implementation rule (ADR §13.3) — **keep, cross-protocol** |
+| 5 | target structure — BB84-specific, reads as if it were general |
+| 6 · 7 | the bug that opened the file; status — **history** |
+| 8 | validation bits capped at n/4 — **BB84 physics, unlabelled** |
+| 9 | verify-it-yourself commands — **keep, useful** |
+| 10 | E91 — the only protocol-shaped section |
+
+**Target shape:**
+
+```
+Part 0  Why this document exists + the one-implementation rule        (from §1, §4)
+Part 1  BB84 — the protocol, then our adaptation                      (from §5, §8)
+Part 2  E91  — the protocol, then our adaptation                      (§10, already written)
+Part 3  DPS  — placeholder until Task 38 gives it any physics
+Part 4  Migration history and decisions                               (§2, §3, §6, §7)
+Part 5  Verify any claim here yourself                                (§9)
+```
+
+**The standard each protocol part must meet** — set by §10 and agreed with Ibra: *the protocol
+first, with no code, no repository and no language; then our adaptation, opening with the constraint
+and justifying every choice against the protocol half.* BB84's content currently exists but does not
+meet it — §5 is a file listing, not an explanation of the protocol.
+
+**Why history moves rather than disappears:** decisions need their reasons (*"if we chose something
+and people in the future ask why, here we explain"* — Ibra). But **bug archaeology belongs in this
+tracker, not in the physics document**, and most of Parts 2/3/6/7 is bug archaeology that will be
+stale the moment the E91 fix lands.
+
+---
+
 ### 68. 📘 The CHSH tab never tells the student that S is noise at 20 photons
 
 **Status**: 🔴 OPEN, text drafted, not implemented. **Priority**: **HIGH — explicitly above every
