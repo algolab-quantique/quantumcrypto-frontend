@@ -570,13 +570,15 @@ eavesdrop(pair)                             -- 10.5, Eve. NOT a primitive: two s
     bit   = measureOneSide(pair, angle)        -- 1. she measures what arrived (destroying it)
     return createProductPair(angle, bit)     -- 2. she prepares and sends a NEW pair
 
-measurePair(pair, aliceAngle, bobAngle)     -- 10.6 step 3
+measureOtherSide(pair, myAngle, theirBit, theirAngle)    -- the OTHER half of 10.3
     if pair is entangled:
-        aliceBit = a fair coin
-        bobBit   = aliceBit, flipped with probability sin²((aliceAngle − bobAngle) / 2)
+        return theirBit, flipped with probability sin²((myAngle − theirAngle) / 2)
     else:
-        aliceBit = pair.bit, flipped with probability sin²((aliceAngle − pair.angle) / 2)
-        bobBit   = pair.bit, flipped with probability sin²((bobAngle   − pair.angle) / 2)
+        return measureOneSide(pair, myAngle)   -- a product pair is local: they do not matter
+
+measurePair(pair, aliceAngle, bobAngle)     -- 10.6 step 3. a COMPOSITION, not a third rule
+    aliceBit = measureOneSide(pair, aliceAngle)
+    bobBit   = measureOtherSide(pair, bobAngle, aliceBit, aliceAngle)
     return (aliceBit, bobBit)
 
 siftKeyAndBellData(results, aliceAngles, bobAngles)     -- 10.6 step 4
@@ -592,6 +594,23 @@ correlations(bellData) / chshValue(correlations)        -- 10.6 step 5
 > against `sin²(Δ/2)` therefore produces *exactly* the joint distribution of two simultaneous
 > measurements — it is an order of evaluation, not a claim that Alice measures first. Both
 > bits come out of **one** call on **one** pair, which is what keeps step 3 a single act.
+
+> **Why `measurePair` is a composition, and why that matters more than it looks.** There are
+> exactly **two** measurement rules — *measure a side with nothing to go on*, and *measure a
+> side when the other side already went*. Everything else is built from them:
+>
+> | who | calls |
+> |---|---|
+> | **solo** (both sides at once) | `measurePair` |
+> | **multiplayer, first to click** | `measureOneSide` |
+> | **multiplayer, second to click** | `measureOtherSide` |
+> | **Eve** | `measureOneSide`, then `createProductPair` |
+>
+> Four situations, **one rule each, zero duplicated arithmetic.** If `measurePair` were
+> written out independently instead of composed, multiplayer would have to re-derive
+> `sin²(Δ/2)` for its second mover — and a second copy of the correlation rule is precisely
+> the defect this document exists to prevent. **This is the property to protect when the code
+> is written.**
 
 ### 10.10 What our version must produce
 
@@ -744,3 +763,24 @@ smuggles in the local hidden-variable model the previous section rules out.
 **The product case needs none of this.** Once Eve has measured, both sides are independent
 (see the table at the top of 10.12), so there is nothing to serialise: each side computes
 whenever its player clicks.
+
+#### What multiplayer has to store
+
+Solo holds the pair in a local variable for the length of one call. Multiplayer cannot — the
+two measurements are separate requests — so whatever the pair *is* must survive between them.
+The object's own definition (10.8) says exactly how much that is, and it is very little:
+
+| the round is | what must persist | why |
+|---|---|---|
+| **entangled, nobody measured yet** | **nothing** | an entangled pair carries no data. "A pair exists" is implied by the round existing |
+| **entangled, one side has measured** | that side's **bit and angle** — both already stored today | this is what `measureOtherSide` needs |
+| **product (Eve was here)** | her **angle** and **bit** | this is the pair. Without it the second side cannot be computed at all |
+| **either** | who claimed **first** | the atomic claim above; it cannot be inferred from "are their bits set yet", because that inference is the race |
+
+So the backend gains **three** nullable columns — `eve_angle`, `eve_bit`, `first_mover` — and
+nothing else. No new events, no new messages, no synchronisation.
+
+> Note the shape: **the columns are the pair object, persisted.** They are not bookkeeping
+> bolted on beside the physics; they are what 10.8 says a pair consists of. A future move of
+> E91's physics fully into the frontend deletes all three, because the pair would then live in
+> the one place that measures it — exactly as it does in solo today.
