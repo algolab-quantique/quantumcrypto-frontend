@@ -260,10 +260,10 @@ Two halves, deliberately separated:
 ### 10.1 The idea
 
 A **source** produces pairs of entangled particles and sends one particle of each pair to
-Alice and the other to Bob. Alice and Bob each pick a measurement angle at random,
-independently, and measure their own particle.
+Alice and the other to Bob. Alice and Bob each pick a measurement basis — an **angle** — at
+random and independently, and measure their own particle.
 
-Afterwards they announce **which angles they used** — never the results. Two things follow
+Afterwards they announce **which bases (angles) they used** — never the results. Two things follow
 from that announcement:
 
 - where they happened to pick the **same angle**, their results are identical → those bits
@@ -279,12 +279,13 @@ entangled particle destroys the correlation**, and the Bell test measures that c
 is a *role*, not a person: it may be an independent third party, or Alice, or Bob — or even
 Eve. Nothing in the physics depends on who holds it.
 
-### 10.2 The angles
+### 10.2 The measurement bases (angles)
 
-Each side picks from three angles. They overlap in two, and the overlap is what makes a key
-possible.
+Each side picks from three bases. A basis here *is* an angle, so the two words are used
+interchangeably below — the literature uses both. The two sides overlap in two bases, and that
+overlap is what makes a key possible.
 
-| | angles available |
+| | bases (angles) available |
 |---|---|
 | **Alice** | **0°**, 45°, 90° |
 | **Bob** | 45°, 90°, **135°** |
@@ -368,18 +369,27 @@ She cannot avoid being seen, and the reason is worth stating precisely:
 
 1. **Her measurement destroys the entanglement.** What she forwards is no longer an
    entangled pair — it is two ordinary particles, each prepared along *her* angle.
-2. **Alice and Bob almost never share her angle**, so their results now drift from what she
-   sent, by exactly the rule in 10.3.
+2. **The two particles now carry definite values along a single angle.** Their correlation
+   therefore factorises — each side's result depends only on its own angle and hers — and a
+   factorised correlation is exactly what "classical" means here. **This holds whether or not
+   her angle matched theirs**: everyone draws from the same public set {0°, 45°, 90°, 135°}, so
+   she often *does* share an angle with one of them. Sharing it does not help. A matching angle
+   reproduces one correlation; **S is built from four**, and no single fixed angle can satisfy
+   all four at once.
 3. **Their correlation collapses**, and S falls from 2√2 to at most 2 — the classical range.
    The Bell test sees it.
 
 > **Why her own result is a coin flip, whatever angle she picks.** This is the sharpest
-> difference from BB84. There, Alice *prepares* each photon, so it carries a definite value
-> in a definite basis, and "did Eve guess the right basis?" is a real question. In E91
-> **nobody prepares anything**: an entangled particle has no value and no direction until
-> someone measures it. So every angle she picks gives her a 50/50 result. What her choice
-> decides is not what she learns — it is *the angle the pair collapses onto*, and therefore
-> how much of Alice and Bob's correlation survives.
+> difference from BB84. There, Alice *prepares* each photon with a definite value in a
+> definite basis, so "did Eve guess the right basis?" is a real question with a real answer.
+> In E91 nothing is prepared: measuring one half of an entangled pair gives **50/50 in every
+> basis**, full stop. That is an experimental fact about the statistics, and it is all this
+> document needs — no claim about what she "really" learns, which is a question about
+> interpretation and not about the protocol.
+>
+> Her choice of angle still matters, but for the other side of the transaction: it fixes the
+> angle along which the particles she forwards are prepared, and therefore how much of Alice
+> and Bob's correlation survives.
 >
 > She may intercept one particle or both. Measuring one collapses the other, so as long as
 > she uses **one angle per pair**, both give the same statistics.
@@ -421,38 +431,95 @@ The second half matters as much as the first, and 10.8 is why.
 
 ### 10.8 Our adaptation — the pair
 
-The protocol has a step that nothing else can substitute for: **Eve receives a pair that
-nobody has measured yet, and forwards a different one.** To express that, a pair has to
+The protocol has a step nothing else can substitute for: **Eve receives a pair that nobody
+has measured yet, and forwards a different one.** For that to be expressible, a pair must
 *exist as a thing* between the moment the source makes it and the moment Alice and Bob
-measure it. In a quantum library that thing is the circuit object. We do not have one, so we
-define our own.
+measure it. In a quantum library that thing is the circuit object. We have no such library,
+so we define the object ourselves.
 
-**What must it hold?** Only what a later measurement needs to know — no more:
+**A pair describes only itself.** It has no idea who made it, who is carrying it, or who
+measured it. In particular **Eve is not part of its vocabulary** — "a pair Eve resent" is a
+statement about history, not about the object, and an object that recorded it would be
+answering the very question the Bell test exists to ask.
+
+**Its state** is therefore one of exactly two things, both physical:
 
 | state | what it holds | why |
 |---|---|---|
-| **intact** | **nothing** | neither particle has a value or a direction yet. The only thing true of an undisturbed pair is *that it is undisturbed*, so every intact pair is interchangeable — which is exactly why a source can hand out n identical ones |
-| **resent by Eve** | the **angle** she measured at, and the **bit** she read | she destroyed the entanglement and forwarded two ordinary particles prepared that way. Those two facts are the complete description of what Alice and Bob will receive |
+| **`entangled`** | **nothing** | neither particle has a value or a direction yet. The only thing true of an undisturbed pair is *that it is undisturbed* — so all `entangled` pairs are interchangeable, which is exactly why a source can hand out n identical ones |
+| **`collapsed`** | an **angle** and a **bit** | somebody measured it. The entanglement is gone and the two particles now carry a definite value along one definite angle. Those two facts are the complete description of what a later measurement will see |
 
-**What can you do with it?** Three things, and nothing else:
+`collapsed` says *what happened to the pair*, not *who did it*. Eve is the only one who
+produces one mid-flight in our game today, but if a second eavesdropper were added tomorrow
+she would produce the same state, and nothing in the object would change.
+
+**Its behaviour** — three operations, and deliberately nothing else:
 
 | | |
 |---|---|
-| **measure one side** at an angle | → one bit |
+| **measure one side** at an angle | → one bit *(and, in reality, collapses the pair)* |
 | **measure both sides** at two angles | → two bits, correlated per 10.3 |
-| **intercept it** | → a *new* pair: the one Eve forwards |
+| **intercept** | → a **new** pair: `collapsed`, carrying the angle used and the bit read |
 
 There is deliberately **no way to read bits out of a pair without measuring it**, because in
 the protocol there is nothing to read. A pair is not a container of two bits waiting to be
 collected; it is a thing that *produces* bits when measured, differently depending on the
-angles used. Building it that way is what makes 10.5 expressible at all: `intercept` takes a
-pair and returns a pair, exactly as Eve does.
+angles used. That is what makes 10.5 expressible at all: `intercept` takes a pair and
+returns a pair, exactly as Eve does.
 
-> **Why "intercept" must take the pair it is given.** It would be simpler to have Eve just
-> invent two bits. But then she is not intercepting anything — she is fabricating the round,
-> and her behaviour no longer depends on what she received. Handing her the pair keeps the
-> step honest, and keeps it composable: measuring a pair Eve already resent degrades it
+> **Why `intercept` must take the pair it is given.** It would be simpler to let Eve invent
+> two bits. But then she is not intercepting anything — she is fabricating the round, and
+> her behaviour no longer depends on what she received. Handing her the pair keeps the step
+> honest, and keeps it composable: intercepting an already-`collapsed` pair degrades it
 > correctly instead of silently starting over.
+
+#### Who can see this state? Nobody in the game
+
+The state is **our bookkeeping**, not a fact any player has access to. Alice, Bob and Eve
+all see exactly one thing: the bit their own measurement returned. None of them can ask a
+pair whether it is `entangled`, which is precisely why they must run the Bell test over many
+rounds to find out.
+
+> **It is not a "hidden variable" in the physics sense either**, and the reason is worth one
+> line. Our `entangled` pair produces Bob's result using **Alice's angle** — the two sides
+> are resolved together, in one call, by design (10.9). That is a *non-local* rule, and it is
+> exactly why our simulation can reproduce S = 2√2. A model where each particle carried its
+> own private instructions and ignored the other side's angle could not exceed 2 — that is
+> Bell's theorem. We are not smuggling local realism in; we are computing the joint
+> distribution directly.
+
+#### A worked example
+
+Three rounds, to make the object concrete. Angles are drawn independently each round.
+
+```
+ROUND 1 — no Eve, and the bases happen to match
+   source                  pair = entangled
+   Alice measures at 45°   Δ = 45 − 45 = 0°  → P(different) = 0
+   Bob   measures at 45°   → both get the same bit, say 1
+   announced (45°, 45°)    → KEY.  Alice 1, Bob 1.   they agree, as they always do
+
+ROUND 2 — Eve intercepts, and the bases still match
+   source                  pair = entangled
+   Eve intercepts at 0°    she measures it → reads 0
+                           pair = collapsed{ angle 0°, bit 0 }     ← she forwards THIS
+   Alice measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 0
+   Bob   measures at 45°   Δ = 45 − 0 = 45°  → flips with p = 0.146 → 1   ← this one flipped
+   announced (45°, 45°)    → KEY.  Alice 0, Bob 1.   THEY DISAGREE
+
+   Two rounds, same announced bases, opposite outcomes. Round 1 can never disagree;
+   round 2 disagrees 25 % of the time. That 25 % is Eve's whole signature.
+
+ROUND 3 — Eve intercepts, and she happens to pick Alice's angle
+   source                  pair = entangled
+   Eve intercepts at 45°   reads 1 → pair = collapsed{ 45°, 1 }
+   Alice measures at 45°   Δ = 0   → never flips → 1      Eve knows this bit exactly
+   Bob   measures at 135°  Δ = 90° → flips with p = 0.5   → coin flip
+   announced (45°, 135°)   → discarded (not a key pair, not a CHSH pair)
+
+   Sharing an angle wins Eve that one bit — and still leaves the pair collapsed.
+   The correlation it would have contributed to S is gone either way.
+```
 
 ### 10.9 Our adaptation — the steps
 
@@ -460,13 +527,13 @@ Language-independent. Each step names the protocol step it implements.
 
 ```
 createEntangledPairs(n)                     -- 10.6 step 1
-    return n intact pairs                      (identical: an intact pair carries nothing)
+    return n entangled pairs                   (identical: an entangled pair carries nothing)
 
 generateRandomBases(n, availableAngles)     -- 10.6 step 2
     return n angles drawn uniformly from availableAngles
 
 measureOneSide(pair, angle)                 -- the single-particle half of 10.3
-    if pair is intact:
+    if pair is entangled:
         return a fair coin                     -- no value exists until measured (10.5)
     else:
         return pair.bit, flipped with probability sin²((angle − pair.angle) / 2)
@@ -474,10 +541,10 @@ measureOneSide(pair, angle)                 -- the single-particle half of 10.3
 interceptAndResend(pair)                    -- 10.5, Eve
     angle = a uniformly random angle
     bit   = measureOneSide(pair, angle)        -- she measures what she was given
-    return a resent pair carrying (angle, bit)
+    return a collapsed pair carrying (angle, bit)
 
 measurePair(pair, aliceAngle, bobAngle)     -- 10.6 step 3
-    if pair is intact:
+    if pair is entangled:
         aliceBit = a fair coin
         bobBit   = aliceBit, flipped with probability sin²((aliceAngle − bobAngle) / 2)
     else:
