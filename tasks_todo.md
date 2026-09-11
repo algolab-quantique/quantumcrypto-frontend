@@ -2884,6 +2884,52 @@ handlers that fight the user instead of helping them.
 
 ---
 
+### 68. 📘 The CHSH tab never tells the student that S is noise at 20 photons
+
+**Status**: 🔴 OPEN, text drafted, not implemented. **Priority**: **HIGH — explicitly above every
+cosmetic/UI task** (Ibra, 2026-09-10: *"this task is very important, more than others — aesthetic UI
+or titles etc."*). **Axis**: pedagogy, not physics. **Frontend-only, no backend, no physics change.**
+
+**The gap.** `solo-CHSH-tab.tsx` / `CHSH-tab.tsx` show a table of pairs, a values column, a graph
+button, and two buttons — `component.e91.button.secure` / `.unsecure`. **No explanatory text exists
+at all**: no classical bound, no quantum maximum, no warning about the sample size. The student is
+asked to judge and given nothing to judge against.
+
+**Why it is not a bug in the design.** The app deliberately has **no threshold constant** — the
+student decides, by reading the pairs. That is the right call at these photon counts, because *no*
+threshold could work. It just has to be **said**.
+
+**📊 The measured reason, worth putting in the text (computed 2026-09-10):**
+
+| photons | CHSH pairs | per correlation term | uncertainty on S |
+|---|---|---|---|
+| 10 | ~4 | ~1.1 | **± 1.9** |
+| **20** | ~9 | **~2.2** | **± 1.4** |
+| 30 | ~13 | ~3.3 | ± 1.1 |
+| 2000 *(the CMAI workshop)* | ~889 | ~222 | ± 0.13 |
+
+Only 4 of the 9 basis combinations are CHSH terms, so at 20 photons **each correlation rests on about
+two pairs**. S = 2.83 ± 1.4 — it can land anywhere from ~1.4 to ~4.2 **with no Eve at all**. This is
+the mechanism behind **52-C**'s measured 37.5 %, and it also explains why the workshop's |S| > 2.5
+threshold is sound there (±0.13) and impossible here.
+
+**Draft text (Ibra to approve the wording — his voice, and it is pedagogy).** Two parts, because the
+short one must actually be read:
+
+> **inline, always visible:** ℹ️ Avec si peu de paires, **S est très bruité (≈ ±1,4)** : il peut
+> descendre sous 2 même sans Ève. Comparez les paires une par une plutôt que le seul nombre.
+>
+> **expanded on the ℹ️:** Chacune des 4 corrélations n'est mesurée ici que sur ~2 paires. Les vraies
+> expériences en utilisent des milliers : à 2000 paires, S = 2,83 ± 0,13, et un seuil comme
+> |S| > 2,5 devient fiable. À 20 paires, aucun seuil ne l'est.
+
+**Two open decisions:** (a) literal numbers, or derived from the actual photon count — derived is more
+honest and `localize` can take the number in its own span; (b) placement — under the values table, or
+beside the Secure/Unsecure buttons. **Recommend beside the buttons**: that is the moment the student
+needs it. All three languages, **both** CHSH tabs.
+
+---
+
 ### 67. 🔴🔥 E91 multiplayer writes into BB84's storage during NORMAL play — five unguarded handlers
 
 **Status**: 🔴 OPEN, **cause proven, not fixed**. **Priority**: **P1** — cross-protocol data loss, and
