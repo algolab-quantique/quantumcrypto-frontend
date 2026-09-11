@@ -685,16 +685,62 @@ eavesdropper. Silent, rare, and indistinguishable from bad luck.
 > `transaction.atomic` anywhere in the file). The window is milliseconds — but a classroom
 > runs many rounds, and rare events happen.
 
-**The fix is serialisation, not cleverness.** The read-decide-write must be atomic, so the
-second handler cannot observe the state the first is in the middle of changing:
+**The fix is serialisation, and it must be ONE step.** The trap is that the obvious guard —
+*"read the flag; if it is free, take it"* — is itself a read-then-write, so two simultaneous
+requests can both read "free". That does not fix the race; it moves it to the flag.
 
+#### The decision (2026-09-11): a conditional write on the round's own row
+
+The round already has a database row, and the database can check-and-set **in a single
+statement**:
+
+```sql
+UPDATE round SET first_mover = 'A' WHERE id = ? AND first_mover IS NULL
 ```
-in a transaction, taking a row lock on the round:
-    re-read the other side's bits
-    decide: fair coin, or correlated against them
-    write
-```
+
+The database guarantees at most one such statement changes the row, and reports how many it
+changed:
+
+| result | meaning | what that side does |
+|---|---|---|
+| **1 row** | you claimed it | you are first — draw the fair coin |
+| **0 rows** | someone was ahead of you | you are second — correlate against them, per the rule above |
+
+No lock to hold, nothing to release, no message between the two players, and no state that
+can be lost. The claim and the decision are the same operation.
+
+#### Why not a mutex on a variable in the server
+
+It was considered and it is not wrong — a mutex around an in-memory flag **does** serialise
+the check-and-set, and it is faster than a database write. Three reasons it lost:
+
+1. **It is correct only inside one process.** The backend runs a single Daphne process today,
+   so it would work — but the project is already configured with a **Redis channel layer**,
+   which exists precisely so that several processes can serve one game. The day a second
+   instance is started, every process gets its own mutex and the guard silently protects
+   nothing. A correctness property that depends on how the service happens to be deployed is
+   a bad property.
+2. **The speed advantage is not real here.** The handler already writes this row
+   (`save_iteration`). The conditional `UPDATE` *replaces* that write rather than adding one,
+   so the marginal cost is about zero. We are not introducing a database; we are using the
+   one already in the critical path.
+3. **It adds state to maintain**: a per-round entry, and cleanup so finished rounds do not
+   accumulate. The row already exists and is already cleaned up with the game.
+
+*(If in-memory speed ever does matter, the correct version of the same idea is Redis
+`SETNX` — atomic, already a dependency, and correct across processes. An in-process mutex is
+only defensible with a permanent commitment to a single process.)*
 
 Anything else — reordering, retrying, comparing timestamps — either reintroduces the race or
-smuggles in the local model the previous section rules out. **The product case needs none of
-this**: both sides are independent, so there is nothing to serialise.
+smuggles in the local hidden-variable model the previous section rules out.
+
+> **Still open: which side does the work.** Two shapes are compatible with the claim above.
+> Either the **first** arrival computes its own bits (the loser then correlates against them),
+> which lets a player see their result the moment they click; or the **second** arrival
+> computes **both** sides at once, which lets multiplayer call exactly the same `measurePair`
+> as solo — one physics path instead of two — at the cost of the first player waiting. This is
+> a game-feel decision, not a correctness one; both are safe once the claim is atomic.
+
+**The product case needs none of this.** Once Eve has measured, both sides are independent
+(see the table at the top of 10.12), so there is nothing to serialise: each side computes
+whenever its player clicks.
