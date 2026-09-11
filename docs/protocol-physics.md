@@ -242,3 +242,254 @@ grep -rn "photon" --include="*.py" ../quantumcrypto-backend/ | grep -v photon_nu
 # E91's Python twin of the frontend physics
 sed -n '480,530p' ../quantumcrypto-backend/e91/consumers.py
 ```
+
+---
+
+## 10. E91 — the protocol, and how we simulate it without Qiskit
+
+> **Status**: 🔴 SPEC WRITTEN 2026-09-11, implementation not started.
+> **Why it exists**: E91's simulation was translated from the Python backend
+> (`eveGeneratedBits` 2024-11-07 → `solo-player.ts` 2025-12-08) and both copies are wrong
+> in the same way. This section is the **contract** both implementations must satisfy, so
+> that a future divergence is a failing test rather than a discovery 22 months later.
+> **Source of truth**: `CMAI-E91` (Ibra's own Qiskit workshop — real circuits on Aer).
+> Anything here that contradicts that repository is a bug in this document.
+
+### 10.1 The setup
+
+A **source** produces entangled pairs and sends one particle to Alice and one to Bob. They
+each choose a measurement basis *independently and at random*, and measure.
+
+**E91 has no sender and no receiver.** This is the structural difference from BB84, and it
+has two consequences that the code must respect:
+
+- **The source is a role, not a person.** It can be a third party, or Alice, or Bob — or
+  Eve. So a function that produces a pair is not "Alice cheating"; it is the source doing
+  its job, and *who calls it is outside the physics*.
+- **Alice and Bob do the same thing.** There is no first mover in the protocol. Any
+  ordering in our code is an implementation detail, never a rule.
+
+### 10.2 Bases
+
+Four measurement angles, 45° apart. Alice draws from three, Bob from three, overlapping in
+two — the overlap is what produces the key.
+
+| id | angle | Alice | Bob |
+|---|---|---|---|
+| `1` | 0° | ✅ | |
+| `2` | 45° | ✅ | ✅ |
+| `3` | 90° | ✅ | ✅ |
+| `4` | 135° | | ✅ |
+
+- **Key pairs** — the bases match: `(2,2)` and `(3,3)`. Perfect correlation, so the two
+  sides hold the same bit.
+- **CHSH pairs** — Alice `{1,3}` × Bob `{2,4}`: `(1,2)`, `(1,4)`, `(3,2)`, `(3,4)`.
+- **Discarded** — the remaining three: `(1,3)`, `(2,3)`, `(2,4)`. Nine combinations in all:
+  2 key + 4 CHSH + 3 discarded.
+
+⚠️ **The pair is ordered, Alice first.** `(3,2)` is a CHSH pair; `(2,3)` is discarded. They
+are different combinations, not two spellings of one — a symmetric lookup silently turns
+three discarded pairs into CHSH data.
+
+**Bell test:**
+
+```
+S = E(1,2) − E(1,4) + E(3,2) + E(3,4)
+```
+
+where `E(a,b) = P(same) − P(different)` over the pairs measured in that basis combination.
+
+### 10.3 The one physical rule
+
+Everything below rests on **one** formula, and it answers one question: *a measurement at
+angle θ₁, against a state defined at angle θ₂ — how often do they disagree?*
+
+```
+P(disagree) = sin²( (θ₁ − θ₂) / 2 )
+```
+
+| Δ | P(disagree) | meaning |
+|---|---|---|
+| 0° | **0.000** | same angle → always agree |
+| 45° | 0.146 | |
+| 90° | **0.500** | perpendicular axes → pure coin flip |
+| 135° | 0.854 | |
+
+It is used in **both** situations, which is why there is only one rule to get right:
+
+- **an intact pair** — "the state defined at θ₂" is the other party's measurement, so the
+  formula gives the |Φ⁺⟩ correlation `E(a,b) = cos(θₐ − θ_b)` (spin-½ convention);
+- **a pair Eve resent** — "the state defined at θ₂" is the product state she prepared, so
+  the formula gives how far each side drifts from what she sent.
+
+**BB84 is the same rule, evaluated at only two angles.** Its two bases are 90° apart, so
+`measurePhoton` only ever needs Δ = 0° (returns the encoded bit) and Δ = 90° (returns a coin
+flip) — which is exactly why it can be an `if/else` and E91 cannot.
+
+> ⚠️ `lib/e91/solo-player.ts` contains `PROBABILITY_THRESHOLD = sin²(π/8) ≈ 0.1464`. That is
+> **not a constant** — it is this function evaluated at Δ = 45°, frozen, and then applied to
+> *every* mismatched pair. It is why the 90° pairs are wrong (0.854 where physics says
+> 0.500) and why the file reads as magic numbers. The replacement has the function; the
+> constant disappears.
+
+### 10.4 The pair, without Qiskit
+
+CMAI's `create_list_bell_pairs(n)` returns **n identical quantum circuits** — a pair that
+nobody has measured yet. That object is what lets Eve intercept *before* Alice and Bob
+measure. We cannot run circuits, so we need the same handle carrying the same information —
+which, for an undisturbed pair, is **none**:
+
+```
+Pair = Entangled                      // intact. carries nothing: no bits exist yet
+     | Resent { angle, bit }          // Eve measured at `angle`, got `bit`, re-prepared both
+```
+
+`Resent.bit` is **what Eve prepared**, not what Alice or Bob will read. They read it only if
+they happen to measure at her angle; otherwise they disagree with probability sin²(Δ/2).
+
+**This is the piece missing from the current code, and the reason Eve could not be written
+correctly.** Today `onMeasurement` draws one side's bits as a fair coin *first*, then fits
+the other side to them — so by the time Eve would act there is no pair in flight to
+intercept. All that remains is to fabricate the second side from its bases alone, which is
+precisely what `eveGenerateBits(bases)` does. **The Eve bug is not a wrong formula; it is a
+missing object.**
+
+### 10.5 The pipeline
+
+Each step: what the protocol says, then what we do. Names are CMAI's, translated to this
+codebase's camelCase (Python is snake_case; TypeScript is camelCase — same wording, same
+signature).
+
+**1 — Create the pairs.** *The source emits n entangled pairs.*
+CMAI `create_list_bell_pairs(n)` → ours `createEntangledPairs(n)`. **One parameter.** It
+cannot depend on anyone's bases: the pairs exist before anyone has chosen one.
+
+```
+createEntangledPairs(n) -> [Entangled, Entangled, ...]   // n identical
+```
+
+**2 — Choose bases.** *Alice and Bob each pick randomly and independently.*
+CMAI `generate_random_bases(n, options)` → ours `generateRandomBases(n, options)`.
+
+```
+generateRandomBases(n, options) -> [basis, ...]          // options = ALICE_BASES | BOB_BASES
+```
+
+> The current `generateBases(n, isAlice)` takes a **boolean** that selects a hidden array,
+> with two wrapper functions passing it. Passing the basis list instead removes the role
+> coupling — which is 10.1's point in code.
+
+**3 — Eve intercepts (optional).** *She measures the pair in a basis of her choosing, which
+destroys the entanglement, then re-prepares and forwards a product state.*
+CMAI `create_eavesdropped_state(pair)` → ours `eveInterceptAndResend(pair)`. **Pair in, pair
+out** — interception and resend are one step because physically they are.
+
+```
+eveInterceptAndResend(pair):
+    angle ← uniform random from {0°, 45°, 90°, 135°}
+    bit   ← measureOneSide(pair, angle)          // what she actually reads
+    return Resent{ angle, bit }                  // what she forwards to both sides
+
+measureOneSide(pair, θ):
+    if pair is Entangled:    return fair coin             // 50/50 in every basis — see below
+    else:                    return pair.bit flipped with probability sin²((θ − pair.angle)/2)
+```
+
+> `measureOneSide` is the single-particle half of the rule in 10.3, and giving Eve it —
+> rather than an unconditional coin — is what makes her `pair` argument mean something. On
+> an intact pair the two are identical, so it changes **no** number in 10.6. It matters for
+> two reasons: the function becomes **total** (a resent pair is a legal input, so a second
+> eavesdropper or a re-run degrades correctly instead of silently re-randomising), and it
+> keeps interception expressed as *measure the thing you were given*, which is the property
+> the current code lost.
+
+> **Why her read is 50/50 regardless of basis, unlike BB84.** In BB84 Alice *prepares* the
+> photon, so "Eve's basis matches the photon's basis" is a real question. In E91 nobody
+> prepares anything — an entangled particle has no basis and no value until measured, so
+> every basis gives her a fair coin. What her choice *does* determine is the angle the pair
+> collapses along, and therefore how much of Alice–Bob's correlation survives.
+>
+> She may measure one particle or both: measuring one collapses the other, so as long as she
+> uses **one basis per pair** the statistics are identical. CMAI measures both.
+
+**4 — Measure.** *Both parties measure the same pair, each in their own basis.*
+CMAI `measure_bell_pair(pair, a, b)` → ours `measurePair(pair, aBasis, bBasis)`.
+
+```
+measurePair(pair, aBasis, bBasis):
+    θa, θb ← angles of aBasis, bBasis
+    if pair is Entangled:
+        aliceBit ← fair coin
+        bobBit   ← aliceBit flipped with probability sin²((θa − θb)/2)
+    else:                                        // Resent{angle, bit}
+        aliceBit ← bit flipped with probability sin²((θa − angle)/2)
+        bobBit   ← bit flipped with probability sin²((θb − angle)/2)
+    return { aliceBit, bobBit }
+```
+
+> **On the `Entangled` branch drawing Alice first:** two binary outcomes are completely
+> determined by their two marginals and their correlation, so "fair coin, then flip against
+> sin²(Δ/2)" produces *exactly* the joint distribution of a simultaneous measurement. It is
+> an implementation order, not a physical claim, and it does not make Alice the sender
+> (10.1). Both sides come out of **one** call on **one** pair — which is the property the
+> current code lacks.
+
+**5 — Sift.** *Compare bases publicly; split the results.*
+CMAI `extract_e91_key_and_bell_test_data(...)` → ours `siftKeyAndBellData(...)`.
+Same basis → key bit. A CHSH pair → Bell-test data. Everything else → discarded.
+
+**6 — Bell test.** CMAI `calculate_correlations` / `calculate_chsh_value` → ours
+`correlations(...)` / `chshValue(...)`. Compute the four `E(a,b)`, combine per 10.2.
+
+**7 — Verdict.** *Compare S against the classical bound.* **We deliberately have no
+threshold constant: the student reads the pairs and decides.** At 10–30 photons that is the
+only honest design — see 10.7 — but the game must *say so*, which it does not (**Task 68**).
+
+### 10.6 Acceptance numbers — the contract
+
+Both implementations must reproduce these. They are **measured, not asserted**: the
+pseudo-code in 10.5 was transcribed literally into a script and run over 200 000 pairs per
+figure, giving S = 2.831 / 1.410, key errors 0.0 % / 25.0 %, and every per-basis marginal
+between 0.498 and 0.500. So this table is not an aspiration — it is what 10.5 *does*, and
+any implementation that disagrees has departed from the spec rather than from an opinion.
+
+| | no Eve | with Eve |
+|---|---|---|
+| **S** | **2√2 ≈ 2.828** | **√2 ≈ 1.414** (≤ 2 ⇒ Bell restored) |
+| errors on key pairs `(2,2)`, `(3,3)` | **0 %** | **25 %** — same as BB84's intercept-resend |
+| P(bit = 1), each side | 50 % | 50 % |
+| **P(bit = 1) per basis, each side** | **50 %** | **50 %** |
+
+The last row is the regression guard for the bug being fixed: today basis `2` returns `0`
+**100 %** of the time and bases `1`/`3` do so 85 % of the time. A test that only checks the
+overall marginal would pass on biased-but-balanced output; the per-basis test would not.
+
+### 10.7 Deliberate deviations, stated so they are not mistaken for bugs
+
+1. **No state vectors, no circuits.** We reproduce the measurement *statistics*, not the
+   quantum state. Legitimate because every observable in E91 is a measurement statistic.
+2. **|Φ⁺⟩, not the singlet |Ψ⁻⟩** that CMAI uses. With |Φ⁺⟩ matching bases give *identical*
+   bits, so the key needs no inversion and the app's existing sign convention for S holds.
+   Decided by Ibra, 2026-09-10.
+3. **10–30 photons, where CMAI uses 2000.** Only 4 of 9 basis combinations are CHSH pairs,
+   so at 20 photons each correlation rests on ~2 pairs and **S = 2.83 ± 1.4** — it can land
+   below 2 with no Eve present. CMAI's |S| > 2.5 threshold is sound at ±0.13 and impossible
+   here. **Decision (Ibra, 2026-09-10): do not raise the count — explain it** (Task 68).
+
+### 10.8 Verify any claim here yourself
+
+```bash
+# the angles, bases and CHSH pairs, in the authoritative source
+sed -n '18,22p' ../../CMAI-E91/Part_2_E91/utils/chsh_core.py     # CHSH bases
+grep -n "ALICE_BASES\|BOB_BASES\|CHSH_BASIS_PAIRS" ../../CMAI-E91/Part_2_E91/02_E91_Protocol_SOLUTION.ipynb
+
+# Eve, as the reference implements her
+grep -n "def create_eavesdropped_state" -A 20 ../../CMAI-E91/Part_2_E91/utils/chsh_core.py
+
+# the two copies being replaced
+grep -n "eveGenerateBits\|PROBABILITY_THRESHOLD" -A 25 lib/e91/solo-player.ts
+grep -n "def eveGeneratedBits" -A 20 ../quantumcrypto-backend/e91/consumers.py
+
+# which came first (expect: Python 2024-11-07, TypeScript 2025-12-08)
+git log --reverse --format="%ad %s" --date=short -- lib/e91/solo-player.ts | head -1
+```
