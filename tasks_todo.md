@@ -2884,6 +2884,45 @@ handlers that fight the user instead of helping them.
 
 ---
 
+### 70. 🐛🔥 E91 multi: simultaneous "Measure" clicks can silently produce an uncorrelated key
+
+**Status**: 🔴 OPEN, found by reasoning + verified in the code 2026-09-11. **Priority**: fix
+**with** the E91 physics work — the same handler is being rewritten anyway. **Backend** (Python).
+**Found**: Ibra asked what happens if Alice and Bob click *Measure* at the same instant.
+
+**The race.** `e91/consumers.py` resolves an entangled pair by asking whether the other side has
+measured yet:
+
+```python
+elif not iteration.bob_bits:      # nobody has gone yet → fair coin
+    iteration.alice_bits = random
+else:                             # correlate against them
+    iteration.alice_bits = self.generateEntangledBits(...)
+```
+
+Two near-simultaneous events make **both** handlers read "not yet", so **both** take the fair-coin
+branch. The result is two independent coins: a key with ~50 % errors and S near 0, **in a game with
+no eavesdropper**. Silent, and indistinguishable from bad luck.
+
+**Verified live (2026-09-11):** there is **no `transaction.atomic` and no `select_for_update`
+anywhere in `e91/consumers.py`** — the read-decide-write is completely unprotected. The window is
+milliseconds, but a classroom plays many rounds.
+
+**The fix is serialisation.** Wrap the read-decide-write in a transaction taking a row lock on the
+iteration, so the second handler cannot observe the state the first is midway through changing.
+Reordering, retrying or comparing timestamps do not work: they either reintroduce the race or
+replace the correlated draw with a per-side one, which is the local hidden-variable model that
+**Bell's theorem forbids** from reaching 2√2 (see `docs/protocol-physics.md` §10.12).
+
+**Scope note:** this affects **only the entangled path**. Once Eve has measured, the pair is a
+product state and the two sides are independent, so there is nothing to serialise — her attack
+removes the race for the same reason it removes the security.
+
+**Does BB84 have it?** Not checked. BB84's structure differs (Alice genuinely sends to Bob, so
+there is a real order), but any other read-decide-write on a shared row deserves the same look.
+
+---
+
 ### 69. 📐 `docs/protocol-physics.md` has no BB84 section — reorganise it by protocol
 
 **Status**: 🟡 OPEN, agreed 2026-09-11. **Priority**: after the E91 physics fix — it is a
