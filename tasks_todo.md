@@ -2908,11 +2908,34 @@ no eavesdropper**. Silent, and indistinguishable from bad luck.
 anywhere in `e91/consumers.py`** — the read-decide-write is completely unprotected. The window is
 milliseconds, but a classroom plays many rounds.
 
-**The fix is serialisation.** Wrap the read-decide-write in a transaction taking a row lock on the
-iteration, so the second handler cannot observe the state the first is midway through changing.
+**✅ FIX DECIDED 2026-09-11 — a conditional write on the round's own row** (full reasoning and
+the rejected alternatives in `docs/protocol-physics.md` §10.12):
+
+```sql
+UPDATE round SET first_mover = 'A' WHERE id = ? AND first_mover IS NULL
+```
+
+1 row changed → you are first, draw the fair coin. 0 rows → you are second, correlate. The claim and
+the decision are **one statement**, which is the point: the obvious guard — *read the flag, then take
+it if free* — is itself a read-then-write and merely moves the race onto the flag.
+
+**A mutex over an in-memory variable was proposed (Ibra) and rejected**, though it is not wrong: it
+does serialise the check-and-set and is faster. It lost on three counts — it is correct only within
+one process (Daphne runs one today, but a **Redis channel layer is already configured**, which exists
+so several can), the speed advantage is illusory because the handler **already writes this row** so
+the conditional `UPDATE` replaces that write rather than adding one, and it adds per-round state to
+create and clean up. *(If in-memory speed ever matters, `SETNX` on the Redis already installed is the
+correct version of the same idea.)*
+
 Reordering, retrying or comparing timestamps do not work: they either reintroduce the race or
 replace the correlated draw with a per-side one, which is the local hidden-variable model that
-**Bell's theorem forbids** from reaching 2√2 (see `docs/protocol-physics.md` §10.12).
+**Bell's theorem forbids** from reaching 2√2.
+
+**⚠️ One sub-decision left open, deliberately** — game feel, not correctness: does the **first**
+arrival compute its own bits (player sees their result immediately, multi keeps two code paths), or
+does the **second** compute **both** (multi calls the same `measurePair` as solo — one physics path —
+at the cost of the first player waiting)? Both are safe once the claim is atomic. **Decide it when
+the physics port is written**, since it determines whether multi shares solo's function.
 
 **Scope note:** this affects **only the entangled path**. Once Eve has measured, the pair is a
 product state and the two sides are independent, so there is nothing to serialise — her attack
