@@ -327,13 +327,48 @@ P(different) = sin²( Δ / 2 )          Δ = Alice's angle − Bob's angle
 | 90° | **0.500** | completely unrelated — a coin flip |
 | 135° | 0.854 | mostly opposite |
 
+> ⚠️ **These are qubit (Bloch-sphere) angles, not physical polarizer angles.** On the Bloch
+> sphere orthogonal states are **180°** apart, which is why the rule carries the **Δ/2**. A
+> linear polarizer's orthogonal states are **90°** apart and Malus's law reads `sin²(Δ)` with
+> no halving, so the same experiment built with polarizers uses **22.5°** steps — exactly half
+> of ours. Both describe the same physics; ours is the convention the reference workshop uses
+> (it rotates with `ry(−π/4)` for the 45° basis, a Bloch rotation). **Never mix the two**:
+> applying Malus's law to our angles collapses S to 0.
+
 > **Reading the key rows.** The key comes from `(45°, 45°)` and `(90°, 90°)`. In both,
 > Δ = 45 − 45 = 0 and Δ = 90 − 90 = 0 — the **first row** of the table. Same angle,
 > P(different) = 0, so Alice and Bob hold the same bit without ever exchanging it. The other
 > rows are what happens for the combinations they *discard* or use for the Bell test.
 
+#### The same rule, applied to a pair Eve prepared
+
+The table above is for an **intact** pair, where the rule is applied **once**: Alice's result
+is a fair coin and Bob's is taken against hers, so `P(Alice ≠ Bob) = sin²(Δ/2)` directly.
+
+For a **product** pair the rule still holds, but it describes *one measurement against the
+angle Eve prepared* — and it is applied **twice**, independently, once per side:
+
+```
+pₐ = sin²((θₐ − θₑ)/2)      p_b = sin²((θ_b − θₑ)/2)
+P(Alice ≠ Bob) = pₐ(1 − p_b) + p_b(1 − pₐ)      ← they differ if exactly ONE of them flipped
+```
+
+**So Alice and Bob do NOT obey `sin²((θₐ − θ_b)/2)` with each other once Eve has been
+there** — and that difference is precisely how she is caught. Take matching bases,
+θₐ = θ_b = 45°, where an intact pair can *never* disagree:
+
+| Eve measured at | each side flips with | Alice ≠ Bob |
+|---|---|---|
+| 45° — she guessed their basis | 0.000 | **0 %** |
+| 0° or 90° | 0.146 | **25 %** |
+| 135° | 0.500 | **50 %** |
+| **average over her four choices** | | **25 %** |
+
+That 25 % is her whole signature in the key — and note she is *not* safe when she guesses
+right: one basis matching is not four (10.5).
+
 This is the only physical rule in E91. Everything else — the key, the Bell test, Eve's
-detectability — is a consequence of it.
+detectability — is a consequence of applying it once or twice.
 
 ### 10.4 The Bell test
 
@@ -639,7 +674,29 @@ staring at that angle instead of by the Bell test — which would defeat the ent
 | Eve picks a **new random angle for every pair** | it is the strongest simple attack, and it is basis-independent | her disturbance is a uniform **25 %** at every angle. Letting her reuse one fixed angle would leave a per-angle signature a student could exploit — detectable, but for the wrong reason |
 | **No noise model** | our pairs and detectors are perfect; a real experiment has both | an undisturbed run reaches the ideal 2√2 exactly. Worth knowing before comparing a student's number to a published one — though at our sample size, **sampling noise dwarfs anything a detector would add** |
 | **Eve always uses intercept-and-resend**, one pair at a time | it is the attack E91 is taught with, and the one the Bell test is built to catch | other strategies exist and are out of scope. A student should not conclude that S ≤ 2 is the signature of *every* possible eavesdropper |
-| **10–30 pairs**, where a real experiment uses thousands | the student sets each round by hand; it is a game, not a lab | **S is very noisy at this size** — with ~20 pairs each of the four correlations rests on about two rounds, so S ≈ 2.83 **± 1.4** and can fall below 2 with nobody listening. We do **not** raise the count. We explain it, and we let the student judge the rounds rather than a threshold judge for them |
+| **10–30 pairs**, where a real experiment uses thousands | the student sets each round by hand; it is a game, not a lab | **S is not merely noisy here — it is unreliable in both directions.** See the measured table below. We do **not** raise the count; we explain it, and we let the student judge the rounds rather than a threshold judge for them |
+
+#### How unreliable, exactly (measured, 20 000 simulated games per cell)
+
+Only 4 of the 9 basis combinations are CHSH rounds, so at 20 pairs each of the four
+correlations rests on **about two rounds**. The consequences are worse than "± 1.4":
+
+| pairs | **false alarm** — no Eve, yet \|S\| ≤ 2 | **false negative** — Eve present, yet \|S\| > 2 |
+|---|---|---|
+| **20** | **34 %** | **27 %** |
+| **30** | **22 %** | **29 %** |
+
+Two things follow, and both belong in what the student is told (**Task 68**):
+
+1. **A third of honest games look attacked, and a quarter of attacked games look honest.** At
+   this size the Bell test is not a detector; it is a *hint*.
+2. **S is coarsely quantised.** With ~2 rounds behind each correlation, `E(a,b)` can only land
+   on a few values, so S lands on a sparse ladder — a student will essentially **never** see
+   2.83. Telling them the ideal is 2√2 while showing them 3.0 invites exactly the wrong
+   conclusion unless the variance is explained alongside it.
+
+*This is the strongest argument in the document for Task 68: the sample size is not a wart to
+apologise for — unexplained, it actively teaches the wrong lesson.*
 
 ### 10.12 When the two sides measure at different times
 
@@ -713,17 +770,28 @@ requests can both read "free". That does not fix the race; it moves it to the fl
 The round already has a database row, and the database can check-and-set **in a single
 statement**:
 
-```sql
-UPDATE round SET first_mover = 'A' WHERE id = ? AND first_mover IS NULL
-```
+**Draw your bit first, then try to claim with it.** The claim and the *result* must be in the
+same statement:
 
-The database guarantees at most one such statement changes the row, and reports how many it
-changed:
+```sql
+UPDATE round
+   SET first_mover = 'A', first_bit = ?, first_angle = ?
+ WHERE id = ? AND first_mover IS NULL
+```
 
 | result | meaning | what that side does |
 |---|---|---|
-| **1 row** | you claimed it | you are first — draw the fair coin |
-| **0 rows** | someone was ahead of you | you are second — correlate against them, per the rule above |
+| **1 row** | you claimed it | you were first — the coin you drew stands, and it is **already stored** |
+| **0 rows** | someone was ahead of you | you are second — discard your coin, read their bit and angle, correlate |
+
+> ⚠️ **Why the bit must be in the same statement — a bug found in review (2026-09-16).** An
+> earlier version claimed the flag alone:
+> `UPDATE round SET first_mover='A' WHERE first_mover IS NULL`, and only *then* computed and
+> wrote the bit. That leaves a window: Alice claims, and before her second query lands Bob
+> claims, sees `0 rows`, concludes he is second, goes to read her bit — **and finds `NULL`**.
+> The race is narrower than the original one but it is the same race. Writing the outcome
+> inside the claim closes it: a side that reads `0 rows` is guaranteed the winner's bit and
+> angle are already committed, because they were part of the statement that beat it.
 
 No lock to hold, nothing to release, no message between the two players, and no state that
 can be lost. The claim and the decision are the same operation.
