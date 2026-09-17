@@ -24,16 +24,18 @@ export type Bit = '0' | '1';
  */
 export type Angle = 0 | 45 | 90 | 135;
 
-export const ALICE_ANGLES: readonly Angle[] = [0, 45, 90];
-export const BOB_ANGLES: readonly Angle[] = [45, 90, 135];
+// Frozen, not merely `readonly`: that keyword vanishes at compile time, and these
+// are module singletons — one stray push would corrupt every game in the tab.
+export const ALICE_ANGLES: readonly Angle[] = Object.freeze([0, 45, 90] as Angle[]);
+export const BOB_ANGLES: readonly Angle[] = Object.freeze([45, 90, 135] as Angle[]);
 
 /** Eve draws from every angle: she does not know which two will be compared. */
-export const EVE_ANGLES: readonly Angle[] = [0, 45, 90, 135];
+export const EVE_ANGLES: readonly Angle[] = Object.freeze([0, 45, 90, 135] as Angle[]);
 
 /** The four Bell-test combinations, ORDERED (Alice, Bob) — §10.2. */
-export const CHSH_COMBINATIONS: ReadonlyArray<readonly [Angle, Angle]> = [
-    [0, 45], [0, 135], [90, 45], [90, 135],
-];
+export const CHSH_COMBINATIONS: ReadonlyArray<readonly [Angle, Angle]> = Object.freeze(
+    ([[0, 45], [0, 135], [90, 45], [90, 135]] as [Angle, Angle][]).map(p => Object.freeze(p)),
+);
 
 /**
  * A pair between the source and the detectors (§10.8).
@@ -58,8 +60,8 @@ export type Pair =
  *
  * NOT normalised to an acute angle: Δ = 135° must give 0.854, not 0.146.
  */
-export const probDifferent = (from: number, to: number): number =>
-    Math.sin(((from - to) * Math.PI / 180) / 2) ** 2;
+export const probDifferent = (fromDegrees: number, toDegrees: number): number =>
+    Math.sin(((fromDegrees - toDegrees) * Math.PI / 180) / 2) ** 2;
 
 const coin = (): Bit => (Math.random() < 0.5 ? '0' : '1');
 const flip = (bit: Bit): Bit => (bit === '0' ? '1' : '0');
@@ -164,15 +166,35 @@ export const measurePair = (
     return {aliceBit, bobBit: measureOtherSide(pair, bobAngle, aliceBit, aliceAngle)};
 };
 
+/** What Eve did to one pair: what she read, and what she sent on. */
+export type Interception = {
+    /** The angle she measured at, and prepared the replacement along. */
+    readonly angle: Angle;
+    /** What she READ. The app shows the student how many of these she got right. */
+    readonly bit: Bit;
+    /** The ordinary pair she forwards. `sent.bit` is `bit`: she relays, she does
+     *  not fabricate — and returning both is what lets a test prove it. */
+    readonly sent: Pair;
+};
+
 /**
  * Eve: measure what arrived, then prepare and forward a NEW pair (§10.5).
  *
  * Not a primitive — two ordinary operations in the order she performs them.
  * Measuring destroys the pair, so she cannot forward the one she measured.
+ *
+ * Returns her READ as well as the pair, for two reasons. The app reports
+ * "Eve has successfully read this number of bits", which needs it; and without
+ * it, an implementation that measured the pair and then forwarded an unrelated
+ * coin would be undetectable — S still falls to √2, the key error is still 25 %,
+ * every headline number passes, and only her knowledge silently drops to zero.
+ * (Found by mutation testing, 2026-09-17: that exact sabotage passed all 23
+ * tests until this signature changed.)
  */
-export const eavesdrop = (pair: Pair): Pair => {
+export const eavesdrop = (pair: Pair): Interception => {
     const angle = EVE_ANGLES[Math.floor(Math.random() * EVE_ANGLES.length)];
-    return createProductPair(angle, measureOneSide(pair, angle));
+    const bit = measureOneSide(pair, angle);
+    return {angle, bit, sent: createProductPair(angle, bit)};
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -193,10 +215,27 @@ export const classifyCombination = (alice: Angle, bob: Angle): Combination => {
         ? 'chsh' : 'discard';
 };
 
-/** The key: the rounds where both chose the same angle. Automatic. */
+/**
+ * The key: the rounds where both chose the same angle. Automatic.
+ *
+ * The length check is not defensive noise. Without it, a short angle array makes
+ * `aliceAngles[i] === bobAngles[i]` compare `undefined === undefined`, which is
+ * TRUE — so out-of-range bits are silently admitted into the key. That is the
+ * exact shape of the BB84 bug this whole document exists because of (§6): an
+ * out-of-range index read as a value instead of as an error.
+ */
 export const siftKeyBits = (
     bits: readonly Bit[], aliceAngles: readonly Angle[], bobAngles: readonly Angle[],
-): Bit[] => bits.filter((_, i) => aliceAngles[i] === bobAngles[i]);
+): Bit[] => {
+    if (bits.length !== aliceAngles.length || bits.length !== bobAngles.length) {
+        throw new Error(
+            `siftKeyBits: length mismatch — ${bits.length} bits, ` +
+            `${aliceAngles.length} Alice angles, ${bobAngles.length} Bob angles. ` +
+            'Sifting misaligned arrays silently corrupts the key.',
+        );
+    }
+    return bits.filter((_, i) => aliceAngles[i] === bobAngles[i]);
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The Bell test (§10.4)
@@ -233,9 +272,24 @@ export const correlations = (rounds: readonly Round[]): Record<string, number> =
 /**
  * S = E(0,45) − E(0,135) + E(90,45) + E(90,135), absolute value.
  *
- * A combination with no rounds contributes 0 — at this game's photon counts
- * that happens often, and it is one reason S is unreliable here (§10.11).
+ * ⚠️ A combination with NO rounds contributes 0, which drags S toward the
+ * classical range for a reason that has nothing to do with physics. Measured: at
+ * 20 photons **34 %** of games have at least one empty term (11 % at 30). This is
+ * a SECOND way the small sample misleads, separate from the variance in §10.11 —
+ * use `chshTermCounts` to tell the student how many terms actually had data
+ * (Task 68).
  */
+/** How many rounds stand behind each CHSH term — 0 means that term is a guess. */
+export const chshTermCounts = (rounds: readonly Round[]): Record<string, number> => {
+    const counts: Record<string, number> = {};
+    for (const [a, b] of CHSH_COMBINATIONS) counts[key(a, b)] = 0;
+    for (const r of rounds) {
+        const k = key(r.aliceAngle, r.bobAngle);
+        if (k in counts) counts[k] += 1;
+    }
+    return counts;
+};
+
 export const chshValue = (corr: Record<string, number>): number => {
     const at = (a: Angle, b: Angle) => corr[key(a, b)] ?? 0;
     return Math.abs(at(0, 45) - at(0, 135) + at(90, 45) + at(90, 135));

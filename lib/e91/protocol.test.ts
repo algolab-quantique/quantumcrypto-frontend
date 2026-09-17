@@ -1,0 +1,309 @@
+/**
+ * E91 protocol physics — the acceptance suite for `docs/protocol-physics.md` §10.
+ *
+ * Two layers, and the second is the point:
+ *   §10.10 — four headline numbers. Necessary, and NOT sufficient.
+ *   §10.13 — seven properties a wrong implementation can violate while still
+ *            producing all four headline numbers correctly.
+ *
+ * Statistical assertions run a fixed sample with generous tolerance: they exist
+ * to catch a wrong MODEL, not to police the tenth decimal of a coin flip.
+ */
+
+import {describe, expect, it} from 'vitest';
+import {
+    ALICE_ANGLES, BOB_ANGLES, CHSH_COMBINATIONS, EVE_ANGLES,
+    type Angle, type Bit, type Round,
+    chshTermCounts, chshValue, classifyCombination, correlations,
+    createEntangledPair, createEntangledPairs, createProductPair, eavesdrop,
+    generateRandomBases, measureOneSide, measureOtherSide, measurePair,
+    probDifferent, siftKeyBits, angleOfBasisId, basisIdOfAngle,
+} from './protocol';
+
+const N = 40000;
+
+/** Play `n` rounds at fixed angles and return them. */
+const play = (n: number, a: Angle, b: Angle, withEve: boolean): Round[] =>
+    Array.from({length: n}, () => {
+        const pair = withEve ? eavesdrop(createEntangledPair()).sent : createEntangledPair();
+        const {aliceBit, bobBit} = measurePair(pair, a, b);
+        return {aliceAngle: a, bobAngle: b, aliceBit, bobBit};
+    });
+
+const E = (a: Angle, b: Angle, withEve: boolean, n = N): number =>
+    correlations(play(n, a, b, withEve))[`${a}/${b}`];
+
+const S = (withEve: boolean): number => chshValue(
+    Object.fromEntries(CHSH_COMBINATIONS.map(([a, b]) => [`${a}/${b}`, E(a, b, withEve)])),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('§10.10 — the four headline numbers', () => {
+    it('S = 2√2 on undisturbed pairs', () => {
+        expect(S(false)).toBeCloseTo(2 * Math.SQRT2, 1);
+    });
+
+    it('S falls to √2 once Eve has been there — below the classical bound of 2', () => {
+        const s = S(true);
+        expect(s).toBeCloseTo(Math.SQRT2, 1);
+        expect(s).toBeLessThan(2);
+    });
+
+    it('key rounds never disagree without Eve, and disagree 25% with her', () => {
+        for (const angle of [45, 90] as Angle[]) {
+            const clean = play(N, angle, angle, false);
+            expect(clean.filter(r => r.aliceBit !== r.bobBit)).toHaveLength(0);
+
+            const dirty = play(N, angle, angle, true);
+            const errors = dirty.filter(r => r.aliceBit !== r.bobBit).length / N;
+            expect(errors).toBeCloseTo(0.25, 2);
+        }
+    });
+
+    it('every outcome is a fair coin — per side AND per angle, with or without Eve', () => {
+        for (const withEve of [false, true]) {
+            for (const a of ALICE_ANGLES) {
+                for (const b of BOB_ANGLES) {
+                    const rounds = play(6000, a, b, withEve);
+                    const aliceOnes = rounds.filter(r => r.aliceBit === '1').length / 6000;
+                    const bobOnes = rounds.filter(r => r.bobBit === '1').length / 6000;
+                    expect(aliceOnes).toBeGreaterThan(0.45);
+                    expect(aliceOnes).toBeLessThan(0.55);
+                    expect(bobOnes).toBeGreaterThan(0.45);
+                    expect(bobOnes).toBeLessThan(0.55);
+                }
+            }
+        }
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('§10.13 property 1 — each CHSH term, with its sign', () => {
+    /**
+     * Summing magnitudes also gives 2.83. Only the individual signs distinguish
+     * the real geometry from |E₁|+|E₂|+|E₃|+|E₄|.
+     */
+    it('E(0,135) is NEGATIVE; the other three are positive', () => {
+        expect(E(0, 45, false)).toBeCloseTo(Math.SQRT1_2, 1);
+        expect(E(0, 135, false)).toBeCloseTo(-Math.SQRT1_2, 1);
+        expect(E(0, 135, false)).toBeLessThan(-0.6);
+        expect(E(90, 45, false)).toBeCloseTo(Math.SQRT1_2, 1);
+        expect(E(90, 135, false)).toBeCloseTo(Math.SQRT1_2, 1);
+    });
+});
+
+describe('§10.13 property 2 — the 9 combinations, by ORDERED pair', () => {
+    /**
+     * THE SUBTLE ONE. cos(45−90) = cos(0−45), so an unordered check that admits
+     * (45,90) into a CHSH bucket leaves S at exactly 2√2 — every headline number
+     * above still passes while the sifter is corrupt.
+     */
+    it('(90,45) is a Bell round; (45,90) is discarded', () => {
+        expect(classifyCombination(90, 45)).toBe('chsh');
+        expect(classifyCombination(45, 90)).toBe('discard');
+    });
+
+    it('partitions all nine as 2 key + 4 chsh + 3 discard', () => {
+        const seen: Record<string, string[]> = {key: [], chsh: [], discard: []};
+        for (const a of ALICE_ANGLES) {
+            for (const b of BOB_ANGLES) seen[classifyCombination(a, b)].push(`${a}/${b}`);
+        }
+        expect(seen.key.sort()).toEqual(['45/45', '90/90']);
+        expect(seen.chsh.sort()).toEqual(['0/135', '0/45', '90/135', '90/45']);
+        expect(seen.discard.sort()).toEqual(['0/90', '45/135', '45/90']);
+    });
+});
+
+describe('§10.13 property 3 — no signalling', () => {
+    /**
+     * Bob's own statistics must not move when Alice changes her angle. A version
+     * that biased him per her angle would still average to 50% overall — and
+     * would be faster-than-light signalling.
+     */
+    it("Bob's marginal is 50% for EACH of Alice's angles separately", () => {
+        for (const a of ALICE_ANGLES) {
+            const rounds = play(20000, a, 45, false);
+            const ones = rounds.filter(r => r.bobBit === '1').length / 20000;
+            expect(ones).toBeGreaterThan(0.485);
+            expect(ones).toBeLessThan(0.515);
+        }
+    });
+});
+
+describe('§10.13 property 4 — Eve forwards what she actually read', () => {
+    /**
+     * If she drew one bit for herself and a DIFFERENT one into the pair, S would
+     * still be √2 and the error rate still 25% — every headline number passes —
+     * but her knowledge of the key would be zero. This is the only test that
+     * looks at what she knows.
+     */
+    it('forwards the bit she READ — she relays, she never fabricates', () => {
+        // THE one that mutation testing caught. An implementation that measured
+        // the pair and then sent an unrelated coin passed every other test here:
+        // S still √2, key error still 25 %, marginals still fair. Only her
+        // knowledge silently vanished. Comparing her read to what she sent is
+        // the only assertion that sees it.
+        for (let i = 0; i < 4000; i++) {
+            const e = eavesdrop(createEntangledPair());
+            expect(e.sent.kind).toBe('product');
+            if (e.sent.kind === 'product') {
+                expect(e.sent.bit).toBe(e.bit);
+                expect(e.sent.angle).toBe(e.angle);
+            }
+        }
+    });
+
+    it('when her angle matches theirs, all three bits are identical, always', () => {
+        for (let i = 0; i < 4000; i++) {
+            const e = eavesdrop(createEntangledPair());
+            const {aliceBit, bobBit} = measurePair(e.sent, e.angle, e.angle);
+            expect(aliceBit).toBe(e.bit);
+            expect(bobBit).toBe(e.bit);
+        }
+    });
+
+    it('45° off, on key rounds where they agree, she has their bit 97.1% of the time', () => {
+        let agreed = 0;
+        let sheKnew = 0;
+        for (let i = 0; i < 60000; i++) {
+            const sent = createProductPair(0, Math.random() < 0.5 ? '0' : '1');
+            const {aliceBit, bobBit} = measurePair(sent, 45, 45);
+            if (aliceBit !== bobBit) continue;
+            agreed += 1;
+            if (sent.kind === 'product' && sent.bit === aliceBit) sheKnew += 1;
+        }
+        expect(sheKnew / agreed).toBeCloseTo(0.971, 2);
+    });
+});
+
+describe('§10.13 property 5 — no acute-angle normalisation', () => {
+    it('Δ=135° gives 0.854, never 0.146', () => {
+        expect(probDifferent(0, 0)).toBe(0);
+        expect(probDifferent(0, 45)).toBeCloseTo(0.1464, 3);
+        expect(probDifferent(0, 90)).toBeCloseTo(0.5, 10);
+        expect(probDifferent(0, 135)).toBeCloseTo(0.8536, 3);
+        expect(probDifferent(0, 135)).toBeGreaterThan(0.85);
+    });
+
+    it('is symmetric in its two angles', () => {
+        expect(probDifferent(0, 135)).toBeCloseTo(probDifferent(135, 0), 10);
+    });
+});
+
+describe('§10.13 property 6 — each SIDE measures once; the pair may be read twice', () => {
+    /**
+     * This row of the spec was wrong twice. A product pair IS measured twice,
+     * once per side — and so is an entangled one in multiplayer, where the first
+     * arrival calls measureOneSide and the second calls measureOtherSide on it.
+     * Neither may throw.
+     */
+    it('both sides may measure the same product pair', () => {
+        const pair = createProductPair(45, '1');
+        expect(measureOneSide(pair, 45)).toBe('1');
+        expect(measureOneSide(pair, 45)).toBe('1');
+    });
+
+    it('multiplayer reads one entangled pair twice — one call per side', () => {
+        const pair = createEntangledPair();
+        const first = measureOneSide(pair, 45);
+        const second = measureOtherSide(pair, 45, first, 45);
+        expect(second).toBe(first);            // Δ=0 → they must agree
+    });
+});
+
+describe('§10.13 property 7 — rounds are independent of each other', () => {
+    /**
+     * State leaking between rounds is the exact shape of the BB84 bug that
+     * opened this whole effort, and aggregate statistics hide it completely.
+     */
+    const lag1 = (xs: number[]): number => {
+        const mean = xs.reduce((s, x) => s + x, 0) / xs.length;
+        let num = 0;
+        let den = 0;
+        for (let i = 0; i < xs.length; i++) {
+            den += (xs[i] - mean) ** 2;
+            if (i > 0) num += (xs[i] - mean) * (xs[i - 1] - mean);
+        }
+        return num / den;
+    };
+
+    it("Alice's outcomes and Eve's angles show no round-to-round correlation", () => {
+        const bits: number[] = [];
+        const angles: number[] = [];
+        for (let i = 0; i < 20000; i++) {
+            const e = eavesdrop(createEntangledPair());
+            angles.push(e.angle);
+            bits.push(measurePair(e.sent, 45, 90).aliceBit === '1' ? 1 : 0);
+        }
+        expect(Math.abs(lag1(bits))).toBeLessThan(0.03);
+        expect(Math.abs(lag1(angles))).toBeLessThan(0.03);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('the two traps found reviewing this file', () => {
+    /**
+     * `undefined === undefined` is TRUE, so a short angle array silently admits
+     * out-of-range bits into the key — the exact shape of the BB84 bug (§6).
+     */
+    it('siftKeyBits refuses misaligned arrays instead of inventing key bits', () => {
+        const bits: Bit[] = ['0', '1', '0', '1', '1', '1'];
+        expect(() => siftKeyBits(bits, [0, 45, 90, 0] as Angle[], [0, 90, 90, 45] as Angle[]))
+            .toThrow(/length mismatch/);
+    });
+
+    it('siftKeyBits keeps exactly the matching-angle rounds when aligned', () => {
+        const bits: Bit[] = ['0', '1', '0', '1'];
+        const a = [45, 45, 90, 0] as Angle[];
+        const b = [45, 90, 90, 45] as Angle[];
+        expect(siftKeyBits(bits, a, b)).toEqual(['0', '0']);
+    });
+
+    it('the exported angle tables cannot be mutated at runtime', () => {
+        expect(() => (ALICE_ANGLES as Angle[]).push(135)).toThrow();
+        expect(ALICE_ANGLES).toHaveLength(3);
+    });
+
+    /**
+     * An empty CHSH term contributes 0, dragging S toward the classical range for
+     * a reason that is not physics. At 20 photons this happens in 34% of games.
+     */
+    it('chshTermCounts exposes a term with no rounds behind it', () => {
+        const rounds = play(10, 0, 45, false);
+        const counts = chshTermCounts(rounds);
+        expect(counts['0/45']).toBe(10);
+        expect(counts['0/135']).toBe(0);
+        expect(chshValue(correlations(rounds))).toBeLessThan(2);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('the plumbing', () => {
+    it('makes n identical entangled pairs, carrying nothing', () => {
+        const pairs = createEntangledPairs(3);
+        expect(pairs).toHaveLength(3);
+        expect(pairs.every(p => p.kind === 'entangled')).toBe(true);
+    });
+
+    it('draws bases only from the set it was given', () => {
+        const bases = generateRandomBases(200, ALICE_ANGLES);
+        expect(bases).toHaveLength(200);
+        expect(bases.every(b => ALICE_ANGLES.includes(b))).toBe(true);
+        expect(new Set(bases).size).toBeGreaterThan(1);
+    });
+
+    it('eavesdrop returns a NEW product pair, never the one it was given', () => {
+        const original = createEntangledPair();
+        const e = eavesdrop(original);
+        expect(original.kind).toBe('entangled');       // untouched
+        expect(e.sent.kind).toBe('product');
+        expect(EVE_ANGLES).toContain(e.angle);
+    });
+
+    it('translates the UI basis ids both ways, and rejects nonsense', () => {
+        expect(angleOfBasisId('1')).toBe(0);
+        expect(angleOfBasisId('4')).toBe(135);
+        expect(angleOfBasisId('9')).toBeUndefined();
+        expect(basisIdOfAngle(135)).toBe('4');
+    });
+});
