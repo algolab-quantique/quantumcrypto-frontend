@@ -3076,6 +3076,76 @@ stale the moment the E91 fix lands.
 
 ---
 
+### 71. 🔴 Solo fakes Bob's decryption — it congratulates him over a broken key
+
+**Status**: 🔴 OPEN, spotted twice while testing B1/B2, never chased. **Priority**: **highest of
+the remaining E91 items** — it is the last place the game tells a student something untrue.
+**Frontend-only.**
+
+`components/e91/play-page/tabs/solo-messaging-tab.tsx:197` — the comment says it plainly:
+
+```
+// SOLO MODE: Simulate Bob's successful decryption after delay
+… setTimeout(…, 2000)   // 2 second delay to simulate Bob decrypting
+```
+
+**It never checks the key.** In Ibra's own verified run (2026-09-17) Alice's key was `01001` and
+Bob's was `11001` — Eve corrupted 20 % of it, so they do **not** share a secret and Bob cannot read
+the message. The game still printed *"Félicitations, vous avez déchiffré le message d'Alice !"*.
+
+**Same family as the results-page bug** fixed in Task 63 Step 6b, which celebrated a compromised key.
+Here it is worse: the celebration is the student's only feedback that the key WORKED, so a corrupted
+key produces the identical screen to a perfect one. **Eve's damage is invisible at exactly the moment
+it should be felt.**
+
+**Fix shape:** decrypt with Bob's actual key and compare. A mismatch is not a failure state to hide —
+it is the lesson: *this is what an eavesdropper costs you, even when she learned nothing.*
+
+**Connected to Task 72:** if the decryption honestly fails, the end-of-game message does not need to
+report the corruption count, because the student has already felt it.
+
+---
+
+### 72. 📝 The end-of-game reveal about Eve is gated on the wrong thing
+
+**Status**: 🟡 OPEN, wording agreed, not implemented. **Frontend-only, 3 languages.**
+
+`solo-messaging-tab.tsx:102` reveals the truth about Eve only `if (evePresent && eveGuessedRightBits
+> 0)`. With the honest counter (Task 60 B2) a 0 is common — **42 % of games with a 3-bit key** — so
+the reveal now silently vanishes in roughly a third of eavesdropped games. The student finishes and
+never learns she was there.
+
+The old buggy counter almost never returned 0, so **fixing the counter exposed this.**
+
+**Agreed wording (Ibra, 2026-09-17):**
+
+> **Eve a mesuré [N] photons sur [M] ; elle a deviné [K] bits sur [L].**
+
+- **Gate on `evePresent`**, not on the count.
+- **No corruption count.** Ibra rejected it, and his reason is the protocol's: in E91 the detector is
+  the **CHSH value**, not the error rate — quoting D points at a signal the student never used.
+  (And once **Task 71** lands they will have felt the corruption directly.)
+- Needs English and Spanish.
+
+**Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
+the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
+`solo-CHSH-tab` local state; and `[M]` is always `[N]` until
+`E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS` moves off 1.
+
+---
+
+### 73. 🧹 Delete `lib/e91/solo-player.ts` — zero importers since B1
+
+**Status**: 🟡 OPEN, trivial. The old E91 simulation has had **no importers at all** since
+`e5a658b` wired `onMeasurement` to `lib/e91/protocol.ts`. The only mention left is a stale comment in
+`solo-game-modal.tsx:62`.
+
+**Do it AFTER Tasks 71 and 72**, not before: if anything in solo turns out to be wrong, having the old
+implementation on disk makes the comparison a `git diff` instead of an archaeology session. Delete it
+once solo has been played through end to end with no surprises.
+
+---
+
 ### 68. 📘 The CHSH tab never tells the student that S is noise at 20 photons
 
 **Status**: 🔴 OPEN, text drafted, not implemented. **Priority**: **HIGH — explicitly above every
