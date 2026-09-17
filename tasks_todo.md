@@ -2225,6 +2225,27 @@ so **S = 2√2 · (1 − f/2)** — which crosses the classical bound only at **
 *An eavesdropper on half the pairs passes the Bell test and still takes 41 % of the key.* That is
 why real QKD compares error rates too, and the module now demonstrates it rather than asserting it.
 
+**📋 SLICE B2 — the honest Eve counter, decided 2026-09-17.** `solo-basis-tab.tsx:253` counts her
+reads as `base === '2' && bobBases[i] === '2'` — it misses every bit she read at 0°, 90° or 135°, and
+credits her with bits she never learned. Ibra's dump pins it: it reported **6 of a 9-bit key** where
+the honest figure is about 2.
+
+| | |
+|---|---|
+| `e91-room-store.ts` | add **`eveAngles: string[]`** — basis ids, like every other basis in the store |
+| `solo-measurement-tab.tsx` | collect `interception.angle` per round and store it |
+| `solo-basis-tab.tsx:253` | *"did Eve's angle match theirs on this key round?"* — she reads a bit with certainty only then |
+
+**Store the angles only, NOT her bits.** The count never needs them: a matching angle makes her
+outcome deterministic. An external review proposed storing both for "parity with §10.12", but
+multiplayer stores the bit for a different reason — it must reconstruct the pair across two requests,
+which solo never does. Add `eveBits` when a reveal UI actually needs it.
+
+**⚠️ Do not forget the comment (Ibra, 2026-09-17):** Eve's angles land in `localStorage`, where a
+student can open DevTools and read them. It leaks nothing new — the store already holds **both**
+players' bits — but the file must say so, because *"you cannot see Eve, you can only detect her"* is
+the lesson this whole task exists to protect.
+
 **⚠️ "Production-ready" is about the module, not the game.** It has never run in the app. Slice B
 wires `onMeasurement`; **B2** then fixes `solo-basis-tab.tsx:253`, which counts Eve's reads by
 hardcoding basis `'2'` — the same *constant-where-a-variable-belongs* shape as this task itself, and
