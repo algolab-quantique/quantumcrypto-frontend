@@ -34,13 +34,13 @@ import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { markSoloGameStarted } from '@/lib/e91/solo-session';
-// Solo simulation functions
+// THE physics (docs/protocol-physics.md §10). Mode-agnostic: multiplayer will
+// call the same rules, one side at a time.
 import {
-    generateBases,
-    generateRandomBits,
-    generateEntangledBits,
-    eveGenerateBits,
-} from '@/lib/e91/solo-player';
+    ALICE_ANGLES, BOB_ANGLES, type Angle, type Bit,
+    angleOfBasisId, basisIdOfAngle, createEntangledPair, eavesdrop,
+    generateRandomBases, measurePair,
+} from '@/lib/e91/protocol';
 
 const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
     photonNumber: number,
@@ -147,51 +147,49 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
         // the helper, so re-measuring cannot restart the clock.
         markSoloGameStarted();
 
-        const playerBases = basisInputs.map(({ value }) => value);
-        let playerBits: string[];
-        let partnerBases: string[];
-        let partnerBits: string[];
-
-        if (playerRole === 'A') {
-            // Alice measures first → gets random bits
-            playerBits = generateRandomBits(photonNumber);
-            partnerBases = generateBases(photonNumber, false); // Bob's bases
-
-            if (gameHasEve && evePresent) {
-                // Eve intercepts → Bob gets uncorrelated bits
-                partnerBits = eveGenerateBits(partnerBases);
-            } else {
-                // No Eve → Bob gets quantum-correlated bits
-                partnerBits = generateEntangledBits(playerBits, playerBases, partnerBases);
+        // ── The basis-id boundary ───────────────────────────────────────────
+        // The UI keeps bases as the ids '1'..'4'; they are array indices into
+        // `polarIcons` and they are joined character-by-character for the
+        // backend, so they cannot become degrees. The physics speaks degrees.
+        // The translation happens HERE and nowhere else.
+        const playerAngles = basisInputs.map(({value}) => {
+            const angle = angleOfBasisId(value);
+            if (angle === undefined) {
+                // '0' is the form's empty sentinel; the Measure button is gated
+                // on no field holding it, so this is a wiring fault, not input.
+                throw new Error(
+                    `onMeasurement: '${value}' is not a basis id. Measuring with an ` +
+                    'unset basis would silently produce a key from nothing.',
+                );
             }
+            return angle;
+        });
+        const partnerAngles = generateRandomBases(
+            photonNumber, playerRole === 'A' ? BOB_ANGLES : ALICE_ANGLES);
 
-            // Store in state
-            setAliceBases(playerBases);
-            setAliceBits(playerBits);
-            setBobBases(partnerBases);
-            setBobBits(partnerBits);
-        } else {
-            // Bob waits for Alice → Alice's data generated now
-            const aliceBasesGen = generateBases(photonNumber, true);
-            const aliceBitsGen = generateRandomBits(photonNumber);
+        // ── One loop for both roles ─────────────────────────────────────────
+        // E91 has no sender and no receiver: whoever the player is, the source
+        // makes a pair and both sides measure it. The old code had two mirrored
+        // branches because one side's bits were drawn first and the other fitted
+        // to them — which is also why Eve had nothing to intercept.
+        const aliceAngles: Angle[] = playerRole === 'A' ? playerAngles : partnerAngles;
+        const bobAngles: Angle[] = playerRole === 'A' ? partnerAngles : playerAngles;
 
-            partnerBases = aliceBasesGen;
-
-            if (gameHasEve && evePresent) {
-                // Eve intercepts → Bob gets uncorrelated bits
-                playerBits = eveGenerateBits(playerBases);
-            } else {
-                // No Eve → Bob gets quantum-correlated bits
-                playerBits = generateEntangledBits(aliceBitsGen, aliceBasesGen, playerBases);
-            }
-            partnerBits = aliceBitsGen;
-
-            // Store in state
-            setAliceBases(aliceBasesGen);
-            setAliceBits(aliceBitsGen);
-            setBobBases(playerBases);
-            setBobBits(playerBits);
+        const aliceBits: Bit[] = [];
+        const bobBits: Bit[] = [];
+        for (let i = 0; i < photonNumber; i++) {
+            const pair = gameHasEve && evePresent
+                ? eavesdrop(createEntangledPair()).sent
+                : createEntangledPair();
+            const {aliceBit, bobBit} = measurePair(pair, aliceAngles[i], bobAngles[i]);
+            aliceBits.push(aliceBit);
+            bobBits.push(bobBit);
         }
+
+        setAliceBases(aliceAngles.map(basisIdOfAngle));
+        setAliceBits(aliceBits);
+        setBobBases(bobAngles.map(basisIdOfAngle));
+        setBobBits(bobBits);
 
         // Push progress message (same as multiplayer)
         setTimeout(() => {
