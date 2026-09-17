@@ -22,6 +22,17 @@ const initialState = {
     basesShared:        false,
     types:              [] as string[],
     bobBases:           [] as string[],
+    /**
+     * The basis Eve measured each pair in, as ids like every other basis here.
+     * Empty when she is absent. Needed to report how many key bits she actually
+     * read: she knows one with certainty only where her basis matched theirs.
+     *
+     * ⚠️ This lands in localStorage, where a curious student can read it. It
+     * leaks nothing new — this same store already holds BOTH players' bits — but
+     * it is worth saying out loud, because the lesson the game exists to teach is
+     * that you cannot SEE Eve, you can only DETECT her, statistically, afterwards.
+     */
+    eveAngles:          [] as string[],
     bobBits:            [] as string[],
     aliceBases:         [] as string[],
     aliceBits:          [] as string[],
@@ -70,6 +81,7 @@ interface E91Actions {
     setBasesShared:         (basesShared: boolean) => void;
     setTypes:               (types: string[]) => void;
     setBobBases:            (bases: string[]) => void;
+    setEveAngles:           (angles: string[]) => void;
     setBobBits:             (bits: string[]) => void;
     setAliceBases:          (bases: string[]) => void;
     setAliceBits:           (bits: string[]) => void;
@@ -203,6 +215,7 @@ const useE91RoomStore = create<E91RoomStore>(set => ({
     setBasesShared:        basesShared        => updateAndStore('basesShared',        basesShared,        set),
     setStep2:              step2              => updateAndStore('step2',              step2,              set),
     setBobBases:           bases              => updateAndStore('bobBases',           bases,              set),
+    setEveAngles:          angles             => updateAndStore('eveAngles',          angles,             set),
     setTypes:              types              => updateAndStore('types',              types,              set),
     setBobBits:            bits               => updateAndStore('bobBits',            bits,               set),
     setAliceBases:         bases              => updateAndStore('aliceBases',         bases,              set),

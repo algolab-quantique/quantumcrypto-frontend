@@ -69,6 +69,7 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
         setPhotons,
         setAliceBases,
         setBobBases,
+        setEveAngles,
         setAliceBits,
         setBobBits,
         setPhotonsRevealed,
@@ -177,10 +178,19 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
 
         const aliceBits: Bit[] = [];
         const bobBits: Bit[] = [];
+        // Her basis per pair — she draws from all four, not just one. Kept so
+        // the basis tab can say how many key bits she actually read, rather than
+        // guessing from a hardcoded basis. Empty when she is absent, so it is
+        // either `photonNumber` long or zero — never ragged.
+        const eveAngles: Angle[] = [];
+
         for (let i = 0; i < photonNumber; i++) {
-            const pair = gameHasEve && evePresent
-                ? eavesdrop(createEntangledPair()).sent
-                : createEntangledPair();
+            let pair = createEntangledPair();
+            if (gameHasEve && evePresent) {
+                const interception = eavesdrop(pair);
+                eveAngles.push(interception.angle);
+                pair = interception.sent;
+            }
             const {aliceBit, bobBit} = measurePair(pair, aliceAngles[i], bobAngles[i]);
             aliceBits.push(aliceBit);
             bobBits.push(bobBit);
@@ -190,6 +200,7 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
         setAliceBits(aliceBits);
         setBobBases(bobAngles.map(basisIdOfAngle));
         setBobBits(bobBits);
+        setEveAngles(eveAngles.map(basisIdOfAngle));
 
         // Push progress message (same as multiplayer)
         setTimeout(() => {

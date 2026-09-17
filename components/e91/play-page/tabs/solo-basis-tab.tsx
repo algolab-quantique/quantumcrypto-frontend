@@ -82,6 +82,7 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
         step2,
         aliceBases,
         bobBases,
+        eveAngles,
         aliceBits,
         bobBits,
         types,
@@ -251,12 +252,20 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
                 return;
             }
             if (evePresent) {
-                let eveReadAmount = 0;
-                aliceBases.forEach((base, index) => {
-                    if (base === '2' && bobBases[index] === '2') {
-                        eveReadAmount += 1;
-                    }
-                });
+                // Eve knows a key bit WITH CERTAINTY only where she happened to
+                // measure that pair in the same basis the two of them used — then
+                // her outcome and theirs are the same value. Any other angle and
+                // she holds a guess, not a read.
+                //
+                // This used to count `base === '2' && bobBases[i] === '2'`, which
+                // was wrong in both directions: it missed every bit she read at
+                // 0°, 90° or 135°, and credited her with rounds she measured in
+                // some other basis and never learned. On one 9-bit key it
+                // reported 6 where the honest figure was about 2 (Task 60 B2).
+                const eveReadAmount = validBitIndices.filter(
+                    index => eveAngles[index] !== undefined
+                        && eveAngles[index] === aliceBases[index],
+                ).length;
                 setEveReadCount(eveReadAmount);
             }
             pushLines([
