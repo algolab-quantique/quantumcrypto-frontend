@@ -2,7 +2,7 @@
  * E91 protocol physics — the single source of truth.
  *
  * Specified in `docs/protocol-physics.md` §10, which is the contract: this file
- * is a transcription of §10.9, and §10.10/§10.13 say what it must produce. If
+ * is a transcription of §10.9, and §10.10/§10.14 say what it must produce. If
  * the two ever disagree, the document is right and this file is wrong.
  *
  * Mode-agnostic by construction: solo calls `measurePair`, multiplayer calls the
@@ -207,7 +207,7 @@ export type Combination = 'key' | 'chsh' | 'discard';
  * What a round is for. The pair is ORDERED: (90°,45°) is a Bell-test round and
  * (45°,90°) is discarded, because 45° is never one of Alice's CHSH angles. An
  * unordered check silently promotes three discarded rounds into Bell data —
- * and S still comes out at 2√2, so nothing downstream notices (§10.13 test 2).
+ * and S still comes out at 2√2, so nothing downstream notices (§10.14 test 2).
  */
 export const classifyCombination = (alice: Angle, bob: Angle): Combination => {
     if (alice === bob) return 'key';
@@ -275,7 +275,7 @@ export const correlations = (rounds: readonly Round[]): Record<string, number> =
  * ⚠️ A combination with NO rounds contributes 0, which drags S toward the
  * classical range for a reason that has nothing to do with physics. Measured: at
  * 20 photons **34 %** of games have at least one empty term (11 % at 30). This is
- * a SECOND way the small sample misleads, separate from the variance in §10.11 —
+ * a SECOND way the small sample misleads, separate from the variance in §10.12 —
  * use `chshTermCounts` to tell the student how many terms actually had data
  * (Task 68).
  */
@@ -326,11 +326,11 @@ export type ProtocolRun = {
     readonly keysMatch: boolean;
     readonly keyErrorRate: number;
     readonly correlations: Readonly<Record<string, number>>;
-    /** Rounds behind each CHSH term — a 0 means that term is a guess (§10.11). */
+    /** Rounds behind each CHSH term — a 0 means that term is a guess (§10.12). */
     readonly termCounts: Readonly<Record<string, number>>;
     readonly chsh: number;
-    /** How many KEY bits Eve actually learned. 0 when she is absent. */
-    readonly eveKnownKeyBits: number;
+    /** Key bits Eve holds exactly — her basis matched theirs. ~1 in 4. */
+    readonly eveGuessedRightBits: number;
 };
 
 /**
@@ -379,15 +379,16 @@ export const runE91Protocol = (options?: {
     const bobKey = siftKeyBits(bobBits, aliceAngles, bobAngles);
     const mismatches = aliceKey.filter((bit, i) => bit !== bobKey[i]).length;
 
-    // What she LEARNED, not what she touched: a key bit only counts when she
-    // measured that round and her bit matches what Alice actually holds.
-    let eveKnownKeyBits = 0;
-    let k = 0;
-    for (let i = 0; i < photons; i++) {
-        if (aliceAngles[i] !== bobAngles[i]) continue;
-        if (eveReads[i]?.bit === aliceKey[k]) eveKnownKeyBits += 1;
-        k += 1;
-    }
+    // Key bits Eve GUESSED RIGHT — she picks her basis blind, and only a basis
+    // that matches theirs leaves her holding their exact bit.
+    //
+    // NOT "her bit happens to equal Alice's": that is 62.5%, because even a
+    // wrong basis leaves her correlated. But she cannot tell WHICH of those are
+    // right, so it is not knowledge — counting it would overstate her by 2.5x.
+    // This must stay identical to what solo-basis-tab reports (Task 60 B2).
+    const eveGuessedRightBits = aliceAngles.filter(
+        (angle, i) => angle === bobAngles[i] && eveReads[i]?.angle === angle,
+    ).length;
 
     const corr = correlations(rounds);
     return {
@@ -397,7 +398,7 @@ export const runE91Protocol = (options?: {
         correlations: corr,
         termCounts: chshTermCounts(rounds),
         chsh: chshValue(corr),
-        eveKnownKeyBits,
+        eveGuessedRightBits,
     };
 };
 
@@ -435,7 +436,7 @@ export const describeRun = (run: ProtocolRun): string => {
         `  key length              : ${run.aliceKey.length}`,
         `  keys identical          : ${run.keysMatch ? 'YES' : 'NO'}`,
         `  key error rate          : ${pct(run.keyErrorRate)}`,
-        `  key bits Eve learned    : ${run.eveKnownKeyBits} / ${run.aliceKey.length}`,
+        `  key bits Eve learned    : ${run.eveGuessedRightBits} / ${run.aliceKey.length}`,
         '',
         `  Alice : ${run.aliceKey.slice(0, 48).join('')}${run.aliceKey.length > 48 ? '…' : ''}`,
         `  Bob   : ${run.bobKey.slice(0, 48).join('')}${run.bobKey.length > 48 ? '…' : ''}`,

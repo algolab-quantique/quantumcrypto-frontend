@@ -3,7 +3,7 @@
  *
  * Two layers, and the second is the point:
  *   §10.10 — four headline numbers. Necessary, and NOT sufficient.
- *   §10.13 — seven properties a wrong implementation can violate while still
+ *   §10.14 — seven properties a wrong implementation can violate while still
  *            producing all four headline numbers correctly.
  *
  * Statistical assertions run a fixed sample with generous tolerance: they exist
@@ -71,31 +71,42 @@ const runProtocol = (n: number, withEve: boolean) => {
     };
 };
 
-describe('end to end, 2000 pairs — the reference workshop’s own run', () => {
+describe('end to end — the reference workshop’s own run', () => {
+    /**
+     * 10 000 pairs, not the workshop's 2 000, and the reason is worth stating.
+     * At 2 000 each CHSH term rests on ~222 rounds, so σ(S) ≈ 0.134 — and
+     * "S > 2.5" is then only a 2.4σ claim, failing roughly 1 run in 100. That
+     * is TRUE of the real experiment too, but a suite that reddens at random
+     * teaches the team to ignore red. At 10 000, σ(S) ≈ 0.060 and every
+     * assertion below clears 5σ.
+     *
+     * The DETERMINISTIC claims — identical keys, zero errors — hold at any size.
+     */
     it('WITHOUT Eve: S reaches 2√2 and the two keys are identical', () => {
-        const r = runProtocol(2000, false);
+        const r = runProtocol(10000, false);
 
         expect(r.S).toBeGreaterThan(2.5);          // the workshop's own threshold
-        expect(r.S).toBeCloseTo(2 * Math.SQRT2, 0);
+        expect(r.S).toBeLessThan(3.0);
         expect(r.keyErrorRate).toBe(0);            // matching bases never disagree
         expect(r.aliceKey).toEqual(r.bobKey);      // a shared secret, never exchanged
-        expect(r.aliceKey.length).toBeGreaterThan(300);   // ≈ 2/9 of 2000
-        expect(r.bellRounds).toBeGreaterThan(700);        // ≈ 4/9 of 2000
+        expect(r.aliceKey.length).toBeGreaterThan(1800);  // ≈ 2/9 of 10 000
+        expect(r.bellRounds).toBeGreaterThan(3900);       // ≈ 4/9 of 10 000
     });
 
     it('WITH Eve: S collapses below the classical bound and the keys diverge', () => {
-        const r = runProtocol(2000, true);
+        const r = runProtocol(10000, true);
 
         expect(r.S).toBeLessThan(2);               // Bell inequality restored
-        expect(r.S).toBeCloseTo(Math.SQRT2, 0);
-        expect(r.keyErrorRate).toBeCloseTo(0.25, 1);
+        expect(r.S).toBeGreaterThan(1.1);          // ≈ √2, 5σ either side
+        expect(r.keyErrorRate).toBeGreaterThan(0.22);
+        expect(r.keyErrorRate).toBeLessThan(0.28);
         expect(r.aliceKey).not.toEqual(r.bobKey);
     });
 
     it('the verdict a student would reach is right in both runs', () => {
         // The whole point of E91: the Bell test, not the key, reveals her.
-        expect(runProtocol(2000, false).S > 2.5).toBe(true);
-        expect(runProtocol(2000, true).S > 2.5).toBe(false);
+        expect(runProtocol(10000, false).S > 2.5).toBe(true);
+        expect(runProtocol(10000, true).S > 2.5).toBe(false);
     });
 });
 
@@ -104,19 +115,24 @@ describe('runE91Protocol — the whole thing in one call', () => {
         const r = runE91Protocol({photons: 2000, eveFraction: 0});
         expect(r.keysMatch).toBe(true);
         expect(r.keyErrorRate).toBe(0);
-        expect(r.eveKnownKeyBits).toBe(0);
+        expect(r.eveGuessedRightBits).toBe(0);
         expect(r.chsh).toBeGreaterThan(2.5);
     });
 
     it('with Eve on every pair: keys diverge, ~25% errors, S below 2', () => {
         const r = runE91Protocol({photons: 2000, eveFraction: 1});
         expect(r.keysMatch).toBe(false);
-        expect(r.keyErrorRate).toBeCloseTo(0.25, 1);
+        // ~444 key bits, so σ ≈ 0.021: ±0.05 would be only 2.4σ. ±0.09 is ~4.3σ.
+        expect(r.keyErrorRate).toBeGreaterThan(0.16);
+        expect(r.keyErrorRate).toBeLessThan(0.34);
         expect(r.chsh).toBeLessThan(2);
-        // She measured every pair, and knows the key bit whenever her angle
-        // agreed with theirs — well above half, far below all of it.
-        expect(r.eveKnownKeyBits / r.aliceKey.length).toBeGreaterThan(0.5);
-        expect(r.eveKnownKeyBits).toBeLessThan(r.aliceKey.length);
+        // She measured every pair, but only a matching basis leaves her holding
+        // their bit — about 1 key bit in 4. This is the SAME quantity the game
+        // reports; an earlier version counted "her bit equals Alice's" instead,
+        // which is 62.5% and overstates her by 2.5x (caught 2026-09-17).
+        const ratio = r.eveGuessedRightBits / r.aliceKey.length;
+        expect(ratio).toBeGreaterThan(0.18);
+        expect(ratio).toBeLessThan(0.32);
     });
 
     /**
@@ -125,10 +141,15 @@ describe('runE91Protocol — the whole thing in one call', () => {
      * the key. S = 2√2(1 − f/2) crosses 2 only at f ≈ 0.586.
      */
     it('an Eve who taps half the pairs hides from the Bell test', () => {
-        const r = runE91Protocol({photons: 4000, eveFraction: 0.5});
-        expect(r.chsh).toBeGreaterThan(2);                    // invisible
-        expect(r.chsh).toBeCloseTo(2 * Math.SQRT2 * 0.75, 0); // ≈ 2.12
-        expect(r.keyErrorRate).toBeGreaterThan(0.08);         // but the errors show
+        // 40 000 photons, not 4 000, and the reason is the point of the test:
+        // S = 2.12 sits only 0.12 above the classical bound. At 4 000 photons
+        // σ(S) ≈ 0.095, so "S > 2" is a 1.3σ claim and fails about one run in
+        // ten. At 40 000, σ(S) ≈ 0.030 and the same claim is 4σ. A test that
+        // asserts a NARROW margin needs the samples to resolve it.
+        const r = runE91Protocol({photons: 40000, eveFraction: 0.5});
+        expect(r.chsh).toBeGreaterThan(2);            // invisible — 4σ at this n
+        expect(r.chsh).toBeLessThan(2.3);             // ≈ 2.121, and nowhere near 2√2
+        expect(r.keyErrorRate).toBeGreaterThan(0.08); // but the errors show
     });
 
     it('describeRun renders the run without printing it', () => {
@@ -158,7 +179,12 @@ describe('§10.10 — the four headline numbers', () => {
 
             const dirty = play(N, angle, angle, true);
             const errors = dirty.filter(r => r.aliceBit !== r.bobBit).length / N;
-            expect(errors).toBeCloseTo(0.25, 2);
+            // Explicit bounds, not toBeCloseTo(0.25, 2): that is ±0.005 where
+            // σ = 0.0022, i.e. 2.3σ — it failed about 2 runs in 100. A test that
+            // fails at random teaches the team to ignore red. ±0.01 is ~4.6σ and
+            // still catches any shift of one percentage point.
+            expect(errors).toBeGreaterThan(0.24);
+            expect(errors).toBeLessThan(0.26);
         }
     });
 
@@ -180,7 +206,7 @@ describe('§10.10 — the four headline numbers', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-describe('§10.13 property 1 — each CHSH term, with its sign', () => {
+describe('§10.14 property 1 — each CHSH term, with its sign', () => {
     /**
      * Summing magnitudes also gives 2.83. Only the individual signs distinguish
      * the real geometry from |E₁|+|E₂|+|E₃|+|E₄|.
@@ -194,7 +220,7 @@ describe('§10.13 property 1 — each CHSH term, with its sign', () => {
     });
 });
 
-describe('§10.13 property 2 — the 9 combinations, by ORDERED pair', () => {
+describe('§10.14 property 2 — the 9 combinations, by ORDERED pair', () => {
     /**
      * THE SUBTLE ONE. cos(45−90) = cos(0−45), so an unordered check that admits
      * (45,90) into a CHSH bucket leaves S at exactly 2√2 — every headline number
@@ -216,7 +242,7 @@ describe('§10.13 property 2 — the 9 combinations, by ORDERED pair', () => {
     });
 });
 
-describe('§10.13 property 3 — no signalling', () => {
+describe('§10.14 property 3 — no signalling', () => {
     /**
      * Bob's own statistics must not move when Alice changes her angle. A version
      * that biased him per her angle would still average to 50% overall — and
@@ -232,7 +258,7 @@ describe('§10.13 property 3 — no signalling', () => {
     });
 });
 
-describe('§10.13 property 4 — Eve forwards what she actually read', () => {
+describe('§10.14 property 4 — Eve forwards what she actually read', () => {
     /**
      * If she drew one bit for herself and a DIFFERENT one into the pair, S would
      * still be √2 and the error rate still 25% — every headline number passes —
@@ -278,7 +304,7 @@ describe('§10.13 property 4 — Eve forwards what she actually read', () => {
     });
 });
 
-describe('§10.13 property 5 — no acute-angle normalisation', () => {
+describe('§10.14 property 5 — no acute-angle normalisation', () => {
     it('Δ=135° gives 0.854, never 0.146', () => {
         expect(probDifferent(0, 0)).toBe(0);
         expect(probDifferent(0, 45)).toBeCloseTo(0.1464, 3);
@@ -292,7 +318,7 @@ describe('§10.13 property 5 — no acute-angle normalisation', () => {
     });
 });
 
-describe('§10.13 property 6 — each SIDE measures once; the pair may be read twice', () => {
+describe('§10.14 property 6 — each SIDE measures once; the pair may be read twice', () => {
     /**
      * This row of the spec was wrong twice. A product pair IS measured twice,
      * once per side — and so is an entangled one in multiplayer, where the first
@@ -313,7 +339,7 @@ describe('§10.13 property 6 — each SIDE measures once; the pair may be read t
     });
 });
 
-describe('§10.13 property 7 — rounds are independent of each other', () => {
+describe('§10.14 property 7 — rounds are independent of each other', () => {
     /**
      * State leaking between rounds is the exact shape of the BB84 bug that
      * opened this whole effort, and aggregate statistics hide it completely.
