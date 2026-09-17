@@ -2200,14 +2200,14 @@ has changed yet.
 | | |
 |---|---|
 | transcribed from | `docs/protocol-physics.md` §10.9 — the spec is the contract, the code is the transcription |
-| tests | **31** — §10.10's four numbers, §10.13's seven properties, end-to-end at 2000 pairs, the partial-Eve case |
+| tests | **31** — §10.10's four numbers, §10.14's seven properties, end-to-end at 2000 pairs, the partial-Eve case |
 | proven by | **9 mutations**. Eight turned the right test red; the ninth did not, and forced a real API change |
 | reviewed by | two external passes (ChatGPT, Gemini) on the spec; one on the code |
 
 **🔎 What mutation testing found, and why it mattered.** The sabotage *"Eve measures the pair, then
 forwards an unrelated coin"* **passed all 23 tests**: S still √2, key error still 25 %, marginals
 still fair. Every headline number held while her knowledge silently dropped to zero — the exact
-failure §10.13 property 4 was written to catch, and it could not, because the pair she forwards is
+failure §10.14 property 4 was written to catch, and it could not, because the pair she forwards is
 self-consistent either way. Fixed by having `eavesdrop` return her read, which the app needs anyway
 (*"Eve has successfully read this number of bits"*).
 
@@ -2237,7 +2237,7 @@ the honest figure is about 2.
 | `solo-basis-tab.tsx:253` | *"did Eve's angle match theirs on this key round?"* — she reads a bit with certainty only then |
 
 **Store the angles only, NOT her bits.** The count never needs them: a matching angle makes her
-outcome deterministic. An external review proposed storing both for "parity with §10.12", but
+outcome deterministic. An external review proposed storing both for "parity with §10.13", but
 multiplayer stores the bit for a different reason — it must reconstruct the pair across two requests,
 which solo never does. Add `eveBits` when a reveal UI actually needs it.
 
@@ -2968,7 +2968,7 @@ anywhere in `e91/consumers.py`** — the read-decide-write is completely unprote
 milliseconds, but a classroom plays many rounds.
 
 **✅ FIX DECIDED 2026-09-11 — a conditional write on the round's own row** (full reasoning and
-the rejected alternatives in `docs/protocol-physics.md` §10.12):
+the rejected alternatives in `docs/protocol-physics.md` §10.13):
 
 ```sql
 UPDATE round SET first_mover = 'A' WHERE id = ? AND first_mover IS NULL
