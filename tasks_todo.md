@@ -3020,6 +3020,20 @@ two pairs**. S = 2.83 ± 1.4 — it can land anywhere from ~1.4 to ~4.2 **with n
 the mechanism behind **52-C**'s measured 37.5 %, and it also explains why the workshop's |S| > 2.5
 threshold is sound there (±0.13) and impossible here.
 
+**🔴 MEASURED 2026-09-16 (20 000 simulated games per cell) — it is worse in BOTH directions, and this
+is now the strongest argument for this task:**
+
+| pairs | false alarm — no Eve, yet \|S\| ≤ 2 | false negative — Eve present, yet \|S\| > 2 |
+|---|---|---|
+| **20** | **34 %** | **27 %** |
+| **30** | **22 %** | **29 %** |
+
+**A third of honest games look attacked, and a quarter of attacked games look clean.** At this size
+the Bell test is a *hint*, not a detector. And S is coarsely quantised — with ~2 rounds behind each
+correlation, a student will essentially **never** see 2.83. Prompted by an external review (Gemini,
+via Ibra) and verified here. **Unexplained, the sample size does not merely weaken the lesson — it
+teaches the wrong one.**
+
 **Draft text (Ibra to approve the wording — his voice, and it is pedagogy).** Two parts, because the
 short one must actually be read:
 
