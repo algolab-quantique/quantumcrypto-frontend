@@ -309,3 +309,137 @@ export const angleOfBasisId = (id: string): Angle | undefined =>
 
 export const basisIdOfAngle = (angle: Angle): string =>
     ({0: '1', 45: '2', 90: '3', 135: '4'} as const)[angle];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The whole protocol, in one call (§10.6)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ProtocolRun = {
+    readonly photons: number;
+    readonly eveFraction: number;
+    /** Every round, for anyone who wants to inspect or re-derive. */
+    readonly rounds: readonly Round[];
+    /** The sifted keys — the rounds where both happened to pick the same basis. */
+    readonly aliceKey: readonly Bit[];
+    readonly bobKey: readonly Bit[];
+    /** True only if the two keys are bit-for-bit identical. */
+    readonly keysMatch: boolean;
+    readonly keyErrorRate: number;
+    readonly correlations: Readonly<Record<string, number>>;
+    /** Rounds behind each CHSH term — a 0 means that term is a guess (§10.11). */
+    readonly termCounts: Readonly<Record<string, number>>;
+    readonly chsh: number;
+    /** How many KEY bits Eve actually learned. 0 when she is absent. */
+    readonly eveKnownKeyBits: number;
+};
+
+/**
+ * Run E91 end to end, the way the reference workshop does — for exploration,
+ * teaching, and as the honest answer to "does this module work?".
+ *
+ *     console.log(describeRun(runE91Protocol({eveFraction: 0})));   // secure
+ *     console.log(describeRun(runE91Protocol({eveFraction: 1})));   // caught
+ *
+ * `eveFraction` is the share of pairs she intercepts: 0 none, 1 every one.
+ *
+ * ⚠️ **A partial tap can hide.** Her interception halves the correlation on the
+ * pairs she touches, so S = 2√2 · (1 − f/2). That crosses the classical bound of
+ * 2 only at **f ≈ 0.586** — an Eve who taps *half* the pairs leaves S ≈ 2.12 and
+ * the Bell test alone never sees her, while still learning a quarter of the key.
+ * Real QKD compares error rates as well for exactly this reason.
+ */
+export const runE91Protocol = (options?: {
+    photons?: number; eveFraction?: number;
+}): ProtocolRun => {
+    const photons = options?.photons ?? 2000;
+    const eveFraction = options?.eveFraction ?? 0;
+
+    const aliceAngles = generateRandomBases(photons, ALICE_ANGLES);
+    const bobAngles = generateRandomBases(photons, BOB_ANGLES);
+    const aliceBits: Bit[] = [];
+    const bobBits: Bit[] = [];
+    const rounds: Round[] = [];
+    const eveReads: (Interception | null)[] = [];
+
+    for (let i = 0; i < photons; i++) {
+        const tapped = Math.random() < eveFraction;
+        const interception = tapped ? eavesdrop(createEntangledPair()) : null;
+        eveReads.push(interception);
+
+        const pair = interception ? interception.sent : createEntangledPair();
+        const {aliceBit, bobBit} = measurePair(pair, aliceAngles[i], bobAngles[i]);
+        aliceBits.push(aliceBit);
+        bobBits.push(bobBit);
+        rounds.push({
+            aliceAngle: aliceAngles[i], bobAngle: bobAngles[i], aliceBit, bobBit,
+        });
+    }
+
+    const aliceKey = siftKeyBits(aliceBits, aliceAngles, bobAngles);
+    const bobKey = siftKeyBits(bobBits, aliceAngles, bobAngles);
+    const mismatches = aliceKey.filter((bit, i) => bit !== bobKey[i]).length;
+
+    // What she LEARNED, not what she touched: a key bit only counts when she
+    // measured that round and her bit matches what Alice actually holds.
+    let eveKnownKeyBits = 0;
+    let k = 0;
+    for (let i = 0; i < photons; i++) {
+        if (aliceAngles[i] !== bobAngles[i]) continue;
+        if (eveReads[i]?.bit === aliceKey[k]) eveKnownKeyBits += 1;
+        k += 1;
+    }
+
+    const corr = correlations(rounds);
+    return {
+        photons, eveFraction, rounds, aliceKey, bobKey,
+        keysMatch: aliceKey.length === bobKey.length && mismatches === 0,
+        keyErrorRate: aliceKey.length > 0 ? mismatches / aliceKey.length : 0,
+        correlations: corr,
+        termCounts: chshTermCounts(rounds),
+        chsh: chshValue(corr),
+        eveKnownKeyBits,
+    };
+};
+
+/**
+ * A run, rendered for a human. Returns a string rather than printing, so the
+ * module stays free of `console` — the caller decides where it goes.
+ */
+export const describeRun = (run: ProtocolRun): string => {
+    const line = '═'.repeat(64);
+    const count = (c: Combination) =>
+        run.rounds.filter(r => classifyCombination(r.aliceAngle, r.bobAngle) === c).length;
+    const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+
+    const out = [
+        line,
+        `E91 — ${run.photons} entangled pairs — Eve on ${pct(run.eveFraction)} of them`,
+        line,
+        `  key rounds (same basis) : ${count('key')}`,
+        `  Bell-test rounds        : ${count('chsh')}`,
+        `  discarded               : ${count('discard')}`,
+        '',
+    ];
+    for (const [a, b] of CHSH_COMBINATIONS) {
+        const k = `${a}/${b}`;
+        out.push(`  E(${String(a).padStart(2)}°,${String(b).padStart(3)}°) = `
+            + `${(run.correlations[k] ?? 0).toFixed(4).padStart(7)}   (${run.termCounts[k]} rounds)`);
+    }
+    out.push(
+        '',
+        `  S  = ${run.chsh.toFixed(4)}   ${run.chsh > 2
+            ? '→ above the classical bound: entanglement survived'
+            : '→ at or below 2: the channel was tampered with'}`,
+        `       (undisturbed 2√2 ≈ 2.8284 · fully tapped √2 ≈ 1.4142)`,
+        '',
+        `  key length              : ${run.aliceKey.length}`,
+        `  keys identical          : ${run.keysMatch ? 'YES' : 'NO'}`,
+        `  key error rate          : ${pct(run.keyErrorRate)}`,
+        `  key bits Eve learned    : ${run.eveKnownKeyBits} / ${run.aliceKey.length}`,
+        '',
+        `  Alice : ${run.aliceKey.slice(0, 48).join('')}${run.aliceKey.length > 48 ? '…' : ''}`,
+        `  Bob   : ${run.bobKey.slice(0, 48).join('')}${run.bobKey.length > 48 ? '…' : ''}`,
+        line,
+    );
+    return out.join('\n');
+};

@@ -14,7 +14,7 @@ import {describe, expect, it} from 'vitest';
 import {
     ALICE_ANGLES, BOB_ANGLES, CHSH_COMBINATIONS, EVE_ANGLES,
     type Angle, type Bit, type Round,
-    chshTermCounts, chshValue, classifyCombination, correlations,
+    chshTermCounts, chshValue, classifyCombination, correlations, describeRun, runE91Protocol,
     createEntangledPair, createEntangledPairs, createProductPair, eavesdrop,
     generateRandomBases, measureOneSide, measureOtherSide, measurePair,
     probDifferent, siftKeyBits, angleOfBasisId, basisIdOfAngle,
@@ -96,6 +96,46 @@ describe('end to end, 2000 pairs — the reference workshop’s own run', () => 
         // The whole point of E91: the Bell test, not the key, reveals her.
         expect(runProtocol(2000, false).S > 2.5).toBe(true);
         expect(runProtocol(2000, true).S > 2.5).toBe(false);
+    });
+});
+
+describe('runE91Protocol — the whole thing in one call', () => {
+    it('with no Eve: keys identical, no errors, S above the classical bound', () => {
+        const r = runE91Protocol({photons: 2000, eveFraction: 0});
+        expect(r.keysMatch).toBe(true);
+        expect(r.keyErrorRate).toBe(0);
+        expect(r.eveKnownKeyBits).toBe(0);
+        expect(r.chsh).toBeGreaterThan(2.5);
+    });
+
+    it('with Eve on every pair: keys diverge, ~25% errors, S below 2', () => {
+        const r = runE91Protocol({photons: 2000, eveFraction: 1});
+        expect(r.keysMatch).toBe(false);
+        expect(r.keyErrorRate).toBeCloseTo(0.25, 1);
+        expect(r.chsh).toBeLessThan(2);
+        // She measured every pair, and knows the key bit whenever her angle
+        // agreed with theirs — well above half, far below all of it.
+        expect(r.eveKnownKeyBits / r.aliceKey.length).toBeGreaterThan(0.5);
+        expect(r.eveKnownKeyBits).toBeLessThan(r.aliceKey.length);
+    });
+
+    /**
+     * The lesson the module makes checkable: a HALF-tap keeps S above 2, so the
+     * Bell test alone never sees her — while she still learns a large share of
+     * the key. S = 2√2(1 − f/2) crosses 2 only at f ≈ 0.586.
+     */
+    it('an Eve who taps half the pairs hides from the Bell test', () => {
+        const r = runE91Protocol({photons: 4000, eveFraction: 0.5});
+        expect(r.chsh).toBeGreaterThan(2);                    // invisible
+        expect(r.chsh).toBeCloseTo(2 * Math.SQRT2 * 0.75, 0); // ≈ 2.12
+        expect(r.keyErrorRate).toBeGreaterThan(0.08);         // but the errors show
+    });
+
+    it('describeRun renders the run without printing it', () => {
+        const text = describeRun(runE91Protocol({photons: 200, eveFraction: 0}));
+        expect(text).toContain('E91 — 200 entangled pairs');
+        expect(text).toContain('keys identical          : YES');
+        expect(text).toMatch(/E\( 0°, 45°\) =/);
     });
 });
 
