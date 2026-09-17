@@ -498,7 +498,10 @@ one who makes one mid-flight in our game today, but a source could hand out prod
 directly and nothing in the object would change.
 
 > **Why there is no `collapsed` state.** Measuring *does* collapse an entangled pair — but
-> our model never needs to represent the result, because **no pair is ever measured twice**.
+> our model never needs to represent the result, because **no ENTANGLED pair is ever measured
+> twice**. (A `product` pair is measured twice — once by each side — and that is correct:
+> it is already a definite state, so measuring it collapses nothing. This distinction was
+> imprecise here until 2026-09-16.)
 > Without Eve, one `measurePair` call consumes the pair and it is done. With Eve, she
 > measures the entangled pair and then **builds a new `product` pair** rather than passing on
 > the one she destroyed. "Collapsed" is the name of an *event*, and events do not need to be
@@ -764,16 +767,35 @@ reaching 2√2 has that dependency somewhere.
 > only because we choose to serve the first player their result before the second has chosen a
 > basis. That has a consequence worth reading twice:
 
-**The open decision at the end of this section is not only about game feel.**
+#### DECIDED (2026-09-16): the first arrival computes its own bits
 
-| shape | ordering? | race? |
-|---|---|---|
-| **first arrival computes its own bits** — player sees their result immediately | yes | **yes** — needs the atomic claim above |
-| **second arrival computes both** — first player waits | **none** | **none.** There is no "who was first" question to get wrong |
+The open question — *does the first arrival compute its own bits, or does the second compute
+both?* — is closed, and **not** on game feel. Two arguments settled it, one of which corrects
+a claim that stood in this document for a few hours.
 
-Choosing to wait does not merely let multiplayer share solo's `measurePair` (10.9). **It
-deletes the race condition described below, and the column and conditional write that guard
-it.** The cost is one player waiting for the other before seeing their own numbers.
+**❌ "Waiting for both sides deletes the race" — wrong, and it was mine.** It does not. It
+**moves** the race from the outcome to the *rendezvous*: if both players click together, both
+store their angle, and then both ask *"are both angles present?"*. Depending on how those
+reads interleave, **both** can answer no — and each waits forever for the other — or **both**
+can answer yes, and compute the round twice from two independent draws. An atomic
+check-and-set is still required, just guarding a different question. **You cannot escape
+concurrency by changing which side calls the function.**
+
+**✅ The deciding argument is physical, not technical.** Alice can measure her particle in
+Geneva today and Bob can measure his in Vienna next week. **Alice's detector fires without
+Bob's basis.** Making her wait for his choice before she may see her own result tells a
+student that her measurement cannot resolve until he acts — which is exactly the
+action-at-a-distance E91 must *not* teach. First-arrival resolution matches the physics; a
+rendezvous misrepresents it.
+
+**So: whoever clicks first is served immediately**, via the atomic claim above, and the
+second correlates against them.
+
+> **Does multiplayer still share solo's code?** Yes — where it matters. Solo calls
+> `measurePair`, which 10.9 defines as a composition of `measureOneSide` and
+> `measureOtherSide`; multiplayer calls those two directly, one per arrival. **The rules are
+> shared; only the wrapper differs.** That is the single-source-of-truth property, and it
+> survives this decision intact.
 
 #### The consequence: a race condition, and the only correct fix
 
@@ -878,3 +900,24 @@ nothing else. No new events, no new messages, no synchronisation.
 > bolted on beside the physics; they are what 10.8 says a pair consists of. A future move of
 > E91's physics fully into the frontend deletes all three, because the pair would then live in
 > the one place that measures it — exactly as it does in solo today.
+
+### 10.13 What the tests must pin, beyond the four headline numbers
+
+10.10's four numbers are necessary and **not sufficient**. A wrong implementation can hit all
+four. These are the properties that separate "produces the right averages" from "is the right
+simulation" — each names the specific wrong implementation it catches.
+
+| # | pin this | the bug it catches |
+|---|---|---|
+| **1** | **Each CHSH term individually**, with its sign: `E(0°,45°) = +0.707`, **`E(0°,135°) = −0.707`**, `E(90°,45°) = +0.707`, `E(90°,135°) = +0.707` | summing magnitudes. `|E₁|+|E₂|+|E₃|+|E₄|` also equals 2.83 while the geometry is inverted |
+| **2** | **The 9-combination partition, by ordered pair**: 2 key, 4 CHSH, 3 discarded — and specifically that **`(45°,90°)` is DISCARDED** while `(90°,45°)` is CHSH | an unordered basis check. `cos(45°−90°) = cos(0°−45°)`, so wrongly pooling `(45°,90°)` into a CHSH bucket **leaves S at exactly 2√2** — every headline number passes while the sifter is corrupt |
+| **3** | **No-signalling**: fix Bob at 45°; `P(Bob = 1)` must be 50 % **for each of Alice's angles separately**, not merely on average | a `measureOtherSide` whose bias depends on the other side's angle. That is faster-than-light signalling, and it averages away |
+| **4** | **Eve actually forwards what she read**: when `θₑ = θₐ = θ_b`, `Eve.bit == Alice.bit == Bob.bit` with **zero** exceptions. And on matching-basis rounds where A = B with Eve 45° off, `P(Eve = Alice \| A = B) = 97.1 %` | Eve drawing one bit for herself and a *different* one into the pair. Still a product state, so S still falls to √2 and errors are still 25 % — but her knowledge of the key drops to nothing |
+| **5** | **`probDiff(0°, 135°) = 0.854`**, never 0.146 | normalising Δ to an acute angle. `|135° − 180°| = 45°` flips `E(0°,135°)` positive — which test 1 then catches from the other direction |
+| **6** | **An `entangled` pair is consumed once**; a **`product` pair is measured twice, once per side, and that must be allowed** | over-eager immutability. A blanket "throw on second measurement" is **wrong here**: both sides legitimately measure the same product pair (10.8). Only the entangled case is once-only |
+| **7** | **Round-to-round independence**: over 10 000 consecutive rounds, `corr(Aᵢ, Aᵢ₊₁) ≈ 0` and `corr(θₑ,ᵢ, θₑ,ᵢ₊₁) ≈ 0` | state leaking between rounds — reused variables, a cached draw. **This is the exact shape of the BB84 bug that opened this document** (§6), and aggregate statistics hide it completely |
+
+> Tests 1–5 and 7 came from an external adversarial review (Gemini, via Ibra, 2026-09-16).
+> Test 6 came from that review too, but **inverted**: it proposed throwing on any second
+> measurement, which would break the product-pair case. Checking it is what found the
+> imprecision now corrected in 10.8.
