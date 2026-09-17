@@ -38,6 +38,68 @@ const S = (withEve: boolean): number => chshValue(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * A FULL protocol run, the way the reference workshop does it: random bases on
+ * both sides, measure, sift, Bell test. Everything else in this file probes one
+ * rule at fixed angles — this is the only test that exercises the pipeline
+ * end to end, and it is the one that answers "does the module behave like E91?"
+ */
+const runProtocol = (n: number, withEve: boolean) => {
+    const aliceAngles = generateRandomBases(n, ALICE_ANGLES);
+    const bobAngles = generateRandomBases(n, BOB_ANGLES);
+    const aliceBits: Bit[] = [];
+    const bobBits: Bit[] = [];
+    const rounds: Round[] = [];
+
+    for (let i = 0; i < n; i++) {
+        const pair = withEve ? eavesdrop(createEntangledPair()).sent : createEntangledPair();
+        const {aliceBit, bobBit} = measurePair(pair, aliceAngles[i], bobAngles[i]);
+        aliceBits.push(aliceBit);
+        bobBits.push(bobBit);
+        rounds.push({aliceAngle: aliceAngles[i], bobAngle: bobAngles[i], aliceBit, bobBit});
+    }
+
+    const aliceKey = siftKeyBits(aliceBits, aliceAngles, bobAngles);
+    const bobKey = siftKeyBits(bobBits, aliceAngles, bobAngles);
+    const errors = aliceKey.filter((b, i) => b !== bobKey[i]).length;
+
+    return {
+        aliceKey, bobKey,
+        keyErrorRate: aliceKey.length ? errors / aliceKey.length : 0,
+        S: chshValue(correlations(rounds)),
+        bellRounds: rounds.filter(r => classifyCombination(r.aliceAngle, r.bobAngle) === 'chsh').length,
+    };
+};
+
+describe('end to end, 2000 pairs — the reference workshop’s own run', () => {
+    it('WITHOUT Eve: S reaches 2√2 and the two keys are identical', () => {
+        const r = runProtocol(2000, false);
+
+        expect(r.S).toBeGreaterThan(2.5);          // the workshop's own threshold
+        expect(r.S).toBeCloseTo(2 * Math.SQRT2, 0);
+        expect(r.keyErrorRate).toBe(0);            // matching bases never disagree
+        expect(r.aliceKey).toEqual(r.bobKey);      // a shared secret, never exchanged
+        expect(r.aliceKey.length).toBeGreaterThan(300);   // ≈ 2/9 of 2000
+        expect(r.bellRounds).toBeGreaterThan(700);        // ≈ 4/9 of 2000
+    });
+
+    it('WITH Eve: S collapses below the classical bound and the keys diverge', () => {
+        const r = runProtocol(2000, true);
+
+        expect(r.S).toBeLessThan(2);               // Bell inequality restored
+        expect(r.S).toBeCloseTo(Math.SQRT2, 0);
+        expect(r.keyErrorRate).toBeCloseTo(0.25, 1);
+        expect(r.aliceKey).not.toEqual(r.bobKey);
+    });
+
+    it('the verdict a student would reach is right in both runs', () => {
+        // The whole point of E91: the Bell test, not the key, reveals her.
+        expect(runProtocol(2000, false).S > 2.5).toBe(true);
+        expect(runProtocol(2000, true).S > 2.5).toBe(false);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 describe('§10.10 — the four headline numbers', () => {
     it('S = 2√2 on undisturbed pairs', () => {
         expect(S(false)).toBeCloseTo(2 * Math.SQRT2, 1);
