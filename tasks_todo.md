@@ -2192,6 +2192,44 @@ a student spots Eve by staring at one basis instead of by the Bell test. **Choos
 Eve**: uniform 25 %, identical to BB84's disturbance, and it matches what `mimicEveIntercept` already
 does in this codebase.
 
+**✅ SLICE A COMPLETE 2026-09-17 — the correct implementation exists and is proven, but is not
+wired.** `lib/e91/protocol.ts` + `lib/e91/protocol.test.ts` (`83d940d`, `89c1485`, `a2a92df`,
+`a6ea2cd`). **Nothing imports it; `solo-player.ts` still runs the game**, so nothing a student sees
+has changed yet.
+
+| | |
+|---|---|
+| transcribed from | `docs/protocol-physics.md` §10.9 — the spec is the contract, the code is the transcription |
+| tests | **31** — §10.10's four numbers, §10.13's seven properties, end-to-end at 2000 pairs, the partial-Eve case |
+| proven by | **9 mutations**. Eight turned the right test red; the ninth did not, and forced a real API change |
+| reviewed by | two external passes (ChatGPT, Gemini) on the spec; one on the code |
+
+**🔎 What mutation testing found, and why it mattered.** The sabotage *"Eve measures the pair, then
+forwards an unrelated coin"* **passed all 23 tests**: S still √2, key error still 25 %, marginals
+still fair. Every headline number held while her knowledge silently dropped to zero — the exact
+failure §10.13 property 4 was written to catch, and it could not, because the pair she forwards is
+self-consistent either way. Fixed by having `eavesdrop` return her read, which the app needs anyway
+(*"Eve has successfully read this number of bits"*).
+
+**🔎 And a lesson the module now teaches that nobody had noticed.** Adding the reference's
+*fraction* of intercepted pairs showed that her tap halves the correlation on the pairs she touches,
+so **S = 2√2 · (1 − f/2)** — which crosses the classical bound only at **f ≈ 0.586**:
+
+| Eve taps | S | |
+|---|---|---|
+| 25 % | 2.48 | **invisible to the Bell test** |
+| **50 %** | **2.12** | **invisible — while holding 186 of 456 key bits, 13.4 % errors** |
+| 59 % | 2.00 | first detected |
+| 100 % | 1.41 | caught |
+
+*An eavesdropper on half the pairs passes the Bell test and still takes 41 % of the key.* That is
+why real QKD compares error rates too, and the module now demonstrates it rather than asserting it.
+
+**⚠️ "Production-ready" is about the module, not the game.** It has never run in the app. Slice B
+wires `onMeasurement`; **B2** then fixes `solo-basis-tab.tsx:253`, which counts Eve's reads by
+hardcoding basis `'2'` — the same *constant-where-a-variable-belongs* shape as this task itself, and
+now fixable honestly because `eavesdrop` reports what she actually read.
+
 **Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
 
 1. **Keep the phenomenological model, remove the bias.** Eve's intercept-resend destroys the
