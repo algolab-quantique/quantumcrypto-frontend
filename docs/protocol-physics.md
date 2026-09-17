@@ -606,7 +606,16 @@ measureOneSide(pair, angle)                 -- the single-particle half of 10.3
 eavesdrop(pair)                             -- 10.5, Eve. NOT a primitive: two steps
     angle = a uniformly random angle
     bit   = measureOneSide(pair, angle)        -- 1. she measures what arrived (destroying it)
-    return createProductPair(angle, bit)     -- 2. she prepares and sends a NEW pair
+    return { angle, bit,                       -- 2. she prepares and sends a NEW pair
+             sent: createProductPair(angle, bit) }
+
+    ⚠️ It returns her READ as well as the pair, and that is not convenience.
+       Without it, an implementation that measures the pair and then forwards an
+       UNRELATED coin is undetectable: S still falls to √2, the key error is still
+       25 %, the marginals are still fair — every number in 10.10 passes, and only
+       Eve's knowledge silently drops to zero. Found by mutation testing on
+       2026-09-17, after that exact sabotage survived all 23 tests. The app needs
+       it anyway: it reports "Eve has successfully read this number of bits".
 
 measureOtherSide(pair, myAngle, theirBit, theirAngle)    -- the OTHER half of 10.3
     if pair is entangled:
