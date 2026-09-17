@@ -621,6 +621,12 @@ siftKeyAndBellData(results, aliceAngles, bobAngles)     -- 10.6 step 4
     CHSH combination   -> Bell-test data, keeping both angles
     otherwise          -> discard
 
+    ⚠️ In THIS app only the key half is code. The CHSH half is the student's job:
+       they drag each round into one of the four buckets by hand, and the UI
+       accepts the drop only if the angles really are that combination
+       (solo-CHSH-tab.tsx:264,273,282,291). That is the exercise, not an
+       oversight — do not replace it with an automatic split.
+
 correlations(bellData) / chshValue(correlations)        -- 10.6 step 5
 ```
 
