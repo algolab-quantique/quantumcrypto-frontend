@@ -2246,6 +2246,32 @@ student can open DevTools and read them. It leaks nothing new — the store alre
 players' bits — but the file must say so, because *"you cannot see Eve, you can only detect her"* is
 the lesson this whole task exists to protect.
 
+**📌 WHAT `eveGuessedRightBits` MEANS — settled 2026-09-17, in Ibra's words.** Worth keeping,
+because it took most of a day to establish and neither of us could find it written anywhere:
+
+> *"We want a variable that tells us how many bits Eve got right. In E91 the two photons are
+> entangled, so Alice and Bob hold the same bit only where they chose the same basis — any other
+> round is discarded. So on a round that IS kept, we check whether Eve chose that basis too. Only
+> then do we count it, and only then can we say with confidence that she has those bits — because if
+> Alice and Bob use that part of the key, it is already known to Eve. That is the danger."*
+
+**The rule it replaces was a constant where a variable belonged** (`base === '2' && bobBases[i] ===
+'2'`), the same shape as Task 60 itself.
+
+**🔎 AND HOW THE MODULE DISAGREED WITH THE GAME, found by renaming.** The two had different names —
+`eveReadCount` in the game, `eveKnownKeyBits` in `protocol.ts` — so nobody had ever compared them.
+Giving them one name forced the comparison, and they were counting different things:
+
+| | rule | value |
+|---|---|---|
+| **the game** | did Eve pick the **same basis**? | **25 %** ✅ |
+| `runE91Protocol` | does Eve's **bit** happen to equal Alice's? | 62.5 % ❌ |
+
+The second counts **luck**: a wrong basis still leaves her correlated, so her bit often matches by
+chance — but **she cannot tell which of those are right**, so it is not knowledge and reporting it
+would overstate her 2.5×. The module now uses the game's rule. *The rename changed no behaviour; it
+made an existing disagreement visible.*
+
 **⚠️ "Production-ready" is about the module, not the game.** It has never run in the app. Slice B
 wires `onMeasurement`; **B2** then fixes `solo-basis-tab.tsx:253`, which counts Eve's reads by
 hardcoding basis `'2'` — the same *constant-where-a-variable-belongs* shape as this task itself, and
@@ -3306,6 +3332,36 @@ for no reason, and old strings appear that no longer exist anywhere in the sourc
 **Rule: before reporting a multiplayer result, check the address bar of BOTH windows.** And the
 diagnostic order that settles "is my code even running": does the FILE have it → does `tsc` pass →
 is the string in `.next/server/app/…/page.js` → only then suspect the browser.
+
+### 🧪 TESTING NOTE: Random code needs statistical tests, and their tolerance is a calculation
+
+**Learned 2026-09-17, fixing a suite that reddened on ~1 run in 3.**
+
+The physics is random by design, so there is no single right answer to assert: `measurePair` may
+legitimately return `{0,0}` or `{1,1}`. **The correctness lives in the pattern over many runs** —
+matching bases never disagree, Eve costs 25 % of the key, no basis is rigged. That last one is the
+only kind of test that could have caught the original bug (basis 2 always returning `0`), because
+every individual `0` is a legal answer.
+
+**The trap is the tolerance.** Assert "≈ 25 %" and you must say how much wobble is allowed. The
+wobble is not a matter of taste — it is `σ = √(p(1−p)/n)`, and the window has to be a few σ wide:
+
+| window | outcome |
+|---|---|
+| **< 3σ** | the test goes red at random. The team learns to ignore red |
+| **4–5σ** | chance essentially never trips it; a real 1-point shift still does |
+| **very wide** | never flakes, never catches anything either |
+
+**Compute it, do not guess it.** Guessing produced four bad tolerances here, including one made
+*worse* while fixing an earlier flake — `toBeCloseTo(x, 0)` was changed to `toBeCloseTo(x, 1)`, which
+**tightens** ±0.5 to ±0.05.
+
+**And raise `n` rather than loosening the window when the claim itself is narrow.** "S > 2.5" at the
+workshop's 2000 pairs is genuinely a 2.4σ claim — true of the real experiment too, but useless in
+CI. At 10 000 pairs the same claim clears 5σ and the test still runs in milliseconds.
+
+*Alternative not taken: inject a seeded RNG for reproducible output. That proves the code still does
+what it did yesterday, not that it is statistically correct — worth adding alongside, not instead.*
 
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 
