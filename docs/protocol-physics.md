@@ -751,9 +751,29 @@ Bell's theorem.** A scheme in which each particle carries pre-stored instruction
 the other side's angle is a *local hidden-variable model*, and such a model is bounded by
 **S ≤ 2**. Ours must reach **2√2**.
 
-So the dependency of the second measurement on the first is not sloppiness to be refactored
-out — **it is the fingerprint of entanglement in the code.** Any implementation that reaches
-2√2 has it somewhere.
+So **the outcome must depend on both angles** — that much is forced, and any implementation
+reaching 2√2 has that dependency somewhere.
+
+> ⚠️ **But "depends on both angles" is not the same as "first, then second", and an earlier
+> version of this section conflated them** (caught in external review, 2026-09-16). Bell
+> forbids computing each side from its own angle alone. It says nothing about *ordering*.
+> **If you wait until both bases are known, you sample the pair jointly, in one symmetric
+> step, with no first and no second** — which is exactly what solo does.
+>
+> The ordering in multiplayer is therefore **a UI decision, not a physical one**: it exists
+> only because we choose to serve the first player their result before the second has chosen a
+> basis. That has a consequence worth reading twice:
+
+**The open decision at the end of this section is not only about game feel.**
+
+| shape | ordering? | race? |
+|---|---|---|
+| **first arrival computes its own bits** — player sees their result immediately | yes | **yes** — needs the atomic claim above |
+| **second arrival computes both** — first player waits | **none** | **none.** There is no "who was first" question to get wrong |
+
+Choosing to wait does not merely let multiplayer share solo's `measurePair` (10.9). **It
+deletes the race condition described below, and the column and conditional write that guard
+it.** The cost is one player waiting for the other before seeing their own numbers.
 
 #### The consequence: a race condition, and the only correct fix
 
