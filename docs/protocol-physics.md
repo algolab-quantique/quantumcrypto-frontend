@@ -639,6 +639,37 @@ correlations(bellData) / chshValue(correlations)        -- 10.6 step 5
 > measurements — it is an order of evaluation, not a claim that Alice measures first. Both
 > bits come out of **one** call on **one** pair, which is what keeps step 3 a single act.
 
+#### Why this has three functions a quantum notebook does not need
+
+A Qiskit reference has one measurement function — `measure_bell_pair(pair, a, b)` — and needs
+no more, because **both measurements happen on one line, in one process.** `measureOneSide`
+and `measureOtherSide` exist only because **our multiplayer splits that one line across two
+HTTP requests, minutes apart, from two browsers.** Same physics; sliced so it can be called at
+two different times. (`createProductPair` is the third, and it exists because Eve *creates*
+rather than transforms — 10.8.)
+
+**And yes, `measureOtherSide` is cheating**, in a precise sense: it reads the result the other
+side already got. No real detector does that — Alice's and Bob's are correlated with no signal
+between them. We are computing a non-local correlation on one machine, so the information has
+to travel somewhere. See the warning in 10.12; the players never see it.
+
+> **"If the pair is entangled, why measure at all — why not just copy the other side's bit?"**
+> Because that is right for **2 of the 9 combinations and wrong for the other 7.** When the
+> angles match, Δ = 0 and `sin²(0/2) = 0`, so `measureOtherSide` *does* copy, exactly — that is
+> the key, and it falls out of the rule rather than being a special case. When the angles
+> differ the results are **correlated but not identical**, and copying would force E = +1
+> everywhere:
+>
+> ```
+> S = 1 − 1 + 1 + 1 = 2        ← exactly the classical bound. never violated.
+> ```
+>
+> A game built that way would report "classical" on a perfect, un-eavesdropped channel — the
+> Bell test could never fire, and Eve would become invisible by making no difference. **The
+> partial disagreement at mismatched angles is not noise to be optimised away; it is the
+> signal.** And once Eve has been there the pair is a product state, so `measureOtherSide`
+> ignores the other side's bit completely (10.8) — copying is wrong in that case too.
+
 > **Why `measurePair` is a composition, and why that matters more than it looks.** There are
 > exactly **two** measurement rules — *measure a side with nothing to go on*, and *measure a
 > side when the other side already went*. Everything else is built from them:
@@ -914,7 +945,7 @@ simulation" — each names the specific wrong implementation it catches.
 | **3** | **No-signalling**: fix Bob at 45°; `P(Bob = 1)` must be 50 % **for each of Alice's angles separately**, not merely on average | a `measureOtherSide` whose bias depends on the other side's angle. That is faster-than-light signalling, and it averages away |
 | **4** | **Eve actually forwards what she read**: when `θₑ = θₐ = θ_b`, `Eve.bit == Alice.bit == Bob.bit` with **zero** exceptions. And on matching-basis rounds where A = B with Eve 45° off, `P(Eve = Alice \| A = B) = 97.1 %` | Eve drawing one bit for herself and a *different* one into the pair. Still a product state, so S still falls to √2 and errors are still 25 % — but her knowledge of the key drops to nothing |
 | **5** | **`probDiff(0°, 135°) = 0.854`**, never 0.146 | normalising Δ to an acute angle. `|135° − 180°| = 45°` flips `E(0°,135°)` positive — which test 1 then catches from the other direction |
-| **6** | **An `entangled` pair is consumed once**; a **`product` pair is measured twice, once per side, and that must be allowed** | over-eager immutability. A blanket "throw on second measurement" is **wrong here**: both sides legitimately measure the same product pair (10.8). Only the entangled case is once-only |
+| **6** | **Each SIDE measures each pair at most once** — the pair itself may legitimately be measured twice, once per side, whether it is `entangled` or `product` | over-eager immutability. *This row has now been wrong twice.* A blanket "throw on any second measurement" breaks the product case; "an entangled pair is consumed once" breaks multiplayer, where the first arrival calls `measureOneSide` and the second calls `measureOtherSide` **on the same entangled pair, by design**. Enforcing the real invariant needs per-side tracking and is probably not worth it — but nothing may *claim* an invariant the code correctly violates |
 | **7** | **Round-to-round independence**: over 10 000 consecutive rounds, `corr(Aᵢ, Aᵢ₊₁) ≈ 0` and `corr(θₑ,ᵢ, θₑ,ᵢ₊₁) ≈ 0` | state leaking between rounds — reused variables, a cached draw. **This is the exact shape of the BB84 bug that opened this document** (§6), and aggregate statistics hide it completely |
 
 > Tests 1–5 and 7 came from an external adversarial review (Gemini, via Ibra, 2026-09-16).
