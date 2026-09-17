@@ -15,6 +15,45 @@ import {QC_TEST_MODE} from '@/lib/test-mode';
 export const E91_MIN_KEY_LENGTH = 2;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Eve — THREE separate settings, and they are easy to confuse
+// ─────────────────────────────────────────────────────────────────────────────
+//
+//   1. gameHasEve            the checkbox. Does this scenario include Eve at
+//                            all? It also decides whether the CHSH step appears,
+//                            so it is game FLOW, not physics (Task 51).
+//
+//   2. evePercentage         the probability she is actually present in THIS
+//                            game. One weighted coin, flipped once at game
+//                            start: `eve && Math.random() < evePercentage`.
+//                            70 % does NOT mean she reads 70 % of the photons —
+//                            it means 7 games in 10 have her, fully.
+//                            (Badly named. It is `eve_percentage` in the backend
+//                            serializer and a DB column, so renaming it is a wire
+//                            change plus a migration — see the tracker.)
+//
+//   3. the constant below    ONCE she is present, how many photons she actually
+//                            intercepts.
+//
+// Reading (2) as if it were (3) is the mistake that cost us an afternoon. The
+// reference workshop (CMAI-E91) uses the word "percentage" for (3), this app
+// uses it for (2), and neither said so anywhere.
+
+/**
+ * The share of photons Eve intercepts once she is present, 0..1.
+ *
+ * 1 = every photon, which is what the game has always done — previously as an
+ * invisible constant buried in a ternary. Named here so it is visible and
+ * changeable.
+ *
+ * ⚠️ Lower values are not merely "less Eve". Her interception halves the
+ * correlation only on the pairs she touches, so S = 2√2·(1 − f/2), which stays
+ * ABOVE the classical bound of 2 until f ≈ 0.586. An Eve on half the photons
+ * passes the Bell test and still takes a large share of the key — the reason
+ * real QKD compares error rates as well. See docs/protocol-physics.md §10.
+ */
+export const E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS = 1;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Photon Number Limits - SOLO MODE
 // ─────────────────────────────────────────────────────────────────────────────
 // Solo mode only (no backend validation).

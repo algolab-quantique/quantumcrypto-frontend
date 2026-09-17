@@ -43,7 +43,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         aliceCipherSent,
         gameSuccess,
         evePresent,
-        eveReadCount,
+        eveGuessedRightBits,
         eveSpotted,
         message: persistedMessage,
         crypto: persistedCrypto,
@@ -101,12 +101,12 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
 
     useEffect(() => {
         if (gameSuccess) {
-            if (evePresent && eveReadCount > 0) {
+            if (evePresent && eveGuessedRightBits > 0) {
                 pushLines([
                     {
                         title: 'component.e91.evePresent',
                         content: 'component.e91.evePresent.stats',
-                        extra: `${eveReadCount}`
+                        extra: `${eveGuessedRightBits}`
                     },
                 ]);
             }

@@ -76,7 +76,7 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
         setBobInvalidBases,
         setTypes,
         setStep2,
-        setEveReadCount,
+        setEveGuessedRightBits,
     } = useE91RoomStore();
     const {
         step2,
@@ -262,11 +262,11 @@ const SoloBasisTab = ({photonNumber, playerRole, polarIcons}: { photonNumber: nu
                 // 0°, 90° or 135°, and credited her with rounds she measured in
                 // some other basis and never learned. On one 9-bit key it
                 // reported 6 where the honest figure was about 2 (Task 60 B2).
-                const eveReadAmount = validBitIndices.filter(
+                const guessedRight = validBitIndices.filter(
                     index => eveAngles[index] !== undefined
                         && eveAngles[index] === aliceBases[index],
                 ).length;
-                setEveReadCount(eveReadAmount);
+                setEveGuessedRightBits(guessedRight);
             }
             pushLines([
                 {

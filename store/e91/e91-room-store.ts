@@ -12,7 +12,21 @@ import {create} from 'zustand';
 const initialState = {
     evePresent:         false,
     eveSpotted:         false,
-    eveReadCount:       0,
+    /**
+     * Key bits where Eve GUESSED RIGHT.
+     *
+     * She picks her measurement basis at random, blind — she cannot know which
+     * one Alice and Bob will use. On a key round, if she happens to pick theirs,
+     * her result and theirs are the same value and she holds that bit exactly.
+     * Any other basis and her result is an unrelated coin flip: she measured the
+     * photon, she disturbed it, and she learned nothing from it.
+     *
+     * She guesses the BASIS, not the bit. Right about 1 key bit in 4.
+     *
+     * ⚠️ This is NOT how many photons she touched — when present she measures
+     * EVERY one. See E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS.
+     */
+    eveGuessedRightBits:       0,
     conflict:           false,
     compared:           false,
     validationIndices:  [] as number[],
@@ -96,7 +110,7 @@ interface E91Actions {
     setMessage:             (message: string[]) => void;
     setEvePresent:          (evePresent: boolean) => void;
     setEveSpotted:          (eveSpotted: boolean) => void;
-    setEveReadCount:        (eveReadCount: number) => void;
+    setEveGuessedRightBits:        (eveGuessedRightBits: number) => void;
     setValidationIndices:   (validationIndices: number[]) => void;
     setUtilizeValidBits:    (utilizeValidBits: boolean | null) => void;
     setAlicePreference:     (alicePreference: boolean | null) => void;
@@ -237,7 +251,7 @@ const useE91RoomStore = create<E91RoomStore>(set => ({
     setMessage:            message            => updateAndStore('message',            message,            set),
     setEvePresent:         evePresent         => updateAndStore('evePresent',         evePresent,         set),
     setEveSpotted:         eveSpotted         => updateAndStore('eveSpotted',         eveSpotted,         set),
-    setEveReadCount:       eveReadCount       => updateAndStore('eveReadCount',       eveReadCount,       set),
+    setEveGuessedRightBits:       eveGuessedRightBits       => updateAndStore('eveGuessedRightBits',       eveGuessedRightBits,       set),
     setConflict:           conflict           => updateAndStore('conflict',           conflict,           set),
     setUtilizeValidBits:   utilizeValidBits   => updateAndStore('utilizeValidBits',   utilizeValidBits,   set),
     setDiceRollWinner:     diceRollWinner     => updateAndStore('diceRollWinner',     diceRollWinner,     set),

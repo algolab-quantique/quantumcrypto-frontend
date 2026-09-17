@@ -714,7 +714,62 @@ angle taken separately**, not merely on average: a simulation can be balanced ov
 one angle always returns the same value, and a student would spot the eavesdropper by
 staring at that angle instead of by the Bell test — which would defeat the entire lesson.
 
-### 10.11 Choices we made, and why
+### 10.11 Three settings control Eve, and they are easy to confuse
+
+This section exists because they were **never written down**, and the app and the
+reference workshop quietly came to mean different things by the same word. It cost an
+afternoon to find.
+
+| # | what it controls | where it lives | what 70 % means |
+|---|---|---|---|
+| **1** | Is Eve part of this scenario **at all**? Also decides whether the CHSH step appears, so it is game **flow**, not physics (Task 51) | `gameHasEve` — the checkbox | n/a, it is a boolean |
+| **2** | **Probability she is present in THIS game.** One weighted coin, flipped once at game start: `eve && Math.random() < evePercentage` | `evePercentage` | **7 games in 10 have her, fully.** Not 70 % of the photons |
+| **3** | Once present, **what share of the photons she intercepts** | `E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS` | 70 % of the photons in every such game |
+
+**(2) is invisible inside a single game.** A student who sets 30 % and one who sets 90 %
+see exactly the same thing: either she is there in full, or not at all. The number only
+shows up across many games.
+
+**(3) is visible, and it carries the sharpest lesson in the protocol.** Her interception
+halves the correlation *only on the pairs she touches*, so
+
+```
+S = 2√2 · (1 − f/2)        crosses the classical bound of 2 only at f ≈ 0.586
+```
+
+| she taps | S | |
+|---|---|---|
+| 25 % | 2.48 | **invisible to the Bell test** |
+| **50 %** | **2.12** | **invisible — and she still holds a large share of the key** |
+| 59 % | 2.00 | first detected |
+| 100 % | 1.41 | caught |
+
+**An eavesdropper on half the photons passes the Bell test.** That is why real QKD compares
+error rates as well, and it is why (3) deserves to be a named, changeable setting rather
+than the invisible `1` it was until 2026-09-17.
+
+> ⚠️ **The reference workshop uses the word "percentage" for (3); this app uses it for
+> (2).** `CMAI-E91` has `EVE_PERCENTAGE_COMPROMISED = 0.7  # Eve intercepts 70% of the
+> pairs`. Our `evePercentage` is a presence draw. Both are defensible; using one word for
+> both is not. The app's name is wrong and stays wrong for now — `eve_percentage` is a
+> backend serializer field and a database column, so renaming it is a wire change plus a
+> migration. Recorded in the tracker instead.
+
+**And what Eve's counter measures.** `eveGuessedRightBits` is none of the three. It is the
+number of **key bits she guessed right**: she picks her basis blind, and on a key round, if
+she happens to pick the one Alice and Bob used, her result and theirs are the same value and
+she holds that bit exactly. Any other basis and her result is an unrelated coin flip — she
+measured the photon, disturbed it, and learned nothing. **She guesses the BASIS, not the
+bit**, and she is right about 1 key bit in 4.
+
+> **Why a count of 0 is the most instructive outcome, not the least.** It does not mean she
+> was idle. When present she measures **every** photon. A 0 means she tapped the whole
+> stream, wrecked the correlations, and happened to learn nothing from the key — which is
+> precisely the point of QKD: **the damage is the disturbance, not the theft.**
+
+---
+
+### 10.12 Choices we made, and why
 
 | choice | why | consequence |
 |---|---|---|
@@ -747,7 +802,7 @@ Two things follow, and both belong in what the student is told (**Task 68**):
 *This is the strongest argument in the document for Task 68: the sample size is not a wart to
 apologise for — unexplained, it actively teaches the wrong lesson.*
 
-### 10.12 When the two sides measure at different times
+### 10.13 When the two sides measure at different times
 
 Solo measures both sides in one call. **Multiplayer cannot**: Alice and Bob are different
 browsers, and each measures when its own player clicks. This section is how that is resolved
@@ -917,7 +972,7 @@ smuggles in the local hidden-variable model the previous section rules out.
 > a game-feel decision, not a correctness one; both are safe once the claim is atomic.
 
 **The product case needs none of this.** Once Eve has measured, both sides are independent
-(see the table at the top of 10.12), so there is nothing to serialise: each side computes
+(see the table at the top of 10.13), so there is nothing to serialise: each side computes
 whenever its player clicks.
 
 #### What multiplayer has to store
@@ -941,7 +996,7 @@ nothing else. No new events, no new messages, no synchronisation.
 > E91's physics fully into the frontend deletes all three, because the pair would then live in
 > the one place that measures it — exactly as it does in solo today.
 
-### 10.13 What the tests must pin, beyond the four headline numbers
+### 10.14 What the tests must pin, beyond the four headline numbers
 
 10.10's four numbers are necessary and **not sufficient**. A wrong implementation can hit all
 four. These are the properties that separate "produces the right averages" from "is the right

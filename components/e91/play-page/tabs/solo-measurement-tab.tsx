@@ -34,6 +34,7 @@ import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { markSoloGameStarted } from '@/lib/e91/solo-session';
+import { E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS } from '@/e91-constants';
 // THE physics (docs/protocol-physics.md §10). Mode-agnostic: multiplayer will
 // call the same rules, one side at a time.
 import {
@@ -186,7 +187,12 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
 
         for (let i = 0; i < photonNumber; i++) {
             let pair = createEntangledPair();
-            if (gameHasEve && evePresent) {
+            // Per PHOTON, not per game: evePresent already decided whether she is
+            // here at all (one coin, at game start). This decides how much of the
+            // stream she actually taps once she is.
+            const taps = gameHasEve && evePresent
+                && Math.random() < E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS;
+            if (taps) {
                 const interception = eavesdrop(pair);
                 eveAngles.push(interception.angle);
                 pair = interception.sent;
