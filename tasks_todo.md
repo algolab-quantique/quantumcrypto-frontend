@@ -3152,7 +3152,17 @@ E91."* Correct on both halves, and it reframes the task: **the single key is not
 shortcut that was true right up until Eve was simulated correctly (B1).** E91's detector is the CHSH
 value, not the error rate — so the key comparison is genuinely not the headline lesson.
 
-**But the game already does the comparison, one tab earlier.** `validation-tab.tsx:67-82` reads
+**⚠️ CORRECTION 2026-09-18 — the paragraph below is about MULTIPLAYER only.** Checked while running
+step 1's gates: `ValidationTab` is imported by `multi-game.tsx:7` **and by nothing else**. Solo renders
+four tabs — measurement, basis, CHSH, messaging (`solo-game.tsx:143-146`) — so **solo never performs
+the key sacrifice at all**, even though `solo-game.tsx:62` reads the `utilizeValidBits` preference.
+Consequences: in solo the two keys are never compared and never trimmed, so the 76 % below applies
+with no "the sample happened to match" condition — it is simply `1 − 0.75⁵` over the whole key. The
+equal-length guarantee the fix relies on is unaffected: `solo-basis-tab.tsx:238-239` builds both keys
+from the same `validBitIndices`, at both call sites. **Solo's missing sacrifice step is a parity gap,
+not part of Task 71** — see Task 75.
+
+**But the game already does the comparison, one tab earlier — in multi.** `validation-tab.tsx:67-82` reads
 `aliceValidBits` vs `bobValidBits` — separately, per role, exactly as they should be — compares a
 **sample** (`validationIndices`) and lets the student call Eve. Line 104-107 then drops the sacrificed
 bits from **both** keys, correctly — 100 brut − 40 public = 60 secret, and the public 40 never come
@@ -3378,6 +3388,34 @@ and (3) is months away. It also makes (2)/(3) safer by pinning the expected beha
 
 **⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
 against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
+### 75. 🔍 E91 solo has no validation tab — the key sacrifice never happens there
+
+**Status**: 🔍 FINDING, not diagnosed, **not scheduled**. **Found**: 2026-09-18, while checking that
+`bobValidBits` was safe to read in Task 71 step 1. **Frontend-only.** Reported to Ibra immediately and
+parked, per his rule: *find something odd → tell me, track it, go back to the task.*
+
+**The fact.** `ValidationTab` has exactly one importer: `multi-game.tsx:7`. Multi chooses between two
+tabs at line 165 — `utilizeValidBits ? <ValidationTab/> : <CHSHTab/>` — a preference the player sets
+and the store persists (`e91-room-store.ts:62`). Solo renders a fixed four: measurement, basis, CHSH,
+messaging (`solo-game.tsx:143-146`). **`solo-game.tsx:62` reads `utilizeValidBits` and then never uses
+it to pick a tab.**
+
+**So in solo:** no key sacrifice, no public comparison of a bit sample, no `setEveSpotted` from that
+path. `bobValidBits` is written once at `solo-basis-tab.tsx:239` and never trimmed. The whole
+"compare some bits publicly, then throw them away" lesson — the one BB84 gets wrong in Task 53 — is
+simply absent from solo E91.
+
+**Not diagnosed on purpose.** Three readings fit and they lead to different work: (a) deliberate, solo
+is the CHSH-only teaching path; (b) the solo port of the multi tabs stopped before this one; (c) it
+should branch like multi does and nobody wired it. `solo-game.tsx:62` reading the preference is weak
+evidence for (b) or (c), and that is as far as it should be taken without Ibra.
+
+**Relation to Task 71:** none for correctness — the equal-length property the fix depends on comes
+from `solo-basis-tab.tsx:238-239`, not from the validation tab. It only changes the *story*: in solo
+there is no sample to survive, so Eve's corruption reaches the messaging tab every time she acts.
 
 ---
 
