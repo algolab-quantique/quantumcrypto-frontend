@@ -3106,6 +3106,58 @@ report the corruption count, because the student has already felt it.
 
 ---
 
+#### 🔬 READ 2026-09-18 — it is TWO defects, and the second is the bigger one
+
+Re-reading `solo-messaging-tab.tsx` line by line before planning the fix:
+
+**Defect 1 — line 59: `const keyBits = aliceValidBits;` — for BOTH roles.**
+Playing as Bob, the game hands the student **Alice's key**. Alice's message is encrypted with Alice's
+key on line 91 and decrypted with Alice's key on line 164, so **the corruption is mathematically
+invisible** — not hidden by the celebration, *absent from the arithmetic*. `bobValidBits` is
+destructured on line 41 and **never used anywhere in the file**. It is populated correctly
+(`validation-tab.tsx:105`), so the honest key is sitting in the store, ignored.
+
+**Defect 2 — line 200: the `setTimeout(…, 2000)` that fakes Bob's success when the student plays as
+Alice.** Checks nothing at all. This is the one originally recorded above.
+
+Defect 1 is worse: defect 2 lies at the end, defect 1 means the game never computed the truth.
+
+**The same line is in MULTIPLAYER** — `messaging-tab.tsx:42`, identical. Both `aliceBits` and
+`bobBits` live in every client's store (`basis-tab.tsx:269-270`), so multi has the same blindness.
+**Not fixed here** — frontend-only solo is this sprint's scope. Tracked so it is not rediscovered.
+
+#### ❌ REJECTED fix shape: a `lib/e91/one-time-pad.ts` module (proposed and withdrawn 2026-09-18)
+
+I proposed extracting `encrypt`/`decrypt` into a new E91 module with a unit test. **Ibra rejected it
+on sight, correctly, and for a better reason than I had.** Recorded because the reasoning generalises:
+
+1. **It would have been the third copy.** The XOR is `(keyNumber + messageNumber) % 2` in six places
+   across all three protocols — `bb84/messaging-tab.tsx:136`, `e91/solo-messaging-tab.tsx:91,164`,
+   `e91/messaging-tab.tsx:157`, `dps/bob-messaging-tab.tsx:156`,
+   `dps/solo-bob-messaging-tab.tsx:260` — and `lib/dps/dps-protocol.ts:740` **already extracted it**
+   (`encryptBit` / `encryptMessage` / `decryptBit`, **zero importers**). Scoping a fourth to E91 is
+   the least useful place to put it. → see **Task 74**.
+2. **It would not have caught this bug.** The XOR is correct in all six copies. The defect is *which
+   key is passed in*. A test on `encrypt`/`decrypt` passes on the broken code — the exact failure
+   mode CLAUDE.md rule 5 exists to forbid.
+3. **The arithmetic makes it unnecessary.** Bob computes `c ⊕ k' = (m ⊕ k) ⊕ k' = m ⊕ (k ⊕ k')`, so
+   **Bob's message differs from Alice's exactly where the two keys differ.** The honest ending needs
+   no crypto — it needs `aliceValidBits` vs `bobValidBits`, compared bit for bit.
+
+**Agreed slices (2026-09-18):**
+
+- **71a** — each side uses its own key: Bob reads `bobValidBits`, Alice's cipher is built from
+  `aliceValidBits`.
+- **71b** — the honest ending: compare the two keys, celebrate only on a match, otherwise show the
+  damage. Replaces the 2-second timer.
+
+**⚠️ Test coverage gap, stated rather than papered over.** Neither slice can carry a unit test: this
+is component wiring, and components have no harness (testing-strategy phases 2–3 not started). Rule 5
+cannot be satisfied here, so rule 4 carries it — browser verification before commit. Writing a unit
+test that passes either way would be worse than writing none.
+
+---
+
 ### 72. 📝 The end-of-game reveal about Eve is gated on the wrong thing
 
 **Status**: 🟡 OPEN, wording agreed, not implemented. **Frontend-only, 3 languages.**
@@ -3258,6 +3310,40 @@ and (3) is months away. It also makes (2)/(3) safer by pinning the expected beha
 
 **⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
 against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
+### 74. 💡 One XOR, six copies, three protocols — and an extracted helper nobody imports
+
+**Status**: 💡 IDEA, **deliberately not today** (Ibra's standing rule: *"if there is some idea of
+refactory so all use the same code, just tell me and it will be for later"*). **Opened**: 2026-09-18,
+while planning Task 71. **Axis**: neither — it is code duplication, not lifecycle or physics.
+
+Every protocol in this app encrypts the same way, because there is only one way to encrypt a bit with
+a bit: `cipher = (message + key) % 2`. The student types it by hand; it is a teaching prop, not a
+crypto layer. It appears **six times**:
+
+| file | line |
+|---|---|
+| `components/bb84/play-page/tabs/messaging-tab.tsx` | 136 |
+| `components/e91/play-page/tabs/solo-messaging-tab.tsx` | 91, 164 |
+| `components/e91/play-page/tabs/messaging-tab.tsx` | 157 |
+| `components/dps/play-page/tabs/bob-messaging-tab.tsx` | 156 |
+| `components/dps/play-page/tabs/solo-bob-messaging-tab.tsx` | 260 |
+
+**And it is already extracted once:** `lib/dps/dps-protocol.ts:724-760` has `encryptBit`,
+`encryptMessage`, `decryptBit`, `decryptMessage`, with a comment recording the exact component line
+they came from — and **zero importers anywhere in the repo**. Same pattern as `lib/e91/solo-player.ts`
+(Task 73): extracted, never wired, quietly rotting. An extraction that nobody imports is not a
+refactor, it is a second copy with better documentation.
+
+**If it is ever done:** one shared module (not protocol-scoped — `lib/` root, beside `utils.ts`), all
+six call sites converted in one behaviour-preserving commit, and the dead DPS copy deleted in the
+same breath so the count goes 7 → 1 and not 7 → 8.
+
+**Low value, and honest about why:** it removes six identical lines that have never been wrong. The
+bugs in this area have all been about *which key* is passed, which no amount of sharing prevents.
+Worth doing for tidiness after the sprint, not before 2026-09-30.
 
 ---
 
