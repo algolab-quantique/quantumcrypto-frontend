@@ -56,7 +56,10 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         setGameSuccess,
     } = useE91RoomStore();
 
-    const keyBits = aliceValidBits;
+    // The key belonging to whoever is at this screen. Alice and Bob hold
+    // DIFFERENT keys once Eve has been between them, so reading Alice's for
+    // both roles made her damage impossible to compute (Task 71).
+    const keyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
 
     const [message, setMessage] = useState(() => {
         return [...keyBits].map(_ => ({
@@ -84,11 +87,13 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
      */
     useEffect(() => {
         if (playerRole === 'B' && aliceCipher.length === 0) {
-            // Generate random message for Alice
-            const randomMessage = keyBits.map(() => Math.random() < 0.5 ? '0' : '1');
+            // Here the app IS Alice, so it names her key rather than the local
+            // player's: inside this branch the local player is Bob, and
+            // encrypting with his key would make every decryption succeed.
+            const randomMessage = aliceValidBits.map(() => Math.random() < 0.5 ? '0' : '1');
             // Encrypt: cipher = (message + key) mod 2
-            const cipher = randomMessage.map((bit, index) => 
-                ((parseInt(bit) + parseInt(keyBits[index])) % 2).toString()
+            const cipher = randomMessage.map((bit, index) =>
+                ((parseInt(bit) + parseInt(aliceValidBits[index])) % 2).toString()
             );
             setAliceCipher(cipher);
             // Add arrival messages (matching multiplayer socket flow)
@@ -97,7 +102,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                 { content: 'component.messaging.bob.decrypt' }
             ]);
         }
-    }, [playerRole, aliceCipher.length, keyBits]);
+    }, [playerRole, aliceCipher.length, aliceValidBits]);
 
     useEffect(() => {
         if (gameSuccess) {
