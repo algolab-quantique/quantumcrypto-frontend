@@ -463,7 +463,8 @@ So the rule we hold ourselves to is:
 > Reproduce the **statistics** of 10.1 – 10.6 exactly. Never reproduce them by a route that
 > makes one of the protocol's steps impossible to express.
 
-The second half matters as much as the first, and 10.8 is why.
+The second half matters as much as the first, and 10.8 is why. **10.15 is the first time the second
+half was actually violated** — by code whose statistics were all correct.
 
 ### 10.8 Our adaptation — the pair
 
@@ -1016,3 +1017,65 @@ simulation" — each names the specific wrong implementation it catches.
 > Test 6 came from that review too, but **inverted**: it proposed throwing on any second
 > measurement, which would break the product-pair case. Checking it is what found the
 > imprecision now corrected in 10.8.
+
+---
+
+### 10.15 Two keys, never one — and why merging them hides the whole point
+
+**This section is not E91-specific.** It applies to BB84 and DPS identically, and it is here only
+because E91 is where it was caught (2026-09-18, Task 71).
+
+#### The invariant
+
+> **Alice's key and Bob's key are two different arrays.** They are *supposed* to be equal, and after
+> an undisturbed exchange they are — but their equality is a **result**, never an assumption.
+
+Everything these protocols teach lives in the gap between those two arrays. Sifting narrows it;
+eavesdropping widens it; the public sacrifice of a few bits samples it. A codebase that stores one
+array and shows it to both sides has not simplified the protocol — **it has deleted the quantity the
+protocol exists to measure.**
+
+#### The algebra, which is the whole argument
+
+One-time pad, one bit at a time:
+
+```
+Alice sends   c  =  m ⊕ k_A
+Bob reads     m' =  c ⊕ k_B  =  m ⊕ (k_A ⊕ k_B)
+```
+
+So `m' = m` **exactly where the two keys agree**, and nowhere else. With `k_A ≡ k_B` — one array used
+twice — `m'` is *identically* `m`: decryption cannot fail, for any Eve, at any interception rate, with
+any noise. The celebration at the end is not a bug in the message; it is arithmetically forced.
+
+#### What this looked like in practice
+
+`solo-messaging-tab.tsx` opened with `const keyBits = aliceValidBits;` for **both** roles, while
+`bobValidBits` sat imported and unread. A student playing Bob was handed Alice's key, so Alice
+encrypted and Bob decrypted with the same array. Measured against six browser runs after the fix: in
+four of them the two keys differed — once in **both** of a 2-bit key — and every one of those runs
+had previously been impossible to produce, let alone detect.
+
+Note what the bug survived: correct physics (`lib/e91/protocol.ts` and its 31 tests), a correct
+sifting step, and a correct XOR in all six places it is written. **None of them is where the defect
+was.** Every value was right; one of them was fetched from the wrong side of the channel.
+
+#### Why 10.7's rule predicted it
+
+10.7 says: reproduce the statistics, but **never by a route that makes one of the protocol's steps
+impossible to express.** The merged key is the first recorded violation of that second half. The
+statistics were untouched — key length, error rate, S, all correct — while the step *"compare what
+Bob received against what Alice sent"* had no expression in the code at all.
+
+That is the generalisable smell: **a quantity that can only ever take one value.** If no input to the
+program can make the decryption fail, the program is not modelling decryption.
+
+#### What to check, in any protocol, when reading this code
+
+1. Does each side read **its own** array? Grep for a key that is fetched without consulting the role.
+2. Where the code simulates the **absent partner** — solo's local machine, a test fixture — does it
+   use *that partner's* key, not the local player's? (Getting 1 right and 2 wrong restores the bug
+   under a different variable name: if the simulated Alice encrypts with Bob's key, Bob still
+   decrypts perfectly.)
+3. Is there **any** reachable state in which the two keys differ? If not, nothing downstream that
+   compares them can ever be exercised.
