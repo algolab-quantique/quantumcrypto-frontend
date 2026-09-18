@@ -56,13 +56,19 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         setGameSuccess,
     } = useE91RoomStore();
 
-    // The key belonging to whoever is at this screen. Alice and Bob hold
-    // DIFFERENT keys once Eve has been between them, so reading Alice's for
-    // both roles made her damage impossible to compute (Task 71).
-    const keyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
+    // The key of the player at THIS screen: Alice's if he plays Alice, Bob's
+    // if he plays Bob. The PARTNER holds the other one — the machine in solo, a
+    // distant machine via the server in multi. The two are equal only when
+    // nobody disturbed the photons, so reading Alice's for both roles made
+    // Eve's damage impossible to compute (Task 71, physics doc 10.15).
+    //
+    // Decide the role once, here, and use this alias everywhere the key means
+    // "mine". Where the role is certain instead — the block below IS Alice —
+    // name that role's array directly.
+    const localPlayerKeyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
 
     const [message, setMessage] = useState(() => {
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -70,7 +76,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
     });
 
     const [crypto, setCrypto] = useState(() => {
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -163,7 +169,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             touched: true,
         })));
         const updatedCrypto = [...crypto].map((cryptoBit, index) => {
-            const keyNumber = parseInt(keyBits[index]);
+            const keyNumber = parseInt(localPlayerKeyBits[index]);
             const messageNumber = playerRole === 'B' ?
                 parseInt(aliceCipher[index]) : parseInt(message[index].value);
             const result = (keyNumber + messageNumber) % 2;
@@ -249,11 +255,11 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {keyBits.map((_, i) => (
+                    {localPlayerKeyBits.map((_, i) => (
                         <TableRow key={i}
                                   className="text-center border-secondary">
                             <TableCell>
-                                <Input disabled value={keyBits[i]}
+                                <Input disabled value={localPlayerKeyBits[i]}
                                        className={'w-10 text-lg text-center' +
                                            ' mx-auto disabled:opacity-100' +
                                            ' disabled:bg-background' +
