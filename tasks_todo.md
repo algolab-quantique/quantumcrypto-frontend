@@ -3144,12 +3144,36 @@ on sight, correctly, and for a better reason than I had.** Recorded because the 
    **Bob's message differs from Alice's exactly where the two keys differ.** The honest ending needs
    no crypto — it needs `aliceValidBits` vs `bobValidBits`, compared bit for bit.
 
-**Agreed slices (2026-09-18):**
+#### 🧠 Why there is only one key — it was a deliberate simplification (Ibra, 2026-09-18)
+
+*"You know why we use only one key — in entanglement Alice and Bob should have the same key, so we
+just simplified things for us. Of course this is not the best scenario… but this is not the goal of
+E91."* Correct on both halves, and it reframes the task: **the single key is not a typo, it is a
+shortcut that was true right up until Eve was simulated correctly (B1).** E91's detector is the CHSH
+value, not the error rate — so the key comparison is genuinely not the headline lesson.
+
+**But the game already does the comparison, one tab earlier.** `validation-tab.tsx:67-82` reads
+`aliceValidBits` vs `bobValidBits` — separately, per role, exactly as they should be — compares a
+**sample** (`validationIndices`) and lets the student call Eve. Then line 104-107 drops the sacrificed
+bits and the messaging tab throws the distinction away. **So the two keys exist, are already used
+honestly once, and are then merged.**
+
+**The consequence, in numbers.** A student reaching the messaging tab with Eve present is one whose
+*sample* happened to match. Each surviving key bit still disagrees with probability 25 % (Eve
+intercept-resend, `protocol.ts`), so with a 5-bit key:
+
+> `P(Bob's message is garbled) = 1 − 0.75⁵ = ` **76 %** — today it is **0 %**, by construction.
+
+**⚠️ The two defects are ONE fix, not two slices.** Fixing the 2-second timer alone changes nothing:
+with a single key the check it would perform can never fail. The timer lies *because* there is
+nothing to check. So `keyBits` and the ending move together or not at all.
+
+**With no Eve, nothing changes** — the keys are identical, and every screen behaves exactly as today.
+
+**Proposed slices (awaiting Ibra's go — the wording question is open):**
 
 - **71a** — each side uses its own key: Bob reads `bobValidBits`, Alice's cipher is built from
-  `aliceValidBits`.
-- **71b** — the honest ending: compare the two keys, celebrate only on a match, otherwise show the
-  damage. Replaces the 2-second timer.
+  `aliceValidBits`, and the ending compares the two. Celebrate only on a match. Solo only.
 
 **⚠️ Test coverage gap, stated rather than papered over.** Neither slice can carry a unit test: this
 is component wiring, and components have no harness (testing-strategy phases 2–3 not started). Rule 5
@@ -3337,13 +3361,22 @@ they came from — and **zero importers anywhere in the repo**. Same pattern as 
 (Task 73): extracted, never wired, quietly rotting. An extraction that nobody imports is not a
 refactor, it is a second copy with better documentation.
 
-**If it is ever done:** one shared module (not protocol-scoped — `lib/` root, beside `utils.ts`), all
-six call sites converted in one behaviour-preserving commit, and the dead DPS copy deleted in the
-same breath so the count goes 7 → 1 and not 7 → 8.
+**If it is ever done:** one shared module (not protocol-scoped — **`lib/one-time-pad.ts`**, `lib/`
+root beside `utils.ts`, Ibra 2026-09-18), all six call sites converted in one behaviour-preserving
+commit, and the dead DPS copy deleted in the same breath so the count goes 7 → 1 and not 7 → 8.
 
-**Low value, and honest about why:** it removes six identical lines that have never been wrong. The
-bugs in this area have all been about *which key* is passed, which no amount of sharing prevents.
-Worth doing for tidiness after the sprint, not before 2026-09-30.
+**⚠️ Why the app barely calls a function today — Ibra, 2026-09-18, and it is the design, not an
+oversight.** *"This XOR is done one bit at a time, by the student himself, in the UI. We just check
+whether he got it right — that is what teaches them the method is a simple operation. We don't really
+call a function with a message as input and get an output."* The six sites are **verifiers**, not
+encryptors: the student types the cipher, the app recomputes one bit and compares. So the duplication
+is six one-line checks, which is why this is low-value today.
+
+**The use case that would change that (Ibra's, worth building toward):** let the student do the first
+few bits by hand — say 5, enough to prove they understand — then **enable a button that completes the
+rest automatically**. *That* call needs a real `encrypt(message, key)` / `decrypt(cipher, key)`, and
+at that point one shared implementation stops being tidiness and starts being the thing that makes
+the feature cheap in all three protocols at once.
 
 ---
 
