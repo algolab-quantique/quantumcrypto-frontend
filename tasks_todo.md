@@ -3214,7 +3214,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 
 | step | what | kind | verify |
 |---|---|---|---|
-| **1 — 71a** | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
+| **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
 | **2 — rename** | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
 | **3 — 71b** | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
 | **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
@@ -3228,6 +3228,37 @@ costs two browsers, not because its logic differs.
 guarded by `playerRole === 'B'`, so inside it `keyBits` *is* Bob's key. Encrypting there with `keyBits`
 gives `cipher = m ⊕ k_Bob`, which Bob then decrypts perfectly every time — the bug intact under a new
 variable name. h1 and h2 ship together or neither does.
+
+#### ✅ STEP 1 DONE — `ff6c9d1` (2026-09-18)
+
+Gates: 144 tests, `tsc` clean, `next lint` clean. **Browser-verified by Ibra, six solo runs**, each
+checked bit for bit against `cipher ⊕ key` from his `localStorage` dumps:
+
+| run | role | Eve | key | keys differ | what the game said |
+|---|---|---|---|---|---|
+| A | Bob | off | 6 bits | **no** — identical, as they must be | Félicitations (correct) |
+| B | Bob | on | 4 bits | no — she corrupted none (`0.75⁴ ≈ 32 %`) | Félicitations (correct) |
+| C | Bob | on | 2 bits | **both** — Alice sent `11`, Bob read `00` | Félicitations ⚠️ |
+| D | Bob | on | 8 bits | **1 of 8** — sent `00111101`, read `00011101` | Félicitations ⚠️ |
+| E | Bob | on | 5 bits | **2 of 5** — sent `01000`, read `10000` | Félicitations ⚠️, **and no Eve reveal** (`eveGuessedRightBits: 0`) |
+| F | **Alice** | on | 4 bits | **1 of 4** — sent `1111`, Bob would read `0111` | *"Bob a réussi à déchiffrer"* — the 2-second fake |
+
+**What this proves.** Before `ff6c9d1` the two arrays were the same array, so rows C-F were
+*impossible*: a differing key could not be produced, let alone celebrated. The game now computes the
+truth and still says the wrong thing — which is exactly this step's contract, and the evidence that
+steps 3-4 have something real to fix. Run F is the regression check: Alice's cipher is still
+`message ⊕ her own key`, verified. Run E is Task 72 caught in the wild — the run where Eve did the
+most damage is the run where the student was told nothing.
+
+**🔍 Ibra's observation from the dumps, and it is the shape of steps 3-4:** *"we have in localStorage
+Alice's cipher, but not Bob's cipher."* Correct — the store keeps **only what the local player
+typed**. Playing Bob, `message` is `["","",…]` because Alice's plaintext is generated at line 88 and
+discarded; playing Alice, Bob's decryption is never computed at all. So step 3 must keep that
+plaintext and step 4 must compute `cipher ⊕ bobValidBits`. Neither value exists today.
+
+**⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
+things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
+Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
 
 **⚠️ Test coverage gap, stated rather than papered over.** No step here can carry a unit test: this
 is component wiring, and components have no harness (testing-strategy phases 2–3 not started). Rule 5
