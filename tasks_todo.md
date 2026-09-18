@@ -3154,9 +3154,11 @@ value, not the error rate — so the key comparison is genuinely not the headlin
 
 **But the game already does the comparison, one tab earlier.** `validation-tab.tsx:67-82` reads
 `aliceValidBits` vs `bobValidBits` — separately, per role, exactly as they should be — compares a
-**sample** (`validationIndices`) and lets the student call Eve. Then line 104-107 drops the sacrificed
-bits and the messaging tab throws the distinction away. **So the two keys exist, are already used
-honestly once, and are then merged.**
+**sample** (`validationIndices`) and lets the student call Eve. Line 104-107 then drops the sacrificed
+bits from **both** keys, correctly — 100 brut − 40 public = 60 secret, and the public 40 never come
+back. *(Worth stating because the wording below once read as if they did; they do not.)* What the
+messaging tab discards is not the sacrifice — it is **the distinction between Alice's key and Bob's**.
+**So the two keys exist, are already used honestly one tab earlier, and are then collapsed into one.**
 
 **The consequence, in numbers.** A student reaching the messaging tab with Eve present is one whose
 *sample* happened to match. Each surviving key bit still disagrees with probability 25 % (Eve
@@ -3170,15 +3172,57 @@ nothing to check. So `keyBits` and the ending move together or not at all.
 
 **With no Eve, nothing changes** — the keys are identical, and every screen behaves exactly as today.
 
-**Proposed slices (awaiting Ibra's go — the wording question is open):**
+#### 🧭 The abstraction this task settled (Ibra, 2026-09-18) — it outlives Task 71
 
-- **71a** — each side uses its own key: Bob reads `bobValidBits`, Alice's cipher is built from
-  `aliceValidBits`, and the ending compares the two. Celebrate only on a match. Solo only.
+*"In abstract we have Alice and Bob roles only, not solo and multi. The logic must be the same, the
+code also. Solo means the partner's role is played locally by the machine; multi means the partner is
+a distant machine via the server — could be a real user, could also be a machine."*
 
-**⚠️ Test coverage gap, stated rather than papered over.** Neither slice can carry a unit test: this
+So every browser has exactly **one local player and one partner**, and solo vs multi is only the
+partner's *transport*. Two consequences, both visible in this fix:
+
+- The same defect is in multi — `messaging-tab.tsx:42`, the identical line. Same fix.
+- The hunk that has **no** twin in multi is consistent with the rule, not an exception to it: solo's
+  partner is local so the app computes Alice's cipher; multi's arrives on the socket, so there is
+  nothing to compute. Same logic, different transport.
+
+#### 🏷️ Naming decision — `localPlayerKeyBits`, and why not the explicit arrays
+
+Ibra objected that a bare `keyBits` is confusing **in solo specifically**, because there both keys are
+on the same machine and nothing in the name says whose it is. Two options were weighed:
+
+| | |
+|---|---|
+| **B — no alias**, write `playerRole === 'A' ? aliceValidBits : bobValidBits` at each site | names the real array everywhere, but **×5 ternaries that must all agree**. This bug was *one* wrong assignment; B creates five places for it to return. Also makes solo and multi diverge in style |
+| **C — keep one decision point, fix the name** ✅ **chosen** | the role is decided **once**, at the top; the name says whose key it is; solo and multi keep the same shape |
+
+**Ibra's own summary of the rule:** *"we don't want to check if/else five times — we do it once at the
+top and work with it. And where we are 100 % sure which role we are, we simply use that role's bits."*
+That second half is exactly why the simulated-Alice block names `aliceValidBits` directly.
+
+#### 📋 Agreed steps (2026-09-18)
+
+| step | what | kind | verify |
+|---|---|---|---|
+| **1 — 71a** | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
+| **2 — rename** | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
+| **3 — 71b** | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
+| **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
+| **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
+
+Steps 3 and 4 need Ibra's wording for the failure message and have not been asked for yet — the
+question was raised too early once and withdrawn. Step 5 is split off only because its **verification**
+costs two browsers, not because its logic differs.
+
+**h1 alone is invisible**, and this was checked before proposing it: the simulated-Alice block is
+guarded by `playerRole === 'B'`, so inside it `keyBits` *is* Bob's key. Encrypting there with `keyBits`
+gives `cipher = m ⊕ k_Bob`, which Bob then decrypts perfectly every time — the bug intact under a new
+variable name. h1 and h2 ship together or neither does.
+
+**⚠️ Test coverage gap, stated rather than papered over.** No step here can carry a unit test: this
 is component wiring, and components have no harness (testing-strategy phases 2–3 not started). Rule 5
-cannot be satisfied here, so rule 4 carries it — browser verification before commit. Writing a unit
-test that passes either way would be worse than writing none.
+cannot be satisfied, so rule 4 carries it — browser verification before commit. Writing a unit test
+that passes either way would be worse than writing none.
 
 ---
 
