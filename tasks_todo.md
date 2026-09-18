@@ -3215,7 +3215,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 | step | what | kind | verify |
 |---|---|---|---|
 | **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
-| **2 — rename** | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
+| **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
 | **3 — 71b** | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
 | **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
 | **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
@@ -3255,6 +3255,21 @@ Alice's cipher, but not Bob's cipher."* Correct — the store keeps **only what 
 typed**. Playing Bob, `message` is `["","",…]` because Alice's plaintext is generated at line 88 and
 discarded; playing Alice, Bob's decryption is never computed at all. So step 3 must keep that
 plaintext and step 4 must compute `cipher ⊕ bobValidBits`. Neither value exists today.
+
+#### ✅ STEP 2 DONE — `14657d8` (2026-09-18)
+
+Pure rename, six sites, `git diff` confirmed to contain nothing but those six lines plus the comment.
+Gates green; no browser check needed or asked for, since no behaviour was touched.
+
+#### 📘 The finding was promoted out of the tracker — `docs/protocol-physics.md` §10.15 (`8268e46`)
+
+Ibra's call: *"this is a very important finding and big bug… needs to be kept in the doc, and in the
+commit also."* §10.15 **"Two keys, never one"** states it protocol-independently — it applies to BB84
+and DPS identically and sits under E91 only because E91 is where it was caught. It carries the
+algebra (`m' = m ⊕ (k_A ⊕ k_B)`, so one array used twice makes decryption *unable* to fail), what the
+bug survived (correct physics with 31 passing tests, correct sifting, a correct XOR in all six
+places), and the three checks to run against any protocol. §10.7 now points forward to it as the
+first recorded violation of its own second half.
 
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
