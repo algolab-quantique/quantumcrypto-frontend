@@ -3271,6 +3271,79 @@ bug survived (correct physics with 31 passing tests, correct sifting, a correct 
 places), and the three checks to run against any protocol. §10.7 now points forward to it as the
 first recorded violation of its own second half.
 
+#### 📝 STEP 3 — the agreed wording (Ibra + ChatGPT, 2026-09-18; tracked late, on 2026-09-23)
+
+**⚠️ Tracking gap, recorded honestly.** This wording was agreed on 2026-09-18 and the session ended
+before it was written down; it existed only in the chat until 2026-09-23. Nine commits of that day
+were also unpushed until 2026-09-23 (`e736415..b1559d7`). Both fixed the day they were noticed. This
+is the failure mode CLAUDE.md §1b describes, and it is why the rule below now exists.
+
+**📌 Rule, Ibra 2026-09-23:** *"Each new finding, each discussion we agree on, and the steps, plan,
+slice, bug we agree on — we track first."* Tracking is the **first** action after an agreement, not
+the last action of a slice.
+
+**When the two keys differ** (Bob's arithmetic correct, his plaintext wrong), the celebration is
+replaced by:
+
+> **La clé a été perturbée**
+>
+> Votre calcul est correct, mais Alice et Bob n'ont pas la même clé. **Le message déchiffré par Bob
+> est incorrect.**
+
+**« est incorrect », not « n'est pas déchiffré »** — Bob *did* decrypt, correctly; the result is simply
+the wrong message. *"Votre calcul est correct"* comes first so the student does not blame his own
+arithmetic, which is the first thing he would otherwise suspect.
+
+**Then the comparison, aligned, differing bits highlighted — effect first, then cause:**
+
+```
+Message d'Alice   1 1 1 1
+Message de Bob    0 1 1 1      ← the highlighted position…
+Clé d'Alice       1 0 1 1
+Clé de Bob        0 0 1 1      ← …is the same position here
+```
+
+The highlighted columns coincide, so the causal link (`m' = m ⊕ (k_A ⊕ k_B)`, §10.15) is visible
+without being stated. **When the keys are equal, nothing changes** — today's celebration stays.
+
+**D2 — show the keys, not just the messages: ✅ AGREED.** The keys are the cause, the messages the
+effect; showing only the effect leaves the student to guess the cause. Note it reveals Alice's full key
+to Bob, which the real protocol never does — the same nature as revealing her message, which was
+already accepted. The game is over at that point; this is the app teaching, not the protocol.
+
+**D1 — where the comparison renders: ⏸ OPEN, awaiting Ibra.** Facts checked 2026-09-23:
+
+- The progression feed **scrolls** (`components/shared/game-progression.tsx:17-18`, `overflow-y-scroll`)
+  and **survives refresh** (`e91-progress-store.ts` persists to `localStorage`). But it renders **plain
+  text only**: an optional bold title plus a body (`e91-progression.tsx:83-89`). No alignment, no
+  highlight, no colour.
+- **`localize(key, extra)` only concatenates**: `translation + " " + extra`
+  (`language-provider.tsx:72-80`). No `{0}` placeholders, so a value can only sit at the **end** of a
+  sentence. *"Message d'Alice : [X] — message de Bob : [Y]"* cannot be one key.
+- **Dialogs are an existing pattern in this very game**: `GameRestartDialog` (the short-key restart),
+  plus dialogs in both CHSH tabs and both basis tabs; `components/ui/dialog.tsx` exists.
+
+| option | for | against |
+|---|---|---|
+| **feed only**, long text | survives refresh; no new component | no alignment, no highlight; the comparison, which *is* the lesson, cannot be drawn |
+| **block under the table** in the messaging tab | aligned + highlighted; derived from the store, so survives refresh for free | weak attention; on mobile it sits below the fixed bottom buttons, likely below the fold |
+| **popup + a short feed line** (Ibra's idea) | attention at the exact moment; room for title, sentence and the aligned comparison; the bit strings are JSX, so **the `localize` limit disappears** — only the static sentences are localized; the short line stays in the feed as the record | open-state is not persisted: a refresh closes it (the feed line remains) |
+| **new tab** | — | ❌ rejected by Ibra: tabs are reserved for the protocol's steps |
+
+**Recommendation: popup + a short feed line.** Step 4 (Alice's ending) needs the *identical* content —
+*"le message déchiffré par Bob est incorrect"* is true in both roles — so one dialog serves both steps:
+built in step 3, reused in step 4.
+
+**Two small details for whichever option wins:**
+- The Bob path fires `toast.success(localize('component.basis.correct'))` on correct arithmetic. Next
+  to *"est incorrect"*, a green "correct" toast contradicts the screen. In the perturbed case, no
+  success toast.
+- Alice's plaintext must be kept (generated at `solo-messaging-tab.tsx:99`, currently discarded).
+  Store it in `message`, which then means *Alice's plaintext* in both roles — what she typed when the
+  student is Alice, what the machine wrote when he is Bob.
+
+**EN/ES:** to be drafted by Claude, corrected by Ibra.
+
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
 Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
@@ -3302,6 +3375,12 @@ The old buggy counter almost never returned 0, so **fixing the counter exposed t
   the **CHSH value**, not the error rate — quoting D points at a signal the student never used.
   (And once **Task 71** lands they will have felt the corruption directly.)
 - Needs English and Spanish.
+- **⚠️ Cannot render as written today (found 2026-09-18, tracked 2026-09-23).** `localize(key, extra)`
+  only appends `extra` to the **end** of the translation (`language-provider.tsx:72-80`) — no `{0}`
+  placeholders. This sentence has four values *inside* it. So either reword so each value ends a
+  sentence, split it into several keys, or add placeholder support to `localize` (small, but it is
+  shared by all three protocols). Decide when Task 72 starts. If step 3 of Task 71 ends up as a popup,
+  the same JSX approach may apply here too.
 
 **Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
 the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
