@@ -3435,7 +3435,7 @@ back whole (`e91-progress-store.ts:55,73`, `JSON.stringify` / `JSON.parse`), so 
 **Browser-verified by Ibra:** the ⓘ appears on the line, reopens the popup after closing it, and still
 works after a refresh. His feedback — *"too small"* → enlarged 16px → 20px (phone) / 24px (computer),
 and coloured `text-highlight` like the line's bold title. **Those two last tweaks were committed on his
-explicit OK ("commit now") without a further browser check** — first thing to glance at next session.
+explicit OK ("commit now") before being seen; Ibra then checked them by eye the same night — ✅ good.**
 
 **Step 3 as delivered, from the student's side (Bob, keys differ):** no "Félicitations", no green toast
 → the line **La clé a été perturbée** *Le message déchiffré par Bob est incorrect.* ⓘ → a popup that
