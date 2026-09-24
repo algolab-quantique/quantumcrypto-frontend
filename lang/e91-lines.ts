@@ -50,6 +50,14 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.messaging.keyPerturbed': 'The key was disturbed ',
         'component.e91.messaging.keyPerturbed.line': 'The message Bob decrypted' +
             ' is wrong.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Your calculation' +
+            ' is correct, but Alice and Bob do not have the same key. The' +
+            ' message Bob decrypted is wrong.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Alice\'s message',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Bob\'s message',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Alice\'s key',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Bob\'s key',
+        'component.e91.messaging.keyPerturbed.close': 'Got it',
         'component.messaging.alice.reveal': 'Your Bob was ',
         'component.messaging.bob.reveal': 'Your Alice was ',
         'component.messaging.cipherSent': 'Sent!',
@@ -158,6 +166,14 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.messaging.keyPerturbed': 'La clé a été perturbée ',
         'component.e91.messaging.keyPerturbed.line': 'Le message déchiffré par' +
             ' Bob est incorrect.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Votre calcul est' +
+            ' correct, mais Alice et Bob n\'ont pas la même clé. Le message' +
+            ' déchiffré par Bob est incorrect.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Message d\'Alice',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Message de Bob',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Clé d\'Alice',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Clé de Bob',
+        'component.e91.messaging.keyPerturbed.close': 'Compris',
         'component.messaging.alice.reveal': 'Votre Bob était ',
         'component.messaging.bob.reveal': 'Votre Alice était ',
         'component.basis.validateBtn': 'Valider',
@@ -262,6 +278,14 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.messaging.keyPerturbed': 'La clave fue perturbada ',
         'component.e91.messaging.keyPerturbed.line': 'El mensaje descifrado por' +
             ' Bob es incorrecto.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Tu cálculo es' +
+            ' correcto, pero Alice y Bob no tienen la misma clave. El mensaje' +
+            ' descifrado por Bob es incorrecto.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Mensaje de Alice',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Mensaje de Bob',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Clave de Alice',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Clave de Bob',
+        'component.e91.messaging.keyPerturbed.close': 'Entendido',
         'component.messaging.alice.reveal': 'Tu Bob era ',
         'component.messaging.bob.reveal': 'Tu Alice era ',
         'component.basis.validateBtn': 'Validar',

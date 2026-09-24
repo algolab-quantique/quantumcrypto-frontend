@@ -12,6 +12,7 @@
  * UI is IDENTICAL to multiplayer messaging-tab.tsx
  */
 
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,6 +83,8 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             error: true,
         }));
     });
+
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     /**
      * SOLO MODE: Auto-generate Alice's cipher when Bob enters tab
@@ -202,6 +205,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                             content: 'component.e91.messaging.keyPerturbed.line',
                         },
                     ]);
+                    setKeyPerturbedOpen(true);
                 }
                 // The round is over either way: "finished", not "won".
                 setGameSuccess(true);
@@ -340,6 +344,8 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                         localize('component.messaging.validateAndSend')}
                 </Button>
             </div>
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </div>
     );
 };
