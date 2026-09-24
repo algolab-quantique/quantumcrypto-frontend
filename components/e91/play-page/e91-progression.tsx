@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Info } from 'lucide-react';
 import GameProgression from '@/components/shared/game-progression';
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import usePlayerStore from '@/store/player-store';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -26,6 +28,9 @@ const E91Progression = () => {
     const { playerRole, partner: partnerName, playingSolo } = usePlayerStore();
 
     const { displayedLines } = useE91ProgressStore();
+
+    // Reopened by the ⓘ on a line that carries info: 'keyPerturbed'.
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     const {
         gameSuccess,
@@ -86,7 +91,14 @@ const E91Progression = () => {
                         line.title)}</span>}{line.content ?
                             line.extra ? localize(
                                 line.content, line.extra) : localize(
-                                    line.content) : ''}</p>
+                                    line.content) : ''}
+                    {line.info === 'keyPerturbed' &&
+                        <Button variant="ghost" size="icon"
+                                className="h-8 w-8 md:h-9 md:w-9 ml-1 align-middle text-highlight"
+                                aria-label={localize(line.title)}
+                                onClick={() => setKeyPerturbedOpen(true)}>
+                            <Info className="h-5 w-5 md:h-6 md:w-6"/>
+                        </Button>}</p>
             </div>
         );
     });
@@ -125,6 +137,8 @@ const E91Progression = () => {
                     <Button onClick={goToResultsPage}>{localize('component.e91.text.seeResults')}</Button>
                 </div>
             </div>}
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </GameProgression>
 
     );

@@ -35,6 +35,9 @@ export interface Line {
     title?: string,
     content?: string,
     extra?: string,
+    // Names a popup the line can reopen through an ⓘ button, e.g.
+    // 'keyPerturbed' in E91 (Task 71). Optional: most lines have none.
+    info?: string,
 }
 
 export type LanguageItem = {

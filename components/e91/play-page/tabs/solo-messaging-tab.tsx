@@ -203,6 +203,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                         {
                             title: 'component.e91.messaging.keyPerturbed',
                             content: 'component.e91.messaging.keyPerturbed.line',
+                            info: 'keyPerturbed',
                         },
                     ]);
                     setKeyPerturbedOpen(true);
