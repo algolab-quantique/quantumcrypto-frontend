@@ -3482,6 +3482,15 @@ A hard refresh fixed it. Same family as 3a's first test (raw keys from a stale l
 **Rule of thumb for browser checks: after any code change or dev-server restart, hard refresh
 (Cmd+Shift+R) and start a new game before testing.**
 
+#### ⏸ STEP 5 PARKED (agreed 2026-09-24) — multi waits for the multi work
+
+The one-line fix in `messaging-tab.tsx:42` would, **alone**, leave multiplayer where solo was after
+step 1: the truth computed, the celebration unchanged — because multi's ending arrives **through the
+socket** (`sendBobSuccess`), and changing what is sent is outside this sprint's scope (*"we work only
+front-end, do not work backend or the socket sending"*). Multi also still runs the biased Python Eve
+(Task 60, backend half). So step 5 goes with the multi work, not before it. **Task 71 is complete for
+solo.** The days left go to solo: **Task 72 → Task 73 → Task 68 → merge** (target ~2026-09-28).
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
