@@ -3461,6 +3461,10 @@ so refactor and behaviour never share a commit:
   the same line, popup and ⓘ as Bob; *"le message déchiffré par Bob est incorrect"* is true from her
   side too, and the popup already computes Bob's message as `aliceCipher ⊕ bobValidBits`.
 
+**✅ 4a DONE — `7753fa9`** (2026-09-24). Gates green. Browser-verified by Ibra as Bob, one run
+without Eve and one with: *"exactly what we had before."* One stated, invisible reorder: the success
+toast now fires just after `setGameSuccess(true)` instead of just before, in the same click.
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
