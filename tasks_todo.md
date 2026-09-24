@@ -3216,7 +3216,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 |---|---|---|---|
 | **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
 | **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
-| **3 — 71b** | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
+| **3 — 71b** 🔨 3a ✅ | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
 | **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
 | **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
 
@@ -3412,6 +3412,25 @@ three. Pre-existing, found while checking 3a; a one-line fix, kept out of 3a so 
 concern. **Proof it is a common key, not an E91 one:** used 9 times — BB84 ×3, DPS ×4, E91 ×2 — so by
 the prefix rule it is correctly unprefixed; only E91's English entry is missing. **Priority: lowest**
 (Ibra: side findings are tracked with a priority and do not interrupt the current task).
+**→ Ibra, 2026-09-24: fix it now anyway — one line, text only.** Own commit, after 3a, never mixed
+into it. English text copied from BB84 and DPS (`'Correct!'`) so all three protocols say the same.
+
+#### ✅ STEP 3a DONE — `2968249` (2026-09-24)
+
+Gates: 144 tests, `tsc`, `next lint` green. Key resolution proven in all three languages by a throwaway
+test. **Browser-verified by Ibra, two solo runs as Bob:**
+
+| run | Eve | keys | Alice sent | Bob read | game said |
+|---|---|---|---|---|---|
+| 1 | on | `1111` vs `1101` — differ at position 3 | `1101` | `1111` | **La clé a été perturbée** — *Le message déchiffré par Bob est incorrect.* ✅ |
+| 2 | off | `011110` both — identical | `011000` | `011000` | **Félicitations** — unchanged ✅ |
+
+Run 2 is the regression check: the old celebration now sits inside a condition, and a wrong condition
+would have made honest games say "perturbée". The toast was not reported in either run; the code places
+it inside the same branch as the line that was seen, so its presence (run 2) and absence (run 1) follow
+from the branch taken. **The first test showed raw keys** — a stale dev bundle, not code (see above).
+
+**Unverified by design:** Alice's path (step 4); multi (step 5).
 
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
