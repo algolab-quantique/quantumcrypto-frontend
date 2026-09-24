@@ -55,6 +55,7 @@ export const e91Lines: LanguageItem[] = [
         'component.messaging.cipherSent': 'Sent!',
         'component.messaging.decryptError': 'Verify your decryption bits',
         'component.basis.validateBtn': 'Validate',
+        'component.basis.correct': 'Correct!',
         'component.messaging.aliceEncrypted': 'Alice\'s encrypted message',
         'component.messaging.aliceDecrypt': 'Alice\'s decrypted message (0' +
             ' or 1)',    
