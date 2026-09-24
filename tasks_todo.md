@@ -3442,6 +3442,25 @@ explicit OK ("commit now") before being seen; Ibra then checked them by eye the 
 says his calculation was right and shows the four rows with the differing positions in red, reopenable
 at any time. Keys equal → unchanged celebration.
 
+#### 📋 STEP 4 — ✅ AGREED 2026-09-24: Alice's ending, in two slices
+
+**The problem:** playing Alice, a `setTimeout(…, 2000)` announces *"Bob a réussi à déchiffrer votre
+message !"* without checking anything (`solo-messaging-tab.tsx:225-233`).
+
+**Decision 1 — keep the 2-second pause.** It reads as Bob working; only the *outcome* becomes honest.
+
+**Decision 2 — the same exact code for both roles** (Ibra's rule from Task 63: *"not just the same
+pipeline, the same exact code"*). Bob's branch already holds "compare the keys → celebrate, or line +
+popup". Rather than copy it into Alice's timer, it moves into one local function both roles call — split
+so refactor and behaviour never share a commit:
+
+- **4a — pure refactor:** move Bob's block into `endRound(successContent)`, which returns whether the
+  keys matched (Bob's green toast fires on `true`; Alice has none). No behaviour change — but components
+  have no automated tests, so Ibra re-tests Bob once.
+- **4b — behaviour:** Alice's timer calls `endRound('component.messaging.alice.end')`. Keys differ →
+  the same line, popup and ⓘ as Bob; *"le message déchiffré par Bob est incorrect"* is true from her
+  side too, and the popup already computes Bob's message as `aliceCipher ⊕ bobValidBits`.
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
