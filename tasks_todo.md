@@ -3217,7 +3217,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 | **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
 | **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
 | **3 — 71b** ✅ (3a, 3c, 3d; 3b dropped) | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
-| **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
+| **4 — 71c** ✅ (4a refactor, 4b behaviour) | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
 | **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
 
 Steps 3 and 4 need Ibra's wording for the failure message and have not been asked for yet — the
@@ -3464,6 +3464,23 @@ so refactor and behaviour never share a commit:
 **✅ 4a DONE — `7753fa9`** (2026-09-24). Gates green. Browser-verified by Ibra as Bob, one run
 without Eve and one with: *"exactly what we had before."* One stated, invisible reorder: the success
 toast now fires just after `setGameSuccess(true)` instead of just before, in the same click.
+
+**✅ 4b DONE — `e62a588`** (2026-09-24) — **and with it, STEP 4 IS COMPLETE: solo E91 now tells the
+truth in both roles.** Gates green. Browser-verified by Ibra as Alice:
+
+| run | Eve | keys | game said | checked |
+|---|---|---|---|---|
+| 1 | on | `00100101` vs `00000101` — differ at 3 | line + ⓘ + popup ✅ | "Alice's message" = her typed `11111111` ✅; "Bob's message" `11011111` = `cipher ⊕ Bob's key` ✅ |
+| 2 | off | `1001111` both | *"Bob was able to decrypt your message!"*, no popup ✅ | — |
+
+**⚠️ Testing lesson, recorded because it cost three runs.** Before those two, three Alice runs with
+differing keys all showed the **old** unconditional *"Bob was able to decrypt"*. Not a code bug — proven
+rather than assumed: the dev server had been restarted at 10:45 (after the 10:37 edit), and the
+JavaScript it served was downloaded and read — it contained `setTimeout(() => endRound(…), 2000)` and
+not the old timer. The browser tab had kept the **pre-4b code in memory** across the server restart.
+A hard refresh fixed it. Same family as 3a's first test (raw keys from a stale language file).
+**Rule of thumb for browser checks: after any code change or dev-server restart, hard refresh
+(Cmd+Shift+R) and start a new game before testing.**
 
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
