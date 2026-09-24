@@ -3369,6 +3369,23 @@ built in step 3, reused in step 4.
 
 **EN/ES:** to be drafted by Claude, corrected by Ibra.
 
+#### 🧱 Step 3 is built in bricks, agreed one at a time (2026-09-23)
+
+Proposed shape: **3a** text-only honest ending → **3b** `xorBits()` helper → **3c** the popup →
+**3d** the ⓘ on the feed line. **Only 3a is agreed.** 3b–3d are each agreed when we reach them; 3b
+carries an open choice (`lib/one-time-pad.ts` + unit test, recommended — or a 7th inline XOR).
+
+**3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
+(`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
+green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
+*Le message déchiffré par Bob est incorrect.* — two new keys × FR/EN/ES in `lang/e91-lines.ts`.
+`setGameSuccess(true)` stays on both branches: it means *the round is over*, not *you won*. Keys equal
+→ today's celebration, unchanged. Alice's path untouched (that is step 4).
+
+Why compare **keys** and not messages: §10.15 — the messages differ exactly where the keys differ, so
+it is the same answer, tests the cause directly, and needs no XOR. Why 3a first: it alone removes the
+lie; 3b–3d only explain it.
+
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
 Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
