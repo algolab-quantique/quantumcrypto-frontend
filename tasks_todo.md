@@ -3375,6 +3375,17 @@ Proposed shape: **3a** text-only honest ending → **3b** `xorBits()` helper →
 **3d** the ⓘ on the feed line. **Only 3a is agreed.** 3b–3d are each agreed when we reach them; 3b
 carries an open choice (`lib/one-time-pad.ts` + unit test, recommended — or a 7th inline XOR).
 
+**❌ 3b DROPPED (agreed 2026-09-24) — the popup uses a one-line local helper instead.** Ibra asked the
+question that undid the recommendation: *"if we add the new file, do we then have to call it in all 6
+other places?"* Yes — otherwise it is worse than today: 6 inline copies + the new file + the dead DPS
+copy = **8 versions of one line**, the exact outcome Task 74 forbids (*7 → 1, never 7 → 8*). A shared
+file is only right **together** with converting every site, which touches BB84 and DPS — Task 74's job.
+Two arguments for the file also failed on inspection: *"swap the algorithm later"* does not hold,
+because the student performs the XOR by hand — the algorithm **is** the lesson, and replacing it would
+change the whole tab anyway; and *"it is the only testable part"* is weak, because the XOR has never
+been wrong — the bug class here is **which key** is passed in, which no XOR test catches.
+**Step 3 is now: 3a ✅ → 3c the popup → 3d the ⓘ.**
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
@@ -3675,6 +3686,11 @@ few bits by hand — say 5, enough to prove they understand — then **enable a 
 rest automatically**. *That* call needs a real `encrypt(message, key)` / `decrypt(cipher, key)`, and
 at that point one shared implementation stops being tidiness and starts being the thing that makes
 the feature cheap in all three protocols at once.
+
+**➕ 2026-09-24: a 7th site is coming** — Task 71 step 3c's popup computes each side's message
+(`cipher ⊕ key`) with a one-line local helper. Deliberately *not* a new shared file (see Task 71, "3b
+DROPPED"): a file without converting all sites would make 8 versions. When this task runs, convert
+**all seven** and delete the DPS copy in the same commit.
 
 ---
 
