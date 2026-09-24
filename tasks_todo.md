@@ -3603,6 +3603,31 @@ The old buggy counter almost never returned 0, so **fixing the counter exposed t
   shared by all three protocols). Decide when Task 72 starts. If step 3 of Task 71 ends up as a popup,
   the same JSX approach may apply here too.
 
+**✅ DECIDED 2026-09-24 — markers in the translation, the pattern Task 58 slice 4 already established.**
+Ibra proposed cutting the sentence into translated pieces with the numbers between them, and named its
+weakness himself: *"the translated phrase may not allow breaking it in the same manner"* — any language
+needing another word order would force approximate translations. The project had already chosen the
+alternative: `'Le nombre minimum de photons est {min}'` in all three languages, filled by
+`fillPhotonMinimum` / `fillPhotonMinimums` (`lib/utils.ts`). Each language keeps **one whole sentence**
+and puts the markers wherever its grammar needs them. **`localize` stays untouched** — zero risk to
+BB84 and DPS. (My first proposal, changing `localize` itself, was worse on both counts.)
+
+**The slice (one, so the new helper never sits unused):**
+- `lib/utils.ts` — a generic `fillPlaceholders(template, values)` beside the two existing fillers, with
+  a unit test.
+- `types.ts` — the feed line gains an optional `values` (named numbers). The line stores the **key and
+  the numbers**, not finished text, so switching language still redraws it.
+- `e91-progression.tsx` — a line with `values` is drawn as `fillPlaceholders(localize(content), values)`.
+- `solo-messaging-tab.tsx` — the reveal fires on **`evePresent`**, not on `eveGuessedRightBits > 0`;
+  title stays `component.e91.evePresent`; content is a **new** key, `component.e91.evePresent.summary`,
+  because multi still uses `.stats` (`messaging-tab.tsx:96-97`) and must not change.
+- `{n}` = `eveAngles.length` (photons Eve measured) · `{m}` = `aliceBases.length` (photons sent) ·
+  `{k}` = `eveGuessedRightBits` (B2's count) · `{l}` = `aliceValidBits.length` (the key it is counted
+  over — solo has no sacrifice step, Task 75).
+- FR `Ève a mesuré {n} photons sur {m} ; elle a deviné {k} bits sur {l}.` · EN `Eve measured {n}
+  photons out of {m}; she guessed {k} bits out of {l}.` · ES `Eva midió {n} fotones de {m}; adivinó
+  {k} bits de {l}.`
+
 **Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
 the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
 `solo-CHSH-tab` local state; and `[M]` is always `[N]` until
