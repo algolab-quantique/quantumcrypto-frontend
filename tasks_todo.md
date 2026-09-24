@@ -3311,7 +3311,33 @@ effect; showing only the effect leaves the student to guess the cause. Note it r
 to Bob, which the real protocol never does — the same nature as revealing her message, which was
 already accepted. The game is over at that point; this is the app teaching, not the protocol.
 
-**D1 — where the comparison renders: ⏸ OPEN, awaiting Ibra.** Facts checked 2026-09-23:
+**D1 — where the comparison renders: ✅ DECIDED 2026-09-23 — a popup, plus a short feed line that
+carries an ⓘ button to reopen it.**
+
+Ibra: *"It is OK [that a refresh closes it], since the popup message is already shown. … A small
+button, the i (information), in the short line — we read the short line, but we can understand more by
+clicking on the i. I love that."* The ⓘ **removes the refresh limit** raised below rather than
+accepting it: the feed line is persisted, so the student can reopen the explanation at any time,
+including after a refresh.
+
+**Why the ⓘ can work after a refresh — checked 2026-09-23.** Everything the popup shows is derivable
+from three values already persisted in `e91GameData`: `aliceCipher`, `aliceValidBits`, `bobValidBits`.
+
+```
+Alice's message = aliceCipher ⊕ aliceValidBits     (true in both roles)
+Bob's message   = aliceCipher ⊕ bobValidBits       (true in both roles)
+```
+
+So **nothing new needs storing**. ⚠️ This **supersedes** the bullet below that said Alice's plaintext
+must be kept in `message` — it does not; it is one XOR away. (Also avoids a trap in that plan:
+`solo-messaging-tab.tsx:186` overwrites `message` with Bob's empty local state on validation.)
+
+**Precedents confirmed:** the ⓘ icon is already used in E91 (`solo-measurement-tab.tsx:336`, lucide
+`Info`). A feed line is `{title?, content?, extra?}` (`types.ts:34`) — **shared by BB84, DPS and E91**,
+so marking a line as "has an ⓘ" means one new *optional* field there; the other protocols are
+unaffected.
+
+*The options as they were weighed before the decision, kept for the record:*
 
 - The progression feed **scrolls** (`components/shared/game-progression.tsx:17-18`, `overflow-y-scroll`)
   and **survives refresh** (`e91-progress-store.ts` persists to `localStorage`). But it renders **plain
@@ -3338,9 +3364,8 @@ built in step 3, reused in step 4.
 - The Bob path fires `toast.success(localize('component.basis.correct'))` on correct arithmetic. Next
   to *"est incorrect"*, a green "correct" toast contradicts the screen. In the perturbed case, no
   success toast.
-- Alice's plaintext must be kept (generated at `solo-messaging-tab.tsx:99`, currently discarded).
-  Store it in `message`, which then means *Alice's plaintext* in both roles — what she typed when the
-  student is Alice, what the machine wrote when he is Bob.
+- ~~Alice's plaintext must be kept … store it in `message`.~~ **Superseded 2026-09-23:** it is
+  derivable as `aliceCipher ⊕ aliceValidBits`, so nothing is stored — see D1 above.
 
 **EN/ES:** to be drafted by Claude, corrected by Ibra.
 
