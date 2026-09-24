@@ -3216,7 +3216,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 |---|---|---|---|
 | **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
 | **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
-| **3 — 71b** 🔨 3a ✅ | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
+| **3 — 71b** 🔨 3a ✅ 3c ✅ | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
 | **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
 | **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
 
@@ -3396,6 +3396,27 @@ New file `components/e91/play-page/key-perturbed-dialog.tsx`; it **reads the sto
 (`aliceCipher`, `aliceValidBits`, `bobValidBits`) and computes each message as `cipher ⊕ key` with a
 one-line local helper, so 3d's ⓘ and step 4 (Alice) can open the same popup with nothing to pass.
 6 new keys × FR/EN/ES. Not in 3c: the ⓘ — until 3d, a refresh loses the popup.
+
+#### ✅ STEP 3c DONE — `aeccad7` (2026-09-24)
+
+Gates green; all 7 popup keys proven to resolve in EN/FR/ES by an automated check. **Browser-verified
+by Ibra, three runs as Bob with Eve:**
+
+| run | lang | keys | what showed | checked against the dump |
+|---|---|---|---|---|
+| 1 | FR | 7 bits, differ at 2 and 4 | popup ✅ — but the differing bits **bold, not red** | every row = `cipher ⊕ key` ✅ |
+| 2 | EN | 6 bits, **identical** (Eve's damage missed all 6, ~1 game in 5) | **"Congratulations"**, no popup ✅ | Bob's typed message = `cipher ⊕ key` ✅ |
+| 3 | EN | 10 bits, differ at 3 | popup, position 3 **red in all four rows** ✅ | every row = `cipher ⊕ key` ✅ |
+
+**Run 1's bug** was mine: `text-red-500` does not exist in this project (the Tailwind config replaces
+the red palette) — fixed to `text-red` before commit; the 7 other sites are tracked above.
+**Run 1's oddity** — Alice's message equalled Bob's key and vice versa — was predicted to be luck iff
+`aliceCipher = kA ⊕ kB = 0101000`; the dump showed exactly that (1 chance in 128: the random message
+happened to equal Bob's key). **Run 2** is worth keeping as a teaching example: the message arrived
+intact *and* the results page said "Key compromised!" — both true, because Eve still read 1 bit. An
+intact message does not mean a secret key.
+
+**Unverified:** phone width (optional check, not done); Alice's path (step 4); multi (step 5).
 
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
