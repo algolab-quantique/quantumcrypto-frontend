@@ -3433,6 +3433,20 @@ student sees the raw text `component.basis.correct` in the green toast. BB84 and
 three. Pre-existing, found while checking 3a; a one-line fix, kept out of 3a so the slice stays one
 concern. **Proof it is a common key, not an E91 one:** used 9 times — BB84 ×3, DPS ×4, E91 ×2 — so by
 the prefix rule it is correctly unprefixed; only E91's English entry is missing. **Priority: lowest**
+
+**🐛 Finding, not scheduled (2026-09-24): every `text-red-500` in the app renders in the default
+colour — the "key compromised" warnings have never been red.** Found when 3c's popup showed its
+differing bits bold but not red. `tailwind.config.js:61` sets `extend.colors.red = "hsl(var(--red))"`
+— a single value, which **replaces** Tailwind's whole `red` palette. So `red-500` does not exist in this
+project and the class generates no CSS; only the app's own `text-red` / `border-red` work (`--red` in
+`app/globals.css:41,68`). Green is not overridden, so `text-green-500` works — which makes it worse:
+*safe* shows green, *compromised* shows plain bold. **7 sites:** `bb84-results-row.tsx:34`,
+`bb84/.../solo-results-table.tsx:113,133`, `app/(main)/games/[gameType]/[gameCode]/results/page.tsx:281`,
+`e91-results-row.tsx:39`, `e91/.../solo-results-table.tsx:137,159`. Fix: `text-red-500` → `text-red`,
+one word each; browser-check both protocols' results. **Suggested priority: medium-low** — it is the
+colour of the one warning Task 56 / Task 63 Step 6b made honest, but the words are already right.
+(Also noted: a second, unused `tailwind.config.ts` sits beside the `.js` one — Tailwind picks `.js`
+first, which is why `text-highlight` works. Worth deleting the dead one someday.)
 (Ibra: side findings are tracked with a priority and do not interrupt the current task).
 **→ Ibra, 2026-09-24: fix it now anyway — one line, text only.** Own commit, after 3a, never mixed
 into it. English text copied from BB84 and DPS (`'Correct!'`) so all three protocols say the same.
