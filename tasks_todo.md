@@ -3628,6 +3628,22 @@ BB84 and DPS. (My first proposal, changing `localize` itself, was worse on both 
   photons out of {m}; she guessed {k} bits out of {l}.` · ES `Eva midió {n} fotones de {m}; adivinó
   {k} bits de {l}.`
 
+**📝 Wording adjusted (2026-09-24, Ibra delegated the choice: "tell the best and we will take it").**
+With K = 1 — common — all three read wrong: *"1 bits"* (and French wants *"0 bit"* too). Ibra offered
+*"bit(s)"*; chosen instead is a rewording that is correct for **every** number and also names which
+bits: FR `… ; elle a deviné {k} des {l} bits de la clé.` · EN `… ; she guessed {k} of the {l} key
+bits.` · ES `… ; adivinó {k} de los {l} bits de la clave.`
+
+**🔍 Finding (2026-09-24), with a process lesson attached.** `lib/utils.ts:3` imports the `Language`
+enum from `components/providers/language-provider.tsx`, a React file the test runner cannot parse —
+so **nothing in `lib/utils.ts` could ever be unit-tested**, which is likely why it had no tests. The
+agreed unit test for `fillPlaceholders` hit this. **I chose a workaround on my own** — a `vi.mock`
+stand-in for that import inside `lib/utils.test.ts` — instead of stopping to tell Ibra and tracking it,
+which is what the rule requires for anything discovered mid-slice. Ibra caught it. The workaround is
+test-only (the app code is unchanged) and stays pending his decision. **The real fix, for later:** move
+the `Language` enum out of the `.tsx` file into a plain `.ts` one, so `lib/utils.ts` stops importing a
+component. Low priority.
+
 **Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
 the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
 `solo-CHSH-tab` local state; and `[M]` is always `[N]` until
