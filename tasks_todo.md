@@ -3418,6 +3418,16 @@ intact message does not mean a secret key.
 
 **Unverified:** phone width (optional check, not done); Alice's path (step 4); multi (step 5).
 
+**3d — ✅ AGREED 2026-09-24: the ⓘ on the feed line.** A small ⓘ button after 3a's line reopens the
+same `KeyPerturbedDialog`, including after a refresh. Three changes: `types.ts:34` — the shared feed
+line `{title, content, extra}` gets one **optional** `info` field naming the popup to open (BB84/DPS
+untouched); `solo-messaging-tab.tsx` — 3a's line carries `info: 'keyPerturbed'`; `e91-progression.tsx`
+— a line with `info` gets an ⓘ (lucide `Info`, already used in E91) that opens the popup. Works after
+a refresh because the feed is persisted and the popup rebuilds from persisted store values.
+**Language follows too** (Ibra's question): the line stores *keys*, and both the line and the popup
+call `localize()` on every render, so switching language redraws both; the choice itself survives a
+refresh (`header-v3.tsx:22-25` restores it).
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
