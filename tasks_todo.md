@@ -3216,7 +3216,7 @@ That second half is exactly why the simulated-Alice block names `aliceValidBits`
 |---|---|---|---|
 | **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
 | **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
-| **3 — 71b** 🔨 3a ✅ 3c ✅ | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
+| **3 — 71b** ✅ (3a, 3c, 3d; 3b dropped) | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
 | **4 — 71c** | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
 | **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
 
@@ -3427,6 +3427,20 @@ a refresh because the feed is persisted and the popup rebuilds from persisted st
 **Language follows too** (Ibra's question): the line stores *keys*, and both the line and the popup
 call `localize()` on every render, so switching language redraws both; the choice itself survives a
 refresh (`header-v3.tsx:22-25` restores it).
+
+#### ✅ STEP 3d DONE — `d38ccb3` (2026-09-24) — and with it, STEP 3 IS COMPLETE
+
+Gates green. Checked before testing that the new field survives persistence: the feed is saved and read
+back whole (`e91-progress-store.ts:55,73`, `JSON.stringify` / `JSON.parse`), so nothing drops `info`.
+**Browser-verified by Ibra:** the ⓘ appears on the line, reopens the popup after closing it, and still
+works after a refresh. His feedback — *"too small"* → enlarged 16px → 20px (phone) / 24px (computer),
+and coloured `text-highlight` like the line's bold title. **Those two last tweaks were committed on his
+explicit OK ("commit now") without a further browser check** — first thing to glance at next session.
+
+**Step 3 as delivered, from the student's side (Bob, keys differ):** no "Félicitations", no green toast
+→ the line **La clé a été perturbée** *Le message déchiffré par Bob est incorrect.* ⓘ → a popup that
+says his calculation was right and shows the four rows with the differing positions in red, reopenable
+at any time. Keys equal → unchanged celebration.
 
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
