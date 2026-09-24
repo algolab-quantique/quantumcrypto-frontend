@@ -229,18 +229,11 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                 ]);
                 setAliceCipherSent(true);
                 
-                // SOLO MODE: Simulate Bob's successful decryption after delay
-                // In multiplayer, Bob sends a socket event when he decrypts successfully
-                // Here we simulate that after a short delay
-                setTimeout(() => {
-                    pushLines([
-                        {
-                            title: 'component.messaging.congratulations',
-                            content: 'component.messaging.alice.end',
-                        },
-                    ]);
-                    setGameSuccess(true);
-                }, 2000);  // 2 second delay to simulate Bob decrypting
+                // SOLO MODE: the machine plays Bob. After a short pause (Bob
+                // decrypting), say honestly how it went: his message is right
+                // only if his key matches Alice's (Task 71). In multiplayer,
+                // Bob's own browser reports this through the socket.
+                setTimeout(() => endRound('component.messaging.alice.end'), 2000);
             }
         } else {
             if (playerRole === 'A') {
