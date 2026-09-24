@@ -3409,7 +3409,9 @@ success path calls `toast.success(localize('component.basis.correct'))`. `lang/e
 that key in **French (line 166) and Spanish (line 270) only — not English.** So an English-speaking
 student sees the raw text `component.basis.correct` in the green toast. BB84 and DPS define it in all
 three. Pre-existing, found while checking 3a; a one-line fix, kept out of 3a so the slice stays one
-concern.
+concern. **Proof it is a common key, not an E91 one:** used 9 times — BB84 ×3, DPS ×4, E91 ×2 — so by
+the prefix rule it is correctly unprefixed; only E91's English entry is missing. **Priority: lowest**
+(Ibra: side findings are tracked with a priority and do not interrupt the current task).
 
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
