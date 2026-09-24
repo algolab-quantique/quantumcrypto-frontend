@@ -163,6 +163,33 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         setCrypto(updatedCrypto);
     };
 
+    // How the round ends, for both roles. The student's arithmetic has already
+    // been checked; whether Bob's MESSAGE is right depends only on whether the
+    // two keys agree (physics doc 10.15). Returns true when they do.
+    const endRound = (successContent: string) => {
+        const keysMatch = aliceValidBits.join('') === bobValidBits.join('');
+        if (keysMatch) {
+            pushLines([
+                {
+                    title: 'component.messaging.congratulations',
+                    content: successContent,
+                },
+            ]);
+        } else {
+            pushLines([
+                {
+                    title: 'component.e91.messaging.keyPerturbed',
+                    content: 'component.e91.messaging.keyPerturbed.line',
+                    info: 'keyPerturbed',
+                },
+            ]);
+            setKeyPerturbedOpen(true);
+        }
+        // The round is over either way: "finished", not "won".
+        setGameSuccess(true);
+        return keysMatch;
+    };
+
     /**
      * SOLO MODE: Validate locally without socket calls
      */
@@ -188,28 +215,9 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             if (playerRole === 'B' && !gameSuccess) {
-                // Bob's arithmetic is right. Whether his MESSAGE is right
-                // depends only on whether the two keys agree (physics doc 10.15).
-                if (aliceValidBits.join('') === bobValidBits.join('')) {
-                    pushLines([
-                        {
-                            title: 'component.messaging.congratulations',
-                            content: 'component.messaging.bob.end',
-                        },
-                    ]);
+                if (endRound('component.messaging.bob.end')) {
                     toast.success(localize('component.basis.correct'));
-                } else {
-                    pushLines([
-                        {
-                            title: 'component.e91.messaging.keyPerturbed',
-                            content: 'component.e91.messaging.keyPerturbed.line',
-                            info: 'keyPerturbed',
-                        },
-                    ]);
-                    setKeyPerturbedOpen(true);
                 }
-                // The round is over either way: "finished", not "won".
-                setGameSuccess(true);
             } else if (playerRole === 'A' && !aliceCipherSent) {
                 // Alice sends cipher - in solo mode, just mark as sent
                 const payload = crypto.map(({value}) => value);
