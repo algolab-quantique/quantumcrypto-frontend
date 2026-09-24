@@ -3404,6 +3404,13 @@ prefix: **E91 124 / 253, DPS 24 / 186, BB84 0 / 264**. Many unprefixed keys (`co
 text, so by the rule's reading they look "common" while they are not. Aligning them is a rename across
 all three protocols — for later, never mixed into a behaviour slice.
 
+**🐛 Finding, not scheduled (2026-09-23): E91's success toast is untranslated in English.** Bob's
+success path calls `toast.success(localize('component.basis.correct'))`. `lang/e91-lines.ts` defines
+that key in **French (line 166) and Spanish (line 270) only — not English.** So an English-speaking
+student sees the raw text `component.basis.correct` in the green toast. BB84 and DPS define it in all
+three. Pre-existing, found while checking 3a; a one-line fix, kept out of 3a so the slice stays one
+concern.
+
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
 Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
