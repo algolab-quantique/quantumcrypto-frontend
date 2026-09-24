@@ -3414,6 +3414,9 @@ the prefix rule it is correctly unprefixed; only E91's English entry is missing.
 (Ibra: side findings are tracked with a priority and do not interrupt the current task).
 **→ Ibra, 2026-09-24: fix it now anyway — one line, text only.** Own commit, after 3a, never mixed
 into it. English text copied from BB84 and DPS (`'Correct!'`) so all three protocols say the same.
+**✅ Done — `9e1dcb0`.** Verified by an automated lookup (EN "Correct!", FR "Correct !", ES
+"¡Correcto!"), committed on that proof with Ibra's explicit OK instead of a full English browser game —
+the lookup is exactly what the browser performs.
 
 #### ✅ STEP 3a DONE — `2968249` (2026-09-24)
 
