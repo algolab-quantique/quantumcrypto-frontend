@@ -14,16 +14,29 @@ A **slice** is the smallest change that leaves the app in a working, committable
 
 ```
 think → agree with Ibra → TRACK THE AGREEMENT → ONE small change → gates → REVIEW OWN WORK
-      → verify → commit → update tracker → PUSH → next
+      → verify → commit → update tracker → next
+                                            … and PUSH before the session ends
 ```
 
-**Track first, push last (2026-09-23).** Every agreement — a finding, a decision, a wording, a plan,
-a slice — goes into the tracker *before* any code, not only when the slice lands. And every block of
-work ends on `origin`. Both were learned the hard way: an agreed wording once lived only in a chat that
-ended, and nine commits sat on one laptop for five days.
+**Before each slice, recall it in a few lines** — what it is, why, and where it sits in the plan.
+Sessions are weeks apart; nobody should have to reconstruct the context from the diff.
 
 Never start the next slice before the current one is committed. If a slice turns out to be two
 concerns, stop and split it — do not "finish it quickly since I'm already here".
+
+### 1a. Commit, push, merge — three different jobs (agreed 2026-09-23)
+
+| | what it is | when |
+|---|---|---|
+| **commit** | a save point on the laptop | when something is **agreed** (tracker, docs) or **proven** (code: gates green, plus Ibra's browser check when the player sees a change). A proposal still under discussion, or code not yet verified, is **never** committed |
+| **push** | the backup on GitHub; it also runs CI | at the **end of every work session**, and before any break where losing the work would hurt. Not needed after every commit |
+| **merge into `development`** | what moves toward the deployed app | only through a **pull request**, and only when a **whole chapter** is complete — e.g. the E91 migration, the physics simulation — or when Ibra asks. When a chapter closes, Claude says so: *"this is a good moment to merge."* |
+
+**Track first:** every agreement — a finding, a decision, a wording, a plan, a slice — goes into the
+tracker as soon as it is agreed, before any code, not only when the slice lands.
+
+Learned the hard way: an agreed wording once lived only in a chat that ended, and nine commits sat on
+one laptop for five days.
 
 ### 1b. Review your own work before handing it over — and say the loop out loud
 
