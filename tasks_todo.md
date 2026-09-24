@@ -3386,6 +3386,17 @@ change the whole tab anyway; and *"it is the only testable part"* is weak, becau
 been wrong — the bug class here is **which key** is passed in, which no XOR test catches.
 **Step 3 is now: 3a ✅ → 3c the popup → 3d the ⓘ.**
 
+**3c — ✅ AGREED 2026-09-24: the popup.** Opens from 3a's "keys differ" branch, right after the feed
+line. **Closable** `ui/dialog` (information, not a blocking choice — `alert-dialog` stays reserved for
+the restart). Content: title (reuses 3a's `component.e91.messaging.keyPerturbed`), the sentence
+*"Votre calcul est correct, mais Alice et Bob n'ont pas la même clé. Le message déchiffré par Bob est
+incorrect."*, then four aligned rows — Alice's message, Bob's message, Alice's key, Bob's key (effect,
+then cause) — with the positions where the keys differ in `text-red-500`, and a "Compris" button.
+New file `components/e91/play-page/key-perturbed-dialog.tsx`; it **reads the store itself**
+(`aliceCipher`, `aliceValidBits`, `bobValidBits`) and computes each message as `cipher ⊕ key` with a
+one-line local helper, so 3d's ⓘ and step 4 (Alice) can open the same popup with nothing to pass.
+6 new keys × FR/EN/ES. Not in 3c: the ⓘ — until 3d, a refresh loses the popup.
+
 **3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
 (`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
 green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
