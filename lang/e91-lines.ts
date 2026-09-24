@@ -47,6 +47,9 @@ export const e91Lines: LanguageItem[] = [
         'component.messaging.bob.end': 'You decrypted Alice\'s message!',
         'component.messaging.alice.end': 'Bob was able to decrypt your' +
             ' message!',
+        'component.e91.messaging.keyPerturbed': 'The key was disturbed ',
+        'component.e91.messaging.keyPerturbed.line': 'The message Bob decrypted' +
+            ' is wrong.',
         'component.messaging.alice.reveal': 'Your Bob was ',
         'component.messaging.bob.reveal': 'Your Alice was ',
         'component.messaging.cipherSent': 'Sent!',
@@ -151,6 +154,9 @@ export const e91Lines: LanguageItem[] = [
             ' d\'Alice !',
         'component.messaging.alice.end': 'Bob a réussi à déchiffrer votre' +
             ' message !',
+        'component.e91.messaging.keyPerturbed': 'La clé a été perturbée ',
+        'component.e91.messaging.keyPerturbed.line': 'Le message déchiffré par' +
+            ' Bob est incorrect.',
         'component.messaging.alice.reveal': 'Votre Bob était ',
         'component.messaging.bob.reveal': 'Votre Alice était ',
         'component.basis.validateBtn': 'Valider',
@@ -252,6 +258,9 @@ export const e91Lines: LanguageItem[] = [
         'component.messaging.congratulations': 'Felicidades ',
         'component.messaging.bob.end': '¡Has descifrado el mensaje de Alice!',
         'component.messaging.alice.end': '¡Bob pudo descifrar tu mensaje!',
+        'component.e91.messaging.keyPerturbed': 'La clave fue perturbada ',
+        'component.e91.messaging.keyPerturbed.line': 'El mensaje descifrado por' +
+            ' Bob es incorrecto.',
         'component.messaging.alice.reveal': 'Tu Bob era ',
         'component.messaging.bob.reveal': 'Tu Alice era ',
         'component.basis.validateBtn': 'Validar',

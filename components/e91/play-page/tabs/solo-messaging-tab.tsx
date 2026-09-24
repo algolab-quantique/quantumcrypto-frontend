@@ -185,14 +185,25 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             if (playerRole === 'B' && !gameSuccess) {
-                pushLines([
-                    {
-                        title: 'component.messaging.congratulations',
-                        content: 'component.messaging.bob.end',
-                    },
-                ]);
-                toast.success(localize('component.basis.correct'));
-                // In solo mode, mark game as success
+                // Bob's arithmetic is right. Whether his MESSAGE is right
+                // depends only on whether the two keys agree (physics doc 10.15).
+                if (aliceValidBits.join('') === bobValidBits.join('')) {
+                    pushLines([
+                        {
+                            title: 'component.messaging.congratulations',
+                            content: 'component.messaging.bob.end',
+                        },
+                    ]);
+                    toast.success(localize('component.basis.correct'));
+                } else {
+                    pushLines([
+                        {
+                            title: 'component.e91.messaging.keyPerturbed',
+                            content: 'component.e91.messaging.keyPerturbed.line',
+                        },
+                    ]);
+                }
+                // The round is over either way: "finished", not "won".
                 setGameSuccess(true);
             } else if (playerRole === 'A' && !aliceCipherSent) {
                 // Alice sends cipher - in solo mode, just mark as sent
