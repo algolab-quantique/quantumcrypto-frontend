@@ -13,9 +13,14 @@ A **slice** is the smallest change that leaves the app in a working, committable
 **The loop, every time:**
 
 ```
-think → agree with Ibra → ONE small change → gates → REVIEW OWN WORK → verify → commit
-      → update tracker → next
+think → agree with Ibra → TRACK THE AGREEMENT → ONE small change → gates → REVIEW OWN WORK
+      → verify → commit → update tracker → PUSH → next
 ```
+
+**Track first, push last (2026-09-23).** Every agreement — a finding, a decision, a wording, a plan,
+a slice — goes into the tracker *before* any code, not only when the slice lands. And every block of
+work ends on `origin`. Both were learned the hard way: an agreed wording once lived only in a chat that
+ended, and nine commits sat on one laptop for five days.
 
 Never start the next slice before the current one is committed. If a slice turns out to be two
 concerns, stop and split it — do not "finish it quickly since I'm already here".
