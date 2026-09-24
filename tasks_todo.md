@@ -3386,6 +3386,24 @@ Why compare **keys** and not messages: §10.15 — the messages differ exactly w
 it is the same answer, tests the cause directly, and needs no XOR. Why 3a first: it alone removes the
 lie; 3b–3d only explain it.
 
+**3a, first browser test (2026-09-23) — two problems, both caught by Ibra:**
+
+1. **Raw keys on screen** (`component.messaging.keyPerturbedcomponent.messaging.keyPerturbed.line`).
+   Not a code defect: a throwaway test resolved both keys from `lang/e91-lines.ts` in **all three**
+   languages. The app was serving a stale copy of the language file. Re-test after restarting the dev
+   server + hard refresh.
+2. **The key names broke the convention.** 📌 **Rule, Ibra 2026-09-23:** *a key that belongs to one
+   protocol carries that protocol's name — `component.e91.…`; a key with no protocol name is general
+   (common to all).* So when reading only the keys, you know whose they are. Renamed to
+   `component.e91.messaging.keyPerturbed` / `.line`, following E91's existing `component.e91.<area>.…`
+   shape (`basis`, `measurement`, `restart`, …).
+
+**🔍 Finding, not scheduled:** the rule is applied unevenly today. Keys carrying their protocol's
+prefix: **E91 124 / 253, DPS 24 / 186, BB84 0 / 264**. Many unprefixed keys (`component.messaging.*`,
+`component.game.*`, `component.basis.*`) are defined separately in each protocol's file with different
+text, so by the rule's reading they look "common" while they are not. Aligning them is a rename across
+all three protocols — for later, never mixed into a behaviour slice.
+
 **⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
 things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
 Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
