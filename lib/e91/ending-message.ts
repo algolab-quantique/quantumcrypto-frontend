@@ -1,0 +1,26 @@
+/**
+ * The message a student sees when an E91 game ends — decided in ONE place for
+ * solo and multiplayer, both roles (Task 71; M2a). Nothing to do with the
+ * session lifecycle: this is only "Félicitations" versus "the key was disturbed".
+ *
+ * The message Bob decrypts is Alice's exactly where their two keys agree
+ * (docs/protocol-physics.md §10.15), so comparing the keys decides it.
+ *
+ * Only the decision and its feed line live here. Each caller still pushes the
+ * line, ends the round, and opens the popup when it can: a socket handler has
+ * no popup of its own, and the line's ⓘ reopens it from the feed anyway.
+ */
+
+import type {Line} from '@/types';
+
+export const keysMatch = (aliceKey: readonly string[], bobKey: readonly string[]): boolean =>
+    aliceKey.join('') === bobKey.join('');
+
+export const endingLine = (match: boolean, successContent: string): Line =>
+    match
+        ? {title: 'component.messaging.congratulations', content: successContent}
+        : {
+            title: 'component.e91.messaging.keyPerturbed',
+            content: 'component.e91.messaging.keyPerturbed.line',
+            info: 'keyPerturbed',
+        };

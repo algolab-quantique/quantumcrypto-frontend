@@ -23,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { keysMatch, endingLine } from '@/lib/e91/ending-message';
 import { cn, forbiddenSymbols } from '@/lib/utils';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -175,29 +176,16 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
 
     // How the round ends, for both roles. The student's arithmetic has already
     // been checked; whether Bob's MESSAGE is right depends only on whether the
-    // two keys agree (physics doc 10.15). Returns true when they do.
+    // two keys agree (physics doc 10.15). Returns true when they do. The
+    // decision and its line come from lib/e91/ending-message.ts, shared with
+    // multiplayer; this adds what only solo can do here — open the popup.
     const endRound = (successContent: string) => {
-        const keysMatch = aliceValidBits.join('') === bobValidBits.join('');
-        if (keysMatch) {
-            pushLines([
-                {
-                    title: 'component.messaging.congratulations',
-                    content: successContent,
-                },
-            ]);
-        } else {
-            pushLines([
-                {
-                    title: 'component.e91.messaging.keyPerturbed',
-                    content: 'component.e91.messaging.keyPerturbed.line',
-                    info: 'keyPerturbed',
-                },
-            ]);
-            setKeyPerturbedOpen(true);
-        }
+        const match = keysMatch(aliceValidBits, bobValidBits);
+        pushLines([endingLine(match, successContent)]);
+        if (!match) setKeyPerturbedOpen(true);
         // The round is over either way: "finished", not "won".
         setGameSuccess(true);
-        return keysMatch;
+        return match;
     };
 
     /**
