@@ -2518,6 +2518,12 @@ truth for the ending message, solo and multi, both roles** (Ibra's question). On
 line are shared: opening the popup stays with each screen, since multi Alice's ending arrives in a socket
 handler that has no popup (her line's ⓘ still opens it). The multi rename `keyBits` → `localPlayerKeyBits`
 moves to **after M2b** — the same order as solo, so the name never lies.
+**✅ M2a DONE — `4ba20a0` (2026-09-25).** 160 tests (5 new), tsc + lint clean. **First check played by Claude in its
+built-in browser** (solo, Bob, Eve 100 %, 30 photons; the pair sorting done by reading the stored bases and
+clicking each row, verified row by row before validating; the CHSH step skipped with "Sécuritaire"): keys
+`11111010` / `11111111`, Bob typed `11000000` → popup exactly as before, rows matching storage, positions
+6 and 8 red; feed line + ⓘ; Task 72's line "3 des 8 bits". The keys-equal branch is the same call, pinned
+by the unit tests.
 
 **🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
 the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
