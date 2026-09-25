@@ -2519,6 +2519,13 @@ line are shared: opening the popup stays with each screen, since multi Alice's e
 handler that has no popup (her line's ⓘ still opens it). The multi rename `keyBits` → `localPlayerKeyBits`
 moves to **after M2b** — the same order as solo, so the name never lies.
 
+**🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
+the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
+click (`solo-measurement-tab.tsx:256`, also in multi); and **Claude plays quick solo checks in its built-in
+browser**, sending screenshots and dumps (multi still needs two isolated browsers). **After the deadline:
+Playwright end-to-end tests** — a robot browser playing solo and multi like a student (the roadmap's testing
+phase 3; ~2 days, and a browser download to approve).
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
