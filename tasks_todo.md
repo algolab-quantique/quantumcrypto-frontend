@@ -55,6 +55,9 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
   i.e. through the admin *"merge without waiting for requirements"* option. The PR lists four manual
   checks to run first (three E91 solo flows, and BB84 with Eve up to the restart, since Task 63 moved
   BB84 code into the shared restart). **Not merged yet.**
+  → **✅ MERGED 2026-09-25 — `459dd59`.** Ibra ran the four checks first: *"tests are OK, merge."*
+  Merged with the admin option (same as #23), a merge commit like #23. Verified after: every commit of
+  `ibra_architecture` is an ancestor of `origin/development` — 0 left behind.
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
@@ -77,7 +80,7 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 | 11 | Manual test matrix — 3 protocols × 2 modes × 2 Eve scenarios = **12 flows**, each with refresh / restore / abandon edges (multi needs 2 browsers) | 6–10 | *see ⚠️ below* | 4, 6 |
 | 12 | Test phases 2–3 (component tests, then Playwright E2E) | 8–12 | **Task 47 P1** ("Remaining: phases 2–3 later") | — *(optional, but see note)* |
 | 13 | 50 dependabot vulnerabilities | 2–3 | **Task 47 P2** | — |
-| 14 | **Design / visual polish** | 5–10 | ⚠️ **NOT TRACKED — needs scoping first** | someone must define "polished" |
+| 14 | **Design / visual polish** | 5–10 | ⚠️ **NOT TRACKED — needs scoping first** (first concrete item: **Task 76**, the disturbed-key popup) | someone must define "polished" |
 
 **Totals (excluding #12, which is optional):**
 
@@ -3770,6 +3773,25 @@ honest and `localize` can take the number in its own span; (b) placement — und
 beside the Secure/Unsecure buttons. **Recommend beside the buttons**: that is the moment the student
 needs it. All three languages, **both** CHSH tabs.
 
+**⚠️ Check the number before it goes on screen (noticed 2026-09-25).** The draft quotes *"S ≈ ±1.4"*
+at 20 photons, but a quick recomputation (~2.2 pairs per term, variance `(1 − E²)/n` with `E² = ½`)
+gives nearer **±1.0**; ±1.4 matches the worst case `E = 0`. The *measured* rates above (34 % false
+alarm, 27 % false negative, 20 000 games) are solid and are what a student can use — prefer them in
+the text, and re-derive any ± with `runE91Protocol` before quoting it.
+
+**🔍 SECOND GAP, same tab — found by Ibra 2026-09-25: the student cannot tell what to DO.** Playing
+Alice in solo, at *"Step 3: Drag the correct value (+1 or −1) to the appropriate container for each
+photon pair. Reminder: multiply Alice's and Bob's measurement outcomes…"*, with a table of pairs (bases
+`a a' b b'`, photons 0/1, `+1` / `−1` chips) and four containers `a|b`, `a'|b`, `a|b'`, `a'|b'` —
+Ibra: *"even I know E91 and all the steps, and here I really don't know what to do. How do I choose
++1 or −1? Then drag it to the same combination?"* If the protocol's own author is lost, a first-time
+student is. Unclear at least: (1) how photon values `0/1` map to the `±1` outcomes the multiplication
+needs (the hint says "multiply" but the table shows 0 and 1); (2) which chip to pick and where it goes
+— presumably the container matching that row's base pair; (3) what the four `E(·,·)` and `S` boxes
+below will do with it. **Not diagnosed, not scheduled — "not for now" (Ibra).** It belongs with
+Task 68's pedagogy work; worth deciding together whether one text fix covers both gaps or the drag
+step itself needs redesign. **Priority: important for teaching, after the deadline.**
+
 ---
 
 ### 67. 🔴🔥 E91 multiplayer writes into BB84's storage during NORMAL play — five unguarded handlers
@@ -3824,6 +3846,28 @@ and (3) is months away. It also makes (2)/(3) safer by pinning the expected beha
 
 **⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
 against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
+### 76. 🎨 The disturbed-key popup works, but does not look good yet
+
+**Status**: 🎨 FINDING, **not a priority** (Ibra, 2026-09-25: *"all this is not a priority at all, just
+visually it doesn't feel good — and colleagues judge the UI more than the core and the refactor"*).
+**Found**: Ibra, testing PR #24 before the merge. **Frontend-only.** First concrete item under the
+roadmap's untracked row 14, *Design / visual polish*.
+
+The popup from Task 71 step 3c (`components/e91/play-page/key-perturbed-dialog.tsx`):
+
+1. **The differing bits are red.** Ibra would use the colour of the bold titles in the feed —
+   `text-highlight`, a golden yellow (`--highlight: 45 93% 50%`, `app/globals.css:40`) — so the popup
+   speaks the game's own visual language. (Red was chosen to mean "wrong"; worth deciding together.)
+2. **The sentence is hard to read — small and grey.** Cause, checked: it is a `DialogDescription`,
+   whose default style is `text-sm text-muted-foreground` (`components/ui/dialog.tsx:106`), i.e.
+   deliberately de-emphasised. Only the title and the four row labels read clearly.
+3. **The four rows could be separated better** — e.g. a line between the messages and the keys (today
+   only a padding gap).
+
+Small, cosmetic, local to one file; a good first slice whenever visual polish is scheduled.
 
 ---
 
