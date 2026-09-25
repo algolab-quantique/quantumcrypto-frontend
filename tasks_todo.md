@@ -2357,6 +2357,40 @@ VM, and deploys it himself). Before planning, both sides of a multiplayer E91 ro
    git-ignored and generated on the VM by `update-migrate.sh`; `E91Iteration`'s bit/basis fields are
    `CharField(max_length=30)`; Docker runs Python 3.12; the backend's working branch is `ibra_development`.
 
+#### 📋 THE MULTIPLAYER PLAN — ✅ AGREED 2026-09-25
+
+**Design: a fresh `e91/protocol.py`, a faithful translation of `lib/e91/protocol.ts`** (Ibra's
+proposal). Not a re-implementation behind the old signatures — that is impossible:
+`eveGeneratedBits(self, bases)` receives one side's bases only, so there is nowhere for Eve's pair to
+come from. **The signature is the bug.** Pure Python, no Django import, so it is testable with plain
+`unittest`; mirrors the TypeScript function for function, so the two read side by side and the day
+option A lands it is simply deleted.
+
+| slice | repo | what | verify |
+|---|---|---|---|
+| **M1a** | backend | `e91/protocol.py` + `e91/test_protocol.py` — the same acceptance numbers as the TS suite (S = 2√2 without Eve, √2 with; key errors 0 % → 25 %; each side 50/50) | tests |
+| **M1b** | backend | wire it: at START, if Eve is present, draw her pairs and store them (new `eve_angles`, `eve_bits`); on MEASURE, with Eve `measure_one_side(Eve's pair)`, without Eve first `measure_one_side`, second `measure_other_side`; delete the two old functions | 2 browsers, dumps by hand |
+| **M1c** | backend | `RESTART_WITHOUT_EVE` clears the previous round's bits and bases | 2 browsers, one restart |
+| **M2a** | frontend | refactor: "compare the keys + the disturbed line" moves to one shared place used by solo and multi; multi `keyBits` → `localPlayerKeyBits` | solo re-test |
+| **M2b** | frontend | multi: each side uses its own key (`messaging-tab.tsx:42`) = Task 71 step 5 | 2 browsers |
+| **M2c** | frontend | multi's honest ending, both roles; `B_SUCCESS` still sent (the round is over) | 2 browsers |
+| **M2d** | both | *optional:* multi's Eve line like Task 72 — needs Eve's angles sent to the clients | if time |
+
+M1 changes no message, so **the backend can be deployed alone**. Calendar: 26th M1a · 27th M1b+M1c ·
+28th M2a–c · 29th two PRs, merges, Ibra deploys both to the VM, test on the VM · 30th buffer / M2d.
+**Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
+number, rather than the old model's meaningless count.
+
+**⚖️ Option A — all physics in the frontend — compared and deferred, not rejected (Ibra asked for the
+comparison).** It is the better **destination**: one copy of the physics. It is not the cheaper road:
+today the browser has neither Eve's pair nor the partner's bits at the moment it measures, so A needs a
+new exchange (2 new events, one reply reshaped) through `socket-provider.tsx`, the riskiest file;
+both repos must deploy in lockstep; the race window widens from one round trip to two; and refresh
+gains a new in-between state. ~3–4 days vs ~2, with more risk, 5 days before the deadline. **B's work
+carries over:** Eve's pairs must be drawn once and stored on the server in A too — only where the
+formula runs changes. **Natural moment for A:** Task 40 Phase 5, when `socket-provider.tsx` is split
+per protocol anyway.
+
 ---
 
 ### 61. 🐛 The leave-game dialog is hardcoded French — in BB84 **and** E91
