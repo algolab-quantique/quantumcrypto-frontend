@@ -2511,6 +2511,13 @@ REST now also carry Eve's photons (as they already carried both players' bits); 
 keys → celebrate, or the disturbed line" moves out of solo's `endRound` into one shared place multi will
 call too (Ibra's *same exact code* rule). The building blocks from solo are reused as they are — the
 popup, the ⓘ, the texts, the shared feed.
+Lives in **`lib/e91/ending-message.ts`** (`keysMatch`, `endingLine`) — first named `round-end.ts`, renamed at
+Ibra's confusion: "round" read as lifecycle (`lib/protocol-lifecycle/round.ts` is the restart). It is only
+"Félicitations" versus "the key was disturbed". **Once M2c wires multi to it, this is the ONE source of
+truth for the ending message, solo and multi, both roles** (Ibra's question). Only the decision and the
+line are shared: opening the popup stays with each screen, since multi Alice's ending arrives in a socket
+handler that has no popup (her line's ⓘ still opens it). The multi rename `keyBits` → `localPlayerKeyBits`
+moves to **after M2b** — the same order as solo, so the name never lies.
 
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
