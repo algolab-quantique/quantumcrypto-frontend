@@ -2469,6 +2469,13 @@ fills them with `draw_eve_photons()` when the die says Eve; MEASURE asks the rou
 `db.sqlite3`** (his own test server). **⚠️ Deploy note for the VM:** a round created *before* this
 deploy has "Eve: yes" but no stored photons — **deploy when no class is playing** (the simple option,
 chosen over drawing missing photons lazily, which would reintroduce a race).
+**🔍 Found before migrating (2026-09-25): the local database has NO migration history.** `showmigrations e91`
+→ `(no migrations)`; no `migrations/` folder in any app (they are git-ignored); the tables were built with
+`migrate --run-syncdb` (README step 6). So `makemigrations` + `migrate` would try to CREATE tables that
+already exist, and `--run-syncdb` never adds columns to an existing table. **Same question for the VM,
+unverifiable from here:** if the VM has migration folders from earlier deploys, `update-migrate.sh` adds
+the 2 columns cleanly; if it was built like this laptop, the deploy's `migrate` would fail the same way.
+Ibra to check on the VM: `python manage.py showmigrations e91`.
 
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
