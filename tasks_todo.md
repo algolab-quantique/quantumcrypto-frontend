@@ -2457,6 +2457,10 @@ what the round stores (strings: bases `"1432…"`, bits `"0110…"`) and `protoc
 `measure_side_with_eve(my_bases, eve_angles, eve_bits)` → a student's bits. Tests: formats, Eve's
 angles even, a student at Eve's angle reads her bit exactly, a whole round in both click orders
 (~25 % key errors, S ≈ 1.41, sides ~50 %), misaligned strings refused. The server does not change.
+**✅ 2a DONE — backend `d65ea09`.** 6 new tests (47 in all), green on the server's Python 3.11.5 and on 3.13,
+repeated; they also pin *where Eve guessed Alice's basis she holds Alice's bit exactly* — the game's
+"Eve guessed K bits". Three planted bugs (Eve stuck on one angle, a player ignoring her photon, a player
+measured at her angle) each turned them red. Server unchanged: fake browsers 10/10 identical keys.
 
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
