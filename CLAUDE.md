@@ -100,12 +100,21 @@ after a later slice, it ships **with** that later slice, not before it.
 Automated gates catch logic and statistics. They do **not** catch wiring — components have no
 automated coverage yet (testing-strategy phases 2–3 not started).
 
-So: if a change touches a component or anything the player sees, **Ibra verifies it in the
-browser before it is committed.** State plainly what to click and what a correct result looks
-like. Do not commit on the assumption it works.
+So: if a change touches a component or anything the player sees, it is checked in a real browser
+before it is committed — **Claude first, then Ibra** (agreed 2026-09-25):
 
-Multiplayer needs two browsers (normal + incognito — same-origin `localStorage` is shared
-between tabs, so two tabs is not a valid multi test).
+1. **Claude plays it** in its built-in browser against the local dev server, reads the stored state
+   to check the arithmetic, and sends the evidence (screenshots, values). Ibra is not asked to click
+   through a flow Claude can play itself.
+2. **When Claude's check passes, Ibra checks** the look (colours, size, readability) and gives the
+   final OK. Claude says exactly what to look at.
+
+Do not commit on the assumption it works.
+
+Multiplayer needs two isolated browsers — same-origin `localStorage` is shared between tabs, so two
+tabs of one site are not a valid multi test. For Ibra: normal + incognito. For Claude: one tab on
+`localhost:3000`, one on `127.0.0.1:3000` (different origins, separate storage — to confirm on first
+use). Server-side behaviour can also be checked with `tools/e91_fake_browsers.mjs` in the backend.
 
 ## 5. Every bug fix carries the test that would have caught it
 
