@@ -2407,6 +2407,9 @@ pipeline in Python as we did in the frontend").** Three checks, scratch scripts 
    **✅ AGREED 2026-09-25 (Ibra: "yes")** — in BOTH suites, one test commit per repo, so the same tests keep
    holding both copies: a `multiplayer_game` / `multiplayerGame` helper and 4 tests (with/without Eve ×
    Alice/Bob first), 10 000 pairs, bounds computed at ≥ 4σ.
+   **✅ DONE** — backend `78f433b` (35/35 on Python 3.13 repeated and 3.11), frontend `7acaa96` (35/35 in the
+   protocol suite, 155 overall, tsc + lint clean). In **both** languages two planted bugs — the second click
+   copying the first, and copying it instead of measuring Eve's pair — each turned the new tests red.
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
