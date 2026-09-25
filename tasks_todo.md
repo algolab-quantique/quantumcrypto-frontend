@@ -2388,6 +2388,22 @@ and 3.13** (VM: 3.12, in between), ~1.7 s, four repeated runs. **Mutation-checke
 turned it red** — acute-angle normalisation (9 failures), Eve forwarding an unrelated coin (2), unordered
 CHSH check (2), a biased Eve shaped like the current backend's (1), second side copying without the flip
 (6), sift without its length check (1). Nothing calls it yet: the server behaves exactly as before.
+
+**🔍 M1a re-checked end to end (2026-09-25, Ibra: "reanalyse and check the translation, test the whole
+pipeline in Python as we did in the frontend").** Three checks, scratch scripts only:
+1. **Translation, deterministic half — identical.** The same fixed inputs through both modules (the rule on
+   all 16 angle pairs to 12 decimals, all 16 classifications, sifting, correlations, S, the id↔angle
+   tables, and the full `describe_run` report): **78 of 78 output lines identical**, character for character.
+2. **Whole pipeline, random half — same distributions.** 300 runs × 2 000 pairs per setting in **each**
+   language, Eve on 0 / 50 / 100 %: S, key error and Eve's share agree between TypeScript and Python in
+   all 9 comparisons, **largest gap 1.84σ**; both match theory (S 2.83 / 2.12 / 1.41, errors and Eve's
+   share 0 / 12.5 / 25 %). One `describe_run` each way shown to Ibra: S 2.71 → 1.37, errors 0 → 24.6 %.
+3. **🔍 GAP FOUND, in BOTH suites: nothing tests the functions called the way multiplayer calls them.**
+   Every pipeline test goes through `measure_pair`, where Alice always measures first. Multiplayer: either
+   side may click first, each click measures ALL its photons, and Eve's pairs are drawn at START. Simulated
+   exactly that way (300 games × 2 000, both orders, with and without Eve): **S 2.829 / 2.833 without Eve,
+   1.416 / 1.412 with; key error 0 / 24.9 / 24.8 %; every side 50 %** — correct in both orders. Proposed:
+   make it a permanent test, since M1b calls the module exactly this way.
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
