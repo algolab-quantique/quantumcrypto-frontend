@@ -3666,7 +3666,7 @@ the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it curre
 
 ---
 
-### 73. 🧹 Delete `lib/e91/solo-player.ts` — zero importers since B1
+### 73. ✅ Delete `lib/e91/solo-player.ts` — zero importers since B1 — DONE `3e905cd`
 
 **Status**: 🟡 OPEN, trivial. The old E91 simulation has had **no importers at all** since
 `e5a658b` wired `onMeasurement` to `lib/e91/protocol.ts`. The only mention left is a stale comment in
@@ -3687,6 +3687,13 @@ one name can belong to two files, so each hit has to be read. **Scope:** delete 
 both stale comments in `solo-game-modal.tsx` (lines 62 and 114) — checking first whether each is
 still true against what E91 uses today (`lib/e91/protocol.ts`). Historical mentions in the docs stay:
 they describe the past, which remains true.
+
+**✅ DONE — `3e905cd` (2026-09-25).** File deleted (450 lines). Proof 3 held: after deletion `tsc` is
+clean, 151 tests green, lint clean. Four comments in `solo-game-modal.tsx` corrected — not only the two
+naming the dead file: lines 22, 50, 61-62 and 114 all placed data generation in `solo-game.tsx`, which
+only shows the tabs; it happens on **Measure**, in `solo-measurement-tab.tsx`, via `lib/e91/protocol.ts`
+(lines 22 and 50 were beyond the agreed scope; Ibra approved them). No browser check: nothing the player
+sees could change.
 
 ---
 
