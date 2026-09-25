@@ -2413,6 +2413,34 @@ pipeline in Python as we did in the frontend").** Three checks, scratch scripts 
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
+#### 🔁 M1b RE-PLANNED IN 3 STAGES — ✅ AGREED 2026-09-25
+
+Explaining M1b step by step from the player's side showed it mixed three things — the physics, Eve's
+state, and the restart exceptions. Ibra: *"you see it is harder than it seems — if we start M1b we
+will make a lot of mistakes."* Confirmed plainly while explaining: **the current backend has no Eve at
+all.** `eveGeneratedBits(bases)` takes one student's bases and returns biased dice; it never picks an
+angle, never intercepts, and nothing links Alice's result to Bob's.
+
+**📌 The rule (Ibra): the server's round is the only truth, and it changes only when a message says
+so.** START creates it, with or without Eve (the server's own die roll). MEASURE reads the server's
+**own** round — not the `eve_present` the browser repeats back, which is a copy that can go stale
+(refresh, or a missed restart message). RESTART resets it to fresh, with or without Eve as the restart
+says. No new lifecycle system: each message's handler does its own part.
+
+| stage | what | test |
+|---|---|---|
+| **1** | **normal game WITHOUT Eve.** On MEASURE, first click → `measure_one_side`, second → `measure_other_side`, replacing `generateEntangledBits`. Players should see **no difference** — the point is to prove the server can call `protocol.py` where nothing should change | 2 browsers, no Eve: identical keys, S high |
+| **2** | **normal game WITH Eve.** START: if the die says Eve, the server plays Eve on every photon and stores her re-sent photons in the round (2 new fields). MEASURE: the server asks its own round, and measures each student against Eve's stored photon. Delete `eveGeneratedBits` | 2 browsers, Eve at 100 %: ~25 % key errors, S low |
+| **3** | **the exceptions, one at a time, after 1 and 2 work** — decided then, by the rule | each its own |
+
+**Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
+but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
+told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
+(`socket-provider.tsx:1446`) and **the E91 server does not handle it at all** (0 matches in
+`e91/consumers.py`) → to check; (d) **refresh / reconnect** — the round lives in the database →
+probably nothing to do, to confirm. The messages that write a round today: `START`, `A_MEASURE`,
+`B_MEASURE`, `RESTART_WITHOUT_EVE`, `EVE_SPOTTED`, `SCORE`, `A_KEY`.
+
 **⚖️ Option A — all physics in the frontend — compared and deferred, not rejected (Ibra asked for the
 comparison).** It is the better **destination**: one copy of the physics. It is not the cheaper road:
 today the browser has neither Eve's pair nor the partner's bits at the moment it measures, so A needs a
