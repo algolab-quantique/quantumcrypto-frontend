@@ -41,6 +41,15 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
 > **What this is NOT:** new tasks. Every line points at the task that already owns the work.
 > Estimates are in **working days for one developer**, at the pace actually measured on BB84.
 
+**Merge log** (`ibra_architecture` → `development`, by pull request only — CLAUDE.md §1a):
+- PR #23, 2026-08-28 — BB84 lifecycle + deployment readiness.
+- **2026-09-25 — decided with Ibra: merge now.** Chapter closed: **solo E91 correct end to end** (Task
+  60 physics + B1/B2, Task 63's E91 steps, Task 71 steps 1–4, Task 72, Task 73). 133 commits, 56
+  files. `development` holds nothing this branch lacks (only PR #23's merge commit), so no conflicts
+  are possible; the only workflow is `tests.yml`, so merging deploys nothing by itself. Reason for
+  now rather than after Task 68: 5 days to 2026-09-30, and a merge needs a day — the deadline must
+  not catch finished work outside `development`. **Task 68 follows as a separate, smaller PR.**
+
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
 contract, `lifecycle.ts`, test setup, CI). So **BB84 replication cost ≈ 13 days**, and that
