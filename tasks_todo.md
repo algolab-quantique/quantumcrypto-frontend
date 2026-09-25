@@ -2326,6 +2326,37 @@ Eve bug, same disease) · **ADR §13.3** (one implementation, sender simulates t
 **The test that must fail first (rule 5):** assert Eve's output is ~50/50 on every basis over a
 large sample. It fails on today's code at bases 1, 2 and 3. Write it in **both** repos.
 
+#### 🔍 MULTIPLAYER, READ END TO END (2026-09-25, read-only) — before planning the backend fix
+
+Ibra lifted the "never touch the backend" rule for this work (he is admin on the backend repo and the
+VM, and deploys it himself). Before planning, both sides of a multiplayer E91 round were read:
+
+1. **Without Eve, multi is essentially correct.** First click → coins; second →
+   `generateEntangledBits` against the first (`e91/consumers.py:337-365`). Its single threshold
+   `sin²(π/8)` plus the (1,4) flip is right for every pair the student *uses* (key pairs, the four
+   CHSH pairs); it is wrong only at Δ = 90° — `(1,3)`, `(2,4)` — which are discarded. So *"multi is
+   wrong"* is precisely **"multi with Eve is wrong"** (and the rare race, Task 70).
+2. **With Eve, each side calls `eveGeneratedBits` on its own** (`:526`): no shared Eve angle, no
+   re-sent pair — basis 2 always `0`, bases 1/3 biased 85/15. **Its signature cannot express the fix**:
+   it takes one side's bases only, so there is nowhere for Eve's pair to come from.
+3. **Iterations are created once, at START, with `eve_present` already decided** (`create_room`,
+   `:231-237`) — the natural moment to draw Eve's intercepted pairs: before anyone measures, as in
+   reality, and with no race.
+4. **🐛 `RESTART_WITHOUT_EVE` (`:307`) does not clear `alice_bits` / `bob_bits`.** After a restart the
+   first side to re-measure takes the "second" branch and is correlated against the **previous
+   round's** bits and bases. Statistically near-harmless today (the new pair's correlation comes from
+   the second side), but wrong in principle, and it is exactly the "who was first?" logic being fixed.
+5. **Multi's Eve counter still encodes the old model** (`basis-tab.tsx:286-293`): it counts key bits
+   where both bases are `'2'` — the basis the old Eve hard-coded. Under correct physics that number
+   means nothing; the honest count (B2) needs Eve's angles on the client.
+6. **Each browser does end with both keys**: measurement returns only one's own bits
+   (`socket-provider.tsx:558-580`), but `A_BITS` / `B_BITS` (`:607-617`) deliver the partner's later.
+   So multi's honest ending (Task 71 step 5) can compare keys **locally**, with no change to what is
+   sent — correcting what was said on 2026-09-24, that it would need a change to the socket's sending.
+7. **Backend context:** no tests exist (`e91/tests.py` is the empty template); migrations are
+   git-ignored and generated on the VM by `update-migrate.sh`; `E91Iteration`'s bit/basis fields are
+   `CharField(max_length=30)`; Docker runs Python 3.12; the backend's working branch is `ibra_development`.
+
 ---
 
 ### 61. 🐛 The leave-game dialog is hardcoded French — in BB84 **and** E91
