@@ -3578,7 +3578,7 @@ that passes either way would be worse than writing none.
 
 ### 72. 📝 The end-of-game reveal about Eve is gated on the wrong thing
 
-**Status**: 🟡 OPEN, wording agreed, not implemented. **Frontend-only, 3 languages.**
+**Status**: ✅ **DONE 2026-09-24 (`b7b1920`)** — solo. Multi unchanged on purpose. **Frontend-only, 3 languages.**
 
 `solo-messaging-tab.tsx:102` reveals the truth about Eve only `if (evePresent && eveGuessedRightBits
 > 0)`. With the honest counter (Task 60 B2) a 0 is common — **42 % of games with a 3-bit key** — so
@@ -3644,6 +3644,20 @@ test-only (the app code is unchanged). **Ibra, 2026-09-24: keep it — with a co
 exists and when to delete it, so a future reader understands it.** **The real fix, for later:** move
 the `Language` enum out of the `.tsx` file into a plain `.ts` one, so `lib/utils.ts` stops importing a
 component. Low priority.
+
+#### ✅ TASK 72 DONE — `b7b1920` (2026-09-24)
+
+Gates: **151 tests** (144 + 7 new for `fillPlaceholders`, written first and seen red; two planted bugs
+each caught — `0` printed as an empty gap, and `in` reading prototype names such as `{constructor}`),
+`tsc`, `next lint`. The finished sentence was rendered by the real code for K = 0, 1, 2 in all three
+languages before the browser test. **Browser-verified by Ibra** (as Bob, Eve on, 30 photons):
+*"Ève a mesuré 30 photons sur 30 ; elle a deviné 3 des 5 bits de la clé."*, identical numbers in EN
+and ES after switching language. **K = 3 checked by hand** from the dump: key bits #10, #20, #27 are
+where Eve's basis equals Alice's; the single disturbed bit (#23) is one where it did not.
+
+**Seen only through code and tests, not in the browser:** K = 0 (the line no longer reads K at all;
+the unit test pins `0` → `"0"`), and no Eve → no line (`evePresent` gate, as before).
+**Unchanged on purpose:** multi keeps `component.e91.evePresent.stats` and its count-gated reveal.
 
 **Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
 the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
