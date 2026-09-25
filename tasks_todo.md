@@ -2381,6 +2381,13 @@ M1 changes no message, so **the backend can be deployed alone**. Calendar: 26th 
 **▶ M1a started 2026-09-25** (Ibra: go). Test file named `test_protocol.py`, not `protocol_test.py`: Python's
 `unittest discover` and Django's `manage.py test` only find files matching `test*.py` — the other name
 would silently never run.
+**✅ M1a DONE — backend `a112af5` on `ibra_development` (2026-09-25).** `e91/protocol.py` (translation of
+`protocol.ts`, name map in its header) + `e91/test_protocol.py` (all 31 tests, same numbers and σ tolerances
+— the backend's first tests; `python3 -m unittest e91.test_protocol`, no Django). **31/31 on Python 3.11
+and 3.13** (VM: 3.12, in between), ~1.7 s, four repeated runs. **Mutation-checked: six planted bugs each
+turned it red** — acute-angle normalisation (9 failures), Eve forwarding an unrelated coin (2), unordered
+CHSH check (2), a biased Eve shaped like the current backend's (1), second side copying without the flip
+(6), sift without its length check (1). Nothing calls it yet: the server behaves exactly as before.
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
