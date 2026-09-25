@@ -79,6 +79,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.moveToMessaging': 'Exchange a message',
         'component.e91.evePresent': 'Eve was present!',
         'component.e91.evePresent.stats': ' Eve has successfully read this number of bits: ',
+        'component.e91.evePresent.summary': ' Eve measured {n} photons out of {m};' +
+            ' she guessed {k} of the {l} key bits.',
         'component.e91.decsion.unsecured': 'The channel was deemed unsafe by ',
         'component.e91.decsion.secured': 'The channel was deemed safe by ',
         'component.e91.restart.unsecured': 'Channel compromised',
@@ -197,6 +199,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.moveToMessaging': 'Échanger un message',
         'component.e91.evePresent': 'Ève était présente!',
         'component.e91.evePresent.stats': ' Ève a réussi à lire ce nombre de bits: ',
+        'component.e91.evePresent.summary': ' Ève a mesuré {n} photons sur {m} ;' +
+            ' elle a deviné {k} des {l} bits de la clé.',
         'component.e91.decsion.unsecured': 'Le canal a été jugé non sécure par ',
         'component.e91.decsion.secured': 'Le canal a été jugé sécure par ',
         'component.e91.restart.unsecured': 'Canal compromis',
@@ -306,6 +310,8 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.moveToMessaging': 'Intercambiar un mensaje',
         'component.e91.evePresent': '¡Eva estuvo presente!',
         'component.e91.evePresent.stats': ' Eva ha leído con éxito este número de bits: ',
+        'component.e91.evePresent.summary': ' Eva midió {n} fotones de {m};' +
+            ' adivinó {k} de los {l} bits de la clave.',
         'component.e91.decsion.unsecured': 'El canal fue considerado inseguro por ',
         'component.e91.decsion.secured': 'El canal fue considerado seguro por ',
         'component.e91.restart.unsecured': 'Canal comprometido',

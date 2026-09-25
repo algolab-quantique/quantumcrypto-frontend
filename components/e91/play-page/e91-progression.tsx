@@ -14,6 +14,7 @@ import { RESTART_WITHOUT_EVE_EVENT } from '@/bb84-constants';
 import { useRouter } from 'next/navigation';
 import useE91GameStore from '@/store/e91/e91-game-store';
 import { restartRound } from '@/lib/protocol-lifecycle/round';
+import { fillPlaceholders } from '@/lib/utils';
 import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 
 const E91Progression = () => {
@@ -89,6 +90,8 @@ const E91Progression = () => {
                 <p className="text-card-foreground text-md md:text-xl">{line.title &&
                     <span className="font-bold text-highlight">{localize(
                         line.title)}</span>}{line.content ?
+                            line.values ? fillPlaceholders(
+                                localize(line.content), line.values) :
                             line.extra ? localize(
                                 line.content, line.extra) : localize(
                                     line.content) : ''}

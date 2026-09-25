@@ -40,6 +40,8 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
     const {
         aliceValidBits,
         bobValidBits,
+        aliceBases,
+        eveAngles,
         aliceCipher,
         aliceCipherSent,
         gameSuccess,
@@ -115,12 +117,20 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
 
     useEffect(() => {
         if (gameSuccess) {
-            if (evePresent && eveGuessedRightBits > 0) {
+            // Whenever Eve was there, even if she guessed no key bit: that
+            // happens in about a third of her games, and the student must
+            // still learn she was present (Task 72).
+            if (evePresent) {
                 pushLines([
                     {
                         title: 'component.e91.evePresent',
-                        content: 'component.e91.evePresent.stats',
-                        extra: `${eveGuessedRightBits}`
+                        content: 'component.e91.evePresent.summary',
+                        values: {
+                            n: eveAngles.length,
+                            m: aliceBases.length,
+                            k: eveGuessedRightBits,
+                            l: aliceValidBits.length,
+                        },
                     },
                 ]);
             }
