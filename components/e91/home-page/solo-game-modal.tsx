@@ -19,7 +19,7 @@
  * In SOLO mode:
  *   Player (Alice or Bob) <-> Frontend <-> Simulated Partner (on-demand)
  *   - This modal only sets CONFIGURATION (photon count, Eve, role)
- *   - Data is generated ON-DEMAND in solo-game.tsx as the player progresses
+ *   - Data is generated ON-DEMAND by the play-page tabs as the player progresses
  *   - When player clicks "Measure", their bits + partner data are generated
  *   - This matches the multiplayer flow exactly: action → result
  * 
@@ -47,7 +47,7 @@
  *   - On submit:
  *     1. Sets game configuration in stores
  *     2. Navigates to /e91/play
- *     3. Data generation happens in solo-game.tsx during gameplay
+ *     3. Data is generated later, during gameplay (see INTEGRATION below)
  * 
  * ═══════════════════════════════════════════════════════════════════════════
  * INTEGRATION
@@ -58,8 +58,10 @@
  * - store/e91/e91-game-store.ts: Photon number and Eve settings
  * - store/e91/e91-room-store.ts: Eve presence flag
  * 
- * The solo-game.tsx component handles:
- * - lib/e91/solo-player.ts: Simulation functions called during gameplay
+ * During gameplay (solo-game.tsx only shows the tabs; the tabs do the work):
+ * - lib/e91/protocol.ts: the simulation, called when the student clicks Measure
+ *   in play-page/tabs/solo-measurement-tab.tsx (createEntangledPair, eavesdrop,
+ *   measurePair)
  * - store/e91/e91-room-store.ts: Stores generated bits/bases
  * - store/e91/e91-progress-store.ts: Progress tracking and messages
  */
@@ -111,8 +113,9 @@ import {
     E91_EVE_PERCENTAGE_MIN,
     E91_EVE_PERCENTAGE_MAX,
 } from '@/e91-constants';
-// Note: Simulation functions (generateBases, generateRandomBits, etc.) are NOT imported here
-// because data is generated on-demand in solo-game.tsx following the UI flow
+// Note: no simulation function is imported here — this modal only stores the
+// settings. Bits and bases are generated when the student clicks Measure
+// (play-page/tabs/solo-measurement-tab.tsx, using lib/e91/protocol.ts).
 
 /**
  * E91 Solo Game Modal Component
