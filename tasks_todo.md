@@ -3640,7 +3640,8 @@ so **nothing in `lib/utils.ts` could ever be unit-tested**, which is likely why 
 agreed unit test for `fillPlaceholders` hit this. **I chose a workaround on my own** — a `vi.mock`
 stand-in for that import inside `lib/utils.test.ts` — instead of stopping to tell Ibra and tracking it,
 which is what the rule requires for anything discovered mid-slice. Ibra caught it. The workaround is
-test-only (the app code is unchanged) and stays pending his decision. **The real fix, for later:** move
+test-only (the app code is unchanged). **Ibra, 2026-09-24: keep it — with a comment saying why it
+exists and when to delete it, so a future reader understands it.** **The real fix, for later:** move
 the `Language` enum out of the `.tsx` file into a plain `.ts` one, so `lib/utils.ts` stops importing a
 component. Low priority.
 
