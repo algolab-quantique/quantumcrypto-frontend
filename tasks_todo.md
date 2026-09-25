@@ -49,6 +49,12 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
   are possible; the only workflow is `tests.yml`, so merging deploys nothing by itself. Reason for
   now rather than after Task 68: 5 days to 2026-09-30, and a merge needs a day — the deadline must
   not catch finished work outside `development`. **Task 68 follows as a separate, smaller PR.**
+  → **PR #24 opened 2026-09-25** (https://github.com/algolab-quantique/quantumcrypto-frontend/pull/24).
+  CI green, no conflicts. GitHub marks it `BLOCKED` only because `development` requires a review and
+  an author cannot approve their own PR — #23 had the same rule and was merged by Ibra with 0 reviews,
+  i.e. through the admin *"merge without waiting for requirements"* option. The PR lists four manual
+  checks to run first (three E91 solo flows, and BB84 with Eve up to the restart, since Task 63 moved
+  BB84 code into the shared restart). **Not merged yet.**
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
