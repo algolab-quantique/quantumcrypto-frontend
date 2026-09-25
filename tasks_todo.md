@@ -2507,6 +2507,11 @@ Eve `0000`≠`0001` and `0100101101`≠`0100101100`; bits balanced (15/30) — t
 bits where both chose basis 2 — meaningful only for the fake Eve). *Side effect noted:* results page and
 REST now also carry Eve's photons (as they already carried both players' bits); the frontend ignores them.
 
+**▶ M2a — ✅ AGREED 2026-09-25 (Ibra: "go").** Pure refactor, no visible change: the decision "compare the
+keys → celebrate, or the disturbed line" moves out of solo's `endRound` into one shared place multi will
+call too (Ibra's *same exact code* rule). The building blocks from solo are reused as they are — the
+popup, the ⓘ, the texts, the shared feed.
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
