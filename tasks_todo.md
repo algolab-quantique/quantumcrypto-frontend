@@ -2525,6 +2525,9 @@ clicking each row, verified row by row before validating; the CHSH step skipped 
 6 and 8 red; feed line + ⓘ; Task 72's line "3 des 8 bits". The keys-equal branch is the same call, pinned
 by the unit tests.
 
+**▶ M2b — ✅ AGREED 2026-09-25:** multi, each student uses their own key (`messaging-tab.tsx:42`) — Task 71
+step 5. The truth becomes computed, not yet shown (M2c). Checked by Claude in its browser first (rule 4).
+
 **🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
 the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
 click (`solo-measurement-tab.tsx:256`, also in multi); and **Claude plays quick solo checks in its built-in
