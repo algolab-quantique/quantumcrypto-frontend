@@ -2433,6 +2433,18 @@ says. No new lifecycle system: each message's handler does its own part.
 | **2** | **normal game WITH Eve.** START: if the die says Eve, the server plays Eve on every photon and stores her re-sent photons in the round (2 new fields). MEASURE: the server asks its own round, and measures each student against Eve's stored photon. Delete `eveGeneratedBits` | 2 browsers, Eve at 100 %: ~25 % key errors, S low |
 | **3** | **the exceptions, one at a time, after 1 and 2 work** — decided then, by the rule | each its own |
 
+**✅ STAGE 1 DONE — backend `79b509a` (2026-09-25).** New pure module `e91/multiplayer.py`
+(`measure_side_without_eve`: stored basis-id and bit strings → `protocol.py`) + 6 tests; `consumers.py`'s
+two no-Eve branches call it; `generateEntangledBits` deleted. **Verified without a hand-played game, with
+Ibra's OK** — players see no change by design and the frontend is untouched: 41/41 unit tests on the
+server's own Python 3.11.5; then **702 real multiplayer games** played by script against Ibra's running
+local server with the browsers' own messages, half Alice-first, half Bob-first — **702/702 identical keys
+(4 617 key bits, 0 errors)**, sides ~50 %, the four Bell terms at ±0.707 with the right signs in both
+orders (S 2.825 / 2.928 over 400 games). An early S of 2.53 with Bob first (2.7σ) did not recur on
+600 more games. The server reloads itself on file changes (confirmed: it restarted 1 s after the edit).
+**The script is kept** as `tools/e91_play_multiplayer.mjs` (backend `bc61f6b`): deletes every game it
+creates, refuses non-local hosts unless `E91_TOOL_HOST` is set. Stage 2 will reuse it.
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
