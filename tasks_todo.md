@@ -2489,6 +2489,12 @@ was done: with SQLite, all the data is one file to copy.
 — migration files kept in git so schema changes deploy by themselves; a documented backup routine; a
 documented move to a new VM (copy the SQLite file). Not part of finishing E91.
 
+**✅ DECIDED 2026-09-25 — how 2b's columns reach both databases:** one small committed script,
+`tools/e91_add_eve_columns.py`, run the same way on the laptop and on the VM: it snapshots `db.sqlite3`
+first, adds `eve_angles` / `eve_bits` **only if missing** (safe to run twice), and keeps every existing
+row. Order: **columns first, then the code** — the dev server reloads on file changes, and code asking
+for missing columns would break it. VM deploy: `git pull` → run the script → restart the service.
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
