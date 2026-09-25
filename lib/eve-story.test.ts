@@ -7,9 +7,15 @@
  */
 
 import {describe, expect, it} from 'vitest';
-import {classifySoloEnding, deriveRoomEveStory} from './eve-story';
-import type {SoloEveRecord} from './solo-round';
+import {classifySoloEnding, deriveRoomEveRecord, deriveRoomEveStory} from './eve-story';
+import type {SoloEveRecord} from '@/lib/bb84/solo-round';
 
+/**
+ * Task 63 Step 6a: still built from BB84's full record, on purpose. The
+ * classifier now takes the structural `EveOutcome` so E91 can pass its own,
+ * smaller record — and these cases keep proving that a protocol's richer record
+ * is still accepted, with the extra fields ignored.
+ */
 const record = (overrides: Partial<SoloEveRecord>): SoloEveRecord => ({
     enabled: true,
     percentage: 0.5,
@@ -81,5 +87,49 @@ describe('deriveRoomEveStory — every multi iteration pattern', () => {
     it('two Eve iterations (should not happen — restart removes her) → compromised', () => {
         expect(deriveRoomEveStory([eve, eve]))
             .toEqual({eveDetected: false, keyCompromised: true});
+    });
+});
+
+/**
+ * Task 63 Step 6d — building solo's record from E91's backend flags.
+ */
+describe('deriveRoomEveRecord — a backend that records eve_detected', () => {
+    it('Eve drawn and never caught', () => {
+        expect(deriveRoomEveRecord([{eve_present: true, eve_detected: false}]))
+            .toEqual({drawn: true, detected: false});
+    });
+
+    /**
+     * THE ONE THAT MATTERS. E91's backend keeps one iteration per room and the
+     * restart sets eve_present=false on it, so the room a winning student
+     * leaves behind claims Eve was never there. Delete the `|| eve_detected`
+     * and only this case fails.
+     */
+    it('caught, then the restart erased her from the record', () => {
+        expect(deriveRoomEveRecord([{eve_present: false, eve_detected: true}]))
+            .toEqual({drawn: true, detected: true});
+    });
+
+    it('caught before the record was mutated', () => {
+        expect(deriveRoomEveRecord([{eve_present: true, eve_detected: true}]))
+            .toEqual({drawn: true, detected: true});
+    });
+
+    it('Eve never drawn', () => {
+        expect(deriveRoomEveRecord([{eve_present: false, eve_detected: false}]))
+            .toEqual({drawn: false, detected: false});
+    });
+
+    it('a room the backend has not filled in yet → no crash', () => {
+        expect(deriveRoomEveRecord([])).toEqual({drawn: false, detected: false});
+        expect(deriveRoomEveRecord([{}])).toEqual({drawn: false, detected: false});
+    });
+
+    /** Pinned for Task 28, when the backend appends rounds instead of mutating. */
+    it('caught in an earlier round, gone in the last, still caught', () => {
+        expect(deriveRoomEveRecord([
+            {eve_present: true, eve_detected: true},
+            {eve_present: false, eve_detected: false},
+        ])).toEqual({drawn: true, detected: true});
     });
 });

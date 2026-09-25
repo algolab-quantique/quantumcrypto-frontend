@@ -1161,8 +1161,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                         useBB84RoomStore.getState().resetRoom();
                         useBB84RoomStore.getState().setEvePresent(false);
                         useBB84ProgressStore.getState().resetProgress();
+                        // Task 63 Step 5a: BB84-specific, so it belongs INSIDE
+                        // this branch. It used to run for every protocol, so an
+                        // E91 restart silently destroyed the player's BB84
+                        // session. (It repeats most of the lines above and adds
+                        // only bb84BobBasisInputs — that duplication is its own
+                        // cleanup.)
+                        restartWithoutEve();
                     }
-                    restartWithoutEve();
                     break;
                 case PLAYER_LEFT_EVENT:
                     if (gameType === 'dps') {

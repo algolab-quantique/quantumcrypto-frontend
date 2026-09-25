@@ -1,7 +1,7 @@
 import React from 'react';
 import {TableCell, TableRow} from '@/components/ui/table';
 import {useLanguage} from '@/components/providers/language-provider';
-import {deriveRoomEveStory} from '@/lib/bb84/eve-story';
+import {deriveRoomEveStory} from '@/lib/eve-story';
 
 interface Bb84ResultsRowProps {
     room: any;
@@ -33,8 +33,8 @@ const Bb84ResultsRow = ({room, player1, player2}: Bb84ResultsRowProps) => {
             <TableCell className={keyCompromised
                 ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>
                 {localize(keyCompromised
-                    ? 'component.bb84.results.keyCompromised'
-                    : 'component.bb84.results.keySecure')}
+                    ? 'component.results.keyCompromised'
+                    : 'component.results.keySecure')}
             </TableCell>
             <TableCell>{iterations.map(
                 ({elapsed_time}: any, index: number) => <p

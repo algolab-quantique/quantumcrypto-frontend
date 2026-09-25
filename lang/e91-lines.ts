@@ -47,11 +47,23 @@ export const e91Lines: LanguageItem[] = [
         'component.messaging.bob.end': 'You decrypted Alice\'s message!',
         'component.messaging.alice.end': 'Bob was able to decrypt your' +
             ' message!',
+        'component.e91.messaging.keyPerturbed': 'The key was disturbed ',
+        'component.e91.messaging.keyPerturbed.line': 'The message Bob decrypted' +
+            ' is wrong.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Your calculation' +
+            ' is correct, but Alice and Bob do not have the same key. The' +
+            ' message Bob decrypted is wrong.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Alice\'s message',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Bob\'s message',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Alice\'s key',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Bob\'s key',
+        'component.e91.messaging.keyPerturbed.close': 'Got it',
         'component.messaging.alice.reveal': 'Your Bob was ',
         'component.messaging.bob.reveal': 'Your Alice was ',
         'component.messaging.cipherSent': 'Sent!',
         'component.messaging.decryptError': 'Verify your decryption bits',
         'component.basis.validateBtn': 'Validate',
+        'component.basis.correct': 'Correct!',
         'component.messaging.aliceEncrypted': 'Alice\'s encrypted message',
         'component.messaging.aliceDecrypt': 'Alice\'s decrypted message (0' +
             ' or 1)',    
@@ -67,10 +79,20 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.moveToMessaging': 'Exchange a message',
         'component.e91.evePresent': 'Eve was present!',
         'component.e91.evePresent.stats': ' Eve has successfully read this number of bits: ',
+        'component.e91.evePresent.summary': ' Eve measured {n} photons out of {m};' +
+            ' she guessed {k} of the {l} key bits.',
         'component.e91.decsion.unsecured': 'The channel was deemed unsafe by ',
         'component.e91.decsion.secured': 'The channel was deemed safe by ',
         'component.e91.restart.unsecured': 'Channel compromised',
         'component.e91.restart.unsecured.description': ' Eve has been found out',
+        // Task 63 Step 3: pushed as its OWN line, and as a `title`, because the
+        // transcript renderer highlights titles only — the player must not miss
+        // that the next round has no Eve. Same words as BB84's
+        // component.gameRestart.eveDescription: `localize` resolves keys inside
+        // the current protocol's dictionary only, so the text has to be repeated
+        // here rather than shared. Keep the two in step by hand.
+        'component.e91.restart.withoutEve': 'The key is compromised — discard it' +
+            ' and restart the exchange, this time without Eve.',
         'component.e91.gameLoss.title': 'You lose!',
         'component.e91.gameLoss': ' Eve did not interfere on this channel',
         'component.e91.validation.invalid.start': 'Drag the correct value (+1 or -1) to the appropriate container' +
@@ -143,6 +165,17 @@ export const e91Lines: LanguageItem[] = [
             ' d\'Alice !',
         'component.messaging.alice.end': 'Bob a réussi à déchiffrer votre' +
             ' message !',
+        'component.e91.messaging.keyPerturbed': 'La clé a été perturbée ',
+        'component.e91.messaging.keyPerturbed.line': 'Le message déchiffré par' +
+            ' Bob est incorrect.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Votre calcul est' +
+            ' correct, mais Alice et Bob n\'ont pas la même clé. Le message' +
+            ' déchiffré par Bob est incorrect.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Message d\'Alice',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Message de Bob',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Clé d\'Alice',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Clé de Bob',
+        'component.e91.messaging.keyPerturbed.close': 'Compris',
         'component.messaging.alice.reveal': 'Votre Bob était ',
         'component.messaging.bob.reveal': 'Votre Alice était ',
         'component.basis.validateBtn': 'Valider',
@@ -166,10 +199,14 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.moveToMessaging': 'Échanger un message',
         'component.e91.evePresent': 'Ève était présente!',
         'component.e91.evePresent.stats': ' Ève a réussi à lire ce nombre de bits: ',
+        'component.e91.evePresent.summary': ' Ève a mesuré {n} photons sur {m} ;' +
+            ' elle a deviné {k} des {l} bits de la clé.',
         'component.e91.decsion.unsecured': 'Le canal a été jugé non sécure par ',
         'component.e91.decsion.secured': 'Le canal a été jugé sécure par ',
         'component.e91.restart.unsecured': 'Canal compromis',
         'component.e91.restart.unsecured.description': ' Ève a été démasquée',
+        'component.e91.restart.withoutEve': 'La clé est compromise — on la jette' +
+            ' et on recommence l\'échange, cette fois sans Ève.',
         'component.e91.gameLoss.title': 'Vous avez perdu!',
         'component.e91.gameLoss': ' Ève n\'a pas interféré sur ce canal',        
         'component.e91.validation.invalid.start': 'Glissez la bonne valeur (+1 or -1) vers le contenant approprié' +
@@ -242,6 +279,17 @@ export const e91Lines: LanguageItem[] = [
         'component.messaging.congratulations': 'Felicidades ',
         'component.messaging.bob.end': '¡Has descifrado el mensaje de Alice!',
         'component.messaging.alice.end': '¡Bob pudo descifrar tu mensaje!',
+        'component.e91.messaging.keyPerturbed': 'La clave fue perturbada ',
+        'component.e91.messaging.keyPerturbed.line': 'El mensaje descifrado por' +
+            ' Bob es incorrecto.',
+        'component.e91.messaging.keyPerturbed.explanation': 'Tu cálculo es' +
+            ' correcto, pero Alice y Bob no tienen la misma clave. El mensaje' +
+            ' descifrado por Bob es incorrecto.',
+        'component.e91.messaging.keyPerturbed.aliceMessage': 'Mensaje de Alice',
+        'component.e91.messaging.keyPerturbed.bobMessage': 'Mensaje de Bob',
+        'component.e91.messaging.keyPerturbed.aliceKey': 'Clave de Alice',
+        'component.e91.messaging.keyPerturbed.bobKey': 'Clave de Bob',
+        'component.e91.messaging.keyPerturbed.close': 'Entendido',
         'component.messaging.alice.reveal': 'Tu Bob era ',
         'component.messaging.bob.reveal': 'Tu Alice era ',
         'component.basis.validateBtn': 'Validar',
@@ -260,14 +308,18 @@ export const e91Lines: LanguageItem[] = [
         'component.e91.shortKey.restart': 'La longitud de tu clave es demasiado corta, puedes reiniciar el juego ahora.',
         'component.e91.restart': 'Reiniciar',
         'component.e91.moveToMessaging': 'Intercambiar un mensaje',
-        'component.e91.evePresent': '¡Eve estuvo presente!',
-        'component.e91.evePresent.stats': ' Eve ha leído con éxito este número de bits: ',
+        'component.e91.evePresent': '¡Eva estuvo presente!',
+        'component.e91.evePresent.stats': ' Eva ha leído con éxito este número de bits: ',
+        'component.e91.evePresent.summary': ' Eva midió {n} fotones de {m};' +
+            ' adivinó {k} de los {l} bits de la clave.',
         'component.e91.decsion.unsecured': 'El canal fue considerado inseguro por ',
         'component.e91.decsion.secured': 'El canal fue considerado seguro por ',
         'component.e91.restart.unsecured': 'Canal comprometido',
-        'component.e91.restart.unsecured.description': ' Eve ha sido descubierta',
+        'component.e91.restart.unsecured.description': ' Eva ha sido descubierta',
+        'component.e91.restart.withoutEve': 'La clave está comprometida — se' +
+            ' descarta y se reinicia el intercambio, esta vez sin Eva.',
         'component.e91.gameLoss.title': '¡Perdiste!',
-        'component.e91.gameLoss': ' Eve no interfirió en este canal',
+        'component.e91.gameLoss': ' Eva no interfirió en este canal',
         'component.e91.validation.invalid.start': 'Arrastra el valor correcto (+1 o -1) al contenedor' +
             ' correspondiente para cada par de fotones. Recordatorio: multiplica los resultados de' +
             ' medición de Alice y Bob para determinar este valor.',

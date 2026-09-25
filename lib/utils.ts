@@ -75,3 +75,22 @@ export const fillPhotonMinimum = (
     template: string | undefined,
     min: number,
 ): string => (template ?? '').replace('{min}', String(min));
+
+/**
+ * The general form of the two fillers above (Task 72): replace every named
+ * {marker} in a localized sentence with its value. Each language keeps one
+ * whole sentence and puts the markers where its grammar needs them.
+ *
+ * A marker with no value is left as-is, so a missing number shows on screen
+ * instead of vanishing into a sentence that still reads plausibly.
+ *
+ * @param template a localized string containing {name} markers
+ * @param values   the value for each marker name
+ */
+export const fillPlaceholders = (
+    template: string | undefined,
+    values: Record<string, string | number>,
+): string => (template ?? '').replace(/\{(\w+)\}/g, (marker, name) =>
+    Object.prototype.hasOwnProperty.call(values, name)
+        ? String(values[name])
+        : marker);

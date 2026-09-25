@@ -13,11 +13,58 @@ A **slice** is the smallest change that leaves the app in a working, committable
 **The loop, every time:**
 
 ```
-think → agree with Ibra → ONE small change → gates → verify → commit → update tracker → next
+think → agree with Ibra → TRACK THE AGREEMENT → ONE small change → gates → REVIEW OWN WORK
+      → verify → commit → update tracker → next
+                                            … and PUSH before the session ends
 ```
+
+**Before each slice, recall it in a few lines** — what it is, why, and where it sits in the plan.
+Sessions are weeks apart; nobody should have to reconstruct the context from the diff.
 
 Never start the next slice before the current one is committed. If a slice turns out to be two
 concerns, stop and split it — do not "finish it quickly since I'm already here".
+
+### 1a. Commit, push, merge — three different jobs (agreed 2026-09-23)
+
+| | what it is | when |
+|---|---|---|
+| **commit** | a save point on the laptop | when something is **agreed** (tracker, docs) or **proven** (code: gates green, plus Ibra's browser check when the player sees a change). A proposal still under discussion, or code not yet verified, is **never** committed |
+| **push** | the backup on GitHub; it also runs CI | at the **end of every work session**, and before any break where losing the work would hurt. Not needed after every commit |
+| **merge into `development`** | what moves toward the deployed app | only through a **pull request**, and only when a **whole chapter** is complete — e.g. the E91 migration, the physics simulation — or when Ibra asks. When a chapter closes, Claude says so: *"this is a good moment to merge."* |
+
+**Track first:** every agreement — a finding, a decision, a wording, a plan, a slice — goes into the
+tracker as soon as it is agreed, before any code, not only when the slice lands.
+
+Learned the hard way: an agreed wording once lived only in a chat that ended, and nine commits sat on
+one laptop for five days.
+
+### 1b. Review your own work before handing it over — and say the loop out loud
+
+**The review step is not optional and does not wait to be asked for.** Green gates mean the code
+compiles and the tests pass; they say nothing about whether the design is right, whether a behaviour
+change was smuggled into a refactor, or whether a hook was left silently optional. Every single time
+this review has been done, it has found something: a foot-gun rebuilt inside the shared code, an
+import cycle, a test that passed on broken code, a store read swapped for a localStorage read.
+
+**Why this rule needs a forcing function, written plainly so it is not lost again (2026-09-04).**
+Ibra asked why written rules — tracking especially — get skipped until he asks. The honest answer:
+the steps of this loop are not equally enforced. `npm test` prints red or green, so it cannot be
+skipped unnoticed. "Update the tracker" and "review your own work" produce no signal at all, and
+once the code is green the slice *feels* finished. So the invisible steps are the ones that fall
+away, and a longer session makes it worse.
+
+**So the fix is not another rule to remember — it is a trigger.** At the end of every slice, state
+the loop explicitly, as a checklist, in the message that hands the work over:
+
+```
+Gates:     <tests / tsc / lint results>
+Review:    <what re-reading the diff found — "nothing" is a valid answer, silence is not>
+Tracker:   <updated, or why not yet>
+Verify:    <exactly what Ibra should click, and what a correct result looks like>
+```
+
+What must be said aloud cannot be skipped silently. If one of those lines is missing from a handover
+message, the slice is not finished.
 
 ## 2. Never mix concerns in one commit
 

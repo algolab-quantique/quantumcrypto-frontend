@@ -38,9 +38,14 @@ const E91ResultsTable = ({rooms, players}: ResultsTableProps) => {
             <Table>
                 <TableHeader className="bg-card top-0 sticky">
                     <TableRow className="text-sm md:text-lg">
+                        {/* Solo's columns, minus the two the backend cannot
+                            supply: Itération (one iteration per room — see
+                            e91-results-row.tsx) and Longueur de clé (no such
+                            field on E91Iteration). Both need Task 28. */}
                         <TableHead>{localize('component.e91.results.room')}</TableHead>
                         <TableHead>{localize('component.e91.results.evePresent')}</TableHead>
                         <TableHead>{localize('component.e91.results.eveDetected')}</TableHead>
+                        <TableHead>{localize('component.results.verdict')}</TableHead>
                         <TableHead>{localize('component.e91.results.time') + ' (s)'}</TableHead>
                         <TableHead>{localize('component.e91.results.score')}</TableHead>
                     </TableRow>

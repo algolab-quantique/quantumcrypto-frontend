@@ -19,7 +19,7 @@
  * In SOLO mode:
  *   Player (Alice or Bob) <-> Frontend <-> Simulated Partner (on-demand)
  *   - This modal only sets CONFIGURATION (photon count, Eve, role)
- *   - Data is generated ON-DEMAND in solo-game.tsx as the player progresses
+ *   - Data is generated ON-DEMAND by the play-page tabs as the player progresses
  *   - When player clicks "Measure", their bits + partner data are generated
  *   - This matches the multiplayer flow exactly: action → result
  * 
@@ -47,7 +47,7 @@
  *   - On submit:
  *     1. Sets game configuration in stores
  *     2. Navigates to /e91/play
- *     3. Data generation happens in solo-game.tsx during gameplay
+ *     3. Data is generated later, during gameplay (see INTEGRATION below)
  * 
  * ═══════════════════════════════════════════════════════════════════════════
  * INTEGRATION
@@ -58,8 +58,10 @@
  * - store/e91/e91-game-store.ts: Photon number and Eve settings
  * - store/e91/e91-room-store.ts: Eve presence flag
  * 
- * The solo-game.tsx component handles:
- * - lib/e91/solo-player.ts: Simulation functions called during gameplay
+ * During gameplay (solo-game.tsx only shows the tabs; the tabs do the work):
+ * - lib/e91/protocol.ts: the simulation, called when the student clicks Measure
+ *   in play-page/tabs/solo-measurement-tab.tsx (createEntangledPair, eavesdrop,
+ *   measurePair)
  * - store/e91/e91-room-store.ts: Stores generated bits/bases
  * - store/e91/e91-progress-store.ts: Progress tracking and messages
  */
@@ -67,7 +69,7 @@
 'use client';
 
 import { cn, fillPhotonMinimums } from '@/lib/utils';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -98,8 +100,10 @@ import useE91GameStore from '@/store/e91/e91-game-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
 import { useRouter } from 'next/navigation';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
-import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { startFresh } from '@/lib/protocol-lifecycle/lifecycle';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 import { recordGameStats } from '@/app/(main)/services/api';
+import { recordSoloGameStart } from '@/lib/e91/solo-session';
 import {
     E91_SOLO_PHOTON_MAX,
     E91_SOLO_PHOTON_MIN_WITH_EVE,
@@ -109,8 +113,9 @@ import {
     E91_EVE_PERCENTAGE_MIN,
     E91_EVE_PERCENTAGE_MAX,
 } from '@/e91-constants';
-// Note: Simulation functions (generateBases, generateRandomBits, etc.) are NOT imported here
-// because data is generated on-demand in solo-game.tsx following the UI flow
+// Note: no simulation function is imported here — this modal only stores the
+// settings. Bits and bases are generated when the student clicks Measure
+// (play-page/tabs/solo-measurement-tab.tsx, using lib/e91/protocol.ts).
 
 /**
  * E91 Solo Game Modal Component
@@ -151,10 +156,9 @@ const SoloGameModal = ({
         setAliceBases,
         setBobBits,
         setBobBases,
-        resetRoom,
     } = useE91RoomStore();
 
-    const { pushLines, resetProgress } = useE91ProgressStore();
+    const { pushLines } = useE91ProgressStore();
 
     const { localize } = useLanguage();
     const router = useRouter();
@@ -233,14 +237,6 @@ const SoloGameModal = ({
         },
     });
 
-    // Update default photon count when Eve checkbox changes
-    useEffect(() => {
-        if (eveChecked) {
-            form.setValue('photonNumber', E91_SOLO_PHOTON_MIN_WITH_EVE);
-        } else {
-            form.setValue('photonNumber', E91_SOLO_PHOTON_DEFAULT);
-        }
-    }, [eveChecked, form]);
 
     // ═══════════════════════════════════════════════════════════════════════
     // HANDLERS
@@ -279,10 +275,15 @@ const SoloGameModal = ({
         // Record game stats for analytics
         void recordGameStats('e91', 1, { silent: true });
 
-        // Clear previous game state
-        clearE91LocalStorage();
-        resetRoom();
-        resetProgress();
+        // Clear previous game state.
+        // Task 40 Phase 3a-2: the three calls this replaces reset the room and
+        // progress stores TWICE — clearE91LocalStorage() already did both
+        // internally — and never reset the player-mode flags, so a solo game
+        // started right after a multiplayer one inherited playingMultiplayer.
+        // startFresh does the clear, one reset of each, and both flags; it is
+        // the same call BB84's onStartSoloGame makes, and setPlayingSolo(true)
+        // below re-asserts solo mode afterwards.
+        startFresh(e91Adapter);
 
         // Determine if Eve is actually present based on probability
         // This matches multiplayer where server decides with the same probability
@@ -303,12 +304,19 @@ const SoloGameModal = ({
         // Save game config to localStorage for page refresh persistence
         localStorage.setItem('e91PhotonNumber', JSON.stringify(photonNumber));
         localStorage.setItem('e91GameHasEve', JSON.stringify(eve));
-        localStorage.setItem('e91OriginalEvePresent', JSON.stringify(isEveActuallyPresent)); // For results page
-        localStorage.setItem('e91EveWasDetected', JSON.stringify(false)); // Reset detection flag
+        // Task 40 Phase 3f: the two results-page facts (did Eve intercept, was
+        // she caught) go through the helper that also owns reading them.
+        recordSoloGameStart(isEveActuallyPresent, evePercentage);
         localStorage.setItem('e91GameData', JSON.stringify({ evePresent: isEveActuallyPresent }));
 
-        // Navigate to play page - simulation data generated on-demand there
-        router.replace('/e91/play');
+        // Navigate to play page - simulation data generated on-demand there.
+        // Task 40 Phase 3e-3: push, not replace. The rule from BB84 Slice 2a is
+        // "replace transient screens, PUSH real destinations", and /e91 is a real
+        // destination. Replacing it removed /e91 from history, so browser-Back
+        // from a game jumped straight to '/' — skipping the rejoin dialog and,
+        // for a finished game, landing on the one page that used to clear it.
+        // BB84's solo modal has always pushed (solo-game-modal.tsx:213).
+        router.push('/e91/play');
     };
 
     /**
@@ -320,6 +328,15 @@ const SoloGameModal = ({
     ) => {
         setEveChecked(!eveChecked);
         onChange(checked);
+        // Detecting Eve needs more photons, so ticking her RAISES a count that
+        // is too low — it does not replace one the player chose. The effect
+        // this replaces overwrote the field in both directions: typing 12 and
+        // ticking Eve dropped it to the with-Eve minimum, and unticking then
+        // dropped it again to the default. Same rule as BB84's solo modal.
+        if (checked === true &&
+            form.getValues('photonNumber') < E91_SOLO_PHOTON_MIN_WITH_EVE) {
+            form.setValue('photonNumber', E91_SOLO_PHOTON_MIN_WITH_EVE);
+        }
     };
 
     // ═══════════════════════════════════════════════════════════════════════

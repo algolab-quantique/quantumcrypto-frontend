@@ -23,7 +23,7 @@ import {Button} from '@/components/ui/button';
 import {useRouter} from 'next/navigation';
 import {Home, RotateCcw} from 'lucide-react';
 import type {SoloEveRecord} from '@/lib/bb84/solo-round';
-import {classifySoloEnding} from '@/lib/bb84/eve-story';
+import {classifySoloEnding} from '@/lib/eve-story';
 
 const SoloResultsTable = ({
     playerName,
@@ -57,9 +57,9 @@ const SoloResultsTable = ({
     const ending = classifySoloEnding(eveRecord);
     const keyCompromised = ending === 'missed';
     const revealKey = {
-        absent: 'component.bb84.results.revealAbsent',
-        caught: 'component.bb84.results.revealCaught',
-        missed: 'component.bb84.results.revealMissed',
+        absent: 'component.results.revealAbsent',
+        caught: 'component.results.revealCaught',
+        missed: 'component.results.revealMissed',
     }[ending];
 
     // Navigation Invariant: plain navigation, no clearing — completed data is
@@ -89,7 +89,7 @@ const SoloResultsTable = ({
                             <TableHead>{localize('component.results.iteration')}</TableHead>
                             <TableHead>{localize('component.bb84.results.evePresent')}</TableHead>
                             <TableHead>{localize('component.bb84.results.eveDetected')}</TableHead>
-                            <TableHead>{localize('component.bb84.results.verdict')}</TableHead>
+                            <TableHead>{localize('component.results.verdict')}</TableHead>
                             <TableHead>{localize('component.bb84.results.time')}</TableHead>
                             <TableHead>{localize('component.bb84.results.keyLength')}</TableHead>
                             <TableHead>{localize('component.bb84.results.score')}</TableHead>
@@ -113,8 +113,8 @@ const SoloResultsTable = ({
                                 ? 'text-red-500 font-bold'
                                 : 'text-green-500 font-bold'}>
                                 {localize(keyCompromised
-                                    ? 'component.bb84.results.keyCompromised'
-                                    : 'component.bb84.results.keySecure')}
+                                    ? 'component.results.keyCompromised'
+                                    : 'component.results.keySecure')}
                             </TableCell>
                             <TableCell>{`${Math.ceil(elapsedTime)} s`}</TableCell>
                             <TableCell>{keyLength}</TableCell>

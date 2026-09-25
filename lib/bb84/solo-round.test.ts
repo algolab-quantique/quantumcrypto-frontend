@@ -10,8 +10,17 @@ import {
     beginSoloRound,
     readSoloEveRecord,
     recordSoloGameStart,
-    restartSoloRound,
 } from './solo-round';
+import {restartRound} from '@/lib/protocol-lifecycle/round';
+import {bb84Adapter} from '@/lib/protocol-lifecycle/bb84-adapter';
+
+/**
+ * Task 63 Step 1: these tests used to call a BB84-specific restartRound(bb84Adapter).
+ * That wrapper is gone — the same seven steps now run through the SHARED
+ * restartRound, with BB84's own part behind bb84Adapter.round. Only the
+ * invocation below changed; every assertion is untouched, which is what makes
+ * this file the proof that the extraction preserved BB84's behaviour.
+ */
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
 import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
@@ -20,6 +29,12 @@ import usePlayerStore from '@/store/player-store';
 beforeEach(() => {
     localStorage.clear();
     usePlayerStore.getState().resetPlayer();
+    // Task 63 Step 4a: these are SOLO restarts, and now they have to say so.
+    // Preparing the partner's data is solo-only — in multiplayer the real Alice
+    // produces her photons — so restartRound reads this flag before calling
+    // prepareRound. The suite used to pass without it, because generation was
+    // unconditional; the flag being required is the point of the change.
+    usePlayerStore.getState().setPlayingSolo(true);
     useBB84RoomStore.getState().resetRoom();
     useBB84ProgressStore.getState().resetProgress();
     useBB84GameStore.setState({gameHasEve: false, photonNumber: 4});
@@ -51,18 +66,18 @@ describe('beginSoloRound', () => {
     });
 });
 
-describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
+describe('restartRound on BB84 (Task 49-A: same config, fresh randomness)', () => {
     it('regenerates photons for Bob — the original stuck-game bug', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84RoomStore.getState().setEvePresent(false);
-        restartSoloRound();
+        restartRound(bb84Adapter);
         expect(useBB84RoomStore.getState().alicePhotons).toHaveLength(4);
     });
 
     it('preserves the Eve DRAW across a bad-luck restart (flag split)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound();
+        restartRound(bb84Adapter);
         expect(useBB84RoomStore.getState().evePresent).toBe(true);
     });
 
@@ -70,7 +85,7 @@ describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84GameStore.setState({gameHasEve: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
+        restartRound(bb84Adapter, {withoutEve: true});
         expect(useBB84RoomStore.getState().evePresent).toBe(false);
         // The validation mechanic must stay: skipping it would leak the answer.
         expect(useBB84GameStore.getState().gameHasEve).toBe(true);
@@ -80,8 +95,8 @@ describe('restartSoloRound (Task 49-A: same config, fresh randomness)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         useBB84GameStore.setState({gameHasEve: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
-        restartSoloRound(); // bad luck in the clean round
+        restartRound(bb84Adapter, {withoutEve: true});
+        restartRound(bb84Adapter); // bad luck in the clean round
         expect(useBB84RoomStore.getState().evePresent).toBe(false);
     });
 });
@@ -99,10 +114,59 @@ describe('SoloEveRecord (Task 51 ph.2: the game\'s Eve story)', () => {
         usePlayerStore.getState().setPlayerRole('B');
         recordSoloGameStart({enabled: true, percentage: 1, drawn: true});
         useBB84RoomStore.getState().setEvePresent(true);
-        restartSoloRound({withoutEve: true});
-        restartSoloRound();
+        restartRound(bb84Adapter, {withoutEve: true});
+        restartRound(bb84Adapter);
         const record = readSoloEveRecord();
         expect(record?.rounds).toBe(3);
         expect(record?.drawn).toBe(true);
+    });
+});
+
+/**
+ * Task 63 Step 4a. The multiplayer branch exists but nothing calls it yet —
+ * Steps 4b and 4c wire the components. These tests are what makes it safe to
+ * wire: they pin the two things that must differ, before any UI depends on them.
+ */
+describe('restartRound on BB84 in MULTIPLAYER', () => {
+    beforeEach(() => {
+        usePlayerStore.getState().setPlayingSolo(false);
+        usePlayerStore.getState().setPlayerRole('B');
+    });
+
+    /**
+     * The reason the mode matters at all. In multiplayer the real Alice
+     * produces her own photons; generating them locally would overwrite hers
+     * with fabricated ones — Bob would play against a partner that does not
+     * exist, and the two clients would silently disagree about the round.
+     */
+    it('does NOT fabricate Alice\'s photons — she is a real player', () => {
+        restartRound(bb84Adapter);
+
+        const room = useBB84RoomStore.getState();
+        expect(room.alicePhotons).toHaveLength(0);
+        expect(room.aliceBits).toHaveLength(0);
+        expect(room.aliceBases).toHaveLength(0);
+    });
+
+    /**
+     * And because nothing was generated, Bob is told he is WAITING for the
+     * photons rather than that they have arrived. The transcript follows what
+     * exists, not what mode we are in.
+     */
+    it('tells Bob he is waiting, not that photons arrived', () => {
+        restartRound(bb84Adapter);
+
+        const lines = useBB84ProgressStore.getState().displayedLines;
+        expect(lines).toHaveLength(2);
+        expect(lines.map(line => line.content))
+            .not.toContain('component.bobExchange.photonsArrived');
+    });
+
+    it('still restores the Eve draw, exactly as solo does', () => {
+        useBB84RoomStore.getState().setEvePresent(true);
+
+        restartRound(bb84Adapter);
+
+        expect(useBB84RoomStore.getState().evePresent).toBe(true);
     });
 });

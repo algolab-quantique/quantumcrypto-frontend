@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn, fillPhotonMinimums } from '@/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -111,15 +111,15 @@ const CreateGameModal = ({
         checked: CheckedState) => {
         setEveChecked(!eveChecked);
         onChange(checked);
-    };
-
-    useEffect(() => {
-        if (eveChecked) {
+        // Detecting Eve needs more photons, so ticking her RAISES a count that
+        // is too low — it does not replace one the host chose. The effect this
+        // replaces overwrote the field in both directions; same defect as the
+        // solo modal, same fix, same rule as BB84.
+        if (checked === true &&
+            form.getValues('photonNumber') < E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE) {
             form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_MIN_WITH_EVE);
-        } else {
-            form.setValue('photonNumber', E91_MULTIPLAYER_PHOTON_DEFAULT);
         }
-    }, [eveChecked, form]);
+    };
 
     return (
         <Dialog>

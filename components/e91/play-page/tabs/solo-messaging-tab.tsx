@@ -12,6 +12,7 @@
  * UI is IDENTICAL to multiplayer messaging-tab.tsx
  */
 
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,11 +40,13 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
     const {
         aliceValidBits,
         bobValidBits,
+        aliceBases,
+        eveAngles,
         aliceCipher,
         aliceCipherSent,
         gameSuccess,
         evePresent,
-        eveReadCount,
+        eveGuessedRightBits,
         eveSpotted,
         message: persistedMessage,
         crypto: persistedCrypto,
@@ -56,10 +59,19 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         setGameSuccess,
     } = useE91RoomStore();
 
-    const keyBits = aliceValidBits;
+    // The key of the player at THIS screen: Alice's if he plays Alice, Bob's
+    // if he plays Bob. The PARTNER holds the other one — the machine in solo, a
+    // distant machine via the server in multi. The two are equal only when
+    // nobody disturbed the photons, so reading Alice's for both roles made
+    // Eve's damage impossible to compute (Task 71, physics doc 10.15).
+    //
+    // Decide the role once, here, and use this alias everywhere the key means
+    // "mine". Where the role is certain instead — the block below IS Alice —
+    // name that role's array directly.
+    const localPlayerKeyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
 
     const [message, setMessage] = useState(() => {
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -67,12 +79,14 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
     });
 
     const [crypto, setCrypto] = useState(() => {
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
         }));
     });
+
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     /**
      * SOLO MODE: Auto-generate Alice's cipher when Bob enters tab
@@ -84,11 +98,13 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
      */
     useEffect(() => {
         if (playerRole === 'B' && aliceCipher.length === 0) {
-            // Generate random message for Alice
-            const randomMessage = keyBits.map(() => Math.random() < 0.5 ? '0' : '1');
+            // Here the app IS Alice, so it names her key rather than the local
+            // player's: inside this branch the local player is Bob, and
+            // encrypting with his key would make every decryption succeed.
+            const randomMessage = aliceValidBits.map(() => Math.random() < 0.5 ? '0' : '1');
             // Encrypt: cipher = (message + key) mod 2
-            const cipher = randomMessage.map((bit, index) => 
-                ((parseInt(bit) + parseInt(keyBits[index])) % 2).toString()
+            const cipher = randomMessage.map((bit, index) =>
+                ((parseInt(bit) + parseInt(aliceValidBits[index])) % 2).toString()
             );
             setAliceCipher(cipher);
             // Add arrival messages (matching multiplayer socket flow)
@@ -97,16 +113,24 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                 { content: 'component.messaging.bob.decrypt' }
             ]);
         }
-    }, [playerRole, aliceCipher.length, keyBits]);
+    }, [playerRole, aliceCipher.length, aliceValidBits]);
 
     useEffect(() => {
         if (gameSuccess) {
-            if (evePresent && eveReadCount > 0) {
+            // Whenever Eve was there, even if she guessed no key bit: that
+            // happens in about a third of her games, and the student must
+            // still learn she was present (Task 72).
+            if (evePresent) {
                 pushLines([
                     {
                         title: 'component.e91.evePresent',
-                        content: 'component.e91.evePresent.stats',
-                        extra: `${eveReadCount}`
+                        content: 'component.e91.evePresent.summary',
+                        values: {
+                            n: eveAngles.length,
+                            m: aliceBases.length,
+                            k: eveGuessedRightBits,
+                            l: aliceValidBits.length,
+                        },
                     },
                 ]);
             }
@@ -149,6 +173,33 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
         setCrypto(updatedCrypto);
     };
 
+    // How the round ends, for both roles. The student's arithmetic has already
+    // been checked; whether Bob's MESSAGE is right depends only on whether the
+    // two keys agree (physics doc 10.15). Returns true when they do.
+    const endRound = (successContent: string) => {
+        const keysMatch = aliceValidBits.join('') === bobValidBits.join('');
+        if (keysMatch) {
+            pushLines([
+                {
+                    title: 'component.messaging.congratulations',
+                    content: successContent,
+                },
+            ]);
+        } else {
+            pushLines([
+                {
+                    title: 'component.e91.messaging.keyPerturbed',
+                    content: 'component.e91.messaging.keyPerturbed.line',
+                    info: 'keyPerturbed',
+                },
+            ]);
+            setKeyPerturbedOpen(true);
+        }
+        // The round is over either way: "finished", not "won".
+        setGameSuccess(true);
+        return keysMatch;
+    };
+
     /**
      * SOLO MODE: Validate locally without socket calls
      */
@@ -158,7 +209,7 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             touched: true,
         })));
         const updatedCrypto = [...crypto].map((cryptoBit, index) => {
-            const keyNumber = parseInt(keyBits[index]);
+            const keyNumber = parseInt(localPlayerKeyBits[index]);
             const messageNumber = playerRole === 'B' ?
                 parseInt(aliceCipher[index]) : parseInt(message[index].value);
             const result = (keyNumber + messageNumber) % 2;
@@ -174,15 +225,9 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             if (playerRole === 'B' && !gameSuccess) {
-                pushLines([
-                    {
-                        title: 'component.messaging.congratulations',
-                        content: 'component.messaging.bob.end',
-                    },
-                ]);
-                toast.success(localize('component.basis.correct'));
-                // In solo mode, mark game as success
-                setGameSuccess(true);
+                if (endRound('component.messaging.bob.end')) {
+                    toast.success(localize('component.basis.correct'));
+                }
             } else if (playerRole === 'A' && !aliceCipherSent) {
                 // Alice sends cipher - in solo mode, just mark as sent
                 const payload = crypto.map(({value}) => value);
@@ -194,18 +239,11 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                 ]);
                 setAliceCipherSent(true);
                 
-                // SOLO MODE: Simulate Bob's successful decryption after delay
-                // In multiplayer, Bob sends a socket event when he decrypts successfully
-                // Here we simulate that after a short delay
-                setTimeout(() => {
-                    pushLines([
-                        {
-                            title: 'component.messaging.congratulations',
-                            content: 'component.messaging.alice.end',
-                        },
-                    ]);
-                    setGameSuccess(true);
-                }, 2000);  // 2 second delay to simulate Bob decrypting
+                // SOLO MODE: the machine plays Bob. After a short pause (Bob
+                // decrypting), say honestly how it went: his message is right
+                // only if his key matches Alice's (Task 71). In multiplayer,
+                // Bob's own browser reports this through the socket.
+                setTimeout(() => endRound('component.messaging.alice.end'), 2000);
             }
         } else {
             if (playerRole === 'A') {
@@ -244,11 +282,11 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {keyBits.map((_, i) => (
+                    {localPlayerKeyBits.map((_, i) => (
                         <TableRow key={i}
                                   className="text-center border-secondary">
                             <TableCell>
-                                <Input disabled value={keyBits[i]}
+                                <Input disabled value={localPlayerKeyBits[i]}
                                        className={'w-10 text-lg text-center' +
                                            ' mx-auto disabled:opacity-100' +
                                            ' disabled:bg-background' +
@@ -318,6 +356,8 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
                         localize('component.messaging.validateAndSend')}
                 </Button>
             </div>
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </div>
     );
 };

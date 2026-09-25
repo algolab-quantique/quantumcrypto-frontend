@@ -9,7 +9,6 @@ import AtmosphericBackground from '@/components/home-page/v3/atmospheric-backgro
 import Image from 'next/image';
 import { useEffect } from 'react';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
-import { clearE91LocalStorage } from '@/lib/e91/utils';
 import usePlayerStore from '@/store/player-store';
 
 /**
@@ -23,12 +22,20 @@ export default function LandingPageV3() {
         setPlayingSolo(false);
         setPlayingMultiplayer(false);
 
-        // 2. BB84 completed data is deliberately NOT cleared here (Task 48 D4b,
-        // ADR §11 Navigation Invariant): session data is destroyed only by explicit
-        // user intent — startFresh (new game / replay) or quit — never as a
-        // side-effect of navigation. Keeping the completed checkpoint lets browser
-        // Forward back into /bb84/play restore the félicitation screen instead of
-        // fail-closing. E91/DPS below keep the old clearing until their migration.
+        // 2. BB84 **and now E91** completed data is deliberately NOT cleared here
+        // (Task 48 D4b, ADR §11 Navigation Invariant): session data is destroyed
+        // only by explicit user intent — startFresh (new game / replay) or quit —
+        // never as a side-effect of navigation. Keeping the completed checkpoint
+        // lets browser Forward back into /{protocol}/play restore the félicitation
+        // screen instead of fail-closing.
+        //
+        // E91 joined BB84 here in Task 40 Phase 3e-3, which is exactly what the
+        // previous version of this comment said would happen ("E91/DPS below keep
+        // the old clearing until their migration"). Its migration is that phase.
+        // Without this, the work in 3e-2 was defeated from here: /e91 kept the
+        // completed checkpoint, then Back to '/' wiped it and Forward fail-closed.
+        //
+        // DPS still clears below — its migration is Phase 4.
 
         // 3. Check and clean up completed DPS game data
         try {
@@ -39,17 +46,6 @@ export default function LandingPageV3() {
             }
         } catch (e) {
             console.error('Error cleaning DPS storage on landing mount:', e);
-        }
-
-        // 4. Check and clean up completed E91 game data
-        try {
-            const e91GameRaw = localStorage.getItem('e91GameData');
-            const e91Game = e91GameRaw ? JSON.parse(e91GameRaw) : null;
-            if (e91Game?.gameSuccess === true) {
-                clearE91LocalStorage();
-            }
-        } catch (e) {
-            console.error('Error cleaning E91 storage on landing mount:', e);
         }
     }, []);
 

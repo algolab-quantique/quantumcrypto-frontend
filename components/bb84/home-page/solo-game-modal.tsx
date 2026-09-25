@@ -112,11 +112,13 @@ const SoloGameModal = ({ triggerClassName, open, onOpenChange }: { triggerClassN
                 BB84_SOLO_PHOTON_MIN_WITHOUT_EVE),
             path: ['photonNumber'],
         }).refine(schema => ((schema.eve &&
-            // Cap at photons/4, not /2: the sifted key averages HALF the
-            // photons (Binomial n,1/2), and validation bits are sacrificed
-            // from it — a cap of n/2 makes the "not enough bits" restart fire
-            // in most rounds (found by Ibra: 6 photons/3 validation ⇒ ~66%
-            // restart rate). n/4 matches getDefaultValidationBits' 25%.
+            // Cap at n/4, i.e. about HALF the sifted key: validation bits are
+            // sacrificed from the sifted key, which averages only n/2
+            // (Binomial n,½), not n. A cap of n/2 would therefore equal the
+            // whole expected sifted key and makes ~60% of games restart before
+            // they can be played (measured). n/4 keeps that under 4%.
+            // Not a security bound — a measured compromise. Table + reasoning:
+            // docs/protocol-physics.md §8.
             (schema.validationBitsLength > 0 && schema.validationBitsLength <=
                 schema.photonNumber / 4)) || !schema.eve),
             {

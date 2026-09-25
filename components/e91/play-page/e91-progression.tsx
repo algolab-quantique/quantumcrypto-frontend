@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Info } from 'lucide-react';
 import GameProgression from '@/components/shared/game-progression';
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import usePlayerStore from '@/store/player-store';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -11,6 +13,9 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { RESTART_WITHOUT_EVE_EVENT } from '@/bb84-constants';
 import { useRouter } from 'next/navigation';
 import useE91GameStore from '@/store/e91/e91-game-store';
+import { restartRound } from '@/lib/protocol-lifecycle/round';
+import { fillPlaceholders } from '@/lib/utils';
+import { e91Adapter } from '@/lib/protocol-lifecycle/e91-adapter';
 
 const E91Progression = () => {
 
@@ -25,9 +30,8 @@ const E91Progression = () => {
 
     const { displayedLines } = useE91ProgressStore();
 
-    // Get reset functions from stores for solo mode restart
-    const { resetRoom, setEvePresent } = useE91RoomStore();
-    const { resetProgress, pushLines } = useE91ProgressStore();
+    // Reopened by the ⓘ on a line that carries info: 'keyPerturbed'.
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     const {
         gameSuccess,
@@ -37,29 +41,46 @@ const E91Progression = () => {
     } = useE91RoomStore();
 
     /**
-     * Handle restart in SOLO mode (no WebSocket connection).
-     * 
-     * When Eve is detected in solo mode, we restart the game locally:
-     * 1. Reset all room state (measurements, bases, bits, etc.)
-     * 2. Reset progress (step, tab, displayed messages)
-     * 3. Set Eve to false so the new game completes successfully
-     * 
-     * This mirrors the multiplayer behavior where the server restarts
-     * the game without Eve after detection.
+     * Handle restart in SOLO mode (no WebSocket connection), after Eve was
+     * detected. Mirrors the multiplayer behaviour, where the server restarts
+     * the game without Eve.
+     *
+     * Task 63 Step 2: the reset + welcome sequence now runs through the shared
+     * restartRound, which is also what clears the Eve DRAW. Found late — this
+     * was a third hand-written copy of the E91 restart, and the third to carry
+     * the `{content}` welcome defect (Ibra spotted it by clicking this button
+     * rather than the CHSH dialog, which turned out to be dead code).
+     *
+     * ⚠️ `setGameHasEve(false)` below is a DELIBERATE DIVERGENCE from BB84, not
+     * an oversight. Do not "align" it without reading this.
+     *
+     * BB84 clears only the DRAW and keeps the CHECKBOX (Task 51 semantics), so
+     * its next round re-runs the validation and the student confirms the channel
+     * is clean. Copying that here was tried on 2026-09-04 and reverted the same
+     * day, because the two verification steps are not the same kind of thing:
+     *
+     *   BB84's check is DETERMINISTIC — compare the validation bits, they match
+     *   or they do not.
+     *   E91's check is STATISTICAL — S is noisy at the photon counts this game
+     *   offers.
+     *
+     * With the checkbox kept, the CHSH tab returns for the Eve-free round
+     * (`solo-game.tsx:124,142` gate on `gameHasEve`) and the student computes S
+     * again. Per Task 52-C's measured table, at 10 photons only 37.5 % of
+     * Eve-absent games show |S| > 2 — so ~62 % of the time the student correctly
+     * reads S ≤ 2, clicks "not secure", and lands in `onUnsecure`'s else branch,
+     * which declares a LOSS and calls `clearE91LocalStorage()`, taking the
+     * results page with it (Task 52-G). They reasoned correctly and the game
+     * punished them.
+     *
+     * Turning the checkbox off keeps that path unreachable after a restart. It
+     * costs the student the confirmation round; it saves them from being told
+     * they lost for being right. Align with BB84 once 52-C and 52-G are fixed —
+     * tracked in Task 63.
      */
     const handleSoloRestart = () => {
-        // Reset room state (clears all measurements, bases, bits, etc.)
-        resetRoom();
-        // Reset progress (back to measurement tab, clear messages)
-        resetProgress();
-        // Disable Eve for the restart - guarantees successful completion
-        setEvePresent(false);
+        restartRound(e91Adapter, {withoutEve: true});
         setGameHasEve(false);
-        // Add initial welcome messages (in multiplayer, server sends these)
-        pushLines([
-            { content: 'component.e91.measurement.welcome' },
-            { title: 'component.game.step1', content: 'component.e91.measurement.start' }
-        ]);
     };
 
 
@@ -69,9 +90,18 @@ const E91Progression = () => {
                 <p className="text-card-foreground text-md md:text-xl">{line.title &&
                     <span className="font-bold text-highlight">{localize(
                         line.title)}</span>}{line.content ?
+                            line.values ? fillPlaceholders(
+                                localize(line.content), line.values) :
                             line.extra ? localize(
                                 line.content, line.extra) : localize(
-                                    line.content) : ''}</p>
+                                    line.content) : ''}
+                    {line.info === 'keyPerturbed' &&
+                        <Button variant="ghost" size="icon"
+                                className="h-8 w-8 md:h-9 md:w-9 ml-1 align-middle text-highlight"
+                                aria-label={localize(line.title)}
+                                onClick={() => setKeyPerturbedOpen(true)}>
+                            <Info className="h-5 w-5 md:h-6 md:w-6"/>
+                        </Button>}</p>
             </div>
         );
     });
@@ -110,6 +140,8 @@ const E91Progression = () => {
                     <Button onClick={goToResultsPage}>{localize('component.e91.text.seeResults')}</Button>
                 </div>
             </div>}
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </GameProgression>
 
     );

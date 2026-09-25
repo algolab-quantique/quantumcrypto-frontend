@@ -41,6 +41,21 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
 > **What this is NOT:** new tasks. Every line points at the task that already owns the work.
 > Estimates are in **working days for one developer**, at the pace actually measured on BB84.
 
+**Merge log** (`ibra_architecture` → `development`, by pull request only — CLAUDE.md §1a):
+- PR #23, 2026-08-28 — BB84 lifecycle + deployment readiness.
+- **2026-09-25 — decided with Ibra: merge now.** Chapter closed: **solo E91 correct end to end** (Task
+  60 physics + B1/B2, Task 63's E91 steps, Task 71 steps 1–4, Task 72, Task 73). 133 commits, 56
+  files. `development` holds nothing this branch lacks (only PR #23's merge commit), so no conflicts
+  are possible; the only workflow is `tests.yml`, so merging deploys nothing by itself. Reason for
+  now rather than after Task 68: 5 days to 2026-09-30, and a merge needs a day — the deadline must
+  not catch finished work outside `development`. **Task 68 follows as a separate, smaller PR.**
+  → **PR #24 opened 2026-09-25** (https://github.com/algolab-quantique/quantumcrypto-frontend/pull/24).
+  CI green, no conflicts. GitHub marks it `BLOCKED` only because `development` requires a review and
+  an author cannot approve their own PR — #23 had the same rule and was merged by Ibra with 0 reviews,
+  i.e. through the admin *"merge without waiting for requirements"* option. The PR lists four manual
+  checks to run first (three E91 solo flows, and BB84 with Eve up to the restart, since Task 63 moved
+  BB84 code into the shared restart). **Not merged yet.**
+
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
 contract, `lifecycle.ts`, test setup, CI). So **BB84 replication cost ≈ 13 days**, and that
@@ -49,11 +64,11 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 
 | # | Workstream | Days | Owned by | Blocked by |
 |---|---|---|---|---|
-| 1 | Verify backend connectivity after VM migration | 0.5 | **Task 23** | — *(do FIRST: if broken it blocks 4, 5, 6, 7)* |
+| 1 | Verify backend connectivity after VM migration | 0.5 | **Task 23** | — *(**deployment concern, NOT a dev blocker** — see correction below)* |
 | 2 | TEST_MODE env flag (production gate) | 1–2 | **Task 47 P1** + **Task 57** (design agreed, not built) | — |
 | 3 | Debug `console.log`s leaking key material | 0.5 | **Task 47 P2** | — |
 | 4 | **E91 lifecycle migration** | 8–12 | **Task 40 Phase 3** + **Task 26** + **Task 52** (pre-migration findings) | — |
-| 5 | **E91 physics** (biased Eve 52-D, honest Bell note 52-C, dead code 52-F) | 3–5 | **Task 52** | ⚠️ **BACKEND** — simulation duplicated in Python (`e91/consumers.py:480,507`) |
+| 5 | **E91 physics** (biased Eve → **Task 60**, honest Bell note 52-C, dead code 52-F) | 3–5 | **Task 60** + **Task 52** | ⚠️ **BACKEND** — simulation duplicated in Python (`e91/consumers.py:480,507`). **Explicitly OUT of scope for #4** |
 | 6 | **DPS lifecycle migration** | 12–18 | **Task 40 Phase 4** + **Task 37** (nav guard) + **Task 44** (`localStorage.clear()`) | — |
 | 7 | **DPS physics** — build the missing solo Eve | 5–8 | **Task 38** | — *(frontend-only: DPS backend has no physics; build it sender-side per ADR §13.3)* |
 | 8 | Socket-provider refactor (multi orchestration → per-protocol handlers) | 10–15 | **Task 40 Phase 5** | 4 + 6 stable first. **Riskiest change in the app** |
@@ -86,6 +101,80 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
    #12 is decided — automating it may be cheaper than replaying 12 flows by hand every migration.
    #14 (design polish) cannot be estimated honestly until someone defines the target.
 
+**✅ DECISION 2026-09-02 (Ibra) — E91 = LIFECYCLE ONLY. The physics is a separate task.**
+Workstream **#4 is now the next thing worked on**, and it does **not** touch a single line of
+E91 simulation. Everything physics — the biased Eve (**Task 60**), the honest Bell note (**52-C**),
+the dead `simulateSoloExchange` (**52-F**) — stays in **#5**, to be scheduled separately.
+
+*Why this is the right cut:* #5 is the **only** backend-blocked workstream in the whole roadmap
+(Task 60 confirmed the Eve bug exists in Python too, so fixing it needs the backend owner).
+Keeping it out of #4 means the biggest remaining workstream is **100 % frontend and 100 %
+unblocked** — Ibra can do all of it alone, starting now. Mixing them would have made an 8–12 day
+job wait on someone else's calendar. It also honours CLAUDE.md rule 2: lifecycle refactor and
+physics change never share a commit, let alone a workstream.
+
+**🚩 SPRINT DECISION PROPOSED 2026-09-10 (Ibra, pending team-lead approval): FINISH BB84 + E91,
+DEFER DPS ENTIRELY.** Not the swap considered yesterday (DPS simulation instead of DPS lifecycle) —
+**both** DPS workstreams (#6 and #7) come out of the remaining sprint. Ibra's reasoning: *"it is
+better to finish and have a good correct version of bb84 and e91 than to work on dps."*
+
+**What made the case.** Ibra checked the deployed app (`https://quantumcrypto.app/`) on 2026-09-10,
+played one E91 multiplayer game, and reproduced the whole family of bugs in **production**. These are
+not branch-only defects — students meet them today. Meanwhile `ibra_architecture` is **56 commits
+ahead of `development`**, carrying **17 user-visible fixes** that are written, tested and undeployed.
+
+**Consequence for ordering: merge and deploy FIRST.** It is the cheapest item in the plan and the
+only one that improves what students actually use, today. Everything else competes for the same
+15 working days to **2026-09-30**.
+
+| | days |
+|---|---|
+| Merge `ibra_architecture` → `development` + deploy | 0.5–1 |
+| **Task 67** — five unguarded socket handlers + a test each | 0.5 |
+| Finish **Task 63** — 5b, 4b, 7a/7b | 2–2.5 |
+| **Task 60** — the Eve physics ⚠️ **needs the backend owner** | 2–5 |
+| **Tasks 61, 62, 64, 52-G** | 2–3 |
+| Manual matrix: 2 protocols × 2 modes × 2 Eve = **8 flows** | 2–3 |
+| **Total** | **9–15** |
+
+**It fits, with one dependency that must start immediately.** Task 60 is the only item Ibra cannot do
+alone — E91's Eve lives in Python as well as TypeScript — and it is also the one his team lead will
+care most about, because it is the bug that defeats the lesson. **Open that conversation in the same
+meeting**, or it becomes the reason the sprint misses 30 September.
+
+**What is explicitly NOT happening, so it is not rediscovered as an oversight:** DPS's lifecycle
+migration (#6, 12–18 d) and DPS's simulation (#7, 5–8 d) are both deferred past 2026-09-30. DPS keeps
+its Eve checkbox with no interception behind it (**Task 38**) and its 73 raw `localStorage` calls.
+
+**🗓️ SPRINT-PLANNING OPTION (Ibra, 2026-09-09, ahead of his team-lead meeting): swap workstream #6
+for #7 — do DPS's SIMULATION instead of DPS's lifecycle migration.** Checked the backend today
+before answering, and the answer is **yes, it can be done correctly**:
+
+- **DPS's backend contains no physics at all.** Every `random` call in `dps/consumers.py` is
+  bookkeeping — `random.shuffle(players)` (`:154`), `random.choices` for the Eve draw (`:164`),
+  `random.sample` for validation indices (`:313`). No `sin`, `cos`, `sqrt` anywhere. Same for BB84.
+  The **only** quantum math in the entire backend is E91's `sin(pi/8)**2`.
+- So DPS physics would be **100 % frontend, 100 % unblocked, and built once** — no second copy to
+  drift, which is exactly the trap E91 is in (**Task 60**). ADR §13.3 already prescribes the shape:
+  the sender simulates the channel.
+- It is also **greenfield rather than repair**: DPS has an Eve *checkbox* and an `eve_present` field
+  but no interception behaviour at all (**Task 38**), so there is no legacy model to preserve —
+  unlike E91, where a placeholder must be replaced under a running game.
+
+**Honest counterweight, for the meeting:** #6 (DPS lifecycle) is the biggest remaining workstream at
+12–18 days and DPS carries **5× BB84's** raw `localStorage` surface. Doing #7 first does not shrink
+it; it defers it. The argument for swapping is not cost, it is **risk and dependency** — #7 is
+unblocked and finishable alone, while #6's size makes it the likeliest thing to run past
+**2026-09-30**. Choose deliberately, and say which one is being deferred.
+
+**🔧 CORRECTION 2026-09-02 — workstream #1 was wrongly marked a blocker.** It said *"do FIRST: if
+broken it blocks 4, 5, 6, 7"*. **That is wrong.** Ibra develops against a **local backend**
+(`http://127.0.0.1:8000`) running the same Django code, which is entirely sufficient to build and
+test the multiplayer lifecycle. The remote VM only affects **students in production**, and its
+production-only failure modes (nginx WebSocket upgrade, `wss://`, CORS) cannot be reproduced
+locally anyway. **Task 23 is a deployment concern, not a development prerequisite** — do it before
+the next production release, not before #4.
+
 ---
 
 ### 23. 🟡 INFRA: Verify Backend Connectivity After VM Migration
@@ -93,6 +182,11 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 **Status**: 🟡 INVESTIGATION — TODO  
 **Date Added**: May 20, 2026  
 **Priority**: 🟡 MEDIUM (may already be resolved — domain was re-pointed)
+
+> **Scope correction (2026-09-02):** this is a **deployment** check, **not** a prerequisite for any
+> migration work. Local development uses a local backend on `http://127.0.0.1:8000` running the same
+> Django code, which is enough to build and test multiplayer. Do this **before the next production
+> release**, so students are not the ones who discover it is broken.
 
 **Context**: The backend VM was physically changed, but the public domain name (e.g. `bb84.physc...`) was re-pointed to the new VM. Since the same domain is used, AWS Amplify environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`) should still be correct — no change needed in Amplify Console.
 
@@ -365,6 +459,15 @@ This is intentionally future work. It should not be guessed in the frontend only
 **Priority**: 🔴 HIGH  
 **Depends On**: E91 multiplayer backend event contract / room-level restart semantics.
 
+> **🔗 This IS the "notify the partner" work referenced from [Task 63](#63--the-insufficient-key-restart-loses-the-games-configuration--eve-silently-changes).**
+> Rediscovered on 2026-09-03 while testing Phase 3d, written up there as "63-E", then found to be
+> already specified here — three months earlier, with the backend contract, the restart epoch and the
+> stale-message rule already worked out. Task 63 no longer duplicates it: its **Step 4** leaves a
+> live, documented `notifyPartner()` no-op for this task to fill.
+> **It applies to BB84 as well**, not only E91: BB84's own multi short-key restart is equally
+> uncoordinated (`basis-tab.tsx:122-127`, "known desync, tracked as Task 49-B"). Whoever does this
+> should do it once for both.
+
 **Context**: In E91 multiplayer, if the valid shared key is too short after basis classification, one player can see the "key too small, restart" flow before the other player reaches the same checkpoint. The restart is currently too local/client-driven, so Alice and Bob can diverge.
 
 **Observed broken scenarios**:
@@ -609,11 +712,219 @@ Special cases to leave alone:
 - [ ] BB84 replay currently routes to `/bb84` and relies on completed-game mount cleanup / next `startFresh`; later define explicit replay lifecycle behavior.
 - [x] `components/bb84/play-page/tabs/messaging-tab.tsx`: remove unused `clearBB84LocalStorage` import in a tiny cleanup.
 
-**Phase 3: E91 migration**
+**Phase 3: E91 migration** — 🟡 **SCOPED 2026-09-02, ready to start. Lifecycle ONLY** (physics is
+Task 60 / 52-C / 52-F, deliberately excluded — see the roadmap decision).
 - [ ] Migrate E91 cleanup/start/restore calls after BB84 is stable.
 - [ ] Preserve completed-game refresh behavior.
 - [ ] Preserve active-game leave guard.
 - [ ] Test E91 solo and multiplayer, including refresh/reconnect and results.
+
+**📐 PHASE 3 SURFACE MAP (measured 2026-09-02 — every number below came from a grep that is
+reproducible, not an estimate).**
+
+**⚠️ First, a correction to the roadmap's own numbers.** The roadmap says *"raw `localStorage` refs
+in components: BB84 15 · E91 22 (1.5×) · DPS 73 (5×)"*. Those were counted with `grep localStorage`,
+which **also counts comments** — and these files comment about `localStorage` a lot. Counting real
+call sites (`grep "localStorage\."`) gives a different picture:
+
+| | raw grep (roadmap) | **real call sites** |
+|---|---|---|
+| BB84 *(already migrated)* | 15 | **7** |
+| **BB84 before migration** (`git grep` at `ad00d26^`) | — | **13** |
+| **E91 (to migrate)** | 22 | **15** |
+| DPS | 73 | **72** |
+
+So **E91 is ~1.15× BB84's pre-migration surface, not 1.5×.** DPS's 5× multiplier survives the
+recount intact — that one was real.
+
+**Second: BB84's migration did NOT remove all `localStorage`, and Phase 3's target is not zero.**
+13 → 7. What was migrated is the **session lifecycle** (start / restore / abandon); what stayed is
+config seeding (`solo-game-modal`, 4 writes) and one per-tab UI draft (`bob-exchange-tab`, 2). Phase 3
+should reproduce that shape, not chase a zero.
+
+**Third: `lib/protocol-lifecycle/e91-adapter.ts` ALREADY EXISTS and is complete** — 11 storage keys,
+`resetRoom` / `restoreRoom` / `resetProgress` / `hydrateProgress` / `getRoomSnapshot` all wired to the
+real E91 stores. **All 11 keys verified in use** in the app (2026-09-02), so it is accurate, not
+aspirational. But **zero E91 components import `protocol-lifecycle` today** — the adapter is written
+and unused. *The expensive part of Phase 3 is already paid for.*
+
+**The file-by-file map** (E91 → what BB84 did to its counterpart):
+
+| E91 file | calls | BB84 counterpart went | Phase 3 target |
+|---|---|---|---|
+| `home-page/e91-game-form-v3.tsx` | 4 | 4 → 1 (`abandon`, `startFresh`) | **1** |
+| `play-page/solo-game.tsx` | 2 | 2 → 0 (`restoreCheckpoint`) | **0** |
+| `play-page/multi-game.tsx` | 1 | 1 → 0 (`restoreCheckpoint`) | **0** |
+| `home-page/solo-game-modal.tsx` | 5 | 4 → 4 *(config seeding, kept)* | **5, unchanged** |
+| `play-page/tabs/solo-measurement-tab.tsx` | 2 | *no counterpart* — `e91GameStartTime` | decide |
+| `play-page/tabs/solo-CHSH-tab.tsx` | 1 | *no counterpart* — `e91EveWasDetected` | decide |
+
+**Expected outcome: 15 → ~9**, mirroring BB84's 13 → 7.
+
+**E91's genuinely extra surface is small and named: 3 calls in the CHSH/measurement tabs**, which BB84
+has no equivalent of. That is the only *net-new design* work in Phase 3 — everything else is applying
+a pattern that already exists and is already tested.
+
+**🔧 CORRECTION to the map above (same day, after reading `app/` and `socket-provider.tsx`).** The
+15-call figure counted `components/e91` **only**. The real Phase 3 surface is wider — but the extra
+is bounded and named:
+
+| Location | E91 refs | In Phase 3? |
+|---|---|---|
+| `components/e91/**` | 15 | ✅ yes |
+| `app/(main)/e91/play/page.tsx` | `clearE91LocalStorage()` + 2 flag writes | ✅ yes |
+| `lib/e91/utils.ts` → `clearE91LocalStorage` (6 `removeItem`, **10 call sites**) | 6 | ✅ yes — it is `clearProtocolStorage(e91Adapter)` re-implemented by hand |
+| `components/providers/socket-provider.tsx` | **11** | ❌ **NO — Phase 5** |
+| `app/(main)/page.tsx`, shared results page | 3 | ❌ no — cross-protocol |
+
+**❗ The socket-provider boundary, measured:** it still writes **11 BB84 keys**, **11 E91 keys** and
+**19 DPS keys**. BB84's count is *identical* to E91's. **Socket-provider was never part of Phase 2** —
+it is Phase 5, the "riskiest change in the app". So E91's 11 are out of scope here **for exactly the
+same reason BB84's 11 are still there**, and leaving them is conformance, not debt.
+
+**⚠️ This also settles a misreading worth recording: "BB84's migration is unfinished" is FALSE.**
+Evidence (2026-09-02): Phase 2a/2b/2c/2d are all ✅ (2d tested, `c894fbf`); **`getGameProgress()` no
+longer exists in BB84** — it survives only in `e91-game-form-v3.tsx:145` and
+`dps-game-form-v3.tsx:129`; `/bb84/play` and `/bb84/solo-results` both run
+`useProtocolSessionGuard(bb84Adapter, …)`. The 7 remaining BB84 calls are **deliberate**: 4 config
+writes in `solo-game-modal`, 2 per-tab input drafts in `bob-exchange-tab`, and 1 inside `readJSON` —
+a **read-only** session detector that Phase 2d *requires* to stay read-only (calling
+`restoreCheckpoint()` from the form page would mutate stores just to decide whether a dialog opens).
+13 → 7 is the designed end state, not an abandoned job.
+
+---
+
+**📋 PHASE 3 SLICE PLAN (agreed with Ibra 2026-09-02).** Mirrors the BB84 order that worked, one
+commit per slice, gates + browser check between each. Estimated 6 slices.
+
+| Slice | Files | What changes | Browser check |
+|---|---|---|---|
+| **3a-1** — cleanup / start, **exact replacements** *(mirrors 2a)* ✅ **DONE `2a3fd38`** | `app/(main)/e91/play/page.tsx` (`cleanupActiveGame`), `e91-game-form-v3.tsx` (`clearSavedSession`, `onJoinGame`, `onCreateGame`) | `clearE91LocalStorage()` + the two `setPlaying*` resets → **`abandon`** / **`startFresh`** | ✅ Ibra browser-verified before commit: solo start, leave+confirm, restart clean, multi create + join (2 browsers) |
+| **3a-2** — the two that are **not** exact ✅ **DONE `508596b`** | `e91-game-form-v3.tsx` (`onCancelRejoin`), `solo-game-modal.tsx` (`onStartSoloGame`) | both called `clearE91LocalStorage()` **without** the flag resets → `abandon` / `startFresh`. `solo-game-modal` also called `resetRoom()`+`resetProgress()` **twice** (once inside `clearE91LocalStorage`, once directly); the helper removes the duplication | ✅ Ibra browser-verified: rejoin-cancel then solo, solo after multi, solo restart. **The E91 home form now has zero hand-written storage calls.** |
+
+**✅ PHASE 3a COMPLETE.** Four `clearE91LocalStorage()` call sites remain app-wide, all outside 3a
+scope by design: the CHSH loss path (`solo-CHSH-tab.tsx:234`, behaviour-sensitive — sits next to
+52-A/52-B), `solo-results-table.tsx:64`, and two cross-protocol pages (`app/(main)/page.tsx:49`,
+the shared results page).
+
+**🔎 EVIDENCE FOR 3e, found by Ibra while verifying 3a-2 (2026-09-02).** Entering `/e91` directly in
+the URL bar during a **multiplayer** game offers a rejoin dialog; doing the same during a **solo**
+game offers nothing. Root cause confirmed by grep, and it is **the identical defect BB84 had before
+Phase 2d**:
+
+- `e91PlayerData` is written at **exactly one place** — `socket-provider.tsx:425`, a multiplayer-only
+  path. Solo never writes it.
+- The form's effect triggers on that raw key: `if (previousGameRaw) setRejoinDialogOpen(true)`
+  (`e91-game-form-v3.tsx:140`), so in solo the condition is never true.
+- BB84 post-2d branches on a **typed session kind** instead
+  (`if (kind === 'multiplayer' || kind === 'solo')`, `bb84-game-form-v3.tsx:177`).
+
+Phase 2d recorded the same conclusion for BB84 in its own words — *"Solo rejoin is currently ABSENT,
+not imperfect"*. **So 3e is net-new work for E91 too, not a refinement**, and the 8–12 day estimate
+should not be trimmed on account of it.
+| **3b-1** — play route guard ✅ **DONE `6667b67`** | `app/(main)/e91/play/page.tsx` | `playingSolo` → the hook's `mode`; `if (mode === null) return null` render gate; missing/corrupt → `abandon` + leave to `/` | ✅ solo renders + survives refresh; `/e91/play` in fresh incognito paints nothing and leaves; multi create+join+refresh ×2; leave returns to `/e91` |
+| **3b-2** — solo-results route guard ✅ **DONE `eba215e`** | `app/(main)/e91/solo-results/page.tsx` | `isHydrated`+`playingSolo` redirect → `require: {completed: true, mode: 'solo'}`, `failCloseTo: '/e91'`, `hydrate: true`, **no** `abandonOnLeave` | ✅ win→results; **refresh now restores the table** instead of emptying it; direct URL and post-game URL both leave to `/e91` |
+| **3c** — solo restore ✅ **DONE `2927974`** | `components/e91/play-page/solo-game.tsx`, `lib/protocol-lifecycle/e91-adapter.ts` | 4 hand-rolled reads → one **`restoreCheckpoint(e91Adapter)`**; the implicit `else` becomes an explicit `displayedLines.length === 0` check; **`e91Adapter` gains the `hydrateConfig` it was missing** (`e91PhotonNumber`, `e91GameHasEve`) — without it `restoreCheckpoint` would have dropped both on refresh | ✅ fresh game shows welcome + step-1; refresh restores step/tab/transcript; **play continues correctly after the refresh, with and without Eve** (the test that actually exercises `hydrateConfig`) |
+| **3d** — multi restore *(mirrors 2c)* | `components/e91/play-page/multi-game.tsx` | same, plus the reconnect branch | **2 browsers** (normal + incognito); refresh each side mid-game |
+| **3e-1** — the form stops restoring ✅ **DONE `bab4b81`** | `e91-game-form-v3.tsx` | **`getGameProgress()` deleted** — it hand-read 7 keys with no corrupt validation *and* opened the socket from the form page. `onRejoin` now sets the flags and routes; `/e91/play` owns restore + reconnect (wired in 3d). `push`, not `replace`. −51/+15 lines | ✅ multi: play, refresh, `/e91` → dialog → rejoin restores with the partner still connected; close clears |
+| **3e-2** — the shared classifier ✅ **DONE `b115623`** | `e91-game-form-v3.tsx` | hand-rolled detection → **`detectSession(e91Adapter)`**. **The form now has ZERO `localStorage` calls** (4 at the start of Phase 3). Three behaviour changes: solo sessions are no longer destroyed, completed sessions keep their checkpoint, and the auto-redirect is replaced by an explicit dialog | ✅ mid-solo-game `/e91` now offers rejoin and restores intact; declining clears; `/e91/play` by URL after closing the tab restores |
+| **3e-3** — navigation, so 3e-2 could actually show ✅ **DONE `a47ce52`** | `app/(main)/page.tsx`, `e91/home-page/solo-game-modal.tsx` | landing page stops clearing completed E91 data (**its old comment had already scheduled this for "their migration"**); solo modal `replace` → **`push`** so `/e91` stays in history | ✅ finished game: Back → `/e91`, Forward → results return; mid-game Back → dialog, Forward → game; decline → Forward correctly fail-closes; **BB84 re-checked** since `page.tsx` is shared |
+| **3f** — orphan keys ✅ **DONE `b118020`** | new **`lib/e91/solo-session.ts`** + 4 call sites (start modal, measurement tab, solo CHSH tab, solo results page) | the answer was neither "fold into the checkpoint" nor "document the exception" but **give them an owner**, mirroring `lib/bb84/solo-round.ts`: `recordSoloGameStart` / `markSoloEveDetected` / `markSoloGameStarted` / `readSoloEveRecord` / `readSoloGameStartTime`. **The results page now has zero `localStorage` calls**; the 3 that remain in E91 are config seeding in the solo modal, the same shape BB84 keeps. 8 unit tests | ✅ Eve detected / Eve undetected / no Eve — the results table shows the same values as before in all three; refresh and Back/Forward unaffected |
+
+**✅ PHASE 3 COMPLETE (2026-09-03).** E91's lifecycle now runs on the shared machinery: `abandon` /
+`startFresh` for cleanup and start, `restoreCheckpoint` for solo and multiplayer restore,
+`useProtocolSessionGuard` on both routes, `detectSession` for rejoin, and `lib/e91/solo-session.ts`
+for the game-scope facts. **Direct `localStorage` calls in E91 components and routes: 15 → 3**, and
+those three are deliberate.
+
+**What Phase 3 uncovered but did NOT fix** (logged, per rule 2 — behaviour bugs never share a commit
+with a lifecycle refactor): **Task 61** (untranslated leave dialog) · **Task 62** (the results clock
+never stops) · **Task 63** (the insufficient-key restart silently changes Eve) · **52-G** (a solo
+loss makes the results page unreachable). Every migration so far has surfaced unknown bugs — roadmap
+caveat 2 held again, and this time four of them.
+
+**Still open in Task 40 after this:** Phase 4 (DPS) and Phase 5 (socket-provider), plus the E91
+writes socket-provider still owns, which are Phase 5 by design.
+
+**🔄 ORDER CORRECTED 2026-09-02 — the route guard moved from 4th to 2nd.** The original order put
+solo restore before the guard. That is backwards, and BB84 already paid for the mistake: doing the
+restore first forces a `missing`/`corrupted` branch **inside the component**, which the guard then
+makes unreachable. `bb84/play-page/solo-game.tsx:61-63` says so in its own words — *"PlayPage's
+render-time guard (Task 48 D4a) guarantees a restorable session before SoloGame mounts, so
+restoreCheckpoint cannot return missing/corrupted here — the old fail-close branch was dead code
+(D5b)."* Guard first ⇒ 3c and 3d are near-trivial, and no code is written to be deleted.
+
+**Why this order:** 3a was pure deletion with an existing replacement — smallest possible first
+commit. 3b (guard) is the load-bearing one and unblocks the two after it. 3c is solo, one browser.
+3d adds the multiplayer risk. 3e is the design-heavy rejoin work. 3f is last because its decision
+needs what 3a–3e reveal.
+
+**✅ 3b is confirmed feasible with ZERO new lifecycle code — `detectSession` already handles E91 by
+name** (`lifecycle.ts:154`): *"BB84/E91 solo: a local checkpoint with no player data at all."* E91
+solo writes `e91GameData` (`solo-game-modal`) and never `e91PlayerData` (only `socket-provider:425`
+does, multiplayer-only), so solo classifies correctly; multi writes both, so it classifies as multi.
+The hook's own docstring asks for exactly this: *"E91/DPS pages adopt this hook at replication
+instead of hand-copying the pattern."*
+
+**🔍 CRITICAL COMPARISON — what BB84's guard does well, and what E91 would INHERIT (Ibra's rule: copy
+BB84 because it works, not because it is automatically right).**
+
+*Sound, and worth copying:*
+- Policy is **pure and unit-tested** (`resolveSessionForRoute` over `detectSession`); the hook only
+  adds React mechanics. One implementation, adapter-parameterised.
+- **Fail-closed by default.** `solo` is returned only on positive evidence; an ambiguous multiplayer
+  state becomes `corrupt` rather than silently degrading into SoloGame.
+- The **render-time null gate** (`if (mode === null) return null`, `bb84/play/page.tsx:71`) prevents
+  both the flash *and* the wrong game component mounting for one render. Verified present — a first
+  read suggested it was missing and it is not.
+
+*Real weaknesses that adoption would replicate — recorded, not fixed here:*
+1. **`mode` sits BESIDE `playingSolo`/`playingMultiplayer` instead of replacing them.** The hook
+   writes the two booleans as a bridge (D5a). Task 40's own deferred list already warns: *"when
+   `mode` is introduced it must REPLACE the two booleans, NOT add a third field beside them — a third
+   field triples the drift surface."* Adopting the guard in E91 **doubles that surface** before the
+   replacement happens. Accepted deliberately: the alternative is hand-copying the pattern, which is
+   what the ADR forbids. Flagged so it is counted in the Phase 5 / mode-cleanup work.
+2. **A DPS-specific branch lives inside the shared classifier** (`lifecycle.ts:145-152`), gated on
+   `protocolId === 'dps'`. Documented as migration compatibility, but protocol-specific rules in
+   shared code tend to become permanent.
+3. **Stale docstring**: `detectSession`'s note (`lifecycle.ts:112-114`) says *"Slice D refactors
+   `restoreCheckpoint` to reuse this classifier so guard and page agree"* — but `restoreCheckpoint`
+   already carries *"Task 48 D1: classify via the single source of truth (detectSession)"*. The note
+   describes work that appears done. One-line doc fix, someday.
+4. **The guard does not disconnect the play socket when it fails closed** — it calls `abandon` and
+   navigates. Fine for solo; **verify during 3d** whether an open E91 multiplayer socket can survive
+   a fail-close (the phantom-game family, Task 48 slice 3a).
+
+**Do NOT touch in Phase 3:** socket-provider's 11 E91 writes (Phase 5) · `app/(main)/page.tsx` and
+the shared results page (cross-protocol) · **52-A** and **52-B** (behaviour bugs you *will* see while
+testing 3b/3c — log them, do not fix them here) · **Task 60** and **52-C** (physics).
+
+**🔎 SECOND FINDING FOR 3e — E91 destroys a completed session that BB84 preserves.** Raised by Ibra
+from memory (*"in BB84 when we click back we go to /bb84, forward goes back to the table"*) and
+confirmed by reading both forms:
+
+| landing on the protocol home with a **completed** game | |
+|---|---|
+| **BB84** (`bb84-game-form-v3.tsx:163`) | `if (kind === 'completed') { disconnectPlayRoom(); return; }` — the checkpoint is **kept** |
+| **E91** (`e91-game-form-v3.tsx:121`) | `if (gameCompleted) { clearSavedSession(); return; }` — the checkpoint is **destroyed** |
+
+BB84's comment states the intent outright: *"Completed session on the home page (Slice D2): KEEP the
+checkpoint so a browser-Forward back into /bb84/play restores the félicitation screen instead of
+fail-closing."* So in E91 today, Back to `/e91` wipes the session and Forward into the results
+fail-closes — the results route is **not** yet the URL-addressable, Back/Forward-safe page BB84's is
+(its own docstring calls that the *Navigation Invariant*). Fix it in 3e: same file, same effect, same
+decision. Note it is **not** enough to change the branch alone — check what `app/(main)/page.tsx:46-49`
+does with `e91GameData` on the landing page too.
+
+**⚠️ Known E91 bugs that Phase 3 will drive past — do NOT fix them in these commits** (CLAUDE.md
+rule 2): **52-A** (CHSH restart leaves an empty transcript) and **52-B** (the security claim is never
+verified). Both are behaviour, not lifecycle. Expect to *see* them while testing 3b/3c; log what is
+seen, fix separately.
+
+**Honest caveat (roadmap caveat 2 applies):** a smaller surface count does **not** license dropping
+the 8–12 day estimate. Every migration so far uncovered unknown bugs — BB84 surfaced four. E91
+already has two known ones before starting.
 
 **Phase 4: DPS migration**
 - [ ] Migrate DPS cleanup/start/restore calls after E91 is stable.
@@ -959,6 +1270,16 @@ Special cases to leave alone:
 - [x] **49-A — DONE 2026-07-13 (commit `be78746`, tested green):** canonical role-aware `lib/bb84/solo-round.ts` (`beginSoloRound` + `restartSoloRound`); insufficient-key dialog rewired (solo path); zero inline generation copies remain (F4 BB84 ✅); BB84-solo welcome transcript single-sourced (F3 partial); latent fixes: Alice's missing Eve-restart welcome lines, stale `bb84BobBasisInputs` refilling the basis form after any restart (now cleared in `beginSoloRound`). Tested: forced restart (deterministic — `aliceBases` visible in localStorage → choose all-opposite) → empty form, fresh photons, Eve preserved, playable; fresh starts + Eve-restart regression OK. **Testing lesson:** `getDefaultValidationBits(4)=1` → natural trigger ≈ 1/16 — manual forcing is painful; strong argument for Task 47's vitest slice (solo-round.ts is store-driven and unit-testable by design).
 - [x] **49-C — DONE 2026-07-14 (tested green, solo + multi):** one blocking dialog, both triggers, both modes; Eve-detected Rejouer = restart WITHOUT Eve in both modes (solo via `restartSoloRound({withoutEve:true})` incl. persisting `bb84GameHasEve`; multi via the coordinated event). Polish: honest short Eve message; `goToMainMenu` no longer abandons a completed game (empty-form flash gone); dialog stays covering the screen during exits. Multi tested with probability 1.0 + 3 validation bits: Invalide → both players get the popup → Rejouer → both restart cleanly (empty bases, welcome lines) and the new round plays fine; Valide → no spurious popup. Original design notes: ONE blocking dialog for both triggers and **both modes** (Solo/Multi Parity Principle, now in ADR §11): big **Rejouer** (primary, the natural flow) + small quiet **Retour au menu BB84** (escape hatch; settings changes live at the protocol menu — "one place to configure, one button to replay"). No checkbox, no settings button (rejected: popup must not become a second settings screen). **Eve-detected Rejouer semantic — decision pending discussion:** multi's backend event is `RESTART_WITHOUT_EVE`, deliberately (design by the previous responsible: switch Eve OFF after detection so students complete the protocol instead of looping detect→restart). Recommended: both modes restart WITHOUT Eve (consistent today, zero backend). Related discovery (Ibra remembered right): **E91/DPS Eve is probabilistic** (`eve && Math.random() < 0.5`, `*_EVE_PERCENTAGE_DEFAULT = 0.5`) while **BB84 Eve is deterministic** — the odd one out; see Task 51. Retour semantics: solo = abandon + `/bb84`; multi = disconnect + abandon + `/bb84` (= existing quit; partner-left gap already Tasks 27/43). Insufficient-key Rejouer: same settings both modes (multi coordination = 49-B).
 - Original 49-A plan (for reference): **solo fix (frontend-only):** extract the duplicated "start a solo Bob round" generation block (already 2 copies: `solo-game-modal.tsx:168-192`, `bb84-progression.tsx:68-89` — do NOT add a third) into one helper (e.g. `lib/bb84/solo-round.ts`). Rewire `basis-tab`'s `restartGame` for solo: reset room+progress, **re-apply config** (photonNumber, validationBitsLength, and **KEEP Eve as it was** — this restart is bad luck, not Eve-detection, so `evePresent` survives and Bob's regen applies `mimicEveIntercept` when Eve is on, like the modal), regenerate fresh randomness, push role-appropriate welcome lines (Alice regenerates via her own UI). Verify while implementing: whether `resetRoom` resets `evePresent` (if so re-set from `gameHasEve`). Test: solo Bob AND Alice, 4 photons, force insufficient key → restart → playable round, config + Eve preserved.
+  **+ STALE BASIS FORM IN MULTI (found 2026-09-08, BB84 only, PRE-EXISTING).** Task 49-A fixed the
+  stale `bb84BobBasisInputs` for solo: `bob-exchange-tab.tsx:84` refills Bob's basis form from that
+  key on mount, so without clearing it a restarted round shows the PREVIOUS round's bases and "Étape
+  1: choose your bases" loses its meaning. **The multi short-key restart never got that fix** — it
+  does a bare `resetRoom(); resetProgress();`. The coordinated Eve-restart does clear it (via
+  `restartWithoutEve`), so only the short-key path is affected.
+  **Not an E91 problem at all:** E91 has no equivalent draft key (checked). Recorded here rather
+  than in Task 63 because it is BB84's, and Task 63's Step 4b is where it will be decided — the
+  cleanup is mode-INSENSITIVE while the round generation beside it is solo-only, so whoever wires
+  BB84 multi must place it deliberately rather than let it ride along with the solo path.
 - [ ] **49-B — multi (REPRODUCE FIRST):** the `:115` trigger fires in multi too, and `restartGame` resets only LOCAL stores — the partner is never told → expected desync/hang. Reproduce (multi, 4 photons, one side hits insufficient key), document, then decide: proper fix is a coordinated restart like the Eve one, which likely needs a backend event (or confirming the backend relays a generic restart) — if backend-blocked, track with the partner-left family (Tasks 27/43).
   **+ CONCRETE REPRO 2026-07-17 (Ibra):** after the coordinated Eve-restart, the next round's validation is broken: backend picked indices **1 9 4** for a key too short for index 9 → a BLANK validation row (out-of-range index), messy transcript, incomplete form. **Mechanism hypothesis: the backend's validation state (indices / key_length) is NOT reset by RESTART_WITHOUT_EVE** — it draws from the old round's key length. Also lost UX: the old "partner declared the key invalid" transcript lines are eaten by the new blocking dialog — restore a partner-notification line with the dialog. Frontend defensive option (masks, not fixes): filter out-of-range indices in validation-tab.
   **+ Multi Eve-restart round integrity (found 2026-07-14, partial repro):** the coordinated `RESTART_WITHOUT_EVE` DID restart both players (dialog → event → both reset ✅), but the new round was "not ok" (Ibra): Bob's bases came back **prefilled** (stale `bb84BobBasisInputs` — FIXED: the legacy `restartWithoutEve` util now clears it) and the round afterward misbehaved (photons pass but game broken — after the two fixes below, the 2026-07-14 retest restarted cleanly and the new round played fine, so the misbehavior was likely these two bugs; keep an eye during 49-B proper). Also fixed en route: **`eveUndetected` was never synced to the partner** (`A/B_VALIDATED_EVENT` now mirror "valid + Eve present ⇒ undetected"), which made a spurious Eve-restart dialog appear on the partner's side after a VALID verdict (pre-existing bug, exposed by testing with probability 1.0; made worse by the new blocking dialog — hence fixed now).
@@ -1027,10 +1348,46 @@ Special cases to leave alone:
   | 20 (production min with Eve) | 66.1% | 33.8% |
   | 30 (`E91_SOLO_PHOTON_MAX`) | 77.7% | 11.4% |
 
-  At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. **Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**
+  At N=10 each CHSH pair gets ~1 sample, so each E(a,b) is ±1 — pure noise. **Consequence:** a student in an Eve-absent game computes S, correctly sees the Bell inequality is NOT violated, correctly answers "not secure" — and `onUnsecure` (`solo-CHSH-tab.tsx:211-234`) sends them to `component.e91.gameLoss` because `evePresent` is false. **The student reasons correctly and is told they lost, ~62% of the time at production defaults.** At 4 photons, 99.6% of games have at least one CHSH pair with ZERO samples, whose `calculateAverage([])` returns 0 (`:110`). Fix options (decide at migration): raise E91's photon minimums well above `MAX=30`, weight basis choice toward CHSH pairs, accumulate S across rounds (`sValues[]` already exists at `:85`), or replace the hard `|S|>2` reading with an explicit confidence/《not enough data》state. ~~**Interacts with Task 57 (TEST_MODE): E91's test values make this dramatically worse, so 52-C must be decided BEFORE the TEST_MODE flip, not after.**~~
+  **↑ ORDERING NOTE EXPIRED — verified 2026-09-02.** The flip happened in **Task 58** without 52-C being decided, and no harm was done: before Task 58, `e91-constants.ts` shipped `E91_TEST_MODE = true; // TODO: Set to false for production` (verified with `git show 8ce9c8b^`), so production ran the **4-photon** row — the worst in the table (6 % correct-reading rate). It now runs the **10-photon** row (37.5 %). The flip *improved* this, it did not endanger it. **52-C itself stays open and is unchanged by that**: at 10 photons, ~62 % of Eve-absent games still tell a correctly-reasoning student they lost. The agreed fix is still Ibra's July decision — **an explanatory Note, not more photons**. That is frontend-only UI work, needs no backend, and is **not** part of the E91 lifecycle migration.
+
+  **📖 WHAT 52-C ACTUALLY MEANS (plain-language, written 2026-09-02 because it kept being confused
+  with TEST_MODE).** It has **nothing** to do with the test/production pipeline — that pipeline is
+  finished, correct, and works (Task 58). 52-C would exist even if TEST_MODE had never been written.
+  **The analogy:** you want to know whether a coin is rigged, so you flip it **10 times** and get 7
+  heads. You conclude "rigged" — and you are wrong. The coin is fine; **10 flips is simply not enough
+  data to decide.** E91's Bell test is exactly that: S only means something after *many* measurements,
+  and the game offers 10 by default, 30 maximum. At that scale S is noise. TEST_MODE only made it
+  worse (4 photons); Task 58 improved it (10) without fixing it.
+
+  **🔒 THE REAL CONSTRAINT (Ibra, 2026-09-02): we cannot just raise the photon count.** The student
+  measures **manually, one photon at a time**. At 100 or 200 photons the game would never end. So
+  "more photons" is not a UX preference we rejected — it is **structurally impossible** in the current
+  interaction model. Any fix must therefore change *how* photons are produced, not just how many.
+
+  **Two candidate solutions (Ibra, 2026-09-02):**
+  1. **Explain the limitation** — an (i) tooltip or a visible notice telling the student that with so
+     few measurements S cannot decide the question, and that this limitation is itself part of the
+     physics lesson. Cheap, honest, teaches something true. Same voice as **59-D** and **57-K2**.
+  2. **⭐ IBRA'S PREFERENCE — hybrid manual/automatic.** The student plays ~10 photons **by hand** to
+     learn the mechanic; once those are done correctly, a button unlocks that runs the remaining
+     ~190 **automatically**. The student gets both: the gesture *and* a statistically meaningful S.
+     This solves the actual problem instead of apologising for it.
+
+  **Open questions before building option 2 (do not guess — measure, per CLAUDE.md rule 7):**
+  - **How many photons does S actually need?** 200 is a guess. Run the same simulation that produced
+    the table above at 100 / 200 / 500 and pick the number from the curve, not from intuition.
+  - Does the automatic batch reuse `sValues[]` (`solo-CHSH-tab.tsx:85`, already exists) or replace it?
+  - Multiplayer: both players would need to trigger their batch — or does the concept stay solo-only?
+  - Does the results table show 200 rows? Almost certainly not — needs a summary view.
+
+  **Option 2 is a real feature, not a copy fix** — it deserves its own task when scheduled, and it is
+  **not** part of the E91 lifecycle migration (workstream #4). Recorded here so the idea is not lost.
 
 - [ ] **52-D — 🟠 P2: Eve's output is biased, which is physically impossible and student-visible.** `eveGenerateBits` (`lib/e91/solo-player.ts:261-289`) produces, measured over 100k samples per basis: basis '1' → **85.32%** zeros, basis '2' → **100.00%** zeros (hardcoded `outcome = 1`, commented "Basis 2: Deterministic (always 1)"), basis '3' → **85.46%** zeros, basis '4' → 50.21% zeros. Any measurement outcome on a maximally mixed state must be **50/50** — a biased marginal means the output encodes the basis instead of a measurement. **Same family as the BB84 bug: a constant output.** Student-visible tell: with Eve present, EVERY basis-2 result is `0` (verified: at 2-2 key positions Bob's bit is '0' 100% of the time), so a student can spot Eve by "all my 2s are zeros" rather than by Bell's inequality — which defeats the entire pedagogical point of E91. Fix: make Eve's outcome an unbiased 50/50 draw for all bases (that alone still gives S≈0 and still destroys the key correlation).
+  **⬆️ SUPERSEDED 2026-09-02 by [Task 60](#60-🐛🔥-e91-eve-is-biased--and-the-same-bug-is-copy-pasted-in-two-repos-two-languages).** This entry assumed a frontend-only fix. The Python copy was then read: `e91/consumers.py:507` contains the identical `elif base == '2': outcome = 1`, so **multiplayer runs its own copy of this bug**. Two repos, two languages, one hand-copied function. Work it as Task 60, not here.
 - [ ] **52-E — 🟡 P3 (design note, not a bug): Eve is modelled as TOTAL decorrelation, not intercept-resend.** Measured S with Eve = **0.005**; a real intercept-resend attack on E91 halves the correlations, giving S ≈ 2√2/2 = **1.414** — still below the classical bound of 2, so still detectable, but not a flatline. The docstring (`:236-257`) is honest that this is a deliberate "Statistical Shortcut" matching the backend, and it does meet its stated goal (force S ≤ 2). Recording it because it makes Eve maximally obvious (same over-detection spirit as the BB84 bug) and because any future "how strong is Eve?" teaching lever lives here. Changing it requires a matching backend change — do not touch unilaterally.
+- [ ] **52-G — 🔴 P2: after a solo LOSS the results page is unreachable, because the next line undoes the previous one.** `solo-CHSH-tab.tsx:233-234` runs `setGameSuccess(true)` and then `clearE91LocalStorage()` — and `clearE91LocalStorage` calls `resetRoom()`, which does `set(initialState)`, putting `gameSuccess` straight back to `false` (and deleting `e91GameData`). The "see results" button is rendered only when `gameSuccess` is true (`e91-progression.tsx:101`), **so it never appears after a loss**. The code plainly intends the opposite — the comment right above says *"In solo mode, we just mark game as failed"*. Found 2026-09-02 while checking whether Phase 3b-2's `completed` requirement could break the loss path; it could not, because the path was already dead. Same file and same family as **52-A** (CHSH restart leaves an empty transcript): order-of-operations mistakes in the solo CHSH tab. **Fix vehicle:** the same canonical solo-round helper 52-A calls for. **Test that must fail first:** finish a solo game by losing, assert the results route is reachable and `gameSuccess` survives.
 - [ ] **52-F — P3 cleanup: `simulateSoloExchange` (`lib/e91/solo-player.ts:401-450`) is dead code**, documented as "currently NOT USED" at `:379`. It duplicates the Eve/entanglement branching that `solo-measurement-tab.tsx:155-190` actually performs — a second source of truth waiting to drift. Delete or wire it up during the E91 migration.
 
 ---
@@ -1072,6 +1429,39 @@ Special cases to leave alone:
 
 **Status**: ✅ DONE 2026-07-17 (core verified; caught-case display pending 49-B). Solo gained the celebration (then merged into reveal-led single phrases — polish slice); multi gained localized headers + derived **« Ève détectée ? »** and colored **Verdict** columns (derivation: only the coordinated Eve-restart removes Eve, so last-iteration-with-Eve ⇒ compromise; earlier-Eve-then-clean ⇒ caught). **VERIFIED by Ibra:** no-Eve room → vert « Clé sécurisée »; missed case → rouge « Clé compromise ! ». Caught-case display unverifiable until the 49-B multi-restart bug is fixed. Shared neutral key `component.results.gameSuccess` replaces the e91-named one on the shared results page.
 Multi results show a generic "🎉 Félicitations ! Partie terminée avec succès !"; solo results show the Eve reveal ("Ève était absente — votre clé est sécurisée"). Mirrored gaps: solo lacks the celebration line; **multi lacks the Eve reveal** (Parity Principle: both modes should tell the same story). Multi's table is backend-fed and the backend knows `game_has_eve`, so a multi reveal is feasible — touches the multi results component (+ maybe payload). Small UX slice, with 49-B/backend session or at replication.
+
+**🔴 REOPENED 2026-09-09 — it is worse than "lacks the reveal": it CELEBRATES a compromised key.**
+Ibra finished an E91 multiplayer game and sent the screenshot: **Ève présente: Yes · Ève détectée: No**
+— and underneath, *"🎉 Félicitations ! Partie terminée avec succès !"*. He was told he won a game in
+which Eve listened to the whole exchange undetected.
+
+That is the exact defect **Task 63 Step 6b** removed from the solo page (`a6b1835`). It survives in
+multi because the message is not the protocol's — it lives on the **shared** page,
+`app/(main)/games/[gameType]/[gameCode]/results/page.tsx:238`, and fires on `hasFinishedRooms` alone:
+no Eve term, no verdict term. **So all three protocols celebrate every finished game**, BB84 multi
+included. Raises this from a "small UX slice" to the same class as 6b.
+
+**⚠️ The design question is now ANSWERED (2026-09-09).** It was: solo's sentence is about *your* game,
+but the multi page is a classroom leaderboard listing **every** room — so "your key is compromised"
+must know which row is yours. `playerName` looked like the only handle and would break on two students
+with the same name. **`store/player-store.ts` also keeps `playerId: number | null`, and rooms carry
+numeric `player1` / `player2`** — so ownership is an exact id match, no name comparison:
+
+```ts
+const myRoom = rooms.find(r => r.player1 === playerId || r.player2 === playerId);
+```
+
+The **admin/monitor** has no room of its own; `playerId` finds none and `isAdmin` already branches to
+its own message, so that case falls out correctly instead of needing a special case.
+
+**Step 6d landed first and confirms the shape of the fix:** every row now carries a truthful per-row
+Verdict, from `classifySoloEnding` fed by `drawn = eve_present || eve_detected`. The closing sentence
+is the same classifier applied to `myRoom` — the same three sentences solo shows, from the same keys.
+**Not** `deriveRoomEveStory`, for the reason recorded under Step 6d.
+
+**Still verified by Ibra on 2026-09-09, after 6d:** the table row now reads *Ève présente Oui · Ève
+détectée Non · Clé compromise !* and the green *"🎉 Félicitations ! Partie terminée avec succès !"* is
+still printed underneath it. The table and the sentence directly contradict each other on screen.
 
 ---
 
@@ -1276,6 +1666,106 @@ equivalents. Two tracked follow-ups (both DECIDED "track only, do not build now"
 
 ---
 
+### 59. 🎨 Validation-bits message makes the student do arithmetic (found 2026-08-28)
+
+**Status**: 🟡 OPEN — analysed. **Priority**: P2 (UX / pedagogy) except **59-B, which is a real bug**.
+**Origin**: Ibra, testing the freshly deployed BB84 solo modal.
+
+**📋 SLICE ORDER (agreed with Ibra 2026-08-28):**
+
+| # | Slice | Why this position | Depends on |
+|---|---|---|---|
+| **1** | **59-B** — multi form starts invalid | real bug, independent, no design decision to make | — |
+| **2** | **59-A + 59-D _together_** | ⚠️ **same string** — doing them separately edits 3 translations twice, and bolting D onto A later produces a worse sentence than writing one on purpose | a wording decision from Ibra |
+| **3** | **59-C** — edge case | unreachable today (all photon minimums ≥ 4); fold into #2's message or leave as a note | #2 |
+
+**Connections worth knowing before choosing wording:** 59-A reuses the `fillPhotonMinimums`
+pattern from Task 58 slice 4 · 59-B is a **Solo/Multi Parity** violation (ADR §11) · **59-D is not
+really a copy fix — it is the first piece of "teach the concept" work**, the same conversation as
+**52-C** (E91: explain the Bell-test limitation honestly in a short game) and **57-K2** (mine the
+Qiskit tutorials for in-app notes). If those are ever done, they should share one voice.
+
+**The complaint, verbatim:** *"doit être au plus le quart du nombre de photons"* — the student
+must know the photon count, divide by four, and floor it **before they can know what to type**.
+Same framing problem as the `keyMin` message we fixed in Task 58 slice 4: a rule stated
+abstractly instead of a number stated concretely. Ibra's fix: **state the rule AND show the
+computed value**, so nobody has to do mental arithmetic in a form.
+
+Current text (identical in EN/FR/ES, `lang/quantumcrypto-lines.ts:64,567,1132`):
+> *"The validation bits must be at most a quarter of the photon count (they are sacrificed from
+> the sifted key)"*
+
+**Verified scope — the same key and the same rule are used by BOTH modes**, so one fix covers
+both: `solo-game-modal.tsx:120` and `create-game-modal.tsx:99`, both
+`validationBits > 0 && validationBits <= photonNumber / 4`.
+
+- [ ] **59-A — show the computed maximum.** `zod`'s `.refine()` accepts a *function* for its
+  second argument (`(value) => CustomErrorParams`), so the message can be built from the actual
+  parsed `photonNumber` — no `superRefine` rewrite needed. Add a `{max}` placeholder to the three
+  translations and a `fillValidationMax` helper beside `fillPhotonMinimums` in `lib/utils.ts`
+  (Task 58 slice 4 established that pattern; all six `keyMin` sites already use it).
+  **Note the flooring:** 10 photons ⇒ 10/4 = 2.5 ⇒ the largest valid integer is **2**. "A quarter
+  of 10" reads as 2.5 and invites typing 3, so the displayed number must be `Math.floor(n / 4)`.
+
+- [x] **59-B — 🐛 the multiplayer form started invalid. ✅ DONE 2026-08-28.** Two changes, both
+  mirroring what solo already did (Solo/Multi Parity, ADR §11): `validationBits` now defaults to
+  `getDefaultValidationBits(BB84_MULTIPLAYER_PHOTON_DEFAULT)` instead of `0`, and `onEveChecked`
+  now updates the validation bits alongside the photon count it was already raising — it had been
+  raising photons but leaving the bits stale. Verified the default is valid at every photon count
+  (n=10→2, 16→4, 20→5, 30→7, all within `n/4`). Gates: 84 tests, tsc, lint green.
+  **Browser-verified by Ibra:** multiplayer now behaves like solo, and entering `0` correctly still
+  shows the error on submit. Original finding follows.
+  `create-game-modal.tsx:111` defaults `validationBits: 0`, but the rule requires `> 0` whenever
+  Eve is ticked. So a multiplayer host who ticks "Eve" gets an immediate validation error on a
+  field they have not touched. Solo does not have this: it pre-fills
+  `getDefaultValidationBits(photonNumber)` = `max(1, floor(n × 0.25))`, which is always valid.
+  **Fix:** give multi the same sensible default (Solo/Multi Parity Principle, ADR §11).
+
+- [ ] **59-C — P3, edge case, currently unreachable.** The rule is unsatisfiable when
+  `photonNumber < 4` (no integer is both `> 0` and `≤ 0.75`). Not reachable today because every
+  photon minimum is ≥ 4, but it means the form can in principle present an error with no valid
+  input. Guard it if the minimums ever drop, or clamp the message to say "at least 4 photons are
+  needed to use validation bits".
+
+**Also considered:** showing the maximum as a permanent hint under the field rather than only
+inside the error, so the student is guided *before* being corrected. Better UX, but touches
+layout in two modals — decide with Ibra before doing it.
+
+**🔬 WHY n/4? (Ibra asked "on what basis?", 2026-08-28 — answered with measurement.)**
+Full analysis + table now in **[docs/protocol-physics.md §8](docs/protocol-physics.md)**; both
+modal comments point there. Short version: validation bits are sacrificed from the **sifted** key,
+which averages only `n/2`, so `v = n/4` means *"about half the sifted key"*. A cap of `n/2` would
+equal the entire expected sifted key and makes **~60% of games restart** before they can be played
+(measured over 200 000 games; matches the ~66% Ibra hit by hand at 6 photons / 3 validation), while
+`n/4` keeps that under 4%. **`n/4` is a measured compromise, not a security bound** — the Qiskit
+reference sacrifices 20% of the sifted key, and real QKD derives the fraction from confidence
+bounds. Decision: **keep n/4**, now documented rather than folklore.
+
+- [ ] **59-D — teach the tradeoff, not just the cap (raised by the "on what basis?" question).**
+  **✅ APPROACH DECIDED (Ibra, 2026-08-28): an (i) info icon with a hover tooltip next to the
+  validation-bits field** — *"few validation bits ⇒ Eve may slip through undetected; many ⇒ your
+  key gets short"*. **Keep the `n/4` rule and the `> 0` rule exactly as they are** — Ibra's call:
+  *"don't complicate things"*. The tooltip teaches the tradeoff without touching validation logic,
+  layout, or the error path, so it is additive and low-risk.
+  **Groundwork already present:** `components/ui/tooltip.tsx` exists and is already used in
+  `alice-exchange-tab`, `waiting-room` and `footer-v3` — so this reuses an established pattern
+  rather than introducing one. Needs the text in EN/FR/ES.
+  **Also settled while discussing:** the **lower** bound (`> 0` when Eve is on) is *necessary*, not
+  a preference — with 0 validation bits there is no validation step, so Eve can never be detected
+  and the game would always report "secure" while she is present. The **upper** bound (`≤ n/4`) is
+  the discretionary one: it is a UX guard against the restart loop, not physics, and the tooltip is
+  what compensates for the lesson it hides.
+  Original reasoning follows.
+  The rule the student sees is a *constraint*; the interesting fact is the **tradeoff**: more
+  validation bits ⇒ better chance of catching Eve, but a shorter final key. Measured at n=16:
+  v=2 → 44% detection, v=4 → 68%, v=8 → 90% (but 60% of games then restart). That is a real BB84
+  lesson and the UI currently hides it. Candidate wording for 59-A, to decide with Ibra —
+  something like *"at most {max} (they are sacrificed from the sifted key: more bits detect Eve
+  better, but shorten your key)"*. Relates to the E91 52-C "explain the limitation in the
+  simulation" decision and to Task 57's K2 educational-notes idea.
+
+---
+
 ### 58. 🚀 Deployment readiness (opened 2026-08-27)
 
 **Status**: 🟡 IN PROGRESS — the path to getting a correct build in front of students.
@@ -1377,6 +1867,13 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
     **Scope refinement:** `.env.example` deliberately does NOT yet document
     `NEXT_PUBLIC_QC_TEST_MODE` — that flag does not exist until slice 2, and documenting a
     variable that does nothing would mislead. It ships with the flag.
+    **⚠️ SIDE EFFECT, observed 2026-08-28 during the deploy — expect it once per person.**
+    Untracking `.env.local` means the merge commit *deletes* it. So on any machine whose local
+    branch still tracked the file, git recreates it on `checkout`, then removes it on the `pull`
+    that fast-forwards through the merge — the file silently vanishes. Happened on Ibra's machine
+    while switching to `development` to deploy; restored by re-copying. Harmless (no secrets, and
+    production reads the Amplify console), but surprising if unexplained, so the README now says
+    "if it disappears after a pull, run the `cp` again". Colleagues will hit this exactly once.
     **⚠️ BEFORE PUSHING THE DEPLOY REPO:** confirm `NEXT_PUBLIC_API_URL` and
     `NEXT_PUBLIC_WEBSOCKET_URL` are set in the **Amplify console**. They must be (production works
     today), but this commit removes the accidental `.env.local` fallback, and pushing that branch
@@ -1484,9 +1981,24 @@ So production has **none** of the architecture work, **none** of the Eve fix, an
   **SCOPE:** A–D are one shared module, so doing BB84 alone costs the same as all three — do all
   three. Only **E** (BB84 copy) is protocol-specific. Deploying with only BB84 fixed would still
   ship test values for E91 and DPS.
-- [ ] **4. Merge `ibra_architecture` → `development`.** 17 commits ahead, **0 behind**, 75 tests +
-  tsc + lint green, BB84 flows browser-verified. Clean fast-forward.
-- [ ] **5. Deploy** (rsync → `cryptoweb-2.0-frontend` → Amplify), then re-verify in production.
+- [x] **4. Merge `ibra_architecture` → `development`. ✅ DONE 2026-08-28 — PR #23, merge commit
+  `3a195eb`.** 34 commits, 31 files, 0 behind (clean fast-forward), 84 tests + tsc + lint green,
+  CI green on the PR. Merged as a **merge commit, not squash**, so the 34 atomic commits survive in
+  history — squashing would have destroyed exactly the record this project's discipline exists to
+  produce. Required an admin bypass: branch protection wants one approving review and GitHub does
+  not let an author approve their own PR.
+- [x] **5. Deploy. ✅ DONE 2026-08-28 — Amplify deployment #14, `a1fd1b5`, build 2m50s, live at
+  https://quantumcrypto.app.** First deploy since **2026-06-22** — production had been running
+  pre-PR#22 code, so students were getting the broken Eve *and* test-mode photon counts.
+  **The build log confirms the guard worked as designed:** no `PRODUCTION BUILD REFUSED` (so
+  `NODE_ENV` was production) and no `QC_TEST_MODE` warning (so no flag leaked). It stayed silent
+  because nothing was misconfigured — which is the intended path. Pre-flight verified before
+  pushing: no `.env` file travelled (the new `--exclude='.env*'` works), `DEPLOYMENT_GUIDE.md`
+  untouched and still tracked, `protocol.ts` with the Eve fix present. Ibra verified in production.
+
+**✅ TASK 58 COMPLETE.** Students now get correct BB84 physics (Eve disturbs 25% of sifted bits,
+not ~50%), production photon counts (10, not 4), honest validation messages in all three
+languages, and the session-lifecycle architecture from PR #22 that had never actually shipped.
 
 **⚠️ Pushing `quantumcrypto--prod` triggers an AWS Amplify build.** The 2026-08-27 push of the
 guide did fire one; harmless, since only `.gitignore` and a `.md` changed (no app code).
@@ -1501,7 +2013,1975 @@ not urgent since nobody uses that path.
 
 ---
 
+### 60. 🐛🔥 E91 Eve is biased — and the SAME bug is copy-pasted in TWO repos, TWO languages
+
+**Status**: 🔴 OPEN, not started. **Priority**: **P1 physics** (Axis B), but **deliberately NOT
+part of the E91 lifecycle migration** — see the decision below.
+**Found**: 2026-09-02, verifying whether 52-D also existed in the Python copy. It does, identically.
+**Axis**: B (protocol physics). Promotes **52-D** from a frontend-only note to a cross-repo task.
+
+**The bug.** Eve's measurement outcome is not a measurement — it is partly a constant. Measuring a
+maximally mixed state must give **50/50 on every basis**. Measured over 100k samples per basis
+(running the real code):
+
+| basis | zeros produced | should be |
+|---|---|---|
+| 1 | 85.32 % | 50 % |
+| **2** | **100.00 %** | 50 % |
+| 3 | 85.46 % | 50 % |
+| 4 | 50.21 % | 50 % ✅ |
+
+Basis 2 is hardcoded. Bases 1 and 3 are biased 85/15 by reusing `sin²(π/8)` as if it were a
+measurement probability. Only basis 4 is right.
+
+**Where — both copies, verified by reading both files (2026-09-02):**
+
+| Repo | File | Code |
+|---|---|---|
+| frontend | `lib/e91/solo-player.ts` — `eveGenerateBits` | `} else if (base === '2') { outcome = 1; }` with the comment *"Basis 2: Deterministic (always 1)"* |
+| backend | `e91/consumers.py:507` — `eveGeneratedBits` | `elif base == '2': outcome = 1` |
+
+Note the names differ by one letter (`eveGenerate` vs `eveGenerated`) — the signature of a
+hand-copy, not a shared module. Backend call sites: `e91/consumers.py:343` (`alice_bits`) and
+`:358` (`bob_bits`).
+
+**Why it matters more than "a wrong number".** It is **student-visible and it defeats the lesson**.
+With Eve present, *every* basis-2 result is `0`. A student spots Eve by noticing *"all my 2s are
+zeros"* — instead of by the Bell inequality, which is the entire pedagogical point of E91. Same
+family as the BB84 Eve bug (Task 57): **a constant where a random draw belongs.**
+
+**Scope: BOTH modes are affected, from DIFFERENT code.** Solo runs the TypeScript copy; multiplayer
+runs the Python copy. Fixing one fixes half the app.
+
+**✅ CONFIRMED IN REAL PLAY 2026-09-09 — the first evidence from a game rather than from reading.**
+Ibra sent two solo room dumps (12 and 20 photons, Eve present in both) after noticing *"all the bits
+message like they are 0 (zeros hahah)"*. Alice's bits are fair at **17/32 = 53 %** ones; Bob's are
+**5/32 = 15.6 %** — `P = 5.7 × 10⁻⁵` under a fair coin. Per basis the match to the table above is
+exact: basis 2 → **0 ones out of 10**, basis 3 → 2/11 (model 15 %), basis 4 → 3/11 (model 50 %).
+Alice is spared only because she gets `generateRandomBits`; whoever is the PARTNER goes through
+`eveGenerateBits`.
+
+**And it is worse than "a wrong number" in a way the earlier write-up understated:** the bias reaches
+the *sifted key the student is shown at the end*. In dump 1 `bobValidBits` is `[0,0,0]`; in dump 2
+both sides are `[0,0,0]`. The student's takeaway from a game with Eve is *"my key is all zeros"* —
+not the Bell inequality.
+
+**🔴 MULTIPLAYER IS STRICTLY WORSE THAN SOLO (third dump, 30 photons, 2026-09-09).** Ibra noticed the
+two modes fail differently — *"it seems solo gives 1s, and multi gives 0s"* — and the reason turns
+out to be structural, not random:
+
+| | whose bits go through the biased function | result |
+|---|---|---|
+| **solo** | the PARTNER's only — the player's own come from `generateRandomBits` | half the game is honest |
+| **multi** | **BOTH** — the Python copy is called for `alice_bits` (`:343`) *and* `bob_bits` (`:358`) | nothing is honest |
+
+And the two sides are not equally damaged, because **the bias is per-basis and the two sides use
+different bases**:
+
+| | bases available | fair basis among them | measured ones |
+|---|---|---|---|
+| Alice | 1, 2, 3 | **none** | **1/30 = 3 %** |
+| Bob | 2, 3, 4 | basis 4 | 11/30 = 37 % |
+
+Basis 4 is the only branch that is right, and **Alice never uses it**. So Alice in multiplayer is the
+worst case in the whole application: ~93 % zeros, and in this dump `aliceValidBits` and
+`bobValidBits` are both `[0,0,0,0,0]` — a five-bit key of nothing, on both sides. The model predicts
+2.0 ones for Alice (observed 1) and 8.1 for Bob (observed 11), so the fit holds in the Python copy
+too.
+
+**Consequence for planning:** the frontend one-liner (option 1 below) fixes **solo only**. E91
+multiplayer's physics is the Python copy, so the mode where the bug is worst is the mode that needs
+the backend owner. That is the strongest argument yet for option 2 — moving E91's physics to the
+frontend — since option 1 applied to one repo leaves the worse half broken.
+
+**❓ "IS IT ONLY WITH EVE?" — YES. Measured, 200 000 samples per case (2026-09-09, Ibra's question
+for his sprint planning).** Running the real code from `lib/e91/solo-player.ts`:
+
+| | Eve absent | Eve present |
+|---|---|---|
+| Alice (bases 1,2,3) | **50.0 %** ones ✅ | **9.8 %** ❌ |
+| Bob (bases 2,3,4) | **50.0 %** ones ✅ | **21.5 %** ❌ |
+
+The Eve-free path (`generateEntangledBits`) is **marginally fair**: same basis copies the partner's
+bit, different bases match it 85.4 % of the time and flip it 14.6 %. Applied to a fair partner bit,
+both give 50/50 out. So **no Eve-free game is affected by this** — nothing a student plays without
+Eve is distorted by it, and the fix cannot break those games either.
+
+**A SECOND defect in the same branch, visible in the Python (`e91/consumers.py:341,356`):** with Eve,
+the two sides are generated **independently** — `alice_bits = eveGeneratedBits(alice_bases)` and
+`bob_bits = eveGeneratedBits(bob_bases)`, neither looking at the other. A real intercept-resend
+*reduces* the correlation (Eve's basis matches sometimes); this removes it entirely. So Eve does not
+merely bias the bits, she deletes the correlation the Bell test is supposed to measure. Both defects
+live in the same branch and option 1 must fix both, not just the marginals.
+
+**⚠️ Do NOT tell the team "E91 is broken".** The precise statement is: *E91 is correct when Eve is
+absent, and its Eve simulation is a placeholder that biases the bits and destroys the correlation
+instead of modelling interception.* The Eve-free half of the game — which is what a first lesson
+uses — is sound.
+
+**📐 SYMMETRY — Ibra, 2026-09-10, verified in both repos. Track it: it changes how the fix is
+written, and it is a gift when the single-source-of-truth work comes.**
+
+E91 is not BB84. There is no sender and no receiver — Alice and Bob do **the same thing**, and either
+may go first. The code already honours that, in both languages:
+
+| | |
+|---|---|
+| `solo-measurement-tab.tsx:155-207` | Alice's branch generates Bob's side; Bob's branch generates Alice's. **Both sides are produced in ONE place**, whichever role the player holds |
+| `e91/consumers.py:341,356` | the no-Eve path is **order-independent**: whoever measures first gets fair random bits, the second correlates against the first. `A_MEASURE` and `B_MEASURE` are mirror images |
+
+**Why it matters now:** the correct Eve needs one draw shared by both sides, so it fits solo with no
+restructuring at all. **Why it matters later:** when E91's physics becomes one module, solo will not
+need a role branch — it will call the same function twice. The `if (playerRole === 'A') … else …`
+in the measurement tab is then pure duplication to delete, not a design to preserve. Note it in the
+single-source-of-truth work so nobody re-implements the branch out of habit.
+
+**🧪 CHECKED AGAINST A REAL QISKIT E91 (2026-09-10).** Ibra provided the authoritative workshop
+he co-wrote: `/Users/chei2402/Documents/github/CMAI-E91` — `Part_1_CHSH` and `Part_2_E91`, real
+circuits on Aer, not a probability table. Comparing it to our game:
+
+**What our app already gets RIGHT — the skeleton is genuine E91, not an invention:**
+
+| | reference (`02_E91_Protocol_SOLUTION.ipynb`) | our app |
+|---|---|---|
+| Alice's bases | `['0','45','90']` | 1, 2, 3 = 0°, 45°, 90° ✅ |
+| Bob's bases | `['45','90','135']` | 2, 3, 4 ✅ |
+| key pairs | (45,45) and (90,90) | matching bases 2-2, 3-3 ✅ |
+| CHSH pairs | Alice{0,90} × Bob{45,135} | E(1,2), E(1,4), E(3,2), E(3,4) ✅ |
+| S formula | same four terms | **identical** ✅ |
+
+**What is WRONG, and it is three things, not one:**
+
+1. **Eve is invented** (this task). The reference's `create_eavesdropped_state` measures the Bell pair
+   and **re-prepares a product state** — real intercept-resend. Ours is a per-basis bias table.
+2. **The sample size is ~100× too small.** The reference runs **2000 pairs** (800 with Eve) to get a
+   stable S. Our game runs **10–30 photons**. That is the mechanism behind **52-C** — the Bell test
+   cannot mean anything at n=20, whatever the physics does.
+3. ~~**The threshold is wrong.**~~ **❌ I GOT THIS WRONG — corrected 2026-09-10, same day.** I
+   wrote that "our app tests against 2.0". **It tests against nothing.** There is no threshold
+   constant anywhere in E91: `solo-CHSH-tab.tsx` computes `sValue`, renders it in a table, and offers
+   two buttons — `component.e91.button.secure` and `.unsecure`. **The STUDENT is the threshold.**
+   That is a better design than a hidden constant, and I should have checked before asserting.
+
+   The real defect is the one underneath: **the tab gives the student no guidance whatsoever.** It
+   shows a number and two buttons — no statement of the classical bound (2), no quantum maximum
+   (2√2 ≈ 2.828), no warning that at 10–30 photons the value is noisy. The reference's own comment
+   spells out the interpretation the game never offers:
+
+   > `|S| < 2.0` classical · `2.0 < |S| < 2.5` caution, may be noise or insufficient statistics ·
+   > `|S| > 2.5` robust violation
+
+   **Ibra's decision (2026-09-10): do not change the photon count. Explain it.** His words: *"the
+   important thing is the physics should be correct, so if a student wants to see the code they will
+   find it correct. About that, we can just add (i) information, or an alert, to inform the user
+   about this statistical situation, so he learns better."* The small sample stops being a bug and
+   becomes the lesson — *this is why real experiments run thousands of pairs* — provided the game
+   says so. **That is a UI slice, separate from the physics fix.** 52-C's measured 37.5 % is the
+   number to quote in it.
+
+*So the honest verdict is not "this is not E91". The protocol skeleton is correct and matches the
+reference exactly. The Eve model is fabricated, and the game is played at a sample size where the
+Bell test is noise. Fixing Eve without also fixing (2) and (3) leaves the lesson broken.*
+
+**📍 WHO MAKES THE PAIRS (Ibra, 2026-09-10) — worth knowing before restructuring anything.** In
+E91 the entangled pairs come from a **source in the middle** that sends one particle to Alice and one
+to Bob. That source *"could be a real third party, or Bob can play this role, or Alice could play it,
+or even Eve can"*. This is why our solo code is free to generate both sides in one place and still be
+faithful to the protocol — the generator is not "Alice cheating", it is the source, and the protocol
+does not care who runs it. It is also why **there is no sender and no receiver to preserve** when the
+physics is unified: any of the three can hold the source, so the single module simply produces a pair.
+
+**🎯 WHICH EVE — decided by measurement, not preference.** The reference has Eve measure in a
+FIXED basis (computational, 0°); BB84's `mimicEveIntercept` and Ibra's own description have her pick
+a **random** basis per pair. Both restore the classical bound, but they are not equally good:
+
+| | S with Eve | key errors, basis 45 | basis 90 |
+|---|---|---|---|
+| no Eve | 2.828 | 0 % | 0 % |
+| Eve, FIXED basis (reference) | 1.414 | 25 % | **50 %** |
+| Eve, RANDOM basis (BB84-style) | 1.414 | **25 %** | **25 %** |
+
+The fixed-basis Eve is **asymmetric**: pairs measured at 90° come out pure noise while 45° pairs stay
+75 % correct. That is a per-basis giveaway — the same *kind* of tell as the bug we are removing, where
+a student spots Eve by staring at one basis instead of by the Bell test. **Choose the RANDOM-basis
+Eve**: uniform 25 %, identical to BB84's disturbance, and it matches what `mimicEveIntercept` already
+does in this codebase.
+
+**✅ SLICE A COMPLETE 2026-09-17 — the correct implementation exists and is proven, but is not
+wired.** `lib/e91/protocol.ts` + `lib/e91/protocol.test.ts` (`83d940d`, `89c1485`, `a2a92df`,
+`a6ea2cd`). **Nothing imports it; `solo-player.ts` still runs the game**, so nothing a student sees
+has changed yet.
+
+| | |
+|---|---|
+| transcribed from | `docs/protocol-physics.md` §10.9 — the spec is the contract, the code is the transcription |
+| tests | **31** — §10.10's four numbers, §10.14's seven properties, end-to-end at 2000 pairs, the partial-Eve case |
+| proven by | **9 mutations**. Eight turned the right test red; the ninth did not, and forced a real API change |
+| reviewed by | two external passes (ChatGPT, Gemini) on the spec; one on the code |
+
+**🔎 What mutation testing found, and why it mattered.** The sabotage *"Eve measures the pair, then
+forwards an unrelated coin"* **passed all 23 tests**: S still √2, key error still 25 %, marginals
+still fair. Every headline number held while her knowledge silently dropped to zero — the exact
+failure §10.14 property 4 was written to catch, and it could not, because the pair she forwards is
+self-consistent either way. Fixed by having `eavesdrop` return her read, which the app needs anyway
+(*"Eve has successfully read this number of bits"*).
+
+**🔎 And a lesson the module now teaches that nobody had noticed.** Adding the reference's
+*fraction* of intercepted pairs showed that her tap halves the correlation on the pairs she touches,
+so **S = 2√2 · (1 − f/2)** — which crosses the classical bound only at **f ≈ 0.586**:
+
+| Eve taps | S | |
+|---|---|---|
+| 25 % | 2.48 | **invisible to the Bell test** |
+| **50 %** | **2.12** | **invisible — while holding 186 of 456 key bits, 13.4 % errors** |
+| 59 % | 2.00 | first detected |
+| 100 % | 1.41 | caught |
+
+*An eavesdropper on half the pairs passes the Bell test and still takes 41 % of the key.* That is
+why real QKD compares error rates too, and the module now demonstrates it rather than asserting it.
+
+**📋 SLICE B2 — the honest Eve counter, decided 2026-09-17.** `solo-basis-tab.tsx:253` counts her
+reads as `base === '2' && bobBases[i] === '2'` — it misses every bit she read at 0°, 90° or 135°, and
+credits her with bits she never learned. Ibra's dump pins it: it reported **6 of a 9-bit key** where
+the honest figure is about 2.
+
+| | |
+|---|---|
+| `e91-room-store.ts` | add **`eveAngles: string[]`** — basis ids, like every other basis in the store |
+| `solo-measurement-tab.tsx` | collect `interception.angle` per round and store it |
+| `solo-basis-tab.tsx:253` | *"did Eve's angle match theirs on this key round?"* — she reads a bit with certainty only then |
+
+**Store the angles only, NOT her bits.** The count never needs them: a matching angle makes her
+outcome deterministic. An external review proposed storing both for "parity with §10.13", but
+multiplayer stores the bit for a different reason — it must reconstruct the pair across two requests,
+which solo never does. Add `eveBits` when a reveal UI actually needs it.
+
+**⚠️ Do not forget the comment (Ibra, 2026-09-17):** Eve's angles land in `localStorage`, where a
+student can open DevTools and read them. It leaks nothing new — the store already holds **both**
+players' bits — but the file must say so, because *"you cannot see Eve, you can only detect her"* is
+the lesson this whole task exists to protect.
+
+**📌 WHAT `eveGuessedRightBits` MEANS — settled 2026-09-17, in Ibra's words.** Worth keeping,
+because it took most of a day to establish and neither of us could find it written anywhere:
+
+> *"We want a variable that tells us how many bits Eve got right. In E91 the two photons are
+> entangled, so Alice and Bob hold the same bit only where they chose the same basis — any other
+> round is discarded. So on a round that IS kept, we check whether Eve chose that basis too. Only
+> then do we count it, and only then can we say with confidence that she has those bits — because if
+> Alice and Bob use that part of the key, it is already known to Eve. That is the danger."*
+
+**The rule it replaces was a constant where a variable belonged** (`base === '2' && bobBases[i] ===
+'2'`), the same shape as Task 60 itself.
+
+**🔎 AND HOW THE MODULE DISAGREED WITH THE GAME, found by renaming.** The two had different names —
+`eveReadCount` in the game, `eveKnownKeyBits` in `protocol.ts` — so nobody had ever compared them.
+Giving them one name forced the comparison, and they were counting different things:
+
+| | rule | value |
+|---|---|---|
+| **the game** | did Eve pick the **same basis**? | **25 %** ✅ |
+| `runE91Protocol` | does Eve's **bit** happen to equal Alice's? | 62.5 % ❌ |
+
+The second counts **luck**: a wrong basis still leaves her correlated, so her bit often matches by
+chance — but **she cannot tell which of those are right**, so it is not knowledge and reporting it
+would overstate her 2.5×. The module now uses the game's rule. *The rename changed no behaviour; it
+made an existing disagreement visible.*
+
+**⚠️ "Production-ready" is about the module, not the game.** It has never run in the app. Slice B
+wires `onMeasurement`; **B2** then fixes `solo-basis-tab.tsx:253`, which counts Eve's reads by
+hardcoding basis `'2'` — the same *constant-where-a-variable-belongs* shape as this task itself, and
+now fixable honestly because `eavesdrop` reports what she actually read.
+
+**Two candidate fixes, to choose from when this task starts (both must land in BOTH repos):**
+
+1. **Keep the phenomenological model, remove the bias.** Eve's intercept-resend destroys the
+   *correlation*, but Bob's *marginal* outcome must stay 50/50 in every basis — measuring a
+   maximally mixed state cannot favour one result. So every branch becomes a fair coin, and the
+   per-basis table disappears. Smallest possible change, preserves CHSH ≤ 2, and directly kills the
+   "all my 2s are zeros" giveaway. **Recommended first move.**
+2. **Simulate the attack properly** — Eve measures in a random basis, the state projects, Bob
+   measures at the angle between the two, giving a genuinely reduced correlation. Correct, teaches
+   the real mechanism, and would let the CHSH tab show the honest intermediate S. Much bigger, and
+   it is really the "move E91 physics to the frontend" option below wearing a different hat.
+
+*Option 1 is a one-line change in each language and would fix what the student sees today; option 2
+is the right end state. They are not exclusive — 1 now, 2 with workstream #5.*
+
+**⚠️ DECISION REQUIRED WHEN THIS TASK STARTS (Ibra, 2026-09-02) — two options, decide then:**
+1. **Patch both copies** — fast, but keeps two sources of truth that will drift again.
+2. **Move E91's physics to the frontend** like BB84/DPS, delete the Python copy, and make the
+   backend a pure relay (ADR §13.3). Kills the duplication permanently. Bigger, needs the backend
+   owner. The ADR already marks the current state *"grandfathered, not endorsed"*.
+
+**Blocked by**: coordination with the backend owner (option 1 needs a Python change; option 2 needs
+their agreement to delete code). **This is exactly why the E91 lifecycle migration excludes it.**
+
+**Cross-refs**: **52-D** (the original frontend-only finding, now superseded by this task) ·
+**52-E** (Eve modelled as total decorrelation — same function, same visit) · **Task 57** (the BB84
+Eve bug, same disease) · **ADR §13.3** (one implementation, sender simulates the channel).
+
+**The test that must fail first (rule 5):** assert Eve's output is ~50/50 on every basis over a
+large sample. It fails on today's code at bases 1, 2 and 3. Write it in **both** repos.
+
+---
+
+### 61. 🐛 The leave-game dialog is hardcoded French — in BB84 **and** E91
+
+**Status**: 🔴 OPEN, not started. **Priority**: P2 (i18n correctness, student-visible).
+**Found**: 2026-09-02, while checking a delay Ibra felt when leaving an E91 game. The delay was
+nothing (see below); this was sitting next to it.
+**Axis**: neither A nor B — presentation. **Out of scope for the E91 lifecycle sprint.**
+
+**Both play routes render five untranslated French strings**, and **neither file calls `localize()`
+even once** (`grep -c localize` → 0 for both):
+
+| line | string |
+|---|---|
+| `app/(main)/bb84/play/page.tsx:82` · `e91/play/page.tsx:83` | `Quitter la partie ?` |
+| `:84` · `:85` | `Votre progression de cette partie sera effacée.` |
+| `:89` · `:90` | `Rester dans la partie` |
+| `:92` · `:93` | `Quitter la partie` |
+| `:104` · `:106` | `Déconnexion...` |
+
+**Impact:** a student playing in English or Spanish gets a French confirmation dialog at the moment
+they are deciding whether to throw away their game. **Not an E91 regression** — the same five strings
+sit in BB84, so this was copied when the E91 page was created. DPS is unaffected: its play page has
+no leave dialog (checked).
+
+**Fix:** four new keys + one for the disconnect screen, in `lang/quantumcrypto-lines.ts`, all three
+languages, then `localize()` in both files. Follow the **UI WORDING NOTE** below — one shared key per
+concept, reused by both protocols, not one key per protocol.
+
+**Related:** Task 58 slice 4 fixed a different family of copy defects (messages that stated the wrong
+rule). This one is messages that were never translated at all.
+
+**Not a bug, recorded so it is not re-investigated:** Ibra also reported *feeling* a delay when
+leaving an E91 game. It is the `isLeaving` → `Déconnexion...` screen rendering between
+`cleanupActiveGame()` and `router.replace()`. Deliberate, pre-existing, and identical in BB84
+(`bb84/play/page.tsx:104`). Phase 3a-1 does strictly *less* work than the code it replaced (one
+`getState()` instead of two, everything synchronous), so it cannot have added latency.
+
+---
+
+### 62. 🐛 The solo results clock never stops — refreshing inflates the time and shrinks the score
+
+**Status**: 🔴 OPEN, not started. **Priority**: P2 (student-visible, affects the score they are shown).
+**Found**: Ibra, 2026-09-02, browser-verifying Phase 3b-2 — *"the value (Temps and Points) change when
+I refresh"*. **Affects BB84 and E91 alike.** **Axis**: neither — presentation over persisted state.
+
+**Mechanism, confirmed against Ibra's own screenshot:**
+
+- `e91GameStartTime` is written **once**, at the first measurement
+  (`solo-measurement-tab.tsx:145-146`), and **nothing ever records a game END time**.
+- The results page computes, on **every mount**:
+  `elapsedTime = (Date.now() - startTime) / 1000` (`e91/solo-results/page.tsx:57`).
+- The table then derives the score from it (`e91/results-page/solo-results-table.tsx:55`):
+  `score = Math.max(0, Math.round(keyLength * 10 - elapsedTime / 10))`.
+
+**So the clock keeps running after the game is over.** Every refresh reports a longer game and a
+lower score; leave the page open long enough and the score reaches **0**. Ibra's numbers check out
+exactly: keyLength 4, time 111 s → `40 - 11.1 = 28.9` → the **29** on screen.
+
+**BB84 has the identical defect** — `bb84/solo-results/page.tsx` runs the same
+`Date.now() - readSoloGameStartTime()` on mount, with no end time recorded either. So this is one
+bug in two places, not an E91 regression, and **not caused by Phase 3b** (3b-2 only changed who may
+view the page, not how the number is computed).
+
+**Fix direction (decide when scheduled):** record an end time when `gameSuccess` becomes true and
+freeze `elapsedTime` at that moment — the honest fix, since a finished game has a definite duration.
+Storing the computed elapsed value instead would work too but keeps a derived number in storage.
+Whichever is chosen, **do it once for both protocols**, not twice.
+
+**Test that must fail first (rule 5):** render the results view twice with a clock advanced between
+the two renders and assert the reported time and score are identical. That fails on today's code.
+
+---
+
+### 63. 🔴 The insufficient-key restart loses the game's configuration — Eve silently changes
+
+**Status**: 🔴 OPEN, analysed, not started. **Priority**: **P1** — it changes the physics a student
+plays against, without telling them. **Found**: Ibra, 2026-09-03, testing Phase 3d.
+**Axis**: **B (physics)** by consequence, though the trigger is a UI reset. **Frontend-only.**
+
+**How it was found:** Ibra noticed the *messages* were wrong after a short-key restart. Chasing that
+turned up the real defect underneath: **the restart resets the room store, and `evePresent` lives in
+that store.** His own words framed it — *"when we click restart we need to clear all and start fresh,
+but keep the info about num photons, is Eve here or not"*. The code does not keep it.
+
+```ts
+// store/e91/e91-room-store.ts (BB84's is identical in shape)
+const initialState = { evePresent: false, ... };
+resetRoom: () => { localStorage.removeItem('…GameData'); set(initialState); }
+```
+
+`basis-tab.tsx` / `solo-basis-tab.tsx` call `resetRoom()` and **never restore `evePresent`**.
+`photonNumber` survives only because it lives in a *different* store (the game store), which is luck,
+not design.
+
+**Verified matrix — the same missing line, three different symptoms, because the physics lives in
+different places:**
+
+| | Physics runs | After a short-key restart | Verified at |
+|---|---|---|---|
+| **BB84 solo** | frontend | ✅ **correct** — the reference implementation | `lib/bb84/solo-round.ts:139` |
+| **BB84 multi** | frontend (sender simulates, ADR §13.3) | ❌ **Eve stops intercepting** — Alice sends clean photons | `alice-exchange-tab.tsx:162` (`evePresent ? … : …`) |
+| **E91 solo** | frontend | ❌ **Eve stops intercepting** — `gameHasEve && evePresent` goes false | `solo-measurement-tab.tsx:159,179` |
+| **E91 multi** | **backend (Python)** | ❌ **Eve keeps intercepting, the UI forgets her** | `socket-provider.tsx:422` sets it; nothing restores it |
+
+E91 multi is the nastiest of the three: the backend was never told about the restart, so it keeps
+applying Eve to the bits while the frontend believes she is absent. Visible consequences:
+`basis-tab.tsx:270` leaves the "Eve read N bits" counter at **0**, and `CHSH-tab.tsx:178,259` never
+push the confirmation a student gets for correctly declaring the channel unsafe.
+
+**BB84 solo is the reference, and it is already right** — Task 49-A built it deliberately:
+
+```ts
+export const restartSoloRound = (options?: {withoutEve?: boolean}) => {
+    const {photonNumber} = useBB84GameStore.getState();
+    const evePresent = options?.withoutEve ? false
+        : useBB84RoomStore.getState().evePresent;   // 1. read BEFORE the reset
+    useBB84RoomStore.getState().resetRoom();        // 2. reset
+    useBB84ProgressStore.getState().resetProgress();
+    useBB84RoomStore.getState().setEvePresent(evePresent);   // 3. restore
+    beginSoloRound(photonNumber, evePresent);                // 4. regenerate + welcome lines
+};
+```
+
+Task 49-A's own note says why: *"KEEP Eve as it was — this restart is bad luck, not Eve-detection."*
+
+**A second, cosmetic defect found in the same sweep:** `solo-basis-tab.tsx:126` pushes the welcome
+line as `{ content: … }` where the fresh start (`solo-game.tsx:86`) uses `{ title: … }`. Only `title`
+gets the bold/highlight span in the feed renderer, so the restarted game's "Bienvenue dans E91 !"
+renders as plain text. **One word, and it is the proof that copy-drift is real here** — the same two
+lines exist in four places today (`solo-game.tsx`, `multi-game.tsx`, `socket-provider.tsx:1142`,
+`solo-basis-tab.tsx`) and a fifth was about to be added.
+
+**And the missing welcome lines Ibra started from** (browser-verified by him, 2026-09-03): BB84 multi
+and E91 multi push **nothing at all** after the restart — the transcript is empty but for the static
+header. BB84 solo is correct; E91 solo is correct but unstyled (the defect above).
+
+**🔍 THREE REFINEMENTS from Ibra's Phase 3f browser testing (2026-09-03) — all change the plan:**
+
+**(a) The two restarts must treat Eve in OPPOSITE ways.** The finding above says "the restart loses
+Eve", which is true for the insufficient-key restart and **wrong** for the Eve-detected one:
+
+| Restart | Eve must | Why |
+|---|---|---|
+| insufficient key (`basis-tab`, `solo-basis-tab`) | **survive** | bad luck, not a detection — Task 49-A's words |
+| Eve detected (`solo-CHSH-tab`, `CHSH-tab`) | **be removed** | the Task 49-C decision: switch her off so students finish the protocol instead of looping detect→restart |
+
+BB84 encodes exactly this with `restartSoloRound({withoutEve: true})`. **63-A's helper needs the same
+option**, or fixing one restart breaks the other. Ibra found it by playing the detected-Eve path,
+which the original write-up had not exercised.
+
+**(b) The `content`/`title` defect is in TWO places, not one.** `solo-CHSH-tab.tsx:258` carries the
+same `{content: 'component.e91.measurement.welcome'}` as `solo-basis-tab.tsx:126`, so the welcome
+line renders unstyled after *either* solo restart. Two hand-copies, one drift — more evidence for
+routing both through the helper.
+
+**(c) E91 never tells the student the new round has no Eve — BB84 does.** Verified in the language
+files:
+
+| | message shown when Eve is detected |
+|---|---|
+| **BB84** (`component.gameRestart.eveDescription`) | *"La clé est compromise — on la jette et on recommence l'échange, **cette fois sans Ève**."* |
+| **E91** (`component.e91.restart.unsecured.description`) | *"Ève a été démasquée"* — says she was caught, **not** that she is now gone |
+
+That sentence is the "honest short Eve message" Task 49-C added to BB84; E91 never got it. Raised by
+Ibra from memory (*"je pense qu'on a mis un message… mais où, je ne sais pas"*) and confirmed — it
+exists, in the other protocol. **Add an E91 equivalent in all three languages** (see the UI WORDING
+NOTE below: reuse the concept, do not invent a second vocabulary for it).
+
+---
+
+## 🎯 THE RULE THIS TASK EXISTS TO ESTABLISH (Ibra, 2026-09-04)
+
+> **A protocol behaviour is changed in ONE place.**
+>
+> *"Protocol X, with Eve, Eve detected, restart (tell the player it restarts without Eve), continue,
+> and at the end the results table shows the number of rounds. This is true in BB84, so it must be
+> the same in E91, in DPS, and in every future protocol — and not just the same pipeline, the same
+> exact code. Imagine we later decide that a restart keeps Eve according to the probability: we
+> change it once and it works everywhere, instead of going protocol by protocol, forgetting one, and
+> then searching and guessing. That is bad."*
+
+This reframes the task. The first plan (a `lib/e91/round.ts` "modelled on" `lib/bb84/solo-round.ts`)
+was **a second copy of the same mechanism in a second folder** — precisely the thing that produced
+every bug listed here. Ibra caught it. The task is now: **build the shared restart, with BB84 as the
+first client and E91 as the second.**
+
+**⚠️ Scope decision (Ibra, 2026-09-04): E91's physics is NOT touched.** It stays in Python. Where a
+protocol cannot supply a hook, the hook is left unimplemented **and named**, so the gap is visible
+instead of rediscovered. See Step 4.
+
+**⚠️ On "commented-out code for later": rejected, and why.** Ibra suggested writing the partner
+notification and leaving it commented so a future developer just uncomments it. Same goal, better
+mechanism: **leave the seam, not the pipe.** `notifyPartner()` exists, is typed, and is actually
+called — it just does nothing yet, with a doc comment saying what it needs. Commented-out code is
+never compiled, never type-checked, never tested; in six months it no longer builds. A live no-op
+hook cannot rot.
+
+---
+
+**📐 WHAT IS COMMON AND WHAT IS NOT** (read from `lib/bb84/solo-round.ts:139-149`, the reference):
+
+```ts
+const {photonNumber} = useBB84GameStore.getState();     // 1. read config      SPECIFIC
+const evePresent = options?.withoutEve                   // 2. THE POLICY       COMMON
+    ? false : useBB84RoomStore.getState().evePresent;
+incrementSoloRoundCount();                               // 3. count the round  COMMON
+useBB84RoomStore.getState().resetRoom();                 // 4. reset            COMMON
+useBB84ProgressStore.getState().resetProgress();         // 5. reset            COMMON
+useBB84RoomStore.getState().setEvePresent(evePresent);   // 6. re-assert Eve    COMMON
+beginSoloRound(photonNumber, evePresent);                // 7. regenerate + welcome  SPECIFIC
+```
+
+Step 2 is the line Ibra wants to be able to change once. Steps 1 and 7 are the only pluggable parts,
+and step 7 is asymmetric: **BB84 solo Bob** must pre-generate Alice's photons, while **E91 solo**
+generates everything at "Measure" — so E91's hook only pushes the welcome transcript.
+
+**🔎 THERE ARE THREE COPIES OF THE RESTART, NOT TWO** (found 2026-09-04, reading for this plan):
+
+| | Where | What it does |
+|---|---|---|
+| 1 | `basis-tab` / `solo-basis-tab` (short key) | local reset |
+| 2 | `CHSH-tab` / `solo-CHSH-tab` / `bb84-progression` (Eve detected, solo) | local reset |
+| 3 | **`socket-provider.tsx:1128-1165`** (the multiplayer event) | resets **inline, by hand, for BB84 and E91 separately** |
+
+The third was not counted before. **And BB84 multi has the same Eve-loss bug as E91**: its `else`
+branch does a bare `resetRoom(); resetProgress();`, while `alice-exchange-tab.tsx:162` branches on
+`evePresent` to decide whether to intercept.
+
+---
+
+**📋 STEP PLAN (agreed with Ibra 2026-09-04). ~6 days, with a defined exit after Step 1.**
+
+| Step | What | Est. | Verification |
+|---|---|---|---|
+| **0** | This tracker rewrite. Reconcile with **Task 28** (see below). | ½ h | — |
+| **1** ✅ **DONE `298af4a`** | `lib/protocol-lifecycle/round.ts` → **`restartRound(adapter, {withoutEve?})`** holds the five common steps; a new **`RoundAdapter`** (`getEvePresent`, `setEvePresent`, `beginRound`, optional `incrementRoundCount`) holds what is protocol-specific. BB84 solo only, behaviour-preserving. No per-protocol wrapper: callers name the shared function, which also broke an import cycle | ✅ BB84's 9 tests pass **with every assertion untouched** + Ibra browser-verified both paths and a normal start — see the decoded evidence below |
+| **2** ✅ **DONE `6217731`** | E91 solo is the second client. Call sites turned out to be **three, not two** — Ibra found the third by clicking the progression-sidebar button instead of the CHSH dialog — and a **fourth was dead code**, deleted. Fixes the Eve loss and all three copies of the `content`/`title` defect. ⚠️ E91's `beginRound` only pushes the transcript for now; it looks trivial because pair generation is misplaced inside "Measure" (**Task 64**) | ✅ repeated short-key restarts with Eve surviving; post-detection restart shows the welcome highlighted. 7 tests, all three defect-guards mutation-checked |
+
+**🔎 STEP 2 — THREE THINGS WORTH KEEPING (2026-09-04):**
+
+**(a) Reviewing my own diff could not have found the missing call site.** A diff shows what changed,
+never what was missed. The check that would have worked is searching for every caller *before*
+wiring — `grep "e91.measurement.welcome"` returned three restart copies, not two. **Rule for next
+time: search for all call sites first, review the diff second. Both, not either.**
+
+**(b) A fourth copy was dead.** `solo-CHSH-tab`'s `restartGameWithoutEve` was wired to a dialog that
+never opens — `setRestartModalOpen(true)` appears nowhere in the file, and in the multiplayer twin
+(`CHSH-tab.tsx`) the two calls that would open it are **commented out** (`:188`, `:269`). Solo was
+copied from an already-disabled path and never even inherited the commented lines. Deleted with its
+dialog, state and import.
+
+**(c) ⚠️ `setGameHasEve(false)` stays in E91's `handleSoloRestart` — a DELIBERATE divergence from
+BB84.** Removing it to "match BB84" was tried and reverted the same day, and the reason is the most
+useful thing this step produced:
+
+> BB84's post-restart check is **deterministic** — compare the validation bits, they match or they
+> do not. E91's is **statistical** — S is noisy at the photon counts the game offers.
+
+Keeping the checkbox on brings the CHSH tab back for the Eve-free round. Per **52-C**'s measured
+table, at 10 photons only 37.5 % of Eve-absent games show |S| > 2 — so **~62 % of the time** the
+student correctly reads S ≤ 2, clicks "not secure", lands in `onUnsecure`'s else branch, is declared
+a **LOSS**, and `clearE91LocalStorage()` takes the results page with it (**52-G**). They reasoned
+correctly and the game punished them. Turning the checkbox off keeps that path unreachable after a
+restart. **Align with BB84 once 52-C and 52-G are fixed.**
+
+*The general lesson: "copy BB84" is right for the restart mechanics and wrong when the step being
+copied differs in kind. Check that the thing you are copying does the same job before copying it.*
+| **3** ✅ **DONE** | The missing E91 message. Extended `component.e91.restart.unsecured.description` in all 3 languages, **reusing BB84's exact wording** (`component.gameRestart.eveDescription`) per the UI WORDING NOTE. One key change covers **solo and multiplayer** — both CHSH tabs push it | ✅ detect Eve → the transcript now says the exchange restarts without her, right above the Restart button |
+| **4** | **Multi, both protocols**: `basis-tab` (BB84) and `basis-tab` (E91) call `restartRound`. Fixes the Eve loss in multiplayer on both sides. `notifyPartner()` stays a documented no-op → **Task 28**. E91 multi's `beginRound` throws a named "not available, physics lives in the backend" error → **Task 60**. **→ SPLIT INTO 4a / 4b / 4c, below.** | 1 d | **2 browsers**, Eve on, both protocols |
+| **4a** ✅ **DONE `7c545be` + `a926db4`** | Step 4 could not be done as written: E91 multi has no round to prepare, and the single `beginRound` hook fused two jobs — *produce the round's data* and *say what just happened*. Split into **`prepareRound`** (solo only) and **`openRoundTranscript`** (always), with the solo/multi decision moved INTO `restartRound` so it is written once instead of once per protocol. `pushRoundWelcome` moved to `lib/bb84/round-transcript.ts` because multi needs it too. `a926db4` fixed three flaws a harsh review found afterwards | ✅ gates green; behaviour-preserving, so no separate browser run — it was exercised by 4c's |
+| **4b** ⬜ **NOT DONE — and it is now a live bug** | BB84 multi still hand-resets: `components/bb84/play-page/tabs/basis-tab.tsx:125-126` is a bare `resetRoom(); resetProgress();`, so **BB84 multi still loses Eve on a short-key restart** — the exact defect 4c just fixed for E91. E91 multi is now AHEAD of BB84 multi. Deferred on purpose: this call site also carries the stale-basis-form decision (**Task 49-B**) and the uncoordinated-partner desync, so it is not a one-line move | **2 browsers**, BB84, Eve on, force a short key |
+| **4c** ✅ **DONE — but the commit is mislabeled, see below** | E91 multi's `basis-tab.tsx` short-key restart now calls `restartRound(e91Adapter)`. No `prepareRound` in multi: the backend produces the pairs. Partner still not told → **Task 28** | ✅ Ibra, 2026-09-09, E91 multi: short key → restart → played to the end, **no crash**, results table reported Eve present. ⚠️ *Partial*: that table's `eve_present` comes from the **backend**, so it does not by itself prove the FRONTEND kept her — the frontend proof is the "Ève a lu N bits" counter (`basis-tab.tsx:270`) being non-zero. Still unchecked |
+
+**⚠️ RULE-2 VIOLATION, recorded so `git bisect` is not misled (found 2026-09-09).** Step 4c's code
+shipped **inside** commit `e8a2270`, whose message is `docs(tracker): multiplayer has no protection
+against the 52-C trap`. That commit changed `basis-tab.tsx` (+24/−4) as well as the tracker, and its
+message never mentions it. Anyone bisecting E91's multiplayer restart will skip straight past the
+commit that changed it. **Not rewritten** — the branch is pushed, and rewriting shared history to fix
+a label costs more than this note. The lesson is the one CLAUDE.md rule 2 already states: a commit
+does one kind of thing, and the message is the index. It failed here because the code change was
+staged while writing the docs commit, and nothing checks the message against the diff.
+| **5** | **The third copy**: route `RESTART_WITHOUT_EVE_EVENT` (`socket-provider.tsx:1128-1165`) through `restartRound` for both protocols. **Two real bugs found while planning it — see below.** | 1 d | **2 browsers**, detected-Eve restart in multi |
+
+**🔴 (5-iii) MULTIPLAYER HAS NO PROTECTION AGAINST THE 52-C TRAP — reproduced by Ibra 2026-09-08.**
+
+Solo was deliberately protected: `handleSoloRestart` turns the Eve CHECKBOX off after a detection,
+so the CHSH tab disappears and the student cannot be punished for reading a meaningless S. That is
+the documented divergence from BB84 in `e91-progression.tsx`.
+
+**The multiplayer path has no equivalent.** The socket handler sets `evePresent` to false but never
+touches `gameHasEve` (checked: no mention of it in `socket-provider.tsx:1128-1152`), so the CHSH tab
+comes back for the Eve-free round. Ibra played it: second round, no Eve, clicked "Not secure", and
+got **"You lose! Eve did not interfere on this channel"** — then `onUnsecure`'s else branch ran
+`clearE91LocalStorage()`, taking the session with it (**52-G**).
+
+So the same trap is closed in solo and open in multi, for no reason other than the two restarts
+being written in different places. **Whoever does Step 5 must decide it explicitly** — either mirror
+solo's checkbox-off, or fix 52-C and 52-G and remove the protection from both. Do not let the
+routing change decide it by accident.
+
+**🔁 CONFIRMED AGAIN 2026-09-09, with a second symptom next to it.** Ibra, playing E91 multi:
+*"when we declare not secure — in solo we say we restart without eve, and there is no validation CHSH
+tab. In multi I think we restart without eve, but there is no message telling that as in solo, also
+we go through val tab."*
+
+- **The returning tab is 5-iii**, exactly as recorded above.
+- **The missing message is NEW, and it is not missing code.** Both CHSH tabs push the identical two
+  lines — `CHSH-tab.tsx:262-270` and `solo-CHSH-tab.tsx:211-219`, same keys, same `title`/`content`
+  shape since Step 3. So multiplayer *runs* the push and the player still does not see it. Two
+  hypotheses, neither verified: (a) `evePresent` is false in the multiplayer frontend, so
+  `onUnsecure` takes the **else** branch and pushes the game-loss lines instead — the original
+  Task 63 symptom, "the backend keeps applying Eve while the UI forgets her"; or (b) the coordinated
+  restart's `resetProgress()` wipes the transcript before it can be read, which solo avoids because
+  there the player clicks Restart *after* reading. **Check (a) first** — it is one console read of
+  `useE91RoomStore.getState().evePresent` at the moment of the click, and if true it means Step 4c
+  fixed the restart while the initial draw is still lost somewhere else.
+
+  **If it is (b), the fix belongs in the shared pipeline and is small.** Solo works only because the
+  player reads the notice and *then* clicks Restart; multiplayer restarts both players the moment
+  the second one declares, so a line pushed before the reset can never survive it. Pushing it
+  *after* is exactly what `restartRound` is positioned to do — it already receives `withoutEve:
+  true` and already calls `openRoundTranscript` after both resets. Passing the option through to
+  that hook would make "tell the player this round has no Eve" a property of the restart itself,
+  in one place, for every protocol — instead of a line each caller remembers to push first. That is
+  the same argument as Step 1, applied to the message rather than to Eve. Fold it into **Step 5**.
+
+**🔴 TWO OTHER BUGS IN THE SOCKET RESTART HANDLER (found 2026-09-08 while planning Step 5).**
+
+**(5-i) An E91 restart resets BB84.** `restartWithoutEve()` is called at `socket-provider.tsx:1165`
+— **outside** the `if (gameType === 'e91') … else if (gameType === 'bb84')`, so it runs for **every**
+protocol. And it is BB84-specific (`lib/bb84/utils.ts:83`): it removes `bb84PhotonNumber`,
+`bb84GameData`, `bb84Step`, `bb84Tab`, `bb84BobBasisInputs`, then resets both BB84 stores. So a
+player who restarts an E91 multiplayer game after detecting Eve **loses their BB84 session** —
+silently, in another protocol, with no way to connect cause and effect.
+
+Same family as the DPS `localStorage.clear()` that **Task 54 F2** removed for exactly this reason:
+one protocol must never reach into another's data. It survived because the call sits one indentation
+level out from the branch that would have scoped it.
+
+**(5-ii) The handler deletes the photon count.** Both branches remove `*PhotonNumber`, which is
+CONFIG, not round state. It survives in memory, so the current round is fine — but the adapter's
+`hydrateConfig` reads that key, so a **refresh after a coordinated restart** loses the photon count.
+
+**Both are fixed by the same move**, which is the argument for Step 5 beyond tidiness:
+`restartRound` clears nothing but the room checkpoint and the progress keys, and it is
+adapter-scoped, so it cannot touch another protocol. Do **5a** (lift `restartWithoutEve` out of the
+shared path) as its own slice first — it is a one-line bug fix and testable on its own, while
+rerouting the handler is a refactor.
+| **6a** ✅ **DONE `500737a`** | `lib/bb84/eve-story.ts` → **`lib/eve-story.ts`**, and `classifySoloEnding` now takes a structural `EveOutcome {drawn, detected}` so any protocol can pass its own record. Six results keys lose their `bb84` prefix → `component.results.*`. Pure refactor | ✅ BB84's 12 tests came along **unedited** and pass |
+| **6b** ✅ **DONE `a6b1835`** | E91's table gains the **Verdict** column and one reveal sentence per ending, from the shared classifier and the shared keys. **The unconditional "🎉 Congratulations" is gone** — it used to celebrate a compromised key | ✅ Ibra played all three endings: absent, caught, missed. Verdict and sentence correct in each |
+| **6c** ✅ **DONE `f88647e`** | **Iteration** column (E91 counts rounds through the shared `restartRound`), the **Eve probability** line, and BB84's title finally names its protocol | ✅ fresh game, probability 0.7, restart → Iteration 2, probability shown; BB84's title corrected |
+
+**✅ STEP 6 COMPLETE (2026-09-08).** E91's solo results table now has BB84's column anatomy, its
+verdict, its three reveal sentences and its probability line — from **shared** code and **shared**
+translation keys, not a copy.
+
+**🔎 Three findings from Step 6, worth keeping:**
+
+**(a) The table conflated the two Eve flags** — `evePresent = drawn || enabled` ORed the DRAW with
+the CHECKBOX, so a game whose checkbox was ticked but whose draw came up empty reported *"Eve
+present: yes"*. Invisible in every test so far, because testing always used probability 1, where the
+two are equal. Exactly the conflation Task 51 exists to prevent, and it survived because the props
+were booleans instead of the record.
+
+**(b) The failure branch was already dead.** E91's results page rendered
+`gameSuccess ? success : failure`, but the route guard requires a *completed* session — so
+`gameSuccess` was always true by the time the page rendered. Both keys are removed.
+
+**(c) A second vacuous test, caught only by mutation.** The round-counter test asserted
+`rounds === 1` on empty storage; the reader falls back to 1 when the key is missing, so it passed
+with the initialisation deleted. Rewritten to start from a stale counter of 4. **Two such tests in
+one session, both the same shape: an assertion that holds for the wrong reason.** The lesson is not
+"write more tests" — it is that a regression test is only proven by watching it fail.
+
+**⚠️ Still divergent, recorded not fixed:** E91's Replay uses `router.replace` where BB84 pushes, and
+E91's Home button destroys the session where BB84's navigates without clearing — so a finished E91
+game cannot be reached again with browser-Forward, while a BB84 one can. Same family as 3e-3.
+Navigation, not table content, so it needs its own slice and its own browser test. **→ now Step 7.**
+
+---
+
+### ➕ STEP 6d — the MULTIPLAYER results table never caught up (found 2026-09-09)
+
+**How it was found:** Ibra played E91 multi to the end and sent a screenshot. Step 6 compared E91
+**solo** against BB84 **solo** and fixed that. Nobody compared the *multi* tables — and E91 multi is
+the one table of the four that has never been touched.
+
+| | BB84 multi (`bb84-results-table.tsx`, Task 56) | E91 multi (`e91-results-table.tsx`) |
+|---|---|---|
+| columns | Salle · **Itération** · Ève présente · Ève détectée · **Verdict** · Temps | Salle · Ève présente · Ève détectée · Temps · Points |
+| Yes / No | `localize('component.bb84.results.yes'/'no')` | **hardcoded `'Yes'` / `'No'`** (`e91-results-row.tsx:16,19`) |
+| verdict | shared `deriveRoomEveStory` | **none** |
+
+**✅ DONE `79380df` (2026-09-09).** Verified by Ibra in the browser, E91 multi: **Ève présente Oui ·
+Ève détectée Non · Verdict rouge « Clé compromise ! »**, in French.
+
+**🔬 WHAT THE BACKEND CAN SAY — read, not guessed (`e91/consumers.py`, 2026-09-09).** Ibra pushed back
+on the plan (*"I feel like we already went through this"*) and he was right twice over.
+
+```python
+create_room()          → E91Iteration.objects.create(room=room, eve_present=…)   # exactly ONE
+'RESTART_WITHOUT_EVE'  → iteration.eve_present = False                            # MUTATES it
+get_iteration(room)    → E91Iteration.objects.get(room=room)                      # .get() RAISES on two
+```
+
+**An E91 room holds one iteration for its whole life.** Three things follow, and all three contradict
+the plan written the day before:
+
+**(a) The Itération column was right to be deleted.** `git log` found `64dc201` *"Remove iteration from
+leaderboards"* (noblechap, 2024-11-20) — the column existed and was removed deliberately, from E91's
+two files only, with no reason recorded. The reason is the backend: it could only ever print "1".
+Nobody knew, so Task 56 added one to BB84 in July 2026 and this step nearly re-added it here. **It is
+not a display choice — it is blocked** until the backend appends an iteration per restart (**Task 28**).
+
+**(b) `deriveRoomEveStory` must NOT be used for E91.** It infers detection POSITIONALLY (*"Eve in an
+earlier iteration but not the last ⇒ caught"*), which needs several iterations. Fed E91's single
+mutated one, it reports *"Eve was never present, key secure"* for a student who actually caught her —
+right verdict, erased story. **The plan from 2026-09-08 (teach it to prefer `eve_detected`) is
+withdrawn**: the shared function that fits is `classifySoloEnding`, the one E91 solo already uses.
+
+**(c) A third defect nobody had seen.** After a detection the backend leaves
+`eve_present=false, eve_detected=true`, so the table printed **"Ève présente: Non · Ève détectée: Oui"**
+— *she was never there and you caught her*. Fixed with `drawn = eve_present || eve_detected`, which
+recovers what the mutation erased.
+
+*The lesson, and it is the second time this week: **`git log` is part of reading the code.** The file
+showed a missing column; the history showed a decision. Reading only the file was about to undo
+someone's deliberate work for the second time in 22 months.*
+
+**📌 TWO REVIEW FINDINGS FROM 6d — agreed with Ibra to track, not fix now:**
+
+**(i) `classifySoloEnding` is now called from a MULTIPLAYER component.** The logic was never
+solo-specific (it takes a structural `{drawn, detected}`), but the name is now false. Same naming leak
+already fixed twice in this task — `beginRound` → `prepareRound`/`openRoundTranscript`, and
+`pushRoundWelcome` moved out of `solo-round.ts`. **Rename to `classifyEnding`**: touches
+`lib/eve-story.ts`, its test, and both solo results tables. Pure rename, own commit, ~10 min.
+
+**(ii) The new rule lives in JSX where no test can reach it.** `drawn = eve_present || eve_detected`
+is *behaviour* — it is the exact thing that was wrong — and CLAUDE.md rule 5 says a bug fix carries
+the test that would have caught it. This one does not, because it sits inside a component and
+component tests do not exist yet (testing-strategy phases 2–3). **Extract `deriveRoomEnding(iterations)`
+into `lib/eve-story.ts` with unit tests** (~15 min): the three endings, the post-restart mutation case,
+and the empty-iterations guard. Do it with (i) — same file, same afternoon.
+
+Keep "Points" — it is E91's own column, BB84 has no score. Overlaps **Task 56**.
+
+**✅ STEP 6d AND THE TITLE COMPLETE `78bfb19` (2026-09-09).** Verified by Ibra in E91 multi, in both
+languages: Eve present + undetected → *"Key compromised!"* with the red *"…you did NOT detect her"*;
+Eve absent → *"Clé sécurisée"* with the green *"Ève était absente"*. Column and sentence agree.
+
+*Two hours of that slice were spent on a phantom:* Ibra tested twice and saw the OLD title and the
+OLD message while the table showed the NEW code. The dev server was innocent — the compiled route
+carried `titleMulti` and no longer contained the old call, and the edits predated the server start.
+He had run the multiplayer test in a **second browser pointed somewhere other than the local dev
+server**, which also explains why one screenshot was English and the other French. **Rule for
+multiplayer testing: confirm BOTH windows are on `localhost:3000` before reporting a result** —
+added to the testing notes at the bottom of this file.
+
+**🆕 The multi results TITLE does not name the protocol (Ibra, 2026-09-09).** ✅ done in `78bfb19`. Solo says *"Résultats E91
+Mode Solo"* / *"Résultats BB84 Mode Solo"*; the shared multi page says only *"Résultats de la partie
+EEUZ1"* — no protocol, no mode. Step 6c fixed exactly this for BB84's solo title and the multi page was
+never looked at. Note `localize(str, extra)` has **no interpolation** — it appends `" " + extra` — so
+either add `component.<protocol>.results.titleMulti` per protocol (9 dictionary entries, mirrors the
+existing solo keys, each language reads naturally) or compose two keys in JSX. **Recommend the former.**
+
+---
+
+### ➕ STEP 7 — Back from the results page (found 2026-09-09, Ibra)
+
+**What he saw:** in BB84 solo, Back from the results table returns to the félicitation screen with all
+its messages, and Back again reaches `/bb84`. In E91 it does not. **The cause is one word, and it is a
+SOLO divergence** — he had compared BB84 *solo* against E91 *multi*:
+
+| | → results | Back returns to the last step? |
+|---|---|---|
+| BB84 solo | `router.push` — `bb84-progression.tsx:108` | ✅ |
+| **E91 solo** | `router.replace` — `e91-progression.tsx:96` | ❌ **the divergence** |
+| BB84 multi | `router.replace` — `bb84-progression.tsx:100` | ❌ |
+| E91 multi | `router.replace` — `e91-progression.tsx:98` | ❌ |
+
+BB84's own comment names the rule it follows: *"Push (real destination): Back restores the
+félicitation, per the Navigation Invariant"* (ADR §11 — *session data is destroyed only by explicit
+user intent, never as a side-effect of navigation*). The two play pages are structurally identical
+(same `useProtocolSessionGuard`, same render-time gate) and E91 has kept completed sessions since
+Phase 3e-2, so `push` should behave in E91 exactly as it does in BB84 — verify, do not assume.
+
+**7a** — E91 solo `replace` → `push`. One word. Browser check in a **fresh tab** (see the fossil-history
+note at the bottom of this file, or old entries will fake the result).
+**7b** — the two E91-solo-results buttons in the same file: Replay `replace`s where BB84 pushes, and
+Home destroys the session where BB84's does not (the note above). Same file, different behaviour,
+so it is a second slice.
+**7c** — **multi Back: leave it, track it.** Both protocols agree here, so it is not an E91 defect, and
+returning to a finished play route with a closed socket is a different problem with its own risks.
+Decide it with **Task 42** (navigation-guard alignment), not inside E91's catch-up.
+
+**📊 STEP 6 WIDENED (Ibra, 2026-09-04).** It said "round counter + column". Comparing the two tables
+side by side after his Step 1 testing, E91 is missing more than that:
+
+| | BB84 | E91 |
+|---|---|---|
+| columns | Joueurs · **Itération** · Ève présente · Ève détectée · **Verdict** · Temps · Longueur · Score | Salle · Ève présente · Ève détectée · Temps · Longueur · Points |
+| closing line | *"🎉 Félicitations ! Vous avez détecté Ève — l'échange a été rejoué sans elle."* / *"⚠️ …Ève était présente et vous ne l'avez PAS détectée : votre clé est compromise !"* | — none |
+
+E91 has **no Itération, no Verdict, and no closing sentence** — and that sentence is the pedagogical
+payload: it is where the student learns what their result meant. Ibra's words: *"the results table is
+good, this is what I mean to do for E91 also — but now we are doing it as a single source of truth
+for all."* So Step 6 covers the whole story, not one column, and should reuse BB84's wording rather
+than invent a second vocabulary (see the UI WORDING NOTE). Overlaps **Task 56** (results-page story
+parity) — check it before starting.
+
+**Why Step 1 is the exit:** if the extraction is not clean in ~2 days, stop there. The orchestrator
+exists, BB84 still works, and E91 can be fixed the direct way with nothing wasted. It is a decision
+with a date, not a gamble. **→ Step 1 landed clean on 2026-09-04. Continue.**
+
+**🔬 STEP 1 EVIDENCE (decoded from the room state of Ibra's two browser runs, 2026-09-04).** Worth
+keeping: it is the first end-to-end confirmation of the Task 57 Eve fix from real gameplay, and it
+proves the `withoutEve` policy actually reaches the physics rather than only flipping a flag.
+
+*Run 1 — insufficient-key restart, Eve preserved (6 photons).* Comparing each `alicePhoton` against
+what `aliceBits` + `aliceBases` should encode, **2 of 6 photons were altered (33 %)**. The model says
+25 %; at n=6 that is inside the noise. Before Task 57, Eve indexed a 2-element basis array with an
+index running to n, produced `undefined`, and altered ~50 %. Of the 3 sifted bits only one had been
+touched, and Bob's random outcome happened to match Alice — so with **one** validation bit
+(`1 − (3/4)¹ = 25 %` detection) she slipped through, exactly as the formula predicts. The table said
+so honestly: *Eve present, not detected, key compromised*.
+
+*Run 2 — Eve-detected restart, `withoutEve: true` (15 photons).* **All 15 photons match their
+encoding exactly — zero alterations.** Eve is genuinely absent from the new round, not merely flagged
+absent. The 4 sifted bits agree perfectly on both sides, and 4 sifted − 1 validation = 3 key bits,
+so the Task 53 sacrifice is intact too.
+
+**Small inconsistency noticed in both dumps, not fixed:** `aliceCipher` / `aliceCipherSolo` are one
+element longer than `keyBits`, because they are built from the key *before* the validation bits are
+sacrificed and never recomputed. Harmless today — both readers (`messaging-tab.tsx:135` and `:243`)
+index into it, so the extra entry is never used — but it is a length mismatch that will mislead
+whoever iterates it. Worth a line in Task 53's family if anyone touches that code.
+
+**🔗 RECONCILED WITH TASK 28** (opened 2026-06-10 — *"E91 Multiplayer: Short-Key Restart Must Be
+Synchronized"*). What used to be written here as "63-E" is **Task 28**, which already specifies the
+backend event contract, the restart epoch, and the stale-message rule. It is **not duplicated here**.
+Step 4 leaves the `notifyPartner()` seam that Task 28 will fill. Until then the desync stands: each
+player restarts alone, and a player who continues without waiting leaves the other behind — a known,
+documented limitation, not an oversight. Same family as **49-B**.
+
+**Test that must fail first (rule 5), and an honest note on its limits:** call `restartE91Round()` in
+a game with Eve, assert `evePresent` survived and the transcript holds the welcome lines. Prove the
+test really catches the bug by deleting the `setEvePresent` restore line and checking it goes red
+(the mutation method used for the build guard in Task 58). **What this test cannot prove is that the
+components actually call the helper** — only component tests could, and those are testing-strategy
+phases 2–3, not started. So 63-B/C/D still need the browser checks above; the test guards the helper,
+not its adoption.
+
+**Cross-refs:** **49-A** (the reference implementation, and why Eve must survive) · **49-B** (the
+uncoordinated multi restart — 63-E is its E91 twin) · **52-A** (restart leaving an empty transcript,
+same file family) · **57** (BB84's Eve bug: a physics flag silently wrong) · **60** (E91's physics
+duplicated in Python, which is *why* E91 multi's symptom is the inverse of solo's).
+
+---
+
+### 64. 🧹 E91's "Measure" button does four unrelated things — one of them backwards
+
+**Status**: 🔴 OPEN, analysed, not started. **Priority**: P2 — no student-visible breakage confirmed
+yet, but it holds a latent transcript bug and it is why E91 cannot line up with BB84 structurally.
+**Found**: Ibra, 2026-09-04, on hearing that E91 "generates everything when you click Measure" —
+*"this should only do one logical thing, the measurement itself. I really don't like when we mix
+things."* He was right, and the analysis found more than he asked about.
+**Axis**: mostly A (flow/ownership), with a pedagogical consequence on B.
+
+**`onMeasurement` (`solo-measurement-tab.tsx:144`, and its multiplayer twin `measurement-tab.tsx`)
+currently does four unrelated jobs:**
+
+```ts
+const onMeasurement = () => {
+    markSoloGameStarted();                    // 1. stamp the GAME's start clock
+    ...
+    partnerBases = generateBases(...);        // 2. CREATE the entangled-pair source —
+    partnerBits  = ...;                       //    the partner's bases AND bits
+    ...
+    setAliceBases(playerBases);               // 3. measure: apply MY chosen bases
+    ...
+    setTimeout(() => pushLines([...]), 2000); // 4. a UI message, on an uncancelled timer
+};
+```
+
+**(1) Why job 2 is the real problem.** In E91 a *source* emits entangled pairs and the two players
+measure **independently**. Here one player's click creates the pair *and* picks the partner's bases,
+then measures. That is backwards, and it teaches the student the opposite of the physics: that
+measuring is what creates the pair.
+
+**(2) It also explains a wrong claim made during Task 63 planning.** The plan says E91 has nothing to
+regenerate at round start, so its `beginRound` is trivial. That is not simplicity — it is the
+symptom. **BB84 generates Alice's photons in `beginSoloRound`, i.e. at the start of the round, where
+it belongs.** If E91 generated its pairs there too, the two protocols would be structurally
+symmetric and `beginRound` would mean the same thing in both.
+
+**(3) Uncancelled timers — a latent transcript bug, in BOTH tabs.** Neither is cleaned up on unmount:
+
+| timer | what it does after unmount |
+|---|---|
+| `onMeasurement`'s 2 s `pushLines` | pushes "share your bases" into **whatever transcript exists then** — and `pushLines` persists to localStorage, so a stale line survives into the next round |
+| `revealPhotons`' animation timers (`solo-measurement-tab.tsx:258,267`) | the last one calls `setPhotonsRevealed(true)` — a **persisted store write** landing on a round that may already have been restarted |
+
+A restart, a tab switch or a refresh inside those two seconds is enough. This is exactly the
+*"the messages are not what they should be"* family Ibra reported on 2026-09-03.
+
+**The fix, three parts — each its own slice:**
+1. **Move pair generation into `beginRound`**, so a round's physics exists before anyone measures,
+   and E91 becomes symmetric with BB84.
+2. **`onMeasurement` only measures** — the clock stamp and the transcript line move out.
+3. **Make the timers cancellable** (or drop the artificial delay), in both measurement tabs.
+
+**⚠️ Scope note — this does NOT breach "do not touch E91's physics" (Ibra, 2026-09-04).** Part 1
+changes *when* the existing generation runs, not what it computes: the same
+`generateBases` / `generateEntangledBits` / `eveGenerateBits` calls, moved to round start. The
+simulation itself is untouched, and E91 multiplayer stays with the Python backend (**Task 60**).
+
+**Do NOT fold this into Task 63 Step 2.** Step 2 wires E91 to the shared `restartRound` — bounded and
+verifiable on its own. Mixing a flow redesign into it is the exact thing CLAUDE.md rule 2 forbids,
+and it would make a failed browser test impossible to attribute.
+
+**Test that must fail first (rule 5):** measure, then restart within two seconds, and assert the new
+round's transcript contains only its own opening lines. That fails today.
+
+**Cross-refs:** **63** (the shared restart — part 1 makes E91's `beginRound` meaningful) ·
+**52-A** (a restart leaving a wrong transcript, same family) · **60** (why multiplayer cannot follow
+part 1 yet).
+
+---
+
+### 65. ✅ E91 modals overwrote the photon count the player typed
+
+**Status**: ✅ **DONE 2026-09-04, `d2a9540`**. **Found**: Ibra, typing 12 and watching it become 8.
+
+An effect on the Eve checkbox set `photonNumber` **unconditionally, in both directions**:
+
+```ts
+useEffect(() => {
+    if (eveChecked) form.setValue('photonNumber', E91_..._MIN_WITH_EVE);  // 12 → 8
+    else            form.setValue('photonNumber', E91_..._DEFAULT);        // then → 4
+}, [eveChecked, form]);
+```
+
+Tick Eve, your value is replaced by the minimum. Untick, it is replaced again by the default. The
+player's own input never survived a checkbox click.
+
+**BB84's solo modal already had the right rule** — raise only when the current count is *below* the
+with-Eve minimum, never touch it on untick — so this was E91 catching up, not a new design. **The
+same defect sat in both E91 modals**, solo and multiplayer create-game; the multiplayer one was a
+copy. Both fixed together.
+
+The effect also ran its `else` branch on mount, redundantly with the form's `defaultValues`, so
+nothing was lost by deleting it.
+
+**Verified**: 12 stays 12 on tick and on untick; 4 still rises to the minimum on tick. Both modals.
+
+**Family**: same shape as **59-B** (the BB84 multiplayer form starting in an invalid state) — modal
+handlers that fight the user instead of helping them.
+
+---
+
+### 70. 🐛🔥 E91 multi: simultaneous "Measure" clicks can silently produce an uncorrelated key
+
+**Status**: 🔴 OPEN, found by reasoning + verified in the code 2026-09-11. **Priority**: fix
+**with** the E91 physics work — the same handler is being rewritten anyway. **Backend** (Python).
+**Found**: Ibra asked what happens if Alice and Bob click *Measure* at the same instant.
+
+**The race.** `e91/consumers.py` resolves an entangled pair by asking whether the other side has
+measured yet:
+
+```python
+elif not iteration.bob_bits:      # nobody has gone yet → fair coin
+    iteration.alice_bits = random
+else:                             # correlate against them
+    iteration.alice_bits = self.generateEntangledBits(...)
+```
+
+Two near-simultaneous events make **both** handlers read "not yet", so **both** take the fair-coin
+branch. The result is two independent coins: a key with ~50 % errors and S near 0, **in a game with
+no eavesdropper**. Silent, and indistinguishable from bad luck.
+
+**Verified live (2026-09-11):** there is **no `transaction.atomic` and no `select_for_update`
+anywhere in `e91/consumers.py`** — the read-decide-write is completely unprotected. The window is
+milliseconds, but a classroom plays many rounds.
+
+**✅ FIX DECIDED 2026-09-11 — a conditional write on the round's own row** (full reasoning and
+the rejected alternatives in `docs/protocol-physics.md` §10.13):
+
+```sql
+UPDATE round SET first_mover = 'A' WHERE id = ? AND first_mover IS NULL
+```
+
+1 row changed → you are first, draw the fair coin. 0 rows → you are second, correlate. The claim and
+the decision are **one statement**, which is the point: the obvious guard — *read the flag, then take
+it if free* — is itself a read-then-write and merely moves the race onto the flag.
+
+**A mutex over an in-memory variable was proposed (Ibra) and rejected**, though it is not wrong: it
+does serialise the check-and-set and is faster. It lost on three counts — it is correct only within
+one process (Daphne runs one today, but a **Redis channel layer is already configured**, which exists
+so several can), the speed advantage is illusory because the handler **already writes this row** so
+the conditional `UPDATE` replaces that write rather than adding one, and it adds per-round state to
+create and clean up. *(If in-memory speed ever matters, `SETNX` on the Redis already installed is the
+correct version of the same idea.)*
+
+Reordering, retrying or comparing timestamps do not work: they either reintroduce the race or
+replace the correlated draw with a per-side one, which is the local hidden-variable model that
+**Bell's theorem forbids** from reaching 2√2.
+
+**⚠️ One sub-decision left open, deliberately** — game feel, not correctness: does the **first**
+arrival compute its own bits (player sees their result immediately, multi keeps two code paths), or
+does the **second** compute **both** (multi calls the same `measurePair` as solo — one physics path —
+at the cost of the first player waiting)? Both are safe once the claim is atomic. **Decide it when
+the physics port is written**, since it determines whether multi shares solo's function.
+
+**Scope note:** this affects **only the entangled path**. Once Eve has measured, the pair is a
+product state and the two sides are independent, so there is nothing to serialise — her attack
+removes the race for the same reason it removes the security.
+
+**Does BB84 have it?** Not checked. BB84's structure differs (Alice genuinely sends to Bob, so
+there is a real order), but any other read-decide-write on a shared row deserves the same look.
+
+---
+
+### 69. 📐 `docs/protocol-physics.md` has no BB84 section — reorganise it by protocol
+
+**Status**: 🟡 OPEN, agreed 2026-09-11. **Priority**: after the E91 physics fix — it is a
+document reorganisation, and moving sections while rewriting one of them would mix two concerns.
+**Frontend docs only, no code.**
+
+**Ibra's finding, reading the new E91 section:** *"in this file we can find a section for E91, but no
+section (clear title and entry) for BB84? I know there is BB84 content, but there are multiple
+section entries and I cannot tell which one(s) are for BB84."* He is right — §10 is the only part of
+the file organised **by protocol**. Everything before it is organised by *topic* or by *history*:
+
+| § | what it actually is |
+|---|---|
+| 1 | why the document exists (the two axes) — **keep, it is the frame** |
+| 2 · 3 | how the codebase got here; the duplication audit — **history** |
+| 4 | the one-implementation rule (ADR §13.3) — **keep, cross-protocol** |
+| 5 | target structure — BB84-specific, reads as if it were general |
+| 6 · 7 | the bug that opened the file; status — **history** |
+| 8 | validation bits capped at n/4 — **BB84 physics, unlabelled** |
+| 9 | verify-it-yourself commands — **keep, useful** |
+| 10 | E91 — the only protocol-shaped section |
+
+**Target shape:**
+
+```
+Part 0  Why this document exists + the one-implementation rule        (from §1, §4)
+Part 1  BB84 — the protocol, then our adaptation                      (from §5, §8)
+Part 2  E91  — the protocol, then our adaptation                      (§10, already written)
+Part 3  DPS  — placeholder until Task 38 gives it any physics
+Part 4  Migration history and decisions                               (§2, §3, §6, §7)
+Part 5  Verify any claim here yourself                                (§9)
+```
+
+**The standard each protocol part must meet** — set by §10 and agreed with Ibra: *the protocol
+first, with no code, no repository and no language; then our adaptation, opening with the constraint
+and justifying every choice against the protocol half.* BB84's content currently exists but does not
+meet it — §5 is a file listing, not an explanation of the protocol.
+
+**Why history moves rather than disappears:** decisions need their reasons (*"if we chose something
+and people in the future ask why, here we explain"* — Ibra). But **bug archaeology belongs in this
+tracker, not in the physics document**, and most of Parts 2/3/6/7 is bug archaeology that will be
+stale the moment the E91 fix lands.
+
+---
+
+### 71. 🔴 Solo fakes Bob's decryption — it congratulates him over a broken key
+
+**Status**: 🔴 OPEN, spotted twice while testing B1/B2, never chased. **Priority**: **highest of
+the remaining E91 items** — it is the last place the game tells a student something untrue.
+**Frontend-only.**
+
+`components/e91/play-page/tabs/solo-messaging-tab.tsx:197` — the comment says it plainly:
+
+```
+// SOLO MODE: Simulate Bob's successful decryption after delay
+… setTimeout(…, 2000)   // 2 second delay to simulate Bob decrypting
+```
+
+**It never checks the key.** In Ibra's own verified run (2026-09-17) Alice's key was `01001` and
+Bob's was `11001` — Eve corrupted 20 % of it, so they do **not** share a secret and Bob cannot read
+the message. The game still printed *"Félicitations, vous avez déchiffré le message d'Alice !"*.
+
+**Same family as the results-page bug** fixed in Task 63 Step 6b, which celebrated a compromised key.
+Here it is worse: the celebration is the student's only feedback that the key WORKED, so a corrupted
+key produces the identical screen to a perfect one. **Eve's damage is invisible at exactly the moment
+it should be felt.**
+
+**Fix shape:** decrypt with Bob's actual key and compare. A mismatch is not a failure state to hide —
+it is the lesson: *this is what an eavesdropper costs you, even when she learned nothing.*
+
+**Connected to Task 72:** if the decryption honestly fails, the end-of-game message does not need to
+report the corruption count, because the student has already felt it.
+
+---
+
+#### 🔬 READ 2026-09-18 — it is TWO defects, and the second is the bigger one
+
+Re-reading `solo-messaging-tab.tsx` line by line before planning the fix:
+
+**Defect 1 — line 59: `const keyBits = aliceValidBits;` — for BOTH roles.**
+Playing as Bob, the game hands the student **Alice's key**. Alice's message is encrypted with Alice's
+key on line 91 and decrypted with Alice's key on line 164, so **the corruption is mathematically
+invisible** — not hidden by the celebration, *absent from the arithmetic*. `bobValidBits` is
+destructured on line 41 and **never used anywhere in the file**. It is populated correctly
+(`validation-tab.tsx:105`), so the honest key is sitting in the store, ignored.
+
+**Defect 2 — line 200: the `setTimeout(…, 2000)` that fakes Bob's success when the student plays as
+Alice.** Checks nothing at all. This is the one originally recorded above.
+
+Defect 1 is worse: defect 2 lies at the end, defect 1 means the game never computed the truth.
+
+**The same line is in MULTIPLAYER** — `messaging-tab.tsx:42`, identical. Both `aliceBits` and
+`bobBits` live in every client's store (`basis-tab.tsx:269-270`), so multi has the same blindness.
+**Not fixed here** — frontend-only solo is this sprint's scope. Tracked so it is not rediscovered.
+
+#### ❌ REJECTED fix shape: a `lib/e91/one-time-pad.ts` module (proposed and withdrawn 2026-09-18)
+
+I proposed extracting `encrypt`/`decrypt` into a new E91 module with a unit test. **Ibra rejected it
+on sight, correctly, and for a better reason than I had.** Recorded because the reasoning generalises:
+
+1. **It would have been the third copy.** The XOR is `(keyNumber + messageNumber) % 2` in six places
+   across all three protocols — `bb84/messaging-tab.tsx:136`, `e91/solo-messaging-tab.tsx:91,164`,
+   `e91/messaging-tab.tsx:157`, `dps/bob-messaging-tab.tsx:156`,
+   `dps/solo-bob-messaging-tab.tsx:260` — and `lib/dps/dps-protocol.ts:740` **already extracted it**
+   (`encryptBit` / `encryptMessage` / `decryptBit`, **zero importers**). Scoping a fourth to E91 is
+   the least useful place to put it. → see **Task 74**.
+2. **It would not have caught this bug.** The XOR is correct in all six copies. The defect is *which
+   key is passed in*. A test on `encrypt`/`decrypt` passes on the broken code — the exact failure
+   mode CLAUDE.md rule 5 exists to forbid.
+3. **The arithmetic makes it unnecessary.** Bob computes `c ⊕ k' = (m ⊕ k) ⊕ k' = m ⊕ (k ⊕ k')`, so
+   **Bob's message differs from Alice's exactly where the two keys differ.** The honest ending needs
+   no crypto — it needs `aliceValidBits` vs `bobValidBits`, compared bit for bit.
+
+#### 🧠 Why there is only one key — it was a deliberate simplification (Ibra, 2026-09-18)
+
+*"You know why we use only one key — in entanglement Alice and Bob should have the same key, so we
+just simplified things for us. Of course this is not the best scenario… but this is not the goal of
+E91."* Correct on both halves, and it reframes the task: **the single key is not a typo, it is a
+shortcut that was true right up until Eve was simulated correctly (B1).** E91's detector is the CHSH
+value, not the error rate — so the key comparison is genuinely not the headline lesson.
+
+**⚠️ CORRECTION 2026-09-18 — the paragraph below is about MULTIPLAYER only.** Checked while running
+step 1's gates: `ValidationTab` is imported by `multi-game.tsx:7` **and by nothing else**. Solo renders
+four tabs — measurement, basis, CHSH, messaging (`solo-game.tsx:143-146`) — so **solo never performs
+the key sacrifice at all**, even though `solo-game.tsx:62` reads the `utilizeValidBits` preference.
+Consequences: in solo the two keys are never compared and never trimmed, so the 76 % below applies
+with no "the sample happened to match" condition — it is simply `1 − 0.75⁵` over the whole key. The
+equal-length guarantee the fix relies on is unaffected: `solo-basis-tab.tsx:238-239` builds both keys
+from the same `validBitIndices`, at both call sites. **Solo's missing sacrifice step is a parity gap,
+not part of Task 71** — see Task 75.
+
+**But the game already does the comparison, one tab earlier — in multi.** `validation-tab.tsx:67-82` reads
+`aliceValidBits` vs `bobValidBits` — separately, per role, exactly as they should be — compares a
+**sample** (`validationIndices`) and lets the student call Eve. Line 104-107 then drops the sacrificed
+bits from **both** keys, correctly — 100 brut − 40 public = 60 secret, and the public 40 never come
+back. *(Worth stating because the wording below once read as if they did; they do not.)* What the
+messaging tab discards is not the sacrifice — it is **the distinction between Alice's key and Bob's**.
+**So the two keys exist, are already used honestly one tab earlier, and are then collapsed into one.**
+
+**The consequence, in numbers.** A student reaching the messaging tab with Eve present is one whose
+*sample* happened to match. Each surviving key bit still disagrees with probability 25 % (Eve
+intercept-resend, `protocol.ts`), so with a 5-bit key:
+
+> `P(Bob's message is garbled) = 1 − 0.75⁵ = ` **76 %** — today it is **0 %**, by construction.
+
+**⚠️ The two defects are ONE fix, not two slices.** Fixing the 2-second timer alone changes nothing:
+with a single key the check it would perform can never fail. The timer lies *because* there is
+nothing to check. So `keyBits` and the ending move together or not at all.
+
+**With no Eve, nothing changes** — the keys are identical, and every screen behaves exactly as today.
+
+#### 🧭 The abstraction this task settled (Ibra, 2026-09-18) — it outlives Task 71
+
+*"In abstract we have Alice and Bob roles only, not solo and multi. The logic must be the same, the
+code also. Solo means the partner's role is played locally by the machine; multi means the partner is
+a distant machine via the server — could be a real user, could also be a machine."*
+
+So every browser has exactly **one local player and one partner**, and solo vs multi is only the
+partner's *transport*. Two consequences, both visible in this fix:
+
+- The same defect is in multi — `messaging-tab.tsx:42`, the identical line. Same fix.
+- The hunk that has **no** twin in multi is consistent with the rule, not an exception to it: solo's
+  partner is local so the app computes Alice's cipher; multi's arrives on the socket, so there is
+  nothing to compute. Same logic, different transport.
+
+#### 🏷️ Naming decision — `localPlayerKeyBits`, and why not the explicit arrays
+
+Ibra objected that a bare `keyBits` is confusing **in solo specifically**, because there both keys are
+on the same machine and nothing in the name says whose it is. Two options were weighed:
+
+| | |
+|---|---|
+| **B — no alias**, write `playerRole === 'A' ? aliceValidBits : bobValidBits` at each site | names the real array everywhere, but **×5 ternaries that must all agree**. This bug was *one* wrong assignment; B creates five places for it to return. Also makes solo and multi diverge in style |
+| **C — keep one decision point, fix the name** ✅ **chosen** | the role is decided **once**, at the top; the name says whose key it is; solo and multi keep the same shape |
+
+**Ibra's own summary of the rule:** *"we don't want to check if/else five times — we do it once at the
+top and work with it. And where we are 100 % sure which role we are, we simply use that role's bits."*
+That second half is exactly why the simulated-Alice block names `aliceValidBits` directly.
+
+#### 📋 Agreed steps (2026-09-18)
+
+| step | what | kind | verify |
+|---|---|---|---|
+| **1 — 71a** ✅ | solo: `keyBits` per role (h1), simulated-Alice block uses `aliceValidBits` (h2), dep array follows (h3) | behaviour | 1 browser |
+| **2 — rename** ✅ | `keyBits` → `localPlayerKeyBits` + the local-player/partner comment | pure refactor | gates only |
+| **3 — 71b** ✅ (3a, 3c, 3d; 3b dropped) | as **Bob**: the ending tells the truth — his arithmetic is right, his plaintext is wrong | behaviour | 1 browser |
+| **4 — 71c** ✅ (4a refactor, 4b behaviour) | as **Alice**: the 2-second fake → Bob's real decryption | behaviour | 1 browser |
+| **5 — 71a′** | multi: the same one line in `messaging-tab.tsx:42`, then its rename | behaviour | **2 browsers** |
+
+Steps 3 and 4 need Ibra's wording for the failure message and have not been asked for yet — the
+question was raised too early once and withdrawn. Step 5 is split off only because its **verification**
+costs two browsers, not because its logic differs.
+
+**h1 alone is invisible**, and this was checked before proposing it: the simulated-Alice block is
+guarded by `playerRole === 'B'`, so inside it `keyBits` *is* Bob's key. Encrypting there with `keyBits`
+gives `cipher = m ⊕ k_Bob`, which Bob then decrypts perfectly every time — the bug intact under a new
+variable name. h1 and h2 ship together or neither does.
+
+#### ✅ STEP 1 DONE — `ff6c9d1` (2026-09-18)
+
+Gates: 144 tests, `tsc` clean, `next lint` clean. **Browser-verified by Ibra, six solo runs**, each
+checked bit for bit against `cipher ⊕ key` from his `localStorage` dumps:
+
+| run | role | Eve | key | keys differ | what the game said |
+|---|---|---|---|---|---|
+| A | Bob | off | 6 bits | **no** — identical, as they must be | Félicitations (correct) |
+| B | Bob | on | 4 bits | no — she corrupted none (`0.75⁴ ≈ 32 %`) | Félicitations (correct) |
+| C | Bob | on | 2 bits | **both** — Alice sent `11`, Bob read `00` | Félicitations ⚠️ |
+| D | Bob | on | 8 bits | **1 of 8** — sent `00111101`, read `00011101` | Félicitations ⚠️ |
+| E | Bob | on | 5 bits | **2 of 5** — sent `01000`, read `10000` | Félicitations ⚠️, **and no Eve reveal** (`eveGuessedRightBits: 0`) |
+| F | **Alice** | on | 4 bits | **1 of 4** — sent `1111`, Bob would read `0111` | *"Bob a réussi à déchiffrer"* — the 2-second fake |
+
+**What this proves.** Before `ff6c9d1` the two arrays were the same array, so rows C-F were
+*impossible*: a differing key could not be produced, let alone celebrated. The game now computes the
+truth and still says the wrong thing — which is exactly this step's contract, and the evidence that
+steps 3-4 have something real to fix. Run F is the regression check: Alice's cipher is still
+`message ⊕ her own key`, verified. Run E is Task 72 caught in the wild — the run where Eve did the
+most damage is the run where the student was told nothing.
+
+**🔍 Ibra's observation from the dumps, and it is the shape of steps 3-4:** *"we have in localStorage
+Alice's cipher, but not Bob's cipher."* Correct — the store keeps **only what the local player
+typed**. Playing Bob, `message` is `["","",…]` because Alice's plaintext is generated at line 88 and
+discarded; playing Alice, Bob's decryption is never computed at all. So step 3 must keep that
+plaintext and step 4 must compute `cipher ⊕ bobValidBits`. Neither value exists today.
+
+#### ✅ STEP 2 DONE — `14657d8` (2026-09-18)
+
+Pure rename, six sites, `git diff` confirmed to contain nothing but those six lines plus the comment.
+Gates green; no browser check needed or asked for, since no behaviour was touched.
+
+#### 📘 The finding was promoted out of the tracker — `docs/protocol-physics.md` §10.15 (`8268e46`)
+
+Ibra's call: *"this is a very important finding and big bug… needs to be kept in the doc, and in the
+commit also."* §10.15 **"Two keys, never one"** states it protocol-independently — it applies to BB84
+and DPS identically and sits under E91 only because E91 is where it was caught. It carries the
+algebra (`m' = m ⊕ (k_A ⊕ k_B)`, so one array used twice makes decryption *unable* to fail), what the
+bug survived (correct physics with 31 passing tests, correct sifting, a correct XOR in all six
+places), and the three checks to run against any protocol. §10.7 now points forward to it as the
+first recorded violation of its own second half.
+
+#### 📝 STEP 3 — the agreed wording (Ibra + ChatGPT, 2026-09-18; tracked late, on 2026-09-23)
+
+**⚠️ Tracking gap, recorded honestly.** This wording was agreed on 2026-09-18 and the session ended
+before it was written down; it existed only in the chat until 2026-09-23. Nine commits of that day
+were also unpushed until 2026-09-23 (`e736415..b1559d7`). Both fixed the day they were noticed. This
+is the failure mode CLAUDE.md §1b describes, and it is why the rule below now exists.
+
+**📌 Rule, Ibra 2026-09-23:** *"Each new finding, each discussion we agree on, and the steps, plan,
+slice, bug we agree on — we track first."* Tracking is the **first** action after an agreement, not
+the last action of a slice.
+
+**When the two keys differ** (Bob's arithmetic correct, his plaintext wrong), the celebration is
+replaced by:
+
+> **La clé a été perturbée**
+>
+> Votre calcul est correct, mais Alice et Bob n'ont pas la même clé. **Le message déchiffré par Bob
+> est incorrect.**
+
+**« est incorrect », not « n'est pas déchiffré »** — Bob *did* decrypt, correctly; the result is simply
+the wrong message. *"Votre calcul est correct"* comes first so the student does not blame his own
+arithmetic, which is the first thing he would otherwise suspect.
+
+**Then the comparison, aligned, differing bits highlighted — effect first, then cause:**
+
+```
+Message d'Alice   1 1 1 1
+Message de Bob    0 1 1 1      ← the highlighted position…
+Clé d'Alice       1 0 1 1
+Clé de Bob        0 0 1 1      ← …is the same position here
+```
+
+The highlighted columns coincide, so the causal link (`m' = m ⊕ (k_A ⊕ k_B)`, §10.15) is visible
+without being stated. **When the keys are equal, nothing changes** — today's celebration stays.
+
+**D2 — show the keys, not just the messages: ✅ AGREED.** The keys are the cause, the messages the
+effect; showing only the effect leaves the student to guess the cause. Note it reveals Alice's full key
+to Bob, which the real protocol never does — the same nature as revealing her message, which was
+already accepted. The game is over at that point; this is the app teaching, not the protocol.
+
+**D1 — where the comparison renders: ✅ DECIDED 2026-09-23 — a popup, plus a short feed line that
+carries an ⓘ button to reopen it.**
+
+Ibra: *"It is OK [that a refresh closes it], since the popup message is already shown. … A small
+button, the i (information), in the short line — we read the short line, but we can understand more by
+clicking on the i. I love that."* The ⓘ **removes the refresh limit** raised below rather than
+accepting it: the feed line is persisted, so the student can reopen the explanation at any time,
+including after a refresh.
+
+**Why the ⓘ can work after a refresh — checked 2026-09-23.** Everything the popup shows is derivable
+from three values already persisted in `e91GameData`: `aliceCipher`, `aliceValidBits`, `bobValidBits`.
+
+```
+Alice's message = aliceCipher ⊕ aliceValidBits     (true in both roles)
+Bob's message   = aliceCipher ⊕ bobValidBits       (true in both roles)
+```
+
+So **nothing new needs storing**. ⚠️ This **supersedes** the bullet below that said Alice's plaintext
+must be kept in `message` — it does not; it is one XOR away. (Also avoids a trap in that plan:
+`solo-messaging-tab.tsx:186` overwrites `message` with Bob's empty local state on validation.)
+
+**Precedents confirmed:** the ⓘ icon is already used in E91 (`solo-measurement-tab.tsx:336`, lucide
+`Info`). A feed line is `{title?, content?, extra?}` (`types.ts:34`) — **shared by BB84, DPS and E91**,
+so marking a line as "has an ⓘ" means one new *optional* field there; the other protocols are
+unaffected.
+
+*The options as they were weighed before the decision, kept for the record:*
+
+- The progression feed **scrolls** (`components/shared/game-progression.tsx:17-18`, `overflow-y-scroll`)
+  and **survives refresh** (`e91-progress-store.ts` persists to `localStorage`). But it renders **plain
+  text only**: an optional bold title plus a body (`e91-progression.tsx:83-89`). No alignment, no
+  highlight, no colour.
+- **`localize(key, extra)` only concatenates**: `translation + " " + extra`
+  (`language-provider.tsx:72-80`). No `{0}` placeholders, so a value can only sit at the **end** of a
+  sentence. *"Message d'Alice : [X] — message de Bob : [Y]"* cannot be one key.
+- **Dialogs are an existing pattern in this very game**: `GameRestartDialog` (the short-key restart),
+  plus dialogs in both CHSH tabs and both basis tabs; `components/ui/dialog.tsx` exists.
+
+| option | for | against |
+|---|---|---|
+| **feed only**, long text | survives refresh; no new component | no alignment, no highlight; the comparison, which *is* the lesson, cannot be drawn |
+| **block under the table** in the messaging tab | aligned + highlighted; derived from the store, so survives refresh for free | weak attention; on mobile it sits below the fixed bottom buttons, likely below the fold |
+| **popup + a short feed line** (Ibra's idea) | attention at the exact moment; room for title, sentence and the aligned comparison; the bit strings are JSX, so **the `localize` limit disappears** — only the static sentences are localized; the short line stays in the feed as the record | open-state is not persisted: a refresh closes it (the feed line remains) |
+| **new tab** | — | ❌ rejected by Ibra: tabs are reserved for the protocol's steps |
+
+**Recommendation: popup + a short feed line.** Step 4 (Alice's ending) needs the *identical* content —
+*"le message déchiffré par Bob est incorrect"* is true in both roles — so one dialog serves both steps:
+built in step 3, reused in step 4.
+
+**Two small details for whichever option wins:**
+- The Bob path fires `toast.success(localize('component.basis.correct'))` on correct arithmetic. Next
+  to *"est incorrect"*, a green "correct" toast contradicts the screen. In the perturbed case, no
+  success toast.
+- ~~Alice's plaintext must be kept … store it in `message`.~~ **Superseded 2026-09-23:** it is
+  derivable as `aliceCipher ⊕ aliceValidBits`, so nothing is stored — see D1 above.
+
+**EN/ES:** to be drafted by Claude, corrected by Ibra.
+
+#### 🧱 Step 3 is built in bricks, agreed one at a time (2026-09-23)
+
+Proposed shape: **3a** text-only honest ending → **3b** `xorBits()` helper → **3c** the popup →
+**3d** the ⓘ on the feed line. **Only 3a is agreed.** 3b–3d are each agreed when we reach them; 3b
+carries an open choice (`lib/one-time-pad.ts` + unit test, recommended — or a 7th inline XOR).
+
+**❌ 3b DROPPED (agreed 2026-09-24) — the popup uses a one-line local helper instead.** Ibra asked the
+question that undid the recommendation: *"if we add the new file, do we then have to call it in all 6
+other places?"* Yes — otherwise it is worse than today: 6 inline copies + the new file + the dead DPS
+copy = **8 versions of one line**, the exact outcome Task 74 forbids (*7 → 1, never 7 → 8*). A shared
+file is only right **together** with converting every site, which touches BB84 and DPS — Task 74's job.
+Two arguments for the file also failed on inspection: *"swap the algorithm later"* does not hold,
+because the student performs the XOR by hand — the algorithm **is** the lesson, and replacing it would
+change the whole tab anyway; and *"it is the only testable part"* is weak, because the XOR has never
+been wrong — the bug class here is **which key** is passed in, which no XOR test catches.
+**Step 3 is now: 3a ✅ → 3c the popup → 3d the ⓘ.**
+
+**3c — ✅ AGREED 2026-09-24: the popup.** Opens from 3a's "keys differ" branch, right after the feed
+line. **Closable** `ui/dialog` (information, not a blocking choice — `alert-dialog` stays reserved for
+the restart). Content: title (reuses 3a's `component.e91.messaging.keyPerturbed`), the sentence
+*"Votre calcul est correct, mais Alice et Bob n'ont pas la même clé. Le message déchiffré par Bob est
+incorrect."*, then four aligned rows — Alice's message, Bob's message, Alice's key, Bob's key (effect,
+then cause) — with the positions where the keys differ in `text-red-500`, and a "Compris" button.
+New file `components/e91/play-page/key-perturbed-dialog.tsx`; it **reads the store itself**
+(`aliceCipher`, `aliceValidBits`, `bobValidBits`) and computes each message as `cipher ⊕ key` with a
+one-line local helper, so 3d's ⓘ and step 4 (Alice) can open the same popup with nothing to pass.
+6 new keys × FR/EN/ES. Not in 3c: the ⓘ — until 3d, a refresh loses the popup.
+
+#### ✅ STEP 3c DONE — `aeccad7` (2026-09-24)
+
+Gates green; all 7 popup keys proven to resolve in EN/FR/ES by an automated check. **Browser-verified
+by Ibra, three runs as Bob with Eve:**
+
+| run | lang | keys | what showed | checked against the dump |
+|---|---|---|---|---|
+| 1 | FR | 7 bits, differ at 2 and 4 | popup ✅ — but the differing bits **bold, not red** | every row = `cipher ⊕ key` ✅ |
+| 2 | EN | 6 bits, **identical** (Eve's damage missed all 6, ~1 game in 5) | **"Congratulations"**, no popup ✅ | Bob's typed message = `cipher ⊕ key` ✅ |
+| 3 | EN | 10 bits, differ at 3 | popup, position 3 **red in all four rows** ✅ | every row = `cipher ⊕ key` ✅ |
+
+**Run 1's bug** was mine: `text-red-500` does not exist in this project (the Tailwind config replaces
+the red palette) — fixed to `text-red` before commit; the 7 other sites are tracked above.
+**Run 1's oddity** — Alice's message equalled Bob's key and vice versa — was predicted to be luck iff
+`aliceCipher = kA ⊕ kB = 0101000`; the dump showed exactly that (1 chance in 128: the random message
+happened to equal Bob's key). **Run 2** is worth keeping as a teaching example: the message arrived
+intact *and* the results page said "Key compromised!" — both true, because Eve still read 1 bit. An
+intact message does not mean a secret key.
+
+**Unverified:** phone width (optional check, not done); Alice's path (step 4); multi (step 5).
+
+**3d — ✅ AGREED 2026-09-24: the ⓘ on the feed line.** A small ⓘ button after 3a's line reopens the
+same `KeyPerturbedDialog`, including after a refresh. Three changes: `types.ts:34` — the shared feed
+line `{title, content, extra}` gets one **optional** `info` field naming the popup to open (BB84/DPS
+untouched); `solo-messaging-tab.tsx` — 3a's line carries `info: 'keyPerturbed'`; `e91-progression.tsx`
+— a line with `info` gets an ⓘ (lucide `Info`, already used in E91) that opens the popup. Works after
+a refresh because the feed is persisted and the popup rebuilds from persisted store values.
+**Language follows too** (Ibra's question): the line stores *keys*, and both the line and the popup
+call `localize()` on every render, so switching language redraws both; the choice itself survives a
+refresh (`header-v3.tsx:22-25` restores it).
+
+#### ✅ STEP 3d DONE — `d38ccb3` (2026-09-24) — and with it, STEP 3 IS COMPLETE
+
+Gates green. Checked before testing that the new field survives persistence: the feed is saved and read
+back whole (`e91-progress-store.ts:55,73`, `JSON.stringify` / `JSON.parse`), so nothing drops `info`.
+**Browser-verified by Ibra:** the ⓘ appears on the line, reopens the popup after closing it, and still
+works after a refresh. His feedback — *"too small"* → enlarged 16px → 20px (phone) / 24px (computer),
+and coloured `text-highlight` like the line's bold title. **Those two last tweaks were committed on his
+explicit OK ("commit now") before being seen; Ibra then checked them by eye the same night — ✅ good.**
+
+**Step 3 as delivered, from the student's side (Bob, keys differ):** no "Félicitations", no green toast
+→ the line **La clé a été perturbée** *Le message déchiffré par Bob est incorrect.* ⓘ → a popup that
+says his calculation was right and shows the four rows with the differing positions in red, reopenable
+at any time. Keys equal → unchanged celebration.
+
+#### 📋 STEP 4 — ✅ AGREED 2026-09-24: Alice's ending, in two slices
+
+**The problem:** playing Alice, a `setTimeout(…, 2000)` announces *"Bob a réussi à déchiffrer votre
+message !"* without checking anything (`solo-messaging-tab.tsx:225-233`).
+
+**Decision 1 — keep the 2-second pause.** It reads as Bob working; only the *outcome* becomes honest.
+
+**Decision 2 — the same exact code for both roles** (Ibra's rule from Task 63: *"not just the same
+pipeline, the same exact code"*). Bob's branch already holds "compare the keys → celebrate, or line +
+popup". Rather than copy it into Alice's timer, it moves into one local function both roles call — split
+so refactor and behaviour never share a commit:
+
+- **4a — pure refactor:** move Bob's block into `endRound(successContent)`, which returns whether the
+  keys matched (Bob's green toast fires on `true`; Alice has none). No behaviour change — but components
+  have no automated tests, so Ibra re-tests Bob once.
+- **4b — behaviour:** Alice's timer calls `endRound('component.messaging.alice.end')`. Keys differ →
+  the same line, popup and ⓘ as Bob; *"le message déchiffré par Bob est incorrect"* is true from her
+  side too, and the popup already computes Bob's message as `aliceCipher ⊕ bobValidBits`.
+
+**✅ 4a DONE — `7753fa9`** (2026-09-24). Gates green. Browser-verified by Ibra as Bob, one run
+without Eve and one with: *"exactly what we had before."* One stated, invisible reorder: the success
+toast now fires just after `setGameSuccess(true)` instead of just before, in the same click.
+
+**✅ 4b DONE — `e62a588`** (2026-09-24) — **and with it, STEP 4 IS COMPLETE: solo E91 now tells the
+truth in both roles.** Gates green. Browser-verified by Ibra as Alice:
+
+| run | Eve | keys | game said | checked |
+|---|---|---|---|---|
+| 1 | on | `00100101` vs `00000101` — differ at 3 | line + ⓘ + popup ✅ | "Alice's message" = her typed `11111111` ✅; "Bob's message" `11011111` = `cipher ⊕ Bob's key` ✅ |
+| 2 | off | `1001111` both | *"Bob was able to decrypt your message!"*, no popup ✅ | — |
+
+**⚠️ Testing lesson, recorded because it cost three runs.** Before those two, three Alice runs with
+differing keys all showed the **old** unconditional *"Bob was able to decrypt"*. Not a code bug — proven
+rather than assumed: the dev server had been restarted at 10:45 (after the 10:37 edit), and the
+JavaScript it served was downloaded and read — it contained `setTimeout(() => endRound(…), 2000)` and
+not the old timer. The browser tab had kept the **pre-4b code in memory** across the server restart.
+A hard refresh fixed it. Same family as 3a's first test (raw keys from a stale language file).
+**Rule of thumb for browser checks: after any code change or dev-server restart, hard refresh
+(Cmd+Shift+R) and start a new game before testing.**
+
+#### ⏸ STEP 5 PARKED (agreed 2026-09-24) — multi waits for the multi work
+
+The one-line fix in `messaging-tab.tsx:42` would, **alone**, leave multiplayer where solo was after
+step 1: the truth computed, the celebration unchanged — because multi's ending arrives **through the
+socket** (`sendBobSuccess`), and changing what is sent is outside this sprint's scope (*"we work only
+front-end, do not work backend or the socket sending"*). Multi also still runs the biased Python Eve
+(Task 60, backend half). So step 5 goes with the multi work, not before it. **Task 71 is complete for
+solo.** The days left go to solo: **Task 72 → Task 73 → Task 68 → merge** (target ~2026-09-28).
+
+**3a — ✅ AGREED 2026-09-23: the honest ending, text only.** In Bob's branch of `onValidateBits`
+(`solo-messaging-tab.tsx:187-196`), when `aliceValidBits` ≠ `bobValidBits`: no "Félicitations", no
+green `component.basis.correct` toast; push one feed line instead — **La clé a été perturbée** /
+*Le message déchiffré par Bob est incorrect.* — two new keys × FR/EN/ES in `lang/e91-lines.ts`.
+`setGameSuccess(true)` stays on both branches: it means *the round is over*, not *you won*. Keys equal
+→ today's celebration, unchanged. Alice's path untouched (that is step 4).
+
+Why compare **keys** and not messages: §10.15 — the messages differ exactly where the keys differ, so
+it is the same answer, tests the cause directly, and needs no XOR. Why 3a first: it alone removes the
+lie; 3b–3d only explain it.
+
+**3a, first browser test (2026-09-23) — two problems, both caught by Ibra:**
+
+1. **Raw keys on screen** (`component.messaging.keyPerturbedcomponent.messaging.keyPerturbed.line`).
+   Not a code defect: a throwaway test resolved both keys from `lang/e91-lines.ts` in **all three**
+   languages. The app was serving a stale copy of the language file. Re-test after restarting the dev
+   server + hard refresh.
+2. **The key names broke the convention.** 📌 **Rule, Ibra 2026-09-23:** *a key that belongs to one
+   protocol carries that protocol's name — `component.e91.…`; a key with no protocol name is general
+   (common to all).* So when reading only the keys, you know whose they are. Renamed to
+   `component.e91.messaging.keyPerturbed` / `.line`, following E91's existing `component.e91.<area>.…`
+   shape (`basis`, `measurement`, `restart`, …).
+
+**🔍 Finding, not scheduled:** the rule is applied unevenly today. Keys carrying their protocol's
+prefix: **E91 124 / 253, DPS 24 / 186, BB84 0 / 264**. Many unprefixed keys (`component.messaging.*`,
+`component.game.*`, `component.basis.*`) are defined separately in each protocol's file with different
+text, so by the rule's reading they look "common" while they are not. Aligning them is a rename across
+all three protocols — for later, never mixed into a behaviour slice.
+
+**🐛 Finding, not scheduled (2026-09-23): E91's success toast is untranslated in English.** Bob's
+success path calls `toast.success(localize('component.basis.correct'))`. `lang/e91-lines.ts` defines
+that key in **French (line 166) and Spanish (line 270) only — not English.** So an English-speaking
+student sees the raw text `component.basis.correct` in the green toast. BB84 and DPS define it in all
+three. Pre-existing, found while checking 3a; a one-line fix, kept out of 3a so the slice stays one
+concern. **Proof it is a common key, not an E91 one:** used 9 times — BB84 ×3, DPS ×4, E91 ×2 — so by
+the prefix rule it is correctly unprefixed; only E91's English entry is missing. **Priority: lowest**
+
+**🐛 Finding, not scheduled (2026-09-24): every `text-red-500` in the app renders in the default
+colour — the "key compromised" warnings have never been red.** Found when 3c's popup showed its
+differing bits bold but not red. `tailwind.config.js:61` sets `extend.colors.red = "hsl(var(--red))"`
+— a single value, which **replaces** Tailwind's whole `red` palette. So `red-500` does not exist in this
+project and the class generates no CSS; only the app's own `text-red` / `border-red` work (`--red` in
+`app/globals.css:41,68`). Green is not overridden, so `text-green-500` works — which makes it worse:
+*safe* shows green, *compromised* shows plain bold. **7 sites:** `bb84-results-row.tsx:34`,
+`bb84/.../solo-results-table.tsx:113,133`, `app/(main)/games/[gameType]/[gameCode]/results/page.tsx:281`,
+`e91-results-row.tsx:39`, `e91/.../solo-results-table.tsx:137,159`. Fix: `text-red-500` → `text-red`,
+one word each; browser-check both protocols' results. **Suggested priority: medium-low** — it is the
+colour of the one warning Task 56 / Task 63 Step 6b made honest, but the words are already right.
+(Also noted: a second, unused `tailwind.config.ts` sits beside the `.js` one — Tailwind picks `.js`
+first, which is why `text-highlight` works. Worth deleting the dead one someday.)
+(Ibra: side findings are tracked with a priority and do not interrupt the current task).
+**→ Ibra, 2026-09-24: fix it now anyway — one line, text only.** Own commit, after 3a, never mixed
+into it. English text copied from BB84 and DPS (`'Correct!'`) so all three protocols say the same.
+**✅ Done — `9e1dcb0`.** Verified by an automated lookup (EN "Correct!", FR "Correct !", ES
+"¡Correcto!"), committed on that proof with Ibra's explicit OK instead of a full English browser game —
+the lookup is exactly what the browser performs.
+
+#### ✅ STEP 3a DONE — `2968249` (2026-09-24)
+
+Gates: 144 tests, `tsc`, `next lint` green. Key resolution proven in all three languages by a throwaway
+test. **Browser-verified by Ibra, two solo runs as Bob:**
+
+| run | Eve | keys | Alice sent | Bob read | game said |
+|---|---|---|---|---|---|
+| 1 | on | `1111` vs `1101` — differ at position 3 | `1101` | `1111` | **La clé a été perturbée** — *Le message déchiffré par Bob est incorrect.* ✅ |
+| 2 | off | `011110` both — identical | `011000` | `011000` | **Félicitations** — unchanged ✅ |
+
+Run 2 is the regression check: the old celebration now sits inside a condition, and a wrong condition
+would have made honest games say "perturbée". The toast was not reported in either run; the code places
+it inside the same branch as the line that was seen, so its presence (run 2) and absence (run 1) follow
+from the branch taken. **The first test showed raw keys** — a stale dev bundle, not code (see above).
+
+**Unverified by design:** Alice's path (step 4); multi (step 5).
+
+**⚠️ Naming wart for step 3-4 to work around, not to fix:** the store field `crypto` holds different
+things per role — Alice's *cipher* when playing Alice, Bob's *decrypted plaintext* when playing Bob.
+Pre-existing, unrelated to Task 71, noted so it is not mistaken for a bug mid-slice.
+
+**⚠️ Test coverage gap, stated rather than papered over.** No step here can carry a unit test: this
+is component wiring, and components have no harness (testing-strategy phases 2–3 not started). Rule 5
+cannot be satisfied, so rule 4 carries it — browser verification before commit. Writing a unit test
+that passes either way would be worse than writing none.
+
+---
+
+### 72. 📝 The end-of-game reveal about Eve is gated on the wrong thing
+
+**Status**: ✅ **DONE 2026-09-24 (`b7b1920`)** — solo. Multi unchanged on purpose. **Frontend-only, 3 languages.**
+
+`solo-messaging-tab.tsx:102` reveals the truth about Eve only `if (evePresent && eveGuessedRightBits
+> 0)`. With the honest counter (Task 60 B2) a 0 is common — **42 % of games with a 3-bit key** — so
+the reveal now silently vanishes in roughly a third of eavesdropped games. The student finishes and
+never learns she was there.
+
+The old buggy counter almost never returned 0, so **fixing the counter exposed this.**
+
+**Agreed wording (Ibra, 2026-09-17):**
+
+> **Eve a mesuré [N] photons sur [M] ; elle a deviné [K] bits sur [L].**
+
+- **Gate on `evePresent`**, not on the count.
+- **No corruption count.** Ibra rejected it, and his reason is the protocol's: in E91 the detector is
+  the **CHSH value**, not the error rate — quoting D points at a signal the student never used.
+  (And once **Task 71** lands they will have felt the corruption directly.)
+- Needs English and Spanish.
+- **⚠️ Cannot render as written today (found 2026-09-18, tracked 2026-09-23).** `localize(key, extra)`
+  only appends `extra` to the **end** of the translation (`language-provider.tsx:72-80`) — no `{0}`
+  placeholders. This sentence has four values *inside* it. So either reword so each value ends a
+  sentence, split it into several keys, or add placeholder support to `localize` (small, but it is
+  shared by all three protocols). Decide when Task 72 starts. If step 3 of Task 71 ends up as a popup,
+  the same JSX approach may apply here too.
+
+**✅ DECIDED 2026-09-24 — markers in the translation, the pattern Task 58 slice 4 already established.**
+Ibra proposed cutting the sentence into translated pieces with the numbers between them, and named its
+weakness himself: *"the translated phrase may not allow breaking it in the same manner"* — any language
+needing another word order would force approximate translations. The project had already chosen the
+alternative: `'Le nombre minimum de photons est {min}'` in all three languages, filled by
+`fillPhotonMinimum` / `fillPhotonMinimums` (`lib/utils.ts`). Each language keeps **one whole sentence**
+and puts the markers wherever its grammar needs them. **`localize` stays untouched** — zero risk to
+BB84 and DPS. (My first proposal, changing `localize` itself, was worse on both counts.)
+
+**The slice (one, so the new helper never sits unused):**
+- `lib/utils.ts` — a generic `fillPlaceholders(template, values)` beside the two existing fillers, with
+  a unit test.
+- `types.ts` — the feed line gains an optional `values` (named numbers). The line stores the **key and
+  the numbers**, not finished text, so switching language still redraws it.
+- `e91-progression.tsx` — a line with `values` is drawn as `fillPlaceholders(localize(content), values)`.
+- `solo-messaging-tab.tsx` — the reveal fires on **`evePresent`**, not on `eveGuessedRightBits > 0`;
+  title stays `component.e91.evePresent`; content is a **new** key, `component.e91.evePresent.summary`,
+  because multi still uses `.stats` (`messaging-tab.tsx:96-97`) and must not change.
+- `{n}` = `eveAngles.length` (photons Eve measured) · `{m}` = `aliceBases.length` (photons sent) ·
+  `{k}` = `eveGuessedRightBits` (B2's count) · `{l}` = `aliceValidBits.length` (the key it is counted
+  over — solo has no sacrifice step, Task 75).
+- FR `Ève a mesuré {n} photons sur {m} ; elle a deviné {k} bits sur {l}.` · EN `Eve measured {n}
+  photons out of {m}; she guessed {k} bits out of {l}.` · ES `Eva midió {n} fotones de {m}; adivinó
+  {k} bits de {l}.`
+
+**📝 Wording adjusted (2026-09-24, Ibra delegated the choice: "tell the best and we will take it").**
+With K = 1 — common — all three read wrong: *"1 bits"* (and French wants *"0 bit"* too). Ibra offered
+*"bit(s)"*; chosen instead is a rewording that is correct for **every** number and also names which
+bits: FR `… ; elle a deviné {k} des {l} bits de la clé.` · EN `… ; she guessed {k} of the {l} key
+bits.` · ES `… ; adivinó {k} de los {l} bits de la clave.`
+
+**🔍 Finding (2026-09-24), with a process lesson attached.** `lib/utils.ts:3` imports the `Language`
+enum from `components/providers/language-provider.tsx`, a React file the test runner cannot parse —
+so **nothing in `lib/utils.ts` could ever be unit-tested**, which is likely why it had no tests. The
+agreed unit test for `fillPlaceholders` hit this. **I chose a workaround on my own** — a `vi.mock`
+stand-in for that import inside `lib/utils.test.ts` — instead of stopping to tell Ibra and tracking it,
+which is what the rule requires for anything discovered mid-slice. Ibra caught it. The workaround is
+test-only (the app code is unchanged). **Ibra, 2026-09-24: keep it — with a comment saying why it
+exists and when to delete it, so a future reader understands it.** **The real fix, for later:** move
+the `Language` enum out of the `.tsx` file into a plain `.ts` one, so `lib/utils.ts` stops importing a
+component. Low priority.
+
+#### ✅ TASK 72 DONE — `b7b1920` (2026-09-24)
+
+Gates: **151 tests** (144 + 7 new for `fillPlaceholders`, written first and seen red; two planted bugs
+each caught — `0` printed as an empty gap, and `in` reading prototype names such as `{constructor}`),
+`tsc`, `next lint`. The finished sentence was rendered by the real code for K = 0, 1, 2 in all three
+languages before the browser test. **Browser-verified by Ibra** (as Bob, Eve on, 30 photons):
+*"Ève a mesuré 30 photons sur 30 ; elle a deviné 3 des 5 bits de la clé."*, identical numbers in EN
+and ES after switching language. **K = 3 checked by hand** from the dump: key bits #10, #20, #27 are
+where Eve's basis equals Alice's; the single disturbed bit (#23) is one where it did not.
+
+**Seen only through code and tests, not in the browser:** K = 0 (the line no longer reads K at all;
+the unit test pins `0` → `"0"`), and no Eve → no line (`evePresent` gate, as before).
+**Unchanged on purpose:** multi keeps `component.e91.evePresent.stats` and its count-gated reveal.
+
+**Two later improvements, not blocking:** store the student's computed **S** so the reveal can close
+the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it currently lives only in
+`solo-CHSH-tab` local state; and `[M]` is always `[N]` until
+`E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS` moves off 1.
+
+---
+
+### 73. ✅ Delete `lib/e91/solo-player.ts` — zero importers since B1 — DONE `3e905cd`
+
+**Status**: 🟡 OPEN, trivial. The old E91 simulation has had **no importers at all** since
+`e5a658b` wired `onMeasurement` to `lib/e91/protocol.ts`. The only mention left is a stale comment in
+`solo-game-modal.tsx:62`.
+
+**Do it AFTER Tasks 71 and 72**, not before: if anything in solo turns out to be wrong, having the old
+implementation on disk makes the comparison a `git diff` instead of an archaeology session. Delete it
+once solo has been played through end to end with no surprises.
+
+**✅ AGREED 2026-09-25 — the condition is met** (15+ full solo games over Task 71/72, both roles, with
+and without Eve). **Proof it is dead, three independent ways** — Ibra asked for a stronger check than
+"no file imports it": (1) no file imports the path `solo-player`; (2) **Ibra's check:** each of its 10
+exported functions searched by name — 7 have no hit at all; `generateBases` and `generateRandomBits`
+appear only in a comment (`solo-game-modal.tsx:114`); `generateAliceBases` hits only BB84, which
+defines and imports **its own** function of that name (`lib/bb84/protocol.ts:61`); (3) the compiler,
+after deletion — the gates fail if anything still imports it. The name search's blind spot, seen live:
+one name can belong to two files, so each hit has to be read. **Scope:** delete the file, and fix
+both stale comments in `solo-game-modal.tsx` (lines 62 and 114) — checking first whether each is
+still true against what E91 uses today (`lib/e91/protocol.ts`). Historical mentions in the docs stay:
+they describe the past, which remains true.
+
+**✅ DONE — `3e905cd` (2026-09-25).** File deleted (450 lines). Proof 3 held: after deletion `tsc` is
+clean, 151 tests green, lint clean. Four comments in `solo-game-modal.tsx` corrected — not only the two
+naming the dead file: lines 22, 50, 61-62 and 114 all placed data generation in `solo-game.tsx`, which
+only shows the tabs; it happens on **Measure**, in `solo-measurement-tab.tsx`, via `lib/e91/protocol.ts`
+(lines 22 and 50 were beyond the agreed scope; Ibra approved them). No browser check: nothing the player
+sees could change.
+
+---
+
+### 68. 📘 The CHSH tab never tells the student that S is noise at 20 photons
+
+**Status**: 🔴 OPEN, text drafted, not implemented. **Priority**: **HIGH — explicitly above every
+cosmetic/UI task** (Ibra, 2026-09-10: *"this task is very important, more than others — aesthetic UI
+or titles etc."*). **Axis**: pedagogy, not physics. **Frontend-only, no backend, no physics change.**
+
+**The gap.** `solo-CHSH-tab.tsx` / `CHSH-tab.tsx` show a table of pairs, a values column, a graph
+button, and two buttons — `component.e91.button.secure` / `.unsecure`. **No explanatory text exists
+at all**: no classical bound, no quantum maximum, no warning about the sample size. The student is
+asked to judge and given nothing to judge against.
+
+**Why it is not a bug in the design.** The app deliberately has **no threshold constant** — the
+student decides, by reading the pairs. That is the right call at these photon counts, because *no*
+threshold could work. It just has to be **said**.
+
+**📊 The measured reason, worth putting in the text (computed 2026-09-10):**
+
+| photons | CHSH pairs | per correlation term | uncertainty on S |
+|---|---|---|---|
+| 10 | ~4 | ~1.1 | **± 1.9** |
+| **20** | ~9 | **~2.2** | **± 1.4** |
+| 30 | ~13 | ~3.3 | ± 1.1 |
+| 2000 *(the CMAI workshop)* | ~889 | ~222 | ± 0.13 |
+
+Only 4 of the 9 basis combinations are CHSH terms, so at 20 photons **each correlation rests on about
+two pairs**. S = 2.83 ± 1.4 — it can land anywhere from ~1.4 to ~4.2 **with no Eve at all**. This is
+the mechanism behind **52-C**'s measured 37.5 %, and it also explains why the workshop's |S| > 2.5
+threshold is sound there (±0.13) and impossible here.
+
+**🔴 MEASURED 2026-09-16 (20 000 simulated games per cell) — it is worse in BOTH directions, and this
+is now the strongest argument for this task:**
+
+| pairs | false alarm — no Eve, yet \|S\| ≤ 2 | false negative — Eve present, yet \|S\| > 2 |
+|---|---|---|
+| **20** | **34 %** | **27 %** |
+| **30** | **22 %** | **29 %** |
+
+**A third of honest games look attacked, and a quarter of attacked games look clean.** At this size
+the Bell test is a *hint*, not a detector. And S is coarsely quantised — with ~2 rounds behind each
+correlation, a student will essentially **never** see 2.83. Prompted by an external review (Gemini,
+via Ibra) and verified here. **Unexplained, the sample size does not merely weaken the lesson — it
+teaches the wrong one.**
+
+**Draft text (Ibra to approve the wording — his voice, and it is pedagogy).** Two parts, because the
+short one must actually be read:
+
+> **inline, always visible:** ℹ️ Avec si peu de paires, **S est très bruité (≈ ±1,4)** : il peut
+> descendre sous 2 même sans Ève. Comparez les paires une par une plutôt que le seul nombre.
+>
+> **expanded on the ℹ️:** Chacune des 4 corrélations n'est mesurée ici que sur ~2 paires. Les vraies
+> expériences en utilisent des milliers : à 2000 paires, S = 2,83 ± 0,13, et un seuil comme
+> |S| > 2,5 devient fiable. À 20 paires, aucun seuil ne l'est.
+
+**Two open decisions:** (a) literal numbers, or derived from the actual photon count — derived is more
+honest and `localize` can take the number in its own span; (b) placement — under the values table, or
+beside the Secure/Unsecure buttons. **Recommend beside the buttons**: that is the moment the student
+needs it. All three languages, **both** CHSH tabs.
+
+---
+
+### 67. 🔴🔥 E91 multiplayer writes into BB84's storage during NORMAL play — five unguarded handlers
+
+**Status**: 🔴 OPEN, **cause proven, not fixed**. **Priority**: **P1** — cross-protocol data loss, and
+it needs no restart, no Eve, no edge case: it happens in every E91 multiplayer game.
+**Found**: 2026-09-09, when Ibra browser-tested Step 5a and BB84's storage had changed anyway.
+**Axis**: A (lifecycle). **Frontend-only.**
+
+**How it was found.** Step 5a scoped `restartWithoutEve()` to BB84, and Ibra checked whether his BB84
+data survived an E91 multiplayer game. It did not: `bb84GameData` had become `{"evePresent":false}`.
+That value is the clue — `restartWithoutEve` writes `{}`, so **a different writer was involved**.
+
+**The cause.** `store/bb84/bb84-room-store.ts:99` persists on EVERY mutation
+(`localStorage.setItem('bb84GameData', JSON.stringify(next))`), and five handlers in
+`socket-provider.tsx` mutate that store with **no `gameType` guard at all**:
+
+| line | event | E91's backend sends it? |
+|---|---|---|
+| 639 | `A_PHOTONS_EVENT` | ✅ |
+| 765 | `A_KEY_EVENT` | ✅ |
+| 864 | `B_KEY_EVENT` | ✅ |
+| 945 | `A_VALIDATED_EVENT` | ✅ |
+| 985 | `B_VALIDATED_EVENT` | ✅ |
+
+All five names were confirmed present in `e91/consumers.py`, so these are **not theoretical** — an
+E91 game relays every one of them, the BB84 handler runs, and BB84's store is written. Ibra was
+playing as **Bob**, and `A_PHOTONS_EVENT` is gated on `playerRole === 'B'`, which fits his dump
+exactly.
+
+**A sixth, more direct one:** `SWAP_ROLES_AND_RESTART_EVENT` (`:1379`) touches BB84 stores from
+*inside* an `e91` guard.
+
+**Why it survived.** The socket provider is one giant switch shared by three protocols, where the
+`gameType` check is a convention rather than a structure — some cases have it, some do not, and
+nothing makes the difference visible. Same family as the DPS `localStorage.clear()` removed by
+**Task 54 F2** and as 5-i, fixed the same day in `d5dc490`: *one protocol reaching into another's
+data.* Three instances now, one cause.
+
+**Possible fixes, in increasing order of ambition:**
+
+1. **Guard the five handlers** — add the `gameType` check each one is missing. Smallest, honest,
+   and leaves the convention exactly as fragile as it was.
+2. **Route every store write through the adapter** (`ProtocolAdapter` is already adapter-scoped by
+   construction, which is why 5b is worth doing). A handler that cannot name a protocol cannot leak
+   into one.
+3. **Task 40 Phase 5** — the socket-provider refactor into per-protocol handlers, which is the real
+   answer and is already the roadmap's riskiest item (10–15 days).
+
+**Recommended:** (1) now as a guarded slice with a test per handler, because the data loss is live
+and (3) is months away. It also makes (2)/(3) safer by pinning the expected behaviour first.
+
+**⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
+against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
+### 75. 🔍 E91 solo has no validation tab — the key sacrifice never happens there
+
+**Status**: 🔍 FINDING, not diagnosed, **not scheduled**. **Found**: 2026-09-18, while checking that
+`bobValidBits` was safe to read in Task 71 step 1. **Frontend-only.** Reported to Ibra immediately and
+parked, per his rule: *find something odd → tell me, track it, go back to the task.*
+
+**The fact.** `ValidationTab` has exactly one importer: `multi-game.tsx:7`. Multi chooses between two
+tabs at line 165 — `utilizeValidBits ? <ValidationTab/> : <CHSHTab/>` — a preference the player sets
+and the store persists (`e91-room-store.ts:62`). Solo renders a fixed four: measurement, basis, CHSH,
+messaging (`solo-game.tsx:143-146`). **`solo-game.tsx:62` reads `utilizeValidBits` and then never uses
+it to pick a tab.**
+
+**So in solo:** no key sacrifice, no public comparison of a bit sample, no `setEveSpotted` from that
+path. `bobValidBits` is written once at `solo-basis-tab.tsx:239` and never trimmed. The whole
+"compare some bits publicly, then throw them away" lesson — the one BB84 gets wrong in Task 53 — is
+simply absent from solo E91.
+
+**Not diagnosed on purpose.** Three readings fit and they lead to different work: (a) deliberate, solo
+is the CHSH-only teaching path; (b) the solo port of the multi tabs stopped before this one; (c) it
+should branch like multi does and nobody wired it. `solo-game.tsx:62` reading the preference is weak
+evidence for (b) or (c), and that is as far as it should be taken without Ibra.
+
+**Relation to Task 71:** none for correctness — the equal-length property the fix depends on comes
+from `solo-basis-tab.tsx:238-239`, not from the validation tab. It only changes the *story*: in solo
+there is no sample to survive, so Eve's corruption reaches the messaging tab every time she acts.
+
+---
+
+### 74. 💡 One XOR, six copies, three protocols — and an extracted helper nobody imports
+
+**Status**: 💡 IDEA, **deliberately not today** (Ibra's standing rule: *"if there is some idea of
+refactory so all use the same code, just tell me and it will be for later"*). **Opened**: 2026-09-18,
+while planning Task 71. **Axis**: neither — it is code duplication, not lifecycle or physics.
+
+Every protocol in this app encrypts the same way, because there is only one way to encrypt a bit with
+a bit: `cipher = (message + key) % 2`. The student types it by hand; it is a teaching prop, not a
+crypto layer. It appears **six times**:
+
+| file | line |
+|---|---|
+| `components/bb84/play-page/tabs/messaging-tab.tsx` | 136 |
+| `components/e91/play-page/tabs/solo-messaging-tab.tsx` | 91, 164 |
+| `components/e91/play-page/tabs/messaging-tab.tsx` | 157 |
+| `components/dps/play-page/tabs/bob-messaging-tab.tsx` | 156 |
+| `components/dps/play-page/tabs/solo-bob-messaging-tab.tsx` | 260 |
+
+**And it is already extracted once:** `lib/dps/dps-protocol.ts:724-760` has `encryptBit`,
+`encryptMessage`, `decryptBit`, `decryptMessage`, with a comment recording the exact component line
+they came from — and **zero importers anywhere in the repo**. Same pattern as `lib/e91/solo-player.ts`
+(Task 73): extracted, never wired, quietly rotting. An extraction that nobody imports is not a
+refactor, it is a second copy with better documentation.
+
+**If it is ever done:** one shared module (not protocol-scoped — **`lib/one-time-pad.ts`**, `lib/`
+root beside `utils.ts`, Ibra 2026-09-18), all six call sites converted in one behaviour-preserving
+commit, and the dead DPS copy deleted in the same breath so the count goes 7 → 1 and not 7 → 8.
+
+**⚠️ Why the app barely calls a function today — Ibra, 2026-09-18, and it is the design, not an
+oversight.** *"This XOR is done one bit at a time, by the student himself, in the UI. We just check
+whether he got it right — that is what teaches them the method is a simple operation. We don't really
+call a function with a message as input and get an output."* The six sites are **verifiers**, not
+encryptors: the student types the cipher, the app recomputes one bit and compares. So the duplication
+is six one-line checks, which is why this is low-value today.
+
+**The use case that would change that (Ibra's, worth building toward):** let the student do the first
+few bits by hand — say 5, enough to prove they understand — then **enable a button that completes the
+rest automatically**. *That* call needs a real `encrypt(message, key)` / `decrypt(cipher, key)`, and
+at that point one shared implementation stops being tidiness and starts being the thing that makes
+the feature cheap in all three protocols at once.
+
+**➕ 2026-09-24: a 7th site is coming** — Task 71 step 3c's popup computes each side's message
+(`cipher ⊕ key`) with a one-line local helper. Deliberately *not* a new shared file (see Task 71, "3b
+DROPPED"): a file without converting all sites would make 8 versions. When this task runs, convert
+**all seven** and delete the DPS copy in the same commit.
+
+---
+
+### 66. ↩️ RETRACTED — "the key is all zeros" is Task 60, and "the key is empty" was my error
+
+**Status**: ↩️ **RETRACTED the same day it was opened (2026-09-09).** Kept, not deleted, so nobody
+re-opens it. Two claims, one right and already owned elsewhere, one wrong.
+
+**Claim A — "the final key is all zeros" → REAL, and it is [Task 60](#60).** Not a new bug. Task 60
+found by *reading both copies* on 2026-09-02 that Eve's outcome is partly a constant: basis 2 is
+hardcoded to `outcome = 1`, bases 1 and 3 are biased 85/15 by reusing `sin²(π/8) ≈ 0.1464` as if it
+were a measurement probability. **Ibra's two solo dumps are the first confirmation from real play**,
+and they match the model basis by basis:
+
+| | Alice | Bob |
+|---|---|---|
+| ones | 17/32 = **53 %** ✅ | 5/32 = **15.6 %** ❌ |
+
+`P(≤5 ones in 32 fair flips) = 5.7 × 10⁻⁵` — not luck. And per basis, against Task 60's table:
+
+| Bob's basis | dump 1 | dump 2 | model |
+|---|---|---|---|
+| 2 | 0/5 ones | 0/5 ones | **0 %** (hardcoded) |
+| 3 | 1/3 | 1/8 | 15 % |
+| 4 | 0/4 | 3/7 | 50 % ✅ |
+
+Alice escapes because with `playerRole === 'A'` she gets `generateRandomBits`; only the partner's
+bits go through `eveGenerateBits`. **So the zeros the player sees at the end are Eve's bias, exactly
+as Task 60 predicted.** Nothing to add there but this confirmation — moved into Task 60.
+
+**Claim B — "the score is 0, so multi produces no key at all" → WRONG, and it was mine.** I inferred
+it from ONE run scoring 0 points (`score += aliceValidBits.length * 5`). Two things I did not check
+before writing it down: the other verified multi run scored **10** — a 2-bit key — and E91's sifting
+rate is low anyway (Ibra's own solo dumps: **3 valid bits from 12 photons, 3 from 20**, ≈ 15–25 %).
+A 0-bit key in a short run is ordinary bad luck, not a defect. **Multiplayer does produce keys.**
+
+*The lesson is the one this project keeps re-learning, this time committed by me: one data point plus
+a plausible story is not a finding. The check that would have caught it — "does the other run agree?"
+— was available in the same two screenshots I was looking at.* A short key IS worth a separate look
+one day, but as a **game-design** question (photon counts too low to be fun), not a bug — and Task
+52-C already owns that.
+
+---
+
+### 📌 NOT A BUG: other protocols' data stays in localStorage while you play
+
+**Recorded 2026-09-04** because it looks alarming and will be re-reported otherwise. Ibra, starting
+an E91 game, saw all the `bb84*` keys still sitting in localStorage next to the `e91*` ones.
+
+**That is correct and deliberate.** `startFresh(adapter)` clears only the keys the adapter lists,
+all of which are that protocol's own. A BB84 session belongs to BB84 and survives until the player
+starts a new BB84 game or quits one — the ADR §11 Navigation Invariant: *session data is destroyed
+by user intent, never as a side effect*.
+
+It is also a **fix, not an accident**: DPS used to call `localStorage.clear()` on partner-left,
+which wiped every protocol's data including BB84's kept completed sessions. Task 54 F2 replaced it
+with `clearDPSLocalStorage()`, and the comment explaining why is still at
+`socket-provider.tsx:1181`.
+
+Consequence worth knowing: a student can leave a BB84 game unfinished, play E91, and come back to
+find BB84 exactly where they left it.
+
+---
+
 ### 🎨 UI WORDING NOTE: One Vocabulary Across the App
+
+> **⚠️ CONSTRAINT found 2026-09-04 — "reuse the same localization key" is NOT possible across
+> protocols, so this note's rule has to be kept by hand.** `localize`
+> (`language-provider.tsx:70`) resolves a key inside **one** dictionary, chosen from the URL: on
+> `/e91/play` only `e91Lines` is consulted, and a missing key falls back to printing the key string
+> itself. So E91 cannot reference `component.gameRestart.eveDescription` from `bb84-lines.ts` — the
+> player would see the raw key. Shared wording must be **duplicated per protocol dictionary and kept
+> in step manually**. Worth revisiting if the dictionaries are ever merged with a protocol-scoped
+> override; until then, a grep before writing new copy is the only safeguard.
+>
+> **🔤 Open inconsistency found 2026-09-04 (Task 63 Step 3): Eve has two Spanish names.**
+> BB84's Spanish calls her **"Eva"** (`component.gameRestart.eveTitle`: *"¡Eva fue detectada!"*);
+> E91's Spanish calls her **"Eve"**, in all four places it names her. A Spanish-speaking student
+> playing both protocols meets two characters.
+> Step 3 stayed consistent *inside* E91 rather than half-renaming her mid-sentence. Picking one name
+> app-wide is a small, separate cleanup — and exactly what this note exists to prevent. Check DPS
+> too before choosing.
 
 **Decision (Ibra, 2026-07-16):** when a concept already has a word somewhere in the app,
 REUSE it (ideally reuse the same localization key) instead of inventing a friendlier
@@ -1526,6 +4006,74 @@ clean.
 
 **Rule: always verify navigation-chain behavior in a FRESH tab** (or after restarting
 the browser tab), so the history stack starts empty.
+
+### 🧪 LOCAL TESTING NOTE: Stale Dev-Server Modules After a Cross-Module Rename
+
+**Not a code bug** — testing methodology (learned 2026-09-08, Task 63 Step 4c).
+
+Ibra hit `TypeError: round.openRoundTranscript is not a function` at `round.ts:108` while testing the
+E91 multi restart. The file on disk was **correct**: `e91-adapter.ts` defined `openRoundTranscript`,
+`tsc` passed (it could not, if a required `RoundAdapter` member were missing), and
+`e91-round.test.ts` drove that exact path green. The dev server had been running throughout Step 4a,
+which **renamed a field across two modules that import each other** (`beginRound` →
+`prepareRound` + `openRoundTranscript`). Fast Refresh reloaded the caller and kept a cached copy of
+the adapter — so the new caller met the old object. It did not reproduce after a restart, and the
+same flow then played to the end.
+
+**Rule: after a rename that crosses module boundaries, `rm -rf .next && npm run dev` before
+believing a runtime error.** And the diagnostic order that settled it in one step: does the FILE
+have it → does `tsc` pass → does a TEST drive that exact path. If all three say yes, the running
+process is stale, not the code.
+
+### 🧪 LOCAL TESTING NOTE: Check BOTH Windows Point at the Dev Server
+
+**Not a code bug** — testing methodology (learned 2026-09-09, Task 63 Step 6d).
+
+Multiplayer needs two browsers, and the second one is easy to leave pointed at a deployed or older
+address. Ibra reported the results page showing the OLD title and OLD message twice in a row, after
+a clean `rm -rf .next && npm run dev`. It cost roughly two hours. The code was never at fault:
+
+- the dev server's cwd was the repo and it started AFTER the edits;
+- the compiled route `.next/server/app/(main)/games/…/results/page.js` contained the new
+  `titleMulti` key and no longer contained the old `component.results.title` call;
+- only one source line rendered that heading, and it was the new one.
+
+**Two tells that a window is on the wrong frontend:** the language differs between the two windows
+for no reason, and old strings appear that no longer exist anywhere in the source.
+
+**Rule: before reporting a multiplayer result, check the address bar of BOTH windows.** And the
+diagnostic order that settles "is my code even running": does the FILE have it → does `tsc` pass →
+is the string in `.next/server/app/…/page.js` → only then suspect the browser.
+
+### 🧪 TESTING NOTE: Random code needs statistical tests, and their tolerance is a calculation
+
+**Learned 2026-09-17, fixing a suite that reddened on ~1 run in 3.**
+
+The physics is random by design, so there is no single right answer to assert: `measurePair` may
+legitimately return `{0,0}` or `{1,1}`. **The correctness lives in the pattern over many runs** —
+matching bases never disagree, Eve costs 25 % of the key, no basis is rigged. That last one is the
+only kind of test that could have caught the original bug (basis 2 always returning `0`), because
+every individual `0` is a legal answer.
+
+**The trap is the tolerance.** Assert "≈ 25 %" and you must say how much wobble is allowed. The
+wobble is not a matter of taste — it is `σ = √(p(1−p)/n)`, and the window has to be a few σ wide:
+
+| window | outcome |
+|---|---|
+| **< 3σ** | the test goes red at random. The team learns to ignore red |
+| **4–5σ** | chance essentially never trips it; a real 1-point shift still does |
+| **very wide** | never flakes, never catches anything either |
+
+**Compute it, do not guess it.** Guessing produced four bad tolerances here, including one made
+*worse* while fixing an earlier flake — `toBeCloseTo(x, 0)` was changed to `toBeCloseTo(x, 1)`, which
+**tightens** ±0.5 to ±0.05.
+
+**And raise `n` rather than loosening the window when the claim itself is narrow.** "S > 2.5" at the
+workshop's 2000 pairs is genuinely a 2.4σ claim — true of the real experiment too, but useless in
+CI. At 10 000 pairs the same claim clears 5σ and the test still runs in milliseconds.
+
+*Alternative not taken: inject a seeded RNG for reproducible output. That proves the code still does
+what it did yesterday, not that it is statistically correct — worth adding alongside, not instead.*
 
 ### 🧪 LOCAL TESTING NOTE: Same-Browser Tab Collision
 

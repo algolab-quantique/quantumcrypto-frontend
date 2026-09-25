@@ -307,18 +307,19 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page
         'component.e91.results.title': 'E91 Solo Game Results',
+        'component.e91.results.titleMulti': 'E91 Multiplayer Game Results',
+        'component.bb84.results.titleMulti': 'BB84 Multiplayer Game Results',
+        'component.dps.results.titleMulti': 'DPS Multiplayer Game Results',
         'component.e91.results.keyLength': 'Key Length',
         'component.e91.results.yes': 'Yes',
         'component.e91.results.no': 'No',
-        'component.e91.results.success': '🎉 Congratulations! Game completed successfully!',
-        'component.e91.results.failure': '❌ Game ended.',
         'component.e91.results.replay': 'Play Again',
         'component.e91.results.home': 'Main Menu',
 
         // BB84 Solo Results Page (Task 51 ph.2 — lives here, not in
         // bb84-lines: /bb84/solo-results is not a play|solo route, so the
         // language provider serves the QUANTUMCRYPTO dictionary, like E91's.)
-        'component.bb84.results.title': 'Solo game results',
+        'component.bb84.results.title': 'BB84 Solo Game Results',
         'component.bb84.results.room': 'Players',
         'component.bb84.results.evePresent': 'Eve present?',
         'component.bb84.results.eveDetected': 'Eve detected?',
@@ -327,16 +328,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Score',
         'component.bb84.results.yes': 'Yes',
         'component.bb84.results.no': 'No',
-        'component.bb84.results.revealAbsent': '🎉 Congratulations! Eve was' +
+        'component.results.revealAbsent': '🎉 Congratulations! Eve was' +
             ' absent — your key is secure.',
-        'component.bb84.results.revealCaught': '🎉 Congratulations! You' +
+        'component.results.revealCaught': '🎉 Congratulations! You' +
             ' detected Eve — the exchange was replayed without her.',
-        'component.bb84.results.revealMissed': '⚠️ Game finished… but Eve' +
+        'component.results.revealMissed': '⚠️ Game finished… but Eve' +
             ' was present and you did NOT detect her: your key is' +
             ' compromised!',
-        'component.bb84.results.verdict': 'Verdict',
-        'component.bb84.results.keyCompromised': 'Key compromised!',
-        'component.bb84.results.keySecure': 'Key secure',
+        'component.results.verdict': 'Verdict',
+        'component.results.keyCompromised': 'Key compromised!',
+        'component.results.keySecure': 'Key secure',
         'component.results.gameSuccess': '🎉 Congratulations! Game completed' +
             ' successfully!',
         'component.bb84.results.replay': 'Play Again',
@@ -866,16 +867,17 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page FR
         'component.e91.results.title': 'Résultats E91 Mode Solo',
+        'component.e91.results.titleMulti': 'Résultats E91 Mode Multijoueur',
+        'component.bb84.results.titleMulti': 'Résultats BB84 Mode Multijoueur',
+        'component.dps.results.titleMulti': 'Résultats DPS Mode Multijoueur',
         'component.e91.results.keyLength': 'Longueur de Clé',
         'component.e91.results.yes': 'Oui',
         'component.e91.results.no': 'Non',
-        'component.e91.results.success': '🎉 Félicitations ! Partie terminée avec succès !',
-        'component.e91.results.failure': '❌ Partie terminée.',
         'component.e91.results.replay': 'Rejouer',
         'component.e91.results.home': 'Menu Principal',
 
         // BB84 Solo Results Page FR (Task 51 ph.2)
-        'component.bb84.results.title': 'Résultats de la partie solo',
+        'component.bb84.results.title': 'Résultats BB84 Mode Solo',
         'component.bb84.results.room': 'Joueurs',
         'component.bb84.results.evePresent': 'Ève présente ?',
         'component.bb84.results.eveDetected': 'Ève détectée ?',
@@ -884,16 +886,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Score',
         'component.bb84.results.yes': 'Oui',
         'component.bb84.results.no': 'Non',
-        'component.bb84.results.revealAbsent': '🎉 Félicitations ! Ève' +
+        'component.results.revealAbsent': '🎉 Félicitations ! Ève' +
             ' était absente — votre clé est sécurisée.',
-        'component.bb84.results.revealCaught': '🎉 Félicitations ! Vous' +
+        'component.results.revealCaught': '🎉 Félicitations ! Vous' +
             ' avez détecté Ève — l\'échange a été rejoué sans elle.',
-        'component.bb84.results.revealMissed': '⚠️ Partie terminée… mais' +
+        'component.results.revealMissed': '⚠️ Partie terminée… mais' +
             ' Ève était présente et vous ne l\'avez PAS détectée : votre clé' +
             ' est compromise !',
-        'component.bb84.results.verdict': 'Verdict',
-        'component.bb84.results.keyCompromised': 'Clé compromise !',
-        'component.bb84.results.keySecure': 'Clé sécurisée',
+        'component.results.verdict': 'Verdict',
+        'component.results.keyCompromised': 'Clé compromise !',
+        'component.results.keySecure': 'Clé sécurisée',
         'component.results.gameSuccess': '🎉 Félicitations ! Partie terminée' +
             ' avec succès !',
         'component.bb84.results.replay': 'Rejouer',
@@ -1290,8 +1292,8 @@ export const quantumcryptoLines: LanguageItem[] = [
             ' diferentes. Aquí puedes explorar el set de pasos que' +
             ' cada uno de ellos debe seguir para completar el protocolo con éxito.',
         'component.e91.results.room': 'Sala',
-        'component.e91.results.evePresent': 'Eve presente',
-        'component.e91.results.eveDetected': 'Eve detectada',
+        'component.e91.results.evePresent': 'Eva presente',
+        'component.e91.results.eveDetected': 'Eva detectada',
         'component.e91.results.time': 'Tiempo',
         'component.e91.results.score': 'Puntuación',
         'component.e91.highlights.highlight1': 'Elige al azar una base de medida para los fotones incidentes.',
@@ -1308,7 +1310,7 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.e91.steps.step5Alice': ' a Bob.',
         'component.e91.highlights.highlight5Bob': 'Descifra el mensaje de Alice',
         'component.e91.steps.step5Bob': ' usando tu clave.',
-        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es {minWithEve} cuando Eve está presente y {minWithoutEve} en caso contrario.',
+        'component.e91.createGame.keyMin': 'El número mínimo de pares de fotones es {minWithEve} cuando Eva está presente y {minWithoutEve} en caso contrario.',
         'component.e91.about.part1.0': 'El protocolo fue propuesto en 1991 por Artur Ekert',
         'component.e91.about.part1.1': '. Implica a dos personas, Alice y Bob, que buscan establecer <link2>una clave de cifrado</link2> para comunicarse de manera segura a través de <link3>un canal público</link3>. En este protocolo, Alice y Bob reciben cada uno <link1>un fotón</link1> de una fuente que emite pares de fotones con <link4>polarizaciones</link4> <link5>máximamente entrelazadas</link5>: estos fotones forman lo que se conoce como <link6>pares de Bell</link6>. Para cada par, la polarización de un fotón es medida por Alice y la del otro por Bob. Alice realiza cada medición eligiendo al azar <link7>una base</link7> del conjunto de tres bases {a, b, a′}. Bob hace lo mismo eligiendo entre las bases {b, a′, b′}. Entre estas bases, Alice y Bob comparten dos en común, b y a′.',
         'component.e91.about.part2': 'Bob hace lo mismo eligiendo entre las bases',
@@ -1385,16 +1387,17 @@ export const quantumcryptoLines: LanguageItem[] = [
 
         // Solo Results Page ES
         'component.e91.results.title': 'Resultados E91 Modo Solo',
+        'component.e91.results.titleMulti': 'Resultados E91 Modo Multijugador',
+        'component.bb84.results.titleMulti': 'Resultados BB84 Modo Multijugador',
+        'component.dps.results.titleMulti': 'Resultados DPS Modo Multijugador',
         'component.e91.results.keyLength': 'Longitud de Clave',
         'component.e91.results.yes': 'Sí',
         'component.e91.results.no': 'No',
-        'component.e91.results.success': '🎉 ¡Felicidades! ¡Juego completado con éxito!',
-        'component.e91.results.failure': '❌ Juego terminado.',
         'component.e91.results.replay': 'Jugar de Nuevo',
         'component.e91.results.home': 'Menú Principal',
 
         // BB84 Solo Results Page ES (Task 51 ph.2)
-        'component.bb84.results.title': 'Resultados de la partida en solitario',
+        'component.bb84.results.title': 'Resultados BB84 Modo Solo',
         'component.bb84.results.room': 'Jugadores',
         'component.bb84.results.evePresent': '¿Eva presente?',
         'component.bb84.results.eveDetected': '¿Eva detectada?',
@@ -1403,16 +1406,16 @@ export const quantumcryptoLines: LanguageItem[] = [
         'component.bb84.results.score': 'Puntuación',
         'component.bb84.results.yes': 'Sí',
         'component.bb84.results.no': 'No',
-        'component.bb84.results.revealAbsent': '🎉 ¡Felicidades! Eva estaba' +
+        'component.results.revealAbsent': '🎉 ¡Felicidades! Eva estaba' +
             ' ausente — tu clave es segura.',
-        'component.bb84.results.revealCaught': '🎉 ¡Felicidades!' +
+        'component.results.revealCaught': '🎉 ¡Felicidades!' +
             ' Detectaste a Eva — el intercambio se rejugó sin ella.',
-        'component.bb84.results.revealMissed': '⚠️ Partida terminada… pero' +
+        'component.results.revealMissed': '⚠️ Partida terminada… pero' +
             ' Eva estaba presente y NO la detectaste: ¡tu clave está' +
             ' comprometida!',
-        'component.bb84.results.verdict': 'Veredicto',
-        'component.bb84.results.keyCompromised': '¡Clave comprometida!',
-        'component.bb84.results.keySecure': 'Clave segura',
+        'component.results.verdict': 'Veredicto',
+        'component.results.keyCompromised': '¡Clave comprometida!',
+        'component.results.keySecure': 'Clave segura',
         'component.results.gameSuccess': '🎉 ¡Felicidades! ¡Juego completado' +
             ' con éxito!',
         'component.bb84.results.replay': 'Jugar de Nuevo',

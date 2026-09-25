@@ -33,13 +33,15 @@ import { E91GameStep, inputField } from '@/types';
 import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-// Solo simulation functions
+import { markSoloGameStarted } from '@/lib/e91/solo-session';
+import { E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS } from '@/e91-constants';
+// THE physics (docs/protocol-physics.md §10). Mode-agnostic: multiplayer will
+// call the same rules, one side at a time.
 import {
-    generateBases,
-    generateRandomBits,
-    generateEntangledBits,
-    eveGenerateBits,
-} from '@/lib/e91/solo-player';
+    ALICE_ANGLES, BOB_ANGLES, type Angle, type Bit,
+    angleOfBasisId, basisIdOfAngle, createEntangledPair, eavesdrop,
+    generateRandomBases, measurePair,
+} from '@/lib/e91/protocol';
 
 const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
     photonNumber: number,
@@ -68,6 +70,7 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
         setPhotons,
         setAliceBases,
         setBobBases,
+        setEveAngles,
         setAliceBits,
         setBobBits,
         setPhotonsRevealed,
@@ -141,56 +144,69 @@ const SoloMeasurementTab = ({ photonNumber, polarIcons, playerRole }: {
      * 3. Apply Eve interception if gameHasEve is true
      */
     const onMeasurement = () => {
-        // Record game start time for results page elapsed time calculation
-        if (!localStorage.getItem('e91GameStartTime')) {
-            localStorage.setItem('e91GameStartTime', Date.now().toString());
+        // Record game start time for results page elapsed time calculation.
+        // Task 40 Phase 3f: the "only if not already set" guard now lives in
+        // the helper, so re-measuring cannot restart the clock.
+        markSoloGameStarted();
+
+        // ── The basis-id boundary ───────────────────────────────────────────
+        // The UI keeps bases as the ids '1'..'4'; they are array indices into
+        // `polarIcons` and they are joined character-by-character for the
+        // backend, so they cannot become degrees. The physics speaks degrees.
+        // The translation happens HERE and nowhere else.
+        const playerAngles = basisInputs.map(({value}) => {
+            const angle = angleOfBasisId(value);
+            if (angle === undefined) {
+                // '0' is the form's empty sentinel; the Measure button is gated
+                // on no field holding it, so this is a wiring fault, not input.
+                throw new Error(
+                    `onMeasurement: '${value}' is not a basis id. Measuring with an ` +
+                    'unset basis would silently produce a key from nothing.',
+                );
+            }
+            return angle;
+        });
+        const partnerAngles = generateRandomBases(
+            photonNumber, playerRole === 'A' ? BOB_ANGLES : ALICE_ANGLES);
+
+        // ── One loop for both roles ─────────────────────────────────────────
+        // E91 has no sender and no receiver: whoever the player is, the source
+        // makes a pair and both sides measure it. The old code had two mirrored
+        // branches because one side's bits were drawn first and the other fitted
+        // to them — which is also why Eve had nothing to intercept.
+        const aliceAngles: Angle[] = playerRole === 'A' ? playerAngles : partnerAngles;
+        const bobAngles: Angle[] = playerRole === 'A' ? partnerAngles : playerAngles;
+
+        const aliceBits: Bit[] = [];
+        const bobBits: Bit[] = [];
+        // Her basis per pair — she draws from all four, not just one. Kept so
+        // the basis tab can say how many key bits she actually read, rather than
+        // guessing from a hardcoded basis. Empty when she is absent, so it is
+        // either `photonNumber` long or zero — never ragged.
+        const eveAngles: Angle[] = [];
+
+        for (let i = 0; i < photonNumber; i++) {
+            let pair = createEntangledPair();
+            // Per PHOTON, not per game: evePresent already decided whether she is
+            // here at all (one coin, at game start). This decides how much of the
+            // stream she actually taps once she is.
+            const taps = gameHasEve && evePresent
+                && Math.random() < E91_EVE_INTERCEPTS_PERCENTAGE_OF_PHOTONS;
+            if (taps) {
+                const interception = eavesdrop(pair);
+                eveAngles.push(interception.angle);
+                pair = interception.sent;
+            }
+            const {aliceBit, bobBit} = measurePair(pair, aliceAngles[i], bobAngles[i]);
+            aliceBits.push(aliceBit);
+            bobBits.push(bobBit);
         }
 
-        const playerBases = basisInputs.map(({ value }) => value);
-        let playerBits: string[];
-        let partnerBases: string[];
-        let partnerBits: string[];
-
-        if (playerRole === 'A') {
-            // Alice measures first → gets random bits
-            playerBits = generateRandomBits(photonNumber);
-            partnerBases = generateBases(photonNumber, false); // Bob's bases
-
-            if (gameHasEve && evePresent) {
-                // Eve intercepts → Bob gets uncorrelated bits
-                partnerBits = eveGenerateBits(partnerBases);
-            } else {
-                // No Eve → Bob gets quantum-correlated bits
-                partnerBits = generateEntangledBits(playerBits, playerBases, partnerBases);
-            }
-
-            // Store in state
-            setAliceBases(playerBases);
-            setAliceBits(playerBits);
-            setBobBases(partnerBases);
-            setBobBits(partnerBits);
-        } else {
-            // Bob waits for Alice → Alice's data generated now
-            const aliceBasesGen = generateBases(photonNumber, true);
-            const aliceBitsGen = generateRandomBits(photonNumber);
-
-            partnerBases = aliceBasesGen;
-
-            if (gameHasEve && evePresent) {
-                // Eve intercepts → Bob gets uncorrelated bits
-                playerBits = eveGenerateBits(playerBases);
-            } else {
-                // No Eve → Bob gets quantum-correlated bits
-                playerBits = generateEntangledBits(aliceBitsGen, aliceBasesGen, playerBases);
-            }
-            partnerBits = aliceBitsGen;
-
-            // Store in state
-            setAliceBases(aliceBasesGen);
-            setAliceBits(aliceBitsGen);
-            setBobBases(playerBases);
-            setBobBits(playerBits);
-        }
+        setAliceBases(aliceAngles.map(basisIdOfAngle));
+        setAliceBits(aliceBits);
+        setBobBases(bobAngles.map(basisIdOfAngle));
+        setBobBits(bobBits);
+        setEveAngles(eveAngles.map(basisIdOfAngle));
 
         // Push progress message (same as multiplayer)
         setTimeout(() => {

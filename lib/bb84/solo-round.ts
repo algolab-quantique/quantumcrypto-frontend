@@ -1,7 +1,7 @@
 import useBB84RoomStore from '@/store/bb84/bb84-room-store';
 import useBB84GameStore from '@/store/bb84/bb84-game-store';
-import {useBB84ProgressStore} from '@/store/bb84/bb84-progress-store';
 import usePlayerStore from '@/store/player-store';
+import {pushRoundWelcome} from '@/lib/bb84/round-transcript';
 import {
     generateAliceBases,
     generateAliceBits,
@@ -43,7 +43,8 @@ export const markSoloEveDetected = () => {
         JSON.stringify({...record, detected: true}));
 };
 
-const incrementSoloRoundCount = () => {
+/** Exported for bb84Adapter.incrementRoundCount (Task 63 Step 1). */
+export const incrementSoloRoundCount = () => {
     const record = readSoloEveRecord();
     if (!record) return;
     localStorage.setItem(SOLO_EVE_RECORD_KEY,
@@ -71,15 +72,31 @@ export const readSoloGameStartTime = (): number | null => {
 };
 
 /**
- * Canonical "begin a solo round" (Task 50 F4/F3): role-aware — reads the
- * player role from context and does the right thing:
- * - Bob:   generate Alice's bits/bases/photons (intercepted by Eve when `eve`
- *          is on) into the room store, plus Bob's welcome transcript.
- * - Alice: her welcome transcript only — she generates photons via her own UI.
- * Used by the solo start modal, the Eve restart, and the insufficient-key
- * restart. Do not copy these blocks inline.
+ * Canonical "begin a solo round" (Task 50 F4/F3), and Task 63 Step 4a split it
+ * in two. It used to do both jobs at once —
+ * generate the partner's side AND write the opening transcript — which is how
+ * the mode leaked into a hook named `beginRound`: in solo the two always
+ * happen together, so nobody had to notice they were different things.
+ *
+ * `beginSoloRound` remains as their composition, because a solo game start
+ * genuinely wants both, and the start modal calls it. The transcript half now
+ * lives in `round-transcript.ts` — it serves multiplayer too, so it had no
+ * business in a file named `solo-round`.
  */
 export const beginSoloRound = (photonNumber: number, eve: boolean) => {
+    prepareSoloRound(photonNumber, eve);
+    pushRoundWelcome({prepared: true});
+};
+
+/**
+ * Generate what a solo round needs before the player can act. SOLO ONLY: in
+ * multiplayer the real Alice produces her own photons, and calling this there
+ * would overwrite hers with fabricated ones.
+ *
+ * Only Bob needs it — Alice generates her photons through her own UI in both
+ * modes, so for her this is just the stale-input cleanup.
+ */
+export const prepareSoloRound = (photonNumber: number, eve: boolean) => {
     // A new round must not inherit the previous round's in-progress inputs:
     // bob-exchange-tab re-hydrates its basis form from this key on mount
     // (bob-exchange-tab.tsx ~:84), so a stale value refills the "choose your
@@ -89,61 +106,36 @@ export const beginSoloRound = (photonNumber: number, eve: boolean) => {
         localStorage.removeItem('bb84BobBasisInputs');
     }
 
-    const pushLines = useBB84ProgressStore.getState().pushLines;
+    if (usePlayerStore.getState().playerRole !== 'B') return;
 
-    if (usePlayerStore.getState().playerRole === 'B') {
-        const room = useBB84RoomStore.getState();
-        const aliceBits = generateAliceBits(photonNumber);
-        const aliceBases = generateAliceBases(photonNumber);
-        let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
-        if (eve) {
-            alicePhotons = mimicEveIntercept(alicePhotons);
-        }
-        room.setAliceBits(aliceBits);
-        room.setAliceBases(aliceBases);
-        room.setAlicePhotons(alicePhotons);
-        pushLines([
-            {title: 'component.exchange.welcome'},
-            {content: 'component.bobExchange.waiting'},
-            {content: 'component.bobExchange.photonsArrived'},
-            {title: 'component.game.step1', content: 'component.bobExchange.choose'},
-        ]);
-        return;
+    const room = useBB84RoomStore.getState();
+    const aliceBits = generateAliceBits(photonNumber);
+    const aliceBases = generateAliceBases(photonNumber);
+    let alicePhotons = generateAlicePhotons(aliceBits, aliceBases);
+    if (eve) {
+        alicePhotons = mimicEveIntercept(alicePhotons);
     }
-
-    pushLines([
-        {title: 'component.exchange.welcome'},
-        {title: 'component.game.step1', content: 'component.aliceExchange.start'},
-    ]);
+    room.setAliceBits(aliceBits);
+    room.setAliceBases(aliceBases);
+    room.setAlicePhotons(alicePhotons);
 };
 
-/**
- * Restart the current SOLO round with the same configuration — photon number,
- * validation length, Eve presence — but fresh randomness (Task 49-A).
+
+/*
+ * `restartSoloRound` used to live here. Task 63 Step 1 moved its seven steps
+ * into the shared `restartRound(adapter, options)`
+ * (lib/protocol-lifecycle/round.ts), and callers now name that function
+ * directly — `restartRound(bb84Adapter, {withoutEve: true})`.
  *
- * Flag semantics (Task 51): `gameHasEve` is the CHECKBOX (the game includes
- * the validation mechanic — flow) and is never changed by restarts, so the
- * new round still validates; `evePresent` is the DRAW (she actually
- * intercepts — physics). A bad-luck restart preserves the current draw:
- * `resetRoom()` wipes it (and the persisted checkpoint), so it is captured
- * first and re-asserted; the store mutations then rebuild the checkpoint
- * exactly like a fresh solo start.
+ * No BB84-flavoured wrapper was kept, for two reasons. It would have to import
+ * bb84Adapter, which imports `beginSoloRound` from this file: a module cycle.
+ * And the point of the extraction is that a reader of the call site sees the
+ * SHARED function — a wrapper per protocol is how three copies of a restart
+ * came to exist in the first place.
  *
- * `withoutEve` (Task 49-C, Eve-detected restart): switch her PRESENCE off for
- * the new round — the historical, deliberate semantic (a guaranteed-present
- * Eve would loop detect→restart forever; students must be able to complete
- * the protocol — see ADR §12). The validation mechanic stays: the student
- * re-validates and confirms the channel is now clean, exactly like the
- * multiplayer coordinated restart.
+ * What stays BB84's own is `prepareSoloRound` above, reached through
+ * `bb84Adapter.round.prepareRound`. The behaviour is unchanged: same order, same flag
+ * semantics (Task 51: `gameHasEve` is the checkbox and restarts never touch it;
+ * `evePresent` is the draw, preserved on a bad-luck restart and cleared by
+ * `withoutEve` for the Eve-detected one, Task 49-C).
  */
-export const restartSoloRound = (options?: {withoutEve?: boolean}) => {
-    const {photonNumber} = useBB84GameStore.getState();
-    const evePresent = options?.withoutEve
-        ? false
-        : useBB84RoomStore.getState().evePresent;
-    incrementSoloRoundCount();
-    useBB84RoomStore.getState().resetRoom();
-    useBB84ProgressStore.getState().resetProgress();
-    useBB84RoomStore.getState().setEvePresent(evePresent);
-    beginSoloRound(photonNumber, evePresent);
-};
