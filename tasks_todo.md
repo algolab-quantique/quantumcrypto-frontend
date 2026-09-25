@@ -2462,6 +2462,14 @@ repeated; they also pin *where Eve guessed Alice's basis she holds Alice's bit e
 "Eve guessed K bits". Three planted bugs (Eve stuck on one angle, a player ignoring her photon, a player
 measured at her angle) each turned them red. Server unchanged: fake browsers 10/10 identical keys.
 
+**▶ STAGE 2b — ✅ AGREED 2026-09-25: wire Eve in.** Two new round fields (`eve_angles`, `eve_bits`); START
+fills them with `draw_eve_photons()` when the die says Eve; MEASURE asks the round's **own** `eve_present`
+(Ibra's rule — no longer the browser's copy) and uses `measure_side_with_eve()`; `eveGeneratedBits` and
+`sin`/`pi` deleted; verified with the fake browsers at Eve 100 %. **Ibra: OK to migrate his local
+`db.sqlite3`** (his own test server). **⚠️ Deploy note for the VM:** a round created *before* this
+deploy has "Eve: yes" but no stored photons — **deploy when no class is playing** (the simple option,
+chosen over drawing missing photons lazily, which would reintroduce a race).
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
