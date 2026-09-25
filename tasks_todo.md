@@ -2378,6 +2378,9 @@ option A lands it is simply deleted.
 
 M1 changes no message, so **the backend can be deployed alone**. Calendar: 26th M1a · 27th M1b+M1c ·
 28th M2a–c · 29th two PRs, merges, Ibra deploys both to the VM, test on the VM · 30th buffer / M2d.
+**▶ M1a started 2026-09-25** (Ibra: go). Test file named `test_protocol.py`, not `protocol_test.py`: Python's
+`unittest discover` and Django's `manage.py test` only find files matching `test*.py` — the other name
+would silently never run.
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
