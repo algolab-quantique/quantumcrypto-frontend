@@ -2442,8 +2442,12 @@ local server with the browsers' own messages, half Alice-first, half Bob-first �
 (4 617 key bits, 0 errors)**, sides ~50 %, the four Bell terms at ±0.707 with the right signs in both
 orders (S 2.825 / 2.928 over 400 games). An early S of 2.53 with Bob first (2.7σ) did not recur on
 600 more games. The server reloads itself on file changes (confirmed: it restarted 1 s after the edit).
-**The script is kept** as `tools/e91_play_multiplayer.mjs` (backend `bc61f6b`): deletes every game it
+**The script is kept** as `tools/e91_fake_browsers.mjs` (backend `bc61f6b`): deletes every game it
 creates, refuses non-local hosts unless `E91_TOOL_HOST` is set. Stage 2 will reuse it.
+Renamed from `e91_play_multiplayer.mjs` (backend `ffea553`): the old name sat too close to
+`e91/multiplayer.py`, which is part of the server — the opposite role. **Three files, three roles:**
+`e91/protocol.py` = the physics · `e91/multiplayer.py` = the server's helper that computes a student's
+bits on *Measure* · `tools/e91_fake_browsers.mjs` = imitates the browsers (teacher + 2 students).
 
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
