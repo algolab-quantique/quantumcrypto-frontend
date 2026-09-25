@@ -2449,6 +2449,15 @@ Renamed from `e91_play_multiplayer.mjs` (backend `ffea553`): the old name sat to
 `e91/protocol.py` = the physics · `e91/multiplayer.py` = the server's helper that computes a student's
 bits on *Measure* · `tools/e91_fake_browsers.mjs` = imitates the browsers (teacher + 2 students).
 
+**▶ STAGE 2a — ✅ AGREED 2026-09-25: the Eve adapters, alone.** Ibra checked the principle first: *"we said
+all physics is in one file"* — it is. `protocol.py` already holds Eve (`eavesdrop`) and the measurement
+against her photon (`measure_one_side`). `multiplayer.py` gets **no physics** — only translation between
+what the round stores (strings: bases `"1432…"`, bits `"0110…"`) and `protocol.py` calls:
+`draw_eve_photons(photon_number)` → 2 strings (Eve's angles, her bits), and
+`measure_side_with_eve(my_bases, eve_angles, eve_bits)` → a student's bits. Tests: formats, Eve's
+angles even, a student at Eve's angle reads her bit exactly, a whole round in both click orders
+(~25 % key errors, S ≈ 1.41, sides ~50 %), misaligned strings refused. The server does not change.
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
