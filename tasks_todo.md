@@ -2495,6 +2495,18 @@ first, adds `eve_angles` / `eve_bits` **only if missing** (safe to run twice), a
 row. Order: **columns first, then the code** — the dev server reloads on file changes, and code asking
 for missing columns would break it. VM deploy: `git pull` → run the script → restart the service.
 
+**✅ STAGE 2b DONE — backend `eb064cf` (+ tool option `53b9bb1`, columns script `46bd006`), 2026-09-25.**
+Multiplayer has a real Eve: START draws her photons into the round (only one place creates rounds,
+`consumers.py:242`); MEASURE asks the round's own `eve_present`; `eveGeneratedBits` deleted. **Verified:**
+47/47 unit tests; 87 existing local rounds readable; **1 300 real games** with the fake browsers — with Eve
+S ≈ 1.41 and ≈ 25 % key errors, all 8 Bell terms at ±0.354 with the right signs (an S drifting to 1.57 on
+one batch was chance: 400 more gave 1.411); without Eve 300/300 identical keys; **browsers lying about Eve
+in either direction are ignored** (the rule, tested). **Ibra by hand, 2 browsers:** no Eve `00100`=`00100`;
+Eve `0000`≠`0001` and `0100101101`≠`0100101100`; bits balanced (15/30) — the old always-0 on basis 2 is gone.
+**Still frontend (M2), as expected:** the ending congratulates, and the Eve line keeps the old count (key
+bits where both chose basis 2 — meaningful only for the fake Eve). *Side effect noted:* results page and
+REST now also carry Eve's photons (as they already carried both players' bits); the frontend ignores them.
+
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
 told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
