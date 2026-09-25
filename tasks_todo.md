@@ -2476,6 +2476,18 @@ already exist, and `--run-syncdb` never adds columns to an existing table. **Sam
 unverifiable from here:** if the VM has migration folders from earlier deploys, `update-migrate.sh` adds
 the 2 columns cleanly; if it was built like this laptop, the deploy's `migrate` would fail the same way.
 Ibra to check on the VM: `python manage.py showmigrations e91`.
+**Checked in the backend repo (2026-09-25):** the database is **one SQLite file** (`db.sqlite3`, git-ignored) on
+the laptop and the VM (the backend's incident report counts 230 games, 386 statistics in it); one manual
+backup exists, `/home/ibrahim/db.sqlite3.backup`; **no script** in the repo moves data between VMs (Ibra
+recalls doing it by hand). **⚠️ The VM's documented deploy uses `migrate --run-syncdb`**
+(`install_on_linux_server.md:48,205`, backend `task_todo.md:183`), so the VM was very likely built like the
+laptop — **its deploy would NOT add 2b's columns**, and multiplayer E91 would break there. So adding the
+columns must be solved **for 2b's deploy**, not later. Moving to a new VM, meanwhile, is simpler than it
+was done: with SQLite, all the data is one file to copy.
+
+**📌 FUTURE TASK (Ibra, 2026-09-25 — "track it for the future"):** a real database strategy for the backend
+— migration files kept in git so schema changes deploy by themselves; a documented backup routine; a
+documented move to a new VM (copy the SQLite file). Not part of finishing E91.
 
 **Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
 but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
