@@ -3676,6 +3676,18 @@ the loop (*"your S was 1.4; without Eve it would have been ~2.83"*) — it curre
 implementation on disk makes the comparison a `git diff` instead of an archaeology session. Delete it
 once solo has been played through end to end with no surprises.
 
+**✅ AGREED 2026-09-25 — the condition is met** (15+ full solo games over Task 71/72, both roles, with
+and without Eve). **Proof it is dead, three independent ways** — Ibra asked for a stronger check than
+"no file imports it": (1) no file imports the path `solo-player`; (2) **Ibra's check:** each of its 10
+exported functions searched by name — 7 have no hit at all; `generateBases` and `generateRandomBits`
+appear only in a comment (`solo-game-modal.tsx:114`); `generateAliceBases` hits only BB84, which
+defines and imports **its own** function of that name (`lib/bb84/protocol.ts:61`); (3) the compiler,
+after deletion — the gates fail if anything still imports it. The name search's blind spot, seen live:
+one name can belong to two files, so each hit has to be read. **Scope:** delete the file, and fix
+both stale comments in `solo-game-modal.tsx` (lines 62 and 114) — checking first whether each is
+still true against what E91 uses today (`lib/e91/protocol.ts`). Historical mentions in the docs stay:
+they describe the past, which remains true.
+
 ---
 
 ### 68. 📘 The CHSH tab never tells the student that S is noise at 20 photons
