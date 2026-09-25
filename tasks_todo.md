@@ -2404,6 +2404,9 @@ pipeline in Python as we did in the frontend").** Three checks, scratch scripts 
    exactly that way (300 games × 2 000, both orders, with and without Eve): **S 2.829 / 2.833 without Eve,
    1.416 / 1.412 with; key error 0 / 24.9 / 24.8 %; every side 50 %** — correct in both orders. Proposed:
    make it a permanent test, since M1b calls the module exactly this way.
+   **✅ AGREED 2026-09-25 (Ibra: "yes")** — in BOTH suites, one test commit per repo, so the same tests keep
+   holding both copies: a `multiplayer_game` / `multiplayerGame` helper and 4 tests (with/without Eve ×
+   Alice/Bob first), 10 000 pairs, bounds computed at ≥ 4σ.
 **Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
 number, rather than the old model's meaningless count.
 
