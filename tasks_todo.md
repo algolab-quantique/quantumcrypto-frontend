@@ -2586,6 +2586,13 @@ round; with Eve it adds `eve_summary: {n, m, k, l}` before relaying. Guard: a ro
 before the deploy) is relayed without the numbers — `B_SUCCESS` must always go through, or both students are stuck.
 **2b** (tool, own commit) `e91_fake_browsers.mjs`: Bob also sends `B_SUCCESS`; checks both students receive it —
 with Eve: numbers present, n = m = 30, l = the exact key length, k/l ≈ ¼ pooled; without Eve: no numbers.
+**✅ Slice 2 DONE — backend `24b7b1f` (server) + `0a18844` (tool).** The tool first ran against the old server:
+10/10 problems with Eve (no numbers), 0/10 without — as expected. After 2a: **200 games with Eve, 0 problems**
+(both students the same numbers, n = m = 30, l = the exact key length), Eve holds **0.238** of the key pooled;
+S 1.35 / 1.38, 26.5 % key errors (unchanged); **100 without Eve: no numbers, 100/100 identical keys.** The
+promise checked by a one-off script: `B_SUCCESS` with an unknown player name is still relayed to both students,
+without the numbers. Review found the first guard too narrow (old rounds only): a failed room lookup would have
+been swallowed by the outer `except` and blocked `B_SUCCESS` — now the whole count is optional.
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
