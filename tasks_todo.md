@@ -2558,6 +2558,13 @@ without (both: "Félicitations"); then Ibra checks the look.
 Still wrong, as expected: "Ève a lu N bits" = the old count (both chose basis 2) → **M2d or its fallback**.
 **📌 M1 + M2a–c close the multiplayer chapter → a good moment to merge** (frontend + backend PRs), then Ibra's
 VM deploy (`git pull` → `python tools/e91_add_eve_columns.py` → restart, when no class plays).
+**✋ NOT YET — Ibra, 2026-09-25:** *"do not merge yet, since we did not finish multi… when we reach this level as
+solo we can merge."* **The chapter closes when multi is as good as solo**, not at M2c. Pushed (backup) only.
+**🔍 Finding (priority: low, after the deadline):** E91 has **two copies of every play tab** — `solo-*.tsx` and the
+multi one (measurement, basis, CHSH, messaging; ~3 500 lines together), from before this work. The *logic* shared
+so far lives once (`lib/e91/protocol.ts`, `ending-message.ts`, `key-perturbed-dialog.tsx`); what repeats is each
+tab's few lines of wiring (M2c: import, popup state, the if/else, mounting the popup). One tab per step for both
+modes = a big refactor — not before the deadline (*"do not over refactor"*).
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
