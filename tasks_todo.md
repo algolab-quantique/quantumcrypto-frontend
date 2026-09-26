@@ -2548,6 +2548,22 @@ the round is over either way. Nothing new to build: multi's feed is the same `E9
 To confirm while testing: Alice's store holds Bob's key (the popup needs it).
 **Test:** Claude first in its browser, 2 origins — one game with Eve (both roles: "key disturbed" + ⓘ), one
 without (both: "Félicitations"); then Ibra checks the look.
+**✅ M2c DONE — `8300273` (rename) + `f280866` (ending), 2026-09-25.** 160 tests, tsc + lint clean. **Verified,
+2 games, 2 browsers, Eve at 100 %, both roles:**
+- *keys differ* (Ibra, by hand): keys `10101` / `01001`, cipher `01010`; both feeds "the key was disturbed"
+  (EN + FR); popup Alice's message `11111` vs Bob's `00011`, positions 1–3 red — all = cipher ⊕ each key; the 5
+  key bits match both students' raw bits; score 15 = 5×5 − 10 (Eve undetected).
+- *keys equal by chance*, 13 % with 7 bits (Claude's browser, localhost + 127.0.0.1): `1010011` both; both
+  feeds "Félicitations", Bob's "Correct !" toast, no popup; Alice's store holds Bob's key.
+Still wrong, as expected: "Ève a lu N bits" = the old count (both chose basis 2) → **M2d or its fallback**.
+**📌 M1 + M2a–c close the multiplayer chapter → a good moment to merge** (frontend + backend PRs), then Ibra's
+VM deploy (`git pull` → `python tools/e91_add_eve_columns.py` → restart, when no class plays).
+
+**🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
+tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
+multi game, where Ibra needs 3 minutes. Now (CLAUDE.md rule 4): **Ibra plays and pastes the feed + stored
+state; Claude checks the numbers in one step**; Claude's browser only for small checks (one screen, one
+popup). A robot playing whole games locally = Playwright, after the deadline (unchanged).
 
 **🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
 the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
