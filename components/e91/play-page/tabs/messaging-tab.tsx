@@ -25,6 +25,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
 
     const {
         aliceValidBits,
+        bobValidBits,
         aliceCipher,
         aliceCipherSent,
         gameSuccess,
@@ -39,7 +40,11 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
         setCrypto: setPersistedCrypto,
     } = useE91RoomStore();
 
-    const keyBits = aliceValidBits;
+    // The key belonging to whoever is at this screen. Alice and Bob hold
+    // DIFFERENT keys once Eve has been between them, so reading Alice's for
+    // both roles made her damage impossible to compute (Task 71, M2b; the same
+    // fix as solo's step 1, physics doc 10.15).
+    const keyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
 
     const [message, setMessage] = useState(() => {
         if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
