@@ -2577,6 +2577,10 @@ pattern. **3 slices:** (1) backend: the count in `multiplayer.py` + tests; (2) b
 numbers, checked with the fake browsers; (3) frontend: multi shows solo's line (`component.e91.evePresent.summary`)
 and the old basis-2 count is deleted — Ibra plays, Claude checks. **Deploy: backend first** (an old frontend
 ignores the extra numbers). The fallback ("Eve was present" without a number) is no longer needed.
+**✅ Slice 1 DONE — backend `a5b190a`.** `eve_summary(alice_bases, bob_bases, eve_angles)` → `{n, m, k, l}` in
+`e91/multiplayer.py`, key positions from `protocol.sift_key_bits`; not called yet. 4 tests (51 in all): an exact
+round (with a non-key match that must NOT count), no key, a whole round k/l ≈ ¼ at 4σ (8 runs green), misaligned
+refused. Two planted bugs — counting outside the key, l = every photon — each turned 3 of the 4 red.
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
