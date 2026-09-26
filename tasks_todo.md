@@ -2593,6 +2593,15 @@ S 1.35 / 1.38, 26.5 % key errors (unchanged); **100 without Eve: no numbers, 100
 promise checked by a one-off script: `B_SUCCESS` with an unknown player name is still relayed to both students,
 without the numbers. Review found the first guard too narrow (old rounds only): a failed room lookup would have
 been swallowed by the outer `except` and blocked `B_SUCCESS` — now the whole count is optional.
+**Seen in a real game (Ibra, round 2452, before slice 3):** the server already sent the numbers, the old frontend
+ignored them and the game ended normally — backend-first deploy is safe. The old line said "3" (all 3 key pairs
+were basis 2); the truth from the database: Eve's angles on the key were 0°, 135°, 135°, the key's 45° → **k = 0 of 3**.
+**▶ Slice 3 — ✅ AGREED 2026-09-25 (Ibra: "ok go", 3a + 3b).** **3a (refactor)** solo's Eve line moves into
+`lib/e91/ending-message.ts` as `eveLine({n, m, k, l})`, solo calls it — no visible change, and solo and multi cannot
+drift. **3b (behaviour, multi)** `socket-provider.tsx` `B_SUCCESS`: if the server sent `eve_summary`, push
+`eveLine(eve_summary)`, both roles, after the ending line; delete the basis-2 count (`basis-tab.tsx:286-294`) and
+the old line (`messaging-tab.tsx:102-108`; `saveScore` stays). Test: Ibra plays one multi game with Eve, Claude
+checks n, m, l and k exactly against the round's stored angles.
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
