@@ -44,7 +44,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     // DIFFERENT keys once Eve has been between them, so reading Alice's for
     // both roles made her damage impossible to compute (Task 71, M2b; the same
     // fix as solo's step 1, physics doc 10.15).
-    const keyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
+    const localPlayerKeyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
 
     const [message, setMessage] = useState(() => {
         if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
@@ -54,7 +54,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             }));
         }
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -69,7 +69,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             }));
         }
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -91,7 +91,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             })));
         }
-    }, [keyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
+    }, [localPlayerKeyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
 
     useEffect(() => {
         if (gameSuccess && isPlayRoomConnected) {
@@ -156,7 +156,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
             touched: true,
         })));
         const updatedCrypto = [...crypto].map((cryptoBit, index) => {
-            const keyNumber = parseInt(keyBits[index]);
+            const keyNumber = parseInt(localPlayerKeyBits[index]);
             const messageNumber = playerRole === 'B' ?
                 parseInt(aliceCipher[index]) : parseInt(message[index].value);
             const result = (keyNumber + messageNumber) % 2;
@@ -226,11 +226,11 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {keyBits.map((_, i) => (
+                    {localPlayerKeyBits.map((_, i) => (
                         <TableRow key={i}
                                   className="text-center border-secondary">
                             <TableCell>
-                                <Input disabled value={keyBits[i]}
+                                <Input disabled value={localPlayerKeyBits[i]}
                                        className={'w-10 text-lg text-center' +
                                            ' mx-auto disabled:opacity-100' +
                                            ' disabled:bg-background' +
