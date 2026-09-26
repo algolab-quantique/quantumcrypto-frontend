@@ -2535,7 +2535,19 @@ both students' stored bits at the 7 key positions. As expected, both screens sti
 (→ M2c) and "Ève a lu 5 bits" (both chose basis 2 five times — the old count, → M2d).
 **🔍 Side finding (priority: medium, not now):** one `npm test` run showed **1 failed / 159** while gating
 M2b; 30 reruns were all green. M2b touches no tested file. Most likely a statistical test's rare false
-alarm; which test is not known yet. To look at after M2.
+alarm; which test is not known yet. To look at after M2. *Then 150 more runs in a loop: all green — so
+about 1 in 180.*
+
+**▶ M2c — ✅ AGREED 2026-09-25 (Ibra: "ok"):** multi's honest ending, both roles, with the shared
+`endingLine(keysMatch(aliceValidBits, bobValidBits), …)` from M2a. Two commits:
+**0 (refactor)** `messaging-tab.tsx`: `keyBits` → `localPlayerKeyBits`, no behaviour change.
+**1 (behaviour)** Bob, `messaging-tab.tsx` (was the unconditional congratulations): the ending line; toast only
+if the keys match; the popup opens if not. Alice, `socket-provider.tsx` `B_SUCCESS` handler: the same line
+from her store — no auto popup there (a socket handler), her line's ⓘ opens it. `sendBobSuccess` still sent:
+the round is over either way. Nothing new to build: multi's feed is the same `E91Progression` (ⓘ + popup).
+To confirm while testing: Alice's store holds Bob's key (the popup needs it).
+**Test:** Claude first in its browser, 2 origins — one game with Eve (both roles: "key disturbed" + ⓘ), one
+without (both: "Félicitations"); then Ibra checks the look.
 
 **🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
 the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
