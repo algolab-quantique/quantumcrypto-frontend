@@ -1,3 +1,4 @@
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { keysMatch, endingLine } from '@/lib/e91/ending-message';
 import { cn, forbiddenSymbols } from '@/lib/utils';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -45,6 +47,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
     // both roles made her damage impossible to compute (Task 71, M2b; the same
     // fix as solo's step 1, physics doc 10.15).
     const localPlayerKeyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
+
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     const [message, setMessage] = useState(() => {
         if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
@@ -172,13 +176,17 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             if (playerRole === 'B' && !gameSuccess) {
-                pushLines([
-                    {
-                        title: 'component.messaging.congratulations',
-                        content: 'component.messaging.bob.end',
-                    },
-                ]);
-                toast.success(localize('component.basis.correct'));
+                // Bob's arithmetic is right; whether his MESSAGE is right
+                // depends only on whether the two keys agree (physics doc
+                // 10.15). The same ending as solo (lib/e91/ending-message.ts).
+                const match = keysMatch(aliceValidBits, bobValidBits);
+                pushLines([endingLine(match, 'component.messaging.bob.end')]);
+                if (match) {
+                    toast.success(localize('component.basis.correct'));
+                } else {
+                    setKeyPerturbedOpen(true);
+                }
+                // The round is over either way: "finished", not "won".
                 sendBobSuccess('e91');
             } else {
                 const payload = crypto.map(({value}) => value);
@@ -308,6 +316,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                         localize('component.messaging.validateAndSend')}
                 </Button>
             </div>
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </div>
     );
 };
