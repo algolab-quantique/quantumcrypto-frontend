@@ -2581,6 +2581,11 @@ ignores the extra numbers). The fallback ("Eve was present" without a number) is
 `e91/multiplayer.py`, key positions from `protocol.sift_key_bits`; not called yet. 4 tests (51 in all): an exact
 round (with a non-key match that must NOT count), no key, a whole round k/l ≈ ¼ at 4σ (8 runs green), misaligned
 refused. Two planted bugs — counting outside the key, l = every photon — each turned 3 of the 4 red.
+**▶ Slice 2 — ✅ AGREED 2026-09-25 (Ibra: "ok go").** **2a** `consumers.py` `B_SUCCESS`, E91: the server reads the
+round; with Eve it adds `eve_summary: {n, m, k, l}` before relaying. Guard: a round with no stored Eve angles (made
+before the deploy) is relayed without the numbers — `B_SUCCESS` must always go through, or both students are stuck.
+**2b** (tool, own commit) `e91_fake_browsers.mjs`: Bob also sends `B_SUCCESS`; checks both students receive it —
+with Eve: numbers present, n = m = 30, l = the exact key length, k/l ≈ ¼ pooled; without Eve: no numbers.
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
