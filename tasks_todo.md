@@ -2602,6 +2602,17 @@ drift. **3b (behaviour, multi)** `socket-provider.tsx` `B_SUCCESS`: if the serve
 `eveLine(eve_summary)`, both roles, after the ending line; delete the basis-2 count (`basis-tab.tsx:286-294`) and
 the old line (`messaging-tab.tsx:102-108`; `saveScore` stays). Test: Ibra plays one multi game with Eve, Claude
 checks n, m, l and k exactly against the round's stored angles.
+**✅ 3a DONE — `0ed2d72`** (163 tests, 3 new; solo builds the same line object). **3b written, gates green, waiting
+for Ibra's game** (uncommitted): `B_SUCCESS` pushes `eveLine(eve_summary)` for both roles; the basis-2 count and
+the old line deleted (`evePresent` / `setEveGuessedRightBits` no longer read in `basis-tab.tsx`). Intended change:
+the line now shows whenever Eve was there, even at k = 0 (as solo, Task 72) — the old one hid it at 0. It is also
+pushed once, on `B_SUCCESS`, where the old one sat in an effect that runs again on remount.
+**✅ 3b DONE — `7ea2540` (2026-09-26). M2d COMPLETE.** Verified by Ibra's game (2 browsers, Eve, 30 photons, round
+2453): both feeds, EN + FR, *"Eve measured 30 photons out of 30; she guessed 3 of the 8 key bits"*. Checked against
+the database: Alice's basis on the 8 key positions `32323332`, Eve's angles `12342311` → equal at 3 ✓; the key
+errors (positions 1, 7, 8) fall only where Eve's angle was another one ✓; keys, cipher, popup consistent.
+**🧹 Cleanup (priority: low):** the text key `component.e91.evePresent.stats` (3 languages, `lang/e91-lines.ts:81,
+201, 312`) is now used nowhere — delete in its own cleanup commit.
 
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
