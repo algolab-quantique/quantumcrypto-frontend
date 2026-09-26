@@ -2566,6 +2566,18 @@ so far lives once (`lib/e91/protocol.ts`, `ending-message.ts`, `key-perturbed-di
 tab's few lines of wiring (M2c: import, popup state, the if/else, mounting the popup). One tab per step for both
 modes = a big refactor — not before the deadline (*"do not over refactor"*).
 
+**▶ M2d — ✅ AGREED 2026-09-25 (Ibra: "ok agree. nice."): the server counts Eve's line, not the browser.**
+Ibra's idea, better than Claude's (send Eve's angles to the students): the round already stores Eve's angles and
+both students' bases, so the server finds the key positions (same basis) and counts itself. Students never see
+her angles; the server stays the only truth. **No new message:** Bob's `B_SUCCESS` already goes through the
+server to exactly the room's two students (`consumers.py:376`, group `game_{code}_{room}`); the server adds
+`{n, m, k, l}` — Eve measured n photons of m, and holds k of the l key bits for certain (her angle = the key's
+basis). Cost: the count exists in TS (solo, `solo-basis-tab.tsx:265`) and Python — the `protocol.ts` / `.py`
+pattern. **3 slices:** (1) backend: the count in `multiplayer.py` + tests; (2) backend: `B_SUCCESS` carries the
+numbers, checked with the fake browsers; (3) frontend: multi shows solo's line (`component.e91.evePresent.summary`)
+and the old basis-2 count is deleted — Ibra plays, Claude checks. **Deploy: backend first** (an old frontend
+ignores the extra numbers). The fallback ("Eve was present" without a number) is no longer needed.
+
 **🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
 tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
 multi game, where Ibra needs 3 minutes. Now (CLAUDE.md rule 4): **Ibra plays and pastes the feed + stored
