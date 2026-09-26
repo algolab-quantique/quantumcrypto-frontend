@@ -2527,6 +2527,15 @@ by the unit tests.
 
 **▶ M2b — ✅ AGREED 2026-09-25:** multi, each student uses their own key (`messaging-tab.tsx:42`) — Task 71
 step 5. The truth becomes computed, not yet shown (M2c). Checked by Claude in its browser first (rule 4).
+**✅ M2b DONE — `3d43deb` (2026-09-25).** 160 tests, tsc + lint clean. **Verified by Ibra's own game** (2 browsers,
+Eve present, 20 photons; Claude's pane was hidden, so Ibra played it and Claude checked the stored numbers):
+keys `1110010` / `1100110` (differ at 3 and 5), cipher `0001101`; Bob's accepted answer `1101011` = **his own
+key ⊕ the cipher** — the old code would have accepted only `1111111` (Alice's message). The 7 key bits match
+both students' stored bits at the 7 key positions. As expected, both screens still said "Félicitations"
+(→ M2c) and "Ève a lu 5 bits" (both chose basis 2 five times — the old count, → M2d).
+**🔍 Side finding (priority: medium, not now):** one `npm test` run showed **1 failed / 159** while gating
+M2b; 30 reruns were all green. M2b touches no tested file. Most likely a statistical test's rare false
+alarm; which test is not known yet. To look at after M2.
 
 **🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
 the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
