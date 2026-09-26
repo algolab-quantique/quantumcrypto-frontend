@@ -101,20 +101,28 @@ Automated gates catch logic and statistics. They do **not** catch wiring — com
 automated coverage yet (testing-strategy phases 2–3 not started).
 
 So: if a change touches a component or anything the player sees, it is checked in a real browser
-before it is committed — **Claude first, then Ibra** (agreed 2026-09-25):
+before it is committed — **Ibra plays, Claude checks the numbers** (revised 2026-09-25):
 
-1. **Claude plays it** in its built-in browser against the local dev server, reads the stored state
-   to check the arithmetic, and sends the evidence (screenshots, values). Ibra is not asked to click
-   through a flow Claude can play itself.
-2. **When Claude's check passes, Ibra checks** the look (colours, size, readability) and gives the
-   final OK. Claude says exactly what to look at.
+1. **Ibra plays the flow** (a whole game takes him 2–3 minutes) and pastes the feed and the stored
+   state. Claude says beforehand exactly what to play and what to paste.
+2. **Claude checks the numbers in one step** — keys against the raw bits, the XOR arithmetic, what
+   each line should say — and reports what is right, what is wrong, and what is wrong but expected
+   (a later slice).
+3. **Claude's built-in browser only for small checks**: one screen, one popup — never a whole game.
 
 Do not commit on the assumption it works.
 
+**Why the revision (same day).** The first version had Claude play whole games in its built-in
+browser. That browser is not a robot running on the laptop: every click goes to the model and back,
+so one multiplayer game cost ~60 round trips — tokens and time — where Ibra needs 3 minutes. A robot
+that plays the whole game locally and reports only the result is **Playwright**, tracked for after
+the deadline.
+
 Multiplayer needs two isolated browsers — same-origin `localStorage` is shared between tabs, so two
 tabs of one site are not a valid multi test. For Ibra: normal + incognito. For Claude: one tab on
-`localhost:3000`, one on `127.0.0.1:3000` (different origins, separate storage — to confirm on first
-use). Server-side behaviour can also be checked with `tools/e91_fake_browsers.mjs` in the backend.
+`localhost:3000`, one on `127.0.0.1:3000` (same server, but different origins, so separate storage —
+confirmed in M2c's test). Server-side behaviour can also be checked with `tools/e91_fake_browsers.mjs`
+in the backend.
 
 ## 5. Every bug fix carries the test that would have caught it
 
