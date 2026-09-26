@@ -32,7 +32,6 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
         aliceCipherSent,
         gameSuccess,
         evePresent,
-        eveGuessedRightBits,
         eveSpotted,
         message: persistedMessage,
         crypto: persistedCrypto,
@@ -99,15 +98,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
 
     useEffect(() => {
         if (gameSuccess && isPlayRoomConnected) {
-            if (evePresent && eveGuessedRightBits > 0) {
-                pushLines([
-                    {
-                        title: 'component.e91.evePresent',
-                        content: 'component.e91.evePresent.stats',
-                        extra: `${eveGuessedRightBits}`
-                    },
-                ]);
-            }
+            // The line about Eve now comes from the server, with B_SUCCESS
+            // (socket-provider.tsx; M2d).
             saveScore(calculateScore());
 
         }
