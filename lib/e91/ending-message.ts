@@ -24,3 +24,18 @@ export const endingLine = (match: boolean, successContent: string): Line =>
             content: 'component.e91.messaging.keyPerturbed.line',
             info: 'keyPerturbed',
         };
+
+/** Eve measured n photons of m, and holds k of the l key bits for certain. */
+export type EveSummary = {n: number; m: number; k: number; l: number};
+
+/**
+ * The line about Eve, whenever she was there — even when she holds no key bit
+ * (Task 72). Solo counts the numbers in the browser; multiplayer receives them
+ * from the server, which keeps her angles to itself (backend
+ * e91/multiplayer.py eve_summary; M2d). Only the four numbers are kept.
+ */
+export const eveLine = ({n, m, k, l}: EveSummary): Line => ({
+    title: 'component.e91.evePresent',
+    content: 'component.e91.evePresent.summary',
+    values: {n, m, k, l},
+});

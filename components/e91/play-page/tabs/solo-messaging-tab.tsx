@@ -23,7 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { keysMatch, endingLine } from '@/lib/e91/ending-message';
+import { keysMatch, endingLine, eveLine } from '@/lib/e91/ending-message';
 import { cn, forbiddenSymbols } from '@/lib/utils';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -122,18 +122,12 @@ const SoloMessagingTab = ({playerRole}: { playerRole: string }) => {
             // happens in about a third of her games, and the student must
             // still learn she was present (Task 72).
             if (evePresent) {
-                pushLines([
-                    {
-                        title: 'component.e91.evePresent',
-                        content: 'component.e91.evePresent.summary',
-                        values: {
-                            n: eveAngles.length,
-                            m: aliceBases.length,
-                            k: eveGuessedRightBits,
-                            l: aliceValidBits.length,
-                        },
-                    },
-                ]);
+                pushLines([eveLine({
+                    n: eveAngles.length,
+                    m: aliceBases.length,
+                    k: eveGuessedRightBits,
+                    l: aliceValidBits.length,
+                })]);
             }
             // In solo mode, no server score saving
             // Score calculation would be done locally if needed
