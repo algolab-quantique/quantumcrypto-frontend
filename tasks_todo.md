@@ -33,6 +33,34 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
 
 ---
 
+## 📍 WHERE WE ARE — 2026-09-28 (Ibra moves to a new machine; contract ends 2026-09-30)
+
+**Code:** both repos pushed and clean on 2026-09-26, nothing since. Frontend `ibra_architecture` = origin;
+backend `ibra_development` = origin. **In `development`:** solo E91 correct end to end (PR #24, merged
+2026-09-25). **Only on the branches, not merged:** multiplayer E91 — M1 (server physics with a real Eve,
+backend) and M2a–d (frontend: own key per player, honest ending + ⓘ popup, Eve's line counted by the server,
+backend + frontend). **Ibra, 2026-09-25: no merge until multi is as good as solo.** Details: the "Multiplayer
+E91" section below (search `M2d`).
+
+**What still keeps multi below solo** (listed 2026-09-26, every item already its own task; Ibra has not
+ordered them yet — Claude's recommendation in brackets): **Task 67** 🔴🔥 every multi E91 game overwrites BB84's
+saved data, frontend, small *(first)* · **short-key restart** Task 28 (solo has it, Task 63), both repos, the
+biggest · **swap roles and restart** — the E91 server has no handler, check first · **Task 70** simultaneous
+*Measure* race without Eve, backend, small · **restart without Eve** keeps the old bits, backend, tiny ·
+**refresh** mid-game, probably fine, check only. Later: Task 27, Task 76.
+
+**🧳 Moving to a new machine — what is NOT in git** (checked 2026-09-28):
+
+| what | where | on the new machine |
+|---|---|---|
+| frontend env | `quantumcrypto-frontend/.env.local` — `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`, `NEXT_PUBLIC_QC_TEST_MODE` | copy it, or recreate the 3 variables |
+| Claude's local settings | `quantumcrypto-frontend/.claude/settings.local.json` | optional (permissions only) |
+| backend database | `quantumcrypto-backend/db.sqlite3` (+ `db.sqlite3.backup-*`) — local test games only | not needed: a fresh `python manage.py migrate --run-syncdb` builds every table **including** the Eve columns; `tools/e91_add_eve_columns.py` is only for an **existing** database (the VM) |
+| backend Python env | `quantumcrypto-backend/venv_quantumcrypto/` (Python 3.11.5) | recreate: `pip install -r requirements.txt` |
+| Claude's memory | `~/.claude/projects/<project path>/memory/` (8 notes) | optional: the rules are all in `CLAUDE.md`. Two notes point at reference repos by path — both on GitHub: `algolab-quantique/CMAI-E91` (Qiskit E91 + CHSH, the physics oracle) and `algolab-quantique/hackathons` (`Sherhack/2026/side_quests/quantum_crypto_BB84_challenge`, Qiskit BB84) |
+
+---
+
 ## 🗺️ ROADMAP TO "QUANTUMCRYPTO IS FINISHED" (added 2026-08-26)
 
 > **What this is:** the single view of everything remaining to complete the app — 3 protocols
