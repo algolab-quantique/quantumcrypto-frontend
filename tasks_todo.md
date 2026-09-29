@@ -117,6 +117,18 @@ first, then frontend, each checked before the next.
   a load check that imports what Daphne imports — **`manage.py check` does not load the consumers** (proven
   with a planted broken file), restart + status, rollback. §4: a new empty VM needs no script. §13 "move to
   another VM": TODO. Ibra's 3 scenarios: update this VM ✅ written, new empty VM ✅ written, VM → VM ⏳ TODO.
+  **↩️ Corrected the same hour — backend `872c2b3` (Ibra: "this is not ok at all").** The guide is for someone
+  installing or moving a server, who always starts from an empty database; the column script is a one-time
+  job on OUR VM, a deploy note for this release, not a permanent instruction (and a per-release table would
+  become a hand-written migration history — the future DB strategy's job). The guide now differs from
+  `development` only by: `git pull origin development`, Python ≥ 3.10, §13 VM→VM as a TODO. **Two things now:
+  (1) the guide for the future ✅; (2) update our VM once**, with the steps below, given to Ibra one at a time.
+  **Our VM, once (this release):** no class playing · `cp db.sqlite3 ~/db.sqlite3.before-e91-<date>` · note
+  `git log -1 --oneline` · `git pull origin development` · `source ENV/bin/activate` ·
+  `python tools/e91_add_eve_columns.py` (expect "Rows before: N, after: N") · load check
+  `DJANGO_SETTINGS_MODULE=quantumcrypto.settings python -c "import quantumcrypto.asgi; print('OK')"` (not
+  `manage.py check`, which does not load the consumers — proven) · `sudo systemctl restart bb84` + `status` ·
+  one multi game with Eve. Rollback: `git checkout <noted commit>` + restart (the new columns can stay).
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
