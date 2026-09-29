@@ -130,6 +130,10 @@ first, then frontend, each checked before the next.
   `next build` with the production URLs in a scratch copy. Rollback: `git revert 907aaa2` + push in the deploy
   repo. **To confirm:** the Amplify build, then one multi game with Eve on https://quantumcrypto.app + the VM
   database showing the new round's `eve_angles`.
+  **✅ CONFIRMED ON PRODUCTION 2026-09-29.** The live bundle is the new build (contains `eve_summary`,
+  `keyPerturbed`; backend URL `bb84.physique.usherbrooke.ca`, no localhost). Ibra played game E884D (Safari, Eve,
+  20 photons): "La clé a été perturbée", "Ève a mesuré 20 photons sur 20 ; elle a deviné 1 des 5 bits de la clé",
+  results "Clé compromise !". **E91 solo + multiplayer are live.** In Chrome on campus it first failed — **Task 77**.
 - **Before the backend PR (2026-09-29):** the VM checked by Ibra — branch `development`, Python 3.12.3 (the new
   code needs ≥ 3.10). Backend `c3c5dac` fixed `install_on_linux_server.md` §12, which would have broken the VM:
   it said `git pull origin main` (no such branch) and relied on `--run-syncdb`, which never adds columns. Now:
@@ -4541,3 +4545,30 @@ All Chrome tabs on the same origin share the exact same `localStorage`. The Zust
 - Tab 3: Firefox or Safari (Bob) — separate localStorage
 
 This is expected browser behavior, not a bug to fix.
+
+---
+
+### 77. 🔴 On the university network, Chrome blocks the live site from reaching the backend
+
+**Status**: 🔴 OPEN — found 2026-09-29 while testing the production deploy. **Not a code bug, and not caused by
+the deploy.** **Priority**: HIGH for classes — students on campus Wi-Fi using Chrome can hit it. **Axis**: infra.
+
+**What happens.** On https://www.quantumcrypto.app, in Chrome, on the university network, nothing reaches the
+backend: the console shows *"Access to XMLHttpRequest at 'https://bb84.physique.usherbrooke.ca/games/e91/' from
+origin 'https://www.quantumcrypto.app' has been blocked by CORS policy: Permission was denied for this request
+to access the `local` address space"* (`POST /games/e91/` and `GET /get_protocol_stats/` both `net::ERR_FAILED`).
+The same game in **Safari works** (game E884D).
+
+**Why (checked 2026-09-29).** On campus, `bb84.physique.usherbrooke.ca` resolves to **`10.44.34.65`, a private
+address**. The site is public (AWS Amplify), and Chrome's *Local Network Access* asks the user's permission before
+a public page may call a local address; if it is denied (or the prompt dismissed), Chrome blocks the call before
+it leaves the computer. The server itself answers correctly: `curl https://bb84.physique.usherbrooke.ca/games/e91/`
+→ 200, and it already sends `Access-Control-Allow-Private-Network: true` for the preflight. Off campus the name
+resolves to a public address and nothing is blocked.
+
+**Workarounds today:** Chrome → the icon left of the address bar → *Site settings* → *Local network access* →
+*Allow*, then reload; or use Safari / Firefox; or test off campus (phone hotspot).
+
+**Real fix — not in our code, to decide with the university's IT:** have the campus DNS return the server's
+public address (so Chrome sees public → public), or serve the backend under a name that is public from everywhere.
+Meanwhile: a short note for teachers (tell students to click *Allow*, or use Safari/Firefox).
