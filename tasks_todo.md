@@ -122,6 +122,14 @@ first, then frontend, each checked before the next.
   **51/51 tests on the VM's Python 3.12.3** · restart: `active (running)`, clean log. Rollback if ever:
   `sudo -u quantumcrypto git -C /home/quantumcrypto checkout c649595` + `sudo systemctl restart bb84`.
   Still to do: one multiplayer game with Eve on the VM; then the frontend deploy.
+- **Frontend pushed to Amplify 2026-09-29 — `cryptoweb-2.0-frontend` `907aaa2`** on `quantumcrypto--prod`
+  (`a1fd1b5..907aaa2`), following `DEPLOYMENT_GUIDE.md` unchanged: working repo on `development` @ `3bc8cd7`,
+  rsync, 43 changed + 13 new files. Ships PR #24 (solo E91) **and** #25 (multi) — the previous deploy predates
+  both. Checked before the push: every working-repo file identical in the deploy repo, no `.env*`; the same tree
+  (22 files the working repo deleted are still there — rsync never deletes, as in earlier deploys) passed a full
+  `next build` with the production URLs in a scratch copy. Rollback: `git revert 907aaa2` + push in the deploy
+  repo. **To confirm:** the Amplify build, then one multi game with Eve on https://quantumcrypto.app + the VM
+  database showing the new round's `eve_angles`.
 - **Before the backend PR (2026-09-29):** the VM checked by Ibra — branch `development`, Python 3.12.3 (the new
   code needs ≥ 3.10). Backend `c3c5dac` fixed `install_on_linux_server.md` §12, which would have broken the VM:
   it said `git pull origin main` (no such branch) and relied on `--run-syncdb`, which never adds columns. Now:
