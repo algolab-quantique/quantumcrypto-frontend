@@ -110,6 +110,10 @@ first, then frontend, each checked before the next.
   Merged at Ibra's request with the admin option (merge commit, as #23/#24), before the machine change and the
   end of the contract, although multi is not yet at solo's level (the list is in the PR). Verified after: 0
   commits of `ibra_architecture` missing from `origin/development`. **Needs the backend deployed first.**
+- **Backend PR #9, ✅ MERGED 2026-09-29 — `0f1e52e`** (quantumcrypto-backend). M1 + M2d server side (protocol.py,
+  multiplayer.py, real Eve, `eve_summary`), the 2 columns, the tools, the corrected install guide. 15 commits, no
+  conflicts, no CI in that repo; admin merge at Ibra's request. Verified after: 0 commits missing, branch and
+  `development` identical. The PR description carries our VM's one-time deploy steps. **Not deployed yet.**
 - **Before the backend PR (2026-09-29):** the VM checked by Ibra — branch `development`, Python 3.12.3 (the new
   code needs ≥ 3.10). Backend `c3c5dac` fixed `install_on_linux_server.md` §12, which would have broken the VM:
   it said `git pull origin main` (no such branch) and relied on `--run-syncdb`, which never adds columns. Now:
