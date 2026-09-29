@@ -4559,15 +4559,17 @@ origin 'https://www.quantumcrypto.app' has been blocked by CORS policy: Permissi
 to access the `local` address space"* (`POST /games/e91/` and `GET /get_protocol_stats/` both `net::ERR_FAILED`).
 The same game in **Safari works** (game E884D).
 
-**Why (checked 2026-09-29).** On campus, `bb84.physique.usherbrooke.ca` resolves to **`10.44.34.65`, a private
-address**. The site is public (AWS Amplify), and Chrome's *Local Network Access* asks the user's permission before
+**Why (checked 2026-09-29).** On campus, `bb84.physique.usherbrooke.ca` resolves to **a private address
+(10.x)**. The site is public (AWS Amplify), and Chrome's *Local Network Access* asks the user's permission before
 a public page may call a local address; if it is denied (or the prompt dismissed), Chrome blocks the call before
 it leaves the computer. The server itself answers correctly: `curl https://bb84.physique.usherbrooke.ca/games/e91/`
 → 200, and it already sends `Access-Control-Allow-Private-Network: true` for the preflight. Off campus the name
 resolves to a public address and nothing is blocked.
 
 **Workarounds today:** Chrome → the icon left of the address bar → *Site settings* → *Local network access* →
-*Allow*, then reload; or use Safari / Firefox; or test off campus (phone hotspot).
+*Allow*, then reload; or use Safari / Firefox; or connect to the **UdeS public** Wi-Fi (works — Ibra,
+2026-09-29); or test off campus (phone hotspot). Also noted in the private `DEPLOYMENT_GUIDE.md` (deploy repo),
+troubleshooting table.
 
 **Real fix — not in our code, to decide with the university's IT:** have the campus DNS return the server's
 public address (so Chrome sees public → public), or serve the backend under a name that is public from everywhere.
