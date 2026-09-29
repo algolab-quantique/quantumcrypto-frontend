@@ -49,6 +49,22 @@ biggest · **swap roles and restart** — the E91 server has no handler, check f
 *Measure* race without Eve, backend, small · **restart without Eve** keeps the old bits, backend, tiny ·
 **refresh** mid-game, probably fine, check only. Later: Task 27, Task 76.
 
+**📝 Proposed 2026-09-28, NOT yet agreed (recorded so it survives the machine change) — Task 68, the CHSH
+tab, the most useful visible work left for students.** One text key, `component.e91.validation.invalid.start`
+(`lang/e91-lines.ts:98, 212, 323`), is the Step 3 line in **both** solo and multi. What the step really asks,
+read in `solo-CHSH-tab.tsx:258-295`: per row, **equal bits → +1, different bits → −1**, dropped into the box
+named after that row's two bases (a = basis 1, a' = 3, b = 2, b' = 4). The screen says "multiply the outcomes"
+while showing 0/1. Claude's draft (FR, for Ibra to approve): *« Étape 3 : Pour chaque paire, comparez les bits
+d'Alice et de Bob : identiques (0-0 ou 1-1) → +1 ; différents (0-1 ou 1-0) → −1. Glissez cette valeur dans la
+boîte qui porte les deux bases de la ligne (ex. : a et b → a|b). »* Then the "S is noisy" note beside
+Secure/Unsecure (Task 68's first gap, its draft above in Task 68; prefer the measured 34 % / 27 %).
+
+**Merge / deploy analysis (2026-09-29, last day on this machine).** Both repos clean, pushed, no stashes.
+`development` holds nothing the branches lack (only merge commits) → a merge has **no conflicts**: frontend 43
+commits, backend 13. Deploy order if ever: **backend first** (VM: `git pull` → `python
+tools/e91_add_eve_columns.py` → restart, when no class plays), **then frontend** — the new frontend on the
+old backend shows no Eve line in multi, and the old backend still has the fake Eve.
+
 **🧳 Moving to a new machine — what is NOT in git** (checked 2026-09-28):
 
 | what | where | on the new machine |
