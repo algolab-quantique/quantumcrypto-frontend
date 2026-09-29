@@ -105,6 +105,11 @@ first, then frontend, each checked before the next.
   → **✅ MERGED 2026-09-25 — `459dd59`.** Ibra ran the four checks first: *"tests are OK, merge."*
   Merged with the admin option (same as #23), a merge commit like #23. Verified after: every commit of
   `ibra_architecture` is an ancestor of `origin/development` — 0 left behind.
+- **PR #25, ✅ MERGED 2026-09-29 — `3bc8cd7`.** Multiplayer E91: M2b/c/d (own key, honest ending + ⓘ, Eve's line
+  counted by the server) + rule 4 revision + the 2026-09-28 status section. 45 commits, CI green, no conflicts.
+  Merged at Ibra's request with the admin option (merge commit, as #23/#24), before the machine change and the
+  end of the contract, although multi is not yet at solo's level (the list is in the PR). Verified after: 0
+  commits of `ibra_architecture` missing from `origin/development`. **Needs the backend deployed first.**
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
