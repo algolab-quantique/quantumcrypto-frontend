@@ -110,6 +110,13 @@ first, then frontend, each checked before the next.
   Merged at Ibra's request with the admin option (merge commit, as #23/#24), before the machine change and the
   end of the contract, although multi is not yet at solo's level (the list is in the PR). Verified after: 0
   commits of `ibra_architecture` missing from `origin/development`. **Needs the backend deployed first.**
+- **Before the backend PR (2026-09-29):** the VM checked by Ibra — branch `development`, Python 3.12.3 (the new
+  code needs ≥ 3.10). Backend `c3c5dac` fixed `install_on_linux_server.md` §12, which would have broken the VM:
+  it said `git pull origin main` (no such branch) and relied on `--run-syncdb`, which never adds columns. Now:
+  backup, pull `development`, a "database changes by release" table (E91 → `tools/e91_add_eve_columns.py`, once),
+  a load check that imports what Daphne imports — **`manage.py check` does not load the consumers** (proven
+  with a planted broken file), restart + status, rollback. §4: a new empty VM needs no script. §13 "move to
+  another VM": TODO. Ibra's 3 scenarios: update this VM ✅ written, new empty VM ✅ written, VM → VM ⏳ TODO.
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
