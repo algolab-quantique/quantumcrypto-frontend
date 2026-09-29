@@ -161,6 +161,79 @@ describe('runE91Protocol — the whole thing in one call', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * One game measured the way MULTIPLAYER measures it: Eve's pairs are drawn at
+ * START, before anyone measures; then one player's click measures ALL their
+ * photons, and the other player's click measures all of theirs against them.
+ * Either player may be first. Every other pipeline test goes through
+ * `measurePair`, where Alice is always first and pairs go one at a time.
+ * (Mirrored in the backend's `e91/test_protocol.py`, which uses this module's
+ * Python translation — the same tests hold both copies.)
+ */
+const multiplayerGame = (n: number, withEve: boolean, first: 'A' | 'B') => {
+    const aliceAngles = generateRandomBases(n, ALICE_ANGLES);
+    const bobAngles = generateRandomBases(n, BOB_ANGLES);
+    const pairs = Array.from({length: n}, () =>
+        withEve ? eavesdrop(createEntangledPair()).sent : createEntangledPair());
+
+    const [firstAngles, secondAngles] =
+        first === 'A' ? [aliceAngles, bobAngles] : [bobAngles, aliceAngles];
+    const firstBits = pairs.map((p, i) => measureOneSide(p, firstAngles[i]));
+    const secondBits = pairs.map((p, i) =>
+        measureOtherSide(p, secondAngles[i], firstBits[i], firstAngles[i]));
+    const [aliceBits, bobBits] =
+        first === 'A' ? [firstBits, secondBits] : [secondBits, firstBits];
+
+    const rounds: Round[] = aliceBits.map((aliceBit, i) => ({
+        aliceAngle: aliceAngles[i], bobAngle: bobAngles[i], aliceBit, bobBit: bobBits[i],
+    }));
+    const aliceKey = siftKeyBits(aliceBits, aliceAngles, bobAngles);
+    const bobKey = siftKeyBits(bobBits, aliceAngles, bobAngles);
+    const ones = (bits: Bit[]) => bits.filter(b => b === '1').length / n;
+    return {
+        S: chshValue(correlations(rounds)),
+        aliceKey, bobKey,
+        keyErrorRate: aliceKey.filter((b, i) => b !== bobKey[i]).length / aliceKey.length,
+        aliceOnes: ones(aliceBits),
+        bobOnes: ones(bobBits),
+    };
+};
+
+describe('multiplayer shape — the same physics, in both click orders', () => {
+    /**
+     * Who clicks first must change nothing. 10 000 pairs; every bound is ≥ 4σ
+     * from theory (σ(S) ≈ 0.045 without Eve, 0.058 with; σ(key error) ≈ 0.009;
+     * σ(share of 1s) = 0.005).
+     */
+    for (const first of ['A', 'B'] as const) {
+        const who = first === 'A' ? 'Alice' : 'Bob';
+
+        it(`without Eve, ${who} clicks first: S ≈ 2√2, keys identical, fair sides`, () => {
+            const g = multiplayerGame(10000, false, first);
+            expect(g.S).toBeGreaterThan(2.6);
+            expect(g.S).toBeLessThan(3.05);
+            expect(g.aliceKey).toEqual(g.bobKey);
+            for (const share of [g.aliceOnes, g.bobOnes]) {
+                expect(share).toBeGreaterThan(0.48);
+                expect(share).toBeLessThan(0.52);
+            }
+        });
+
+        it(`with Eve, ${who} clicks first: S ≈ √2, ~25% key errors, fair sides`, () => {
+            const g = multiplayerGame(10000, true, first);
+            expect(g.S).toBeGreaterThan(1.15);
+            expect(g.S).toBeLessThan(1.7);
+            expect(g.keyErrorRate).toBeGreaterThan(0.21);
+            expect(g.keyErrorRate).toBeLessThan(0.29);
+            for (const share of [g.aliceOnes, g.bobOnes]) {
+                expect(share).toBeGreaterThan(0.48);
+                expect(share).toBeLessThan(0.52);
+            }
+        });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 describe('§10.10 — the four headline numbers', () => {
     it('S = 2√2 on undisturbed pairs', () => {
         expect(S(false)).toBeCloseTo(2 * Math.SQRT2, 1);

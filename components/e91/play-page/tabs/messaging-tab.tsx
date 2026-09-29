@@ -1,3 +1,4 @@
+import KeyPerturbedDialog from '@/components/e91/play-page/key-perturbed-dialog';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { keysMatch, endingLine } from '@/lib/e91/ending-message';
 import { cn, forbiddenSymbols } from '@/lib/utils';
 import { useE91ProgressStore } from '@/store/e91/e91-progress-store';
 import useE91RoomStore from '@/store/e91/e91-room-store';
@@ -25,11 +27,11 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
 
     const {
         aliceValidBits,
+        bobValidBits,
         aliceCipher,
         aliceCipherSent,
         gameSuccess,
         evePresent,
-        eveGuessedRightBits,
         eveSpotted,
         message: persistedMessage,
         crypto: persistedCrypto,
@@ -39,7 +41,13 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
         setCrypto: setPersistedCrypto,
     } = useE91RoomStore();
 
-    const keyBits = aliceValidBits;
+    // The key belonging to whoever is at this screen. Alice and Bob hold
+    // DIFFERENT keys once Eve has been between them, so reading Alice's for
+    // both roles made her damage impossible to compute (Task 71, M2b; the same
+    // fix as solo's step 1, physics doc 10.15).
+    const localPlayerKeyBits = playerRole === 'A' ? aliceValidBits : bobValidBits;
+
+    const [keyPerturbedOpen, setKeyPerturbedOpen] = useState(false);
 
     const [message, setMessage] = useState(() => {
         if ((aliceCipherSent || gameSuccess) && persistedMessage.length > 0) {
@@ -49,7 +57,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             }));
         }
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -64,7 +72,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             }));
         }
-        return [...keyBits].map(_ => ({
+        return [...localPlayerKeyBits].map(_ => ({
             value: '',
             touched: false,
             error: true,
@@ -86,19 +94,12 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                 error: false,
             })));
         }
-    }, [keyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
+    }, [localPlayerKeyBits, aliceCipherSent, gameSuccess, persistedMessage, persistedCrypto]);
 
     useEffect(() => {
         if (gameSuccess && isPlayRoomConnected) {
-            if (evePresent && eveGuessedRightBits > 0) {
-                pushLines([
-                    {
-                        title: 'component.e91.evePresent',
-                        content: 'component.e91.evePresent.stats',
-                        extra: `${eveGuessedRightBits}`
-                    },
-                ]);
-            }
+            // The line about Eve now comes from the server, with B_SUCCESS
+            // (socket-provider.tsx; M2d).
             saveScore(calculateScore());
 
         }
@@ -151,7 +152,7 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
             touched: true,
         })));
         const updatedCrypto = [...crypto].map((cryptoBit, index) => {
-            const keyNumber = parseInt(keyBits[index]);
+            const keyNumber = parseInt(localPlayerKeyBits[index]);
             const messageNumber = playerRole === 'B' ?
                 parseInt(aliceCipher[index]) : parseInt(message[index].value);
             const result = (keyNumber + messageNumber) % 2;
@@ -167,13 +168,17 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
             setPersistedCrypto(updatedCrypto.map(({value}) => value));
             setPersistedMessage(message.map(({value}) => value));
             if (playerRole === 'B' && !gameSuccess) {
-                pushLines([
-                    {
-                        title: 'component.messaging.congratulations',
-                        content: 'component.messaging.bob.end',
-                    },
-                ]);
-                toast.success(localize('component.basis.correct'));
+                // Bob's arithmetic is right; whether his MESSAGE is right
+                // depends only on whether the two keys agree (physics doc
+                // 10.15). The same ending as solo (lib/e91/ending-message.ts).
+                const match = keysMatch(aliceValidBits, bobValidBits);
+                pushLines([endingLine(match, 'component.messaging.bob.end')]);
+                if (match) {
+                    toast.success(localize('component.basis.correct'));
+                } else {
+                    setKeyPerturbedOpen(true);
+                }
+                // The round is over either way: "finished", not "won".
                 sendBobSuccess('e91');
             } else {
                 const payload = crypto.map(({value}) => value);
@@ -221,11 +226,11 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {keyBits.map((_, i) => (
+                    {localPlayerKeyBits.map((_, i) => (
                         <TableRow key={i}
                                   className="text-center border-secondary">
                             <TableCell>
-                                <Input disabled value={keyBits[i]}
+                                <Input disabled value={localPlayerKeyBits[i]}
                                        className={'w-10 text-lg text-center' +
                                            ' mx-auto disabled:opacity-100' +
                                            ' disabled:bg-background' +
@@ -303,6 +308,8 @@ const MessagingTab = ({playerRole}: { playerRole: string }) => {
                         localize('component.messaging.validateAndSend')}
                 </Button>
             </div>
+            <KeyPerturbedDialog open={keyPerturbedOpen}
+                                onOpenChange={setKeyPerturbedOpen}/>
         </div>
     );
 };

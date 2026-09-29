@@ -19,6 +19,7 @@ import {
     moveToExchangeTab,
 } from '@/components/bb84/play-page/tabs/validation-tab';
 import { clearE91LocalStorage } from '@/lib/e91/utils';
+import { keysMatch, endingLine, eveLine } from '@/lib/e91/ending-message';
 import { clearDPSLocalStorage } from '@/lib/dps/utils';
 import { restartWithoutEve, sacrificeValidationBits } from '@/lib/bb84/utils';
 import { complete } from '@/lib/protocol-lifecycle/lifecycle';
@@ -1086,11 +1087,22 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 case B_SUCCESS_EVENT:
                     if (gameType === 'e91') {
                         if (usePlayerStore.getState().playerRole === 'A') {
+                            // Bob finished, not necessarily read the right
+                            // message: the same ending as solo and multi Bob
+                            // (lib/e91/ending-message.ts). No popup from a
+                            // socket handler; the line's ⓘ opens it.
+                            const {aliceValidBits, bobValidBits} = useE91RoomStore.getState();
                             useE91ProgressStore.getState().pushLines([
-                                {
-                                    title: 'component.messaging.congratulations',
-                                    content: 'component.messaging.alice.end',
-                                },
+                                endingLine(keysMatch(aliceValidBits, bobValidBits),
+                                    'component.messaging.alice.end'),
+                            ]);
+                        }
+                        // Both roles: the line about Eve, counted by the server
+                        // from its own round — only it knows her angles. Sent
+                        // only when she was there (backend eve_summary, M2d).
+                        if (message['eve_summary']) {
+                            useE91ProgressStore.getState().pushLines([
+                                eveLine(message['eve_summary']),
                             ]);
                         }
                         useE91RoomStore.getState().setGameSuccess(true);

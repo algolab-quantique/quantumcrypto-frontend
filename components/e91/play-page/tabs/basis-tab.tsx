@@ -63,7 +63,6 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
         setBobInvalidBases,
         setTypes,
         setReroll,
-        setEveGuessedRightBits,
     } = useE91RoomStore();
     const {
         validationIndices,
@@ -82,7 +81,6 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
         aliceDiceRoll,
         bobDiceRoll,
         reroll,
-        evePresent,
         conflict
     } = useE91RoomStore();
 
@@ -282,15 +280,6 @@ const BasisTab = ({ photonNumber, playerRole, polarIcons }: { photonNumber: numb
                 pushLines([{ content: 'component.e91.shortKey.restart' }]);
                 setRestartModalOpen(true);
                 return;
-            }
-            if (evePresent) {
-                let guessedRight = 0;
-                aliceBases.forEach((base, index) => {
-                    if (base === '2' && bobBases[index] === '2') {
-                        guessedRight += 1;
-                    }
-                });
-                setEveGuessedRightBits(guessedRight);
             }
             pushLines([
                 {

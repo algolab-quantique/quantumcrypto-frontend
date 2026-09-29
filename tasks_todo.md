@@ -33,6 +33,53 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
 
 ---
 
+## 📍 WHERE WE ARE — 2026-09-28 (Ibra moves to a new machine; contract ends 2026-09-30)
+
+**Code:** both repos pushed and clean on 2026-09-26, nothing since. Frontend `ibra_architecture` = origin;
+backend `ibra_development` = origin. **In `development`:** solo E91 correct end to end (PR #24, merged
+2026-09-25). **Only on the branches, not merged:** multiplayer E91 — M1 (server physics with a real Eve,
+backend) and M2a–d (frontend: own key per player, honest ending + ⓘ popup, Eve's line counted by the server,
+backend + frontend). **Ibra, 2026-09-25: no merge until multi is as good as solo.** Details: the "Multiplayer
+E91" section below (search `M2d`).
+
+**What still keeps multi below solo** (listed 2026-09-26, every item already its own task; Ibra has not
+ordered them yet — Claude's recommendation in brackets): **Task 67** 🔴🔥 every multi E91 game overwrites BB84's
+saved data, frontend, small *(first)* · **short-key restart** Task 28 (solo has it, Task 63), both repos, the
+biggest · **swap roles and restart** — the E91 server has no handler, check first · **Task 70** simultaneous
+*Measure* race without Eve, backend, small · **restart without Eve** keeps the old bits, backend, tiny ·
+**refresh** mid-game, probably fine, check only. Later: Task 27, Task 76.
+
+**📝 Proposed 2026-09-28, NOT yet agreed (recorded so it survives the machine change) — Task 68, the CHSH
+tab, the most useful visible work left for students.** One text key, `component.e91.validation.invalid.start`
+(`lang/e91-lines.ts:98, 212, 323`), is the Step 3 line in **both** solo and multi. What the step really asks,
+read in `solo-CHSH-tab.tsx:258-295`: per row, **equal bits → +1, different bits → −1**, dropped into the box
+named after that row's two bases (a = basis 1, a' = 3, b = 2, b' = 4). The screen says "multiply the outcomes"
+while showing 0/1. Claude's draft (FR, for Ibra to approve): *« Étape 3 : Pour chaque paire, comparez les bits
+d'Alice et de Bob : identiques (0-0 ou 1-1) → +1 ; différents (0-1 ou 1-0) → −1. Glissez cette valeur dans la
+boîte qui porte les deux bases de la ligne (ex. : a et b → a|b). »* Then the "S is noisy" note beside
+Secure/Unsecure (Task 68's first gap, its draft above in Task 68; prefer the measured 34 % / 27 %).
+
+**Merge / deploy analysis (2026-09-29, last day on this machine).** Both repos clean, pushed, no stashes.
+`development` holds nothing the branches lack (only merge commits) → a merge has **no conflicts**: frontend 43
+commits, backend 13. Deploy order if ever: **backend first** (VM: `git pull` → `python
+tools/e91_add_eve_columns.py` → restart, when no class plays), **then frontend** — the new frontend on the
+old backend shows no Eve line in multi, and the old backend still has the fake Eve.
+**✅ DECIDED 2026-09-29 (Ibra): "yes for 2 PRs, yes for deploy, but in a very safe manner — step by step".**
+Order: frontend PR → backend PR → Ibra merges both → Claude checks nothing is left behind → deploy backend
+first, then frontend, each checked before the next.
+
+**🧳 Moving to a new machine — what is NOT in git** (checked 2026-09-28):
+
+| what | where | on the new machine |
+|---|---|---|
+| frontend env | `quantumcrypto-frontend/.env.local` — `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`, `NEXT_PUBLIC_QC_TEST_MODE` | copy it, or recreate the 3 variables |
+| Claude's local settings | `quantumcrypto-frontend/.claude/settings.local.json` | optional (permissions only) |
+| backend database | `quantumcrypto-backend/db.sqlite3` (+ `db.sqlite3.backup-*`) — local test games only | not needed: a fresh `python manage.py migrate --run-syncdb` builds every table **including** the Eve columns; `tools/e91_add_eve_columns.py` is only for an **existing** database (the VM) |
+| backend Python env | `quantumcrypto-backend/venv_quantumcrypto/` (Python 3.11.5) | recreate: `pip install -r requirements.txt` |
+| Claude's memory | `~/.claude/projects/<project path>/memory/` (8 notes) | optional: the rules are all in `CLAUDE.md`. Two notes point at reference repos by path — both on GitHub: `algolab-quantique/CMAI-E91` (Qiskit E91 + CHSH, the physics oracle) and `algolab-quantique/hackathons` (`Sherhack/2026/side_quests/quantum_crypto_BB84_challenge`, Qiskit BB84) |
+
+---
+
 ## 🗺️ ROADMAP TO "QUANTUMCRYPTO IS FINISHED" (added 2026-08-26)
 
 > **What this is:** the single view of everything remaining to complete the app — 3 protocols
@@ -55,6 +102,9 @@ Testing/review → **47, 54** · Cleanup → **41, 42** · Infra → **23**
   i.e. through the admin *"merge without waiting for requirements"* option. The PR lists four manual
   checks to run first (three E91 solo flows, and BB84 with Eve up to the restart, since Task 63 moved
   BB84 code into the shared restart). **Not merged yet.**
+  → **✅ MERGED 2026-09-25 — `459dd59`.** Ibra ran the four checks first: *"tests are OK, merge."*
+  Merged with the admin option (same as #23), a merge commit like #23. Verified after: every commit of
+  `ibra_architecture` is an ancestor of `origin/development` — 0 left behind.
 
 **Calibration (measured, not guessed):** the BB84 arc ran 23 June → 23 July 2026 = **23 distinct
 working days / 123 commits**, of which ~8–10 were one-time architecture design (ADR, adapter
@@ -77,7 +127,7 @@ components: **BB84 15 · E91 22 (1.5×) · DPS 73 (5×)** — DPS is the big one
 | 11 | Manual test matrix — 3 protocols × 2 modes × 2 Eve scenarios = **12 flows**, each with refresh / restore / abandon edges (multi needs 2 browsers) | 6–10 | *see ⚠️ below* | 4, 6 |
 | 12 | Test phases 2–3 (component tests, then Playwright E2E) | 8–12 | **Task 47 P1** ("Remaining: phases 2–3 later") | — *(optional, but see note)* |
 | 13 | 50 dependabot vulnerabilities | 2–3 | **Task 47 P2** | — |
-| 14 | **Design / visual polish** | 5–10 | ⚠️ **NOT TRACKED — needs scoping first** | someone must define "polished" |
+| 14 | **Design / visual polish** | 5–10 | ⚠️ **NOT TRACKED — needs scoping first** (first concrete item: **Task 76**, the disturbed-key popup) | someone must define "polished" |
 
 **Totals (excluding #12, which is optional):**
 
@@ -2323,6 +2373,325 @@ Eve bug, same disease) · **ADR §13.3** (one implementation, sender simulates t
 **The test that must fail first (rule 5):** assert Eve's output is ~50/50 on every basis over a
 large sample. It fails on today's code at bases 1, 2 and 3. Write it in **both** repos.
 
+#### 🔍 MULTIPLAYER, READ END TO END (2026-09-25, read-only) — before planning the backend fix
+
+Ibra lifted the "never touch the backend" rule for this work (he is admin on the backend repo and the
+VM, and deploys it himself). Before planning, both sides of a multiplayer E91 round were read:
+
+1. **Without Eve, multi is essentially correct.** First click → coins; second →
+   `generateEntangledBits` against the first (`e91/consumers.py:337-365`). Its single threshold
+   `sin²(π/8)` plus the (1,4) flip is right for every pair the student *uses* (key pairs, the four
+   CHSH pairs); it is wrong only at Δ = 90° — `(1,3)`, `(2,4)` — which are discarded. So *"multi is
+   wrong"* is precisely **"multi with Eve is wrong"** (and the rare race, Task 70).
+2. **With Eve, each side calls `eveGeneratedBits` on its own** (`:526`): no shared Eve angle, no
+   re-sent pair — basis 2 always `0`, bases 1/3 biased 85/15. **Its signature cannot express the fix**:
+   it takes one side's bases only, so there is nowhere for Eve's pair to come from.
+3. **Iterations are created once, at START, with `eve_present` already decided** (`create_room`,
+   `:231-237`) — the natural moment to draw Eve's intercepted pairs: before anyone measures, as in
+   reality, and with no race.
+4. **🐛 `RESTART_WITHOUT_EVE` (`:307`) does not clear `alice_bits` / `bob_bits`.** After a restart the
+   first side to re-measure takes the "second" branch and is correlated against the **previous
+   round's** bits and bases. Statistically near-harmless today (the new pair's correlation comes from
+   the second side), but wrong in principle, and it is exactly the "who was first?" logic being fixed.
+5. **Multi's Eve counter still encodes the old model** (`basis-tab.tsx:286-293`): it counts key bits
+   where both bases are `'2'` — the basis the old Eve hard-coded. Under correct physics that number
+   means nothing; the honest count (B2) needs Eve's angles on the client.
+6. **Each browser does end with both keys**: measurement returns only one's own bits
+   (`socket-provider.tsx:558-580`), but `A_BITS` / `B_BITS` (`:607-617`) deliver the partner's later.
+   So multi's honest ending (Task 71 step 5) can compare keys **locally**, with no change to what is
+   sent — correcting what was said on 2026-09-24, that it would need a change to the socket's sending.
+7. **Backend context:** no tests exist (`e91/tests.py` is the empty template); migrations are
+   git-ignored and generated on the VM by `update-migrate.sh`; `E91Iteration`'s bit/basis fields are
+   `CharField(max_length=30)`; Docker runs Python 3.12; the backend's working branch is `ibra_development`.
+
+#### 📋 THE MULTIPLAYER PLAN — ✅ AGREED 2026-09-25
+
+**Design: a fresh `e91/protocol.py`, a faithful translation of `lib/e91/protocol.ts`** (Ibra's
+proposal). Not a re-implementation behind the old signatures — that is impossible:
+`eveGeneratedBits(self, bases)` receives one side's bases only, so there is nowhere for Eve's pair to
+come from. **The signature is the bug.** Pure Python, no Django import, so it is testable with plain
+`unittest`; mirrors the TypeScript function for function, so the two read side by side and the day
+option A lands it is simply deleted.
+
+| slice | repo | what | verify |
+|---|---|---|---|
+| **M1a** | backend | `e91/protocol.py` + `e91/test_protocol.py` — the same acceptance numbers as the TS suite (S = 2√2 without Eve, √2 with; key errors 0 % → 25 %; each side 50/50) | tests |
+| **M1b** | backend | wire it: at START, if Eve is present, draw her pairs and store them (new `eve_angles`, `eve_bits`); on MEASURE, with Eve `measure_one_side(Eve's pair)`, without Eve first `measure_one_side`, second `measure_other_side`; delete the two old functions | 2 browsers, dumps by hand |
+| **M1c** | backend | `RESTART_WITHOUT_EVE` clears the previous round's bits and bases | 2 browsers, one restart |
+| **M2a** | frontend | refactor: "compare the keys + the disturbed line" moves to one shared place used by solo and multi; multi `keyBits` → `localPlayerKeyBits` | solo re-test |
+| **M2b** | frontend | multi: each side uses its own key (`messaging-tab.tsx:42`) = Task 71 step 5 | 2 browsers |
+| **M2c** | frontend | multi's honest ending, both roles; `B_SUCCESS` still sent (the round is over) | 2 browsers |
+| **M2d** | both | *optional:* multi's Eve line like Task 72 — needs Eve's angles sent to the clients | if time |
+
+M1 changes no message, so **the backend can be deployed alone**. Calendar: 26th M1a · 27th M1b+M1c ·
+28th M2a–c · 29th two PRs, merges, Ibra deploys both to the VM, test on the VM · 30th buffer / M2d.
+**▶ M1a started 2026-09-25** (Ibra: go). Test file named `test_protocol.py`, not `protocol_test.py`: Python's
+`unittest discover` and Django's `manage.py test` only find files matching `test*.py` — the other name
+would silently never run.
+**✅ M1a DONE — backend `a112af5` on `ibra_development` (2026-09-25).** `e91/protocol.py` (translation of
+`protocol.ts`, name map in its header) + `e91/test_protocol.py` (all 31 tests, same numbers and σ tolerances
+— the backend's first tests; `python3 -m unittest e91.test_protocol`, no Django). **31/31 on Python 3.11
+and 3.13** (VM: 3.12, in between), ~1.7 s, four repeated runs. **Mutation-checked: six planted bugs each
+turned it red** — acute-angle normalisation (9 failures), Eve forwarding an unrelated coin (2), unordered
+CHSH check (2), a biased Eve shaped like the current backend's (1), second side copying without the flip
+(6), sift without its length check (1). Nothing calls it yet: the server behaves exactly as before.
+
+**🔍 M1a re-checked end to end (2026-09-25, Ibra: "reanalyse and check the translation, test the whole
+pipeline in Python as we did in the frontend").** Three checks, scratch scripts only:
+1. **Translation, deterministic half — identical.** The same fixed inputs through both modules (the rule on
+   all 16 angle pairs to 12 decimals, all 16 classifications, sifting, correlations, S, the id↔angle
+   tables, and the full `describe_run` report): **78 of 78 output lines identical**, character for character.
+2. **Whole pipeline, random half — same distributions.** 300 runs × 2 000 pairs per setting in **each**
+   language, Eve on 0 / 50 / 100 %: S, key error and Eve's share agree between TypeScript and Python in
+   all 9 comparisons, **largest gap 1.84σ**; both match theory (S 2.83 / 2.12 / 1.41, errors and Eve's
+   share 0 / 12.5 / 25 %). One `describe_run` each way shown to Ibra: S 2.71 → 1.37, errors 0 → 24.6 %.
+3. **🔍 GAP FOUND, in BOTH suites: nothing tests the functions called the way multiplayer calls them.**
+   Every pipeline test goes through `measure_pair`, where Alice always measures first. Multiplayer: either
+   side may click first, each click measures ALL its photons, and Eve's pairs are drawn at START. Simulated
+   exactly that way (300 games × 2 000, both orders, with and without Eve): **S 2.829 / 2.833 without Eve,
+   1.416 / 1.412 with; key error 0 / 24.9 / 24.8 %; every side 50 %** — correct in both orders. Proposed:
+   make it a permanent test, since M1b calls the module exactly this way.
+   **✅ AGREED 2026-09-25 (Ibra: "yes")** — in BOTH suites, one test commit per repo, so the same tests keep
+   holding both copies: a `multiplayer_game` / `multiplayerGame` helper and 4 tests (with/without Eve ×
+   Alice/Bob first), 10 000 pairs, bounds computed at ≥ 4σ.
+   **✅ DONE** — backend `78f433b` (35/35 on Python 3.13 repeated and 3.11), frontend `7acaa96` (35/35 in the
+   protocol suite, 155 overall, tsc + lint clean). In **both** languages two planted bugs — the second click
+   copying the first, and copying it instead of measuring Eve's pair — each turned the new tests red.
+**Still open:** if M2d is dropped, proposed fallback — show only *"Eve was present"*, without the
+number, rather than the old model's meaningless count.
+
+#### 🔁 M1b RE-PLANNED IN 3 STAGES — ✅ AGREED 2026-09-25
+
+Explaining M1b step by step from the player's side showed it mixed three things — the physics, Eve's
+state, and the restart exceptions. Ibra: *"you see it is harder than it seems — if we start M1b we
+will make a lot of mistakes."* Confirmed plainly while explaining: **the current backend has no Eve at
+all.** `eveGeneratedBits(bases)` takes one student's bases and returns biased dice; it never picks an
+angle, never intercepts, and nothing links Alice's result to Bob's.
+
+**📌 The rule (Ibra): the server's round is the only truth, and it changes only when a message says
+so.** START creates it, with or without Eve (the server's own die roll). MEASURE reads the server's
+**own** round — not the `eve_present` the browser repeats back, which is a copy that can go stale
+(refresh, or a missed restart message). RESTART resets it to fresh, with or without Eve as the restart
+says. No new lifecycle system: each message's handler does its own part.
+
+| stage | what | test |
+|---|---|---|
+| **1** | **normal game WITHOUT Eve.** On MEASURE, first click → `measure_one_side`, second → `measure_other_side`, replacing `generateEntangledBits`. Players should see **no difference** — the point is to prove the server can call `protocol.py` where nothing should change | 2 browsers, no Eve: identical keys, S high |
+| **2** | **normal game WITH Eve.** START: if the die says Eve, the server plays Eve on every photon and stores her re-sent photons in the round (2 new fields). MEASURE: the server asks its own round, and measures each student against Eve's stored photon. Delete `eveGeneratedBits` | 2 browsers, Eve at 100 %: ~25 % key errors, S low |
+| **3** | **the exceptions, one at a time, after 1 and 2 work** — decided then, by the rule | each its own |
+
+**✅ STAGE 1 DONE — backend `79b509a` (2026-09-25).** New pure module `e91/multiplayer.py`
+(`measure_side_without_eve`: stored basis-id and bit strings → `protocol.py`) + 6 tests; `consumers.py`'s
+two no-Eve branches call it; `generateEntangledBits` deleted. **Verified without a hand-played game, with
+Ibra's OK** — players see no change by design and the frontend is untouched: 41/41 unit tests on the
+server's own Python 3.11.5; then **702 real multiplayer games** played by script against Ibra's running
+local server with the browsers' own messages, half Alice-first, half Bob-first — **702/702 identical keys
+(4 617 key bits, 0 errors)**, sides ~50 %, the four Bell terms at ±0.707 with the right signs in both
+orders (S 2.825 / 2.928 over 400 games). An early S of 2.53 with Bob first (2.7σ) did not recur on
+600 more games. The server reloads itself on file changes (confirmed: it restarted 1 s after the edit).
+**The script is kept** as `tools/e91_fake_browsers.mjs` (backend `bc61f6b`): deletes every game it
+creates, refuses non-local hosts unless `E91_TOOL_HOST` is set. Stage 2 will reuse it.
+Renamed from `e91_play_multiplayer.mjs` (backend `ffea553`): the old name sat too close to
+`e91/multiplayer.py`, which is part of the server — the opposite role. **Three files, three roles:**
+`e91/protocol.py` = the physics · `e91/multiplayer.py` = the server's helper that computes a student's
+bits on *Measure* · `tools/e91_fake_browsers.mjs` = imitates the browsers (teacher + 2 students).
+
+**▶ STAGE 2a — ✅ AGREED 2026-09-25: the Eve adapters, alone.** Ibra checked the principle first: *"we said
+all physics is in one file"* — it is. `protocol.py` already holds Eve (`eavesdrop`) and the measurement
+against her photon (`measure_one_side`). `multiplayer.py` gets **no physics** — only translation between
+what the round stores (strings: bases `"1432…"`, bits `"0110…"`) and `protocol.py` calls:
+`draw_eve_photons(photon_number)` → 2 strings (Eve's angles, her bits), and
+`measure_side_with_eve(my_bases, eve_angles, eve_bits)` → a student's bits. Tests: formats, Eve's
+angles even, a student at Eve's angle reads her bit exactly, a whole round in both click orders
+(~25 % key errors, S ≈ 1.41, sides ~50 %), misaligned strings refused. The server does not change.
+**✅ 2a DONE — backend `d65ea09`.** 6 new tests (47 in all), green on the server's Python 3.11.5 and on 3.13,
+repeated; they also pin *where Eve guessed Alice's basis she holds Alice's bit exactly* — the game's
+"Eve guessed K bits". Three planted bugs (Eve stuck on one angle, a player ignoring her photon, a player
+measured at her angle) each turned them red. Server unchanged: fake browsers 10/10 identical keys.
+
+**▶ STAGE 2b — ✅ AGREED 2026-09-25: wire Eve in.** Two new round fields (`eve_angles`, `eve_bits`); START
+fills them with `draw_eve_photons()` when the die says Eve; MEASURE asks the round's **own** `eve_present`
+(Ibra's rule — no longer the browser's copy) and uses `measure_side_with_eve()`; `eveGeneratedBits` and
+`sin`/`pi` deleted; verified with the fake browsers at Eve 100 %. **Ibra: OK to migrate his local
+`db.sqlite3`** (his own test server). **⚠️ Deploy note for the VM:** a round created *before* this
+deploy has "Eve: yes" but no stored photons — **deploy when no class is playing** (the simple option,
+chosen over drawing missing photons lazily, which would reintroduce a race).
+**🔍 Found before migrating (2026-09-25): the local database has NO migration history.** `showmigrations e91`
+→ `(no migrations)`; no `migrations/` folder in any app (they are git-ignored); the tables were built with
+`migrate --run-syncdb` (README step 6). So `makemigrations` + `migrate` would try to CREATE tables that
+already exist, and `--run-syncdb` never adds columns to an existing table. **Same question for the VM,
+unverifiable from here:** if the VM has migration folders from earlier deploys, `update-migrate.sh` adds
+the 2 columns cleanly; if it was built like this laptop, the deploy's `migrate` would fail the same way.
+Ibra to check on the VM: `python manage.py showmigrations e91`.
+**Checked in the backend repo (2026-09-25):** the database is **one SQLite file** (`db.sqlite3`, git-ignored) on
+the laptop and the VM (the backend's incident report counts 230 games, 386 statistics in it); one manual
+backup exists, `/home/ibrahim/db.sqlite3.backup`; **no script** in the repo moves data between VMs (Ibra
+recalls doing it by hand). **⚠️ The VM's documented deploy uses `migrate --run-syncdb`**
+(`install_on_linux_server.md:48,205`, backend `task_todo.md:183`), so the VM was very likely built like the
+laptop — **its deploy would NOT add 2b's columns**, and multiplayer E91 would break there. So adding the
+columns must be solved **for 2b's deploy**, not later. Moving to a new VM, meanwhile, is simpler than it
+was done: with SQLite, all the data is one file to copy.
+
+**📌 FUTURE TASK (Ibra, 2026-09-25 — "track it for the future"):** a real database strategy for the backend
+— migration files kept in git so schema changes deploy by themselves; a documented backup routine; a
+documented move to a new VM (copy the SQLite file). Not part of finishing E91.
+
+**✅ DECIDED 2026-09-25 — how 2b's columns reach both databases:** one small committed script,
+`tools/e91_add_eve_columns.py`, run the same way on the laptop and on the VM: it snapshots `db.sqlite3`
+first, adds `eve_angles` / `eve_bits` **only if missing** (safe to run twice), and keeps every existing
+row. Order: **columns first, then the code** — the dev server reloads on file changes, and code asking
+for missing columns would break it. VM deploy: `git pull` → run the script → restart the service.
+
+**✅ STAGE 2b DONE — backend `eb064cf` (+ tool option `53b9bb1`, columns script `46bd006`), 2026-09-25.**
+Multiplayer has a real Eve: START draws her photons into the round (only one place creates rounds,
+`consumers.py:242`); MEASURE asks the round's own `eve_present`; `eveGeneratedBits` deleted. **Verified:**
+47/47 unit tests; 87 existing local rounds readable; **1 300 real games** with the fake browsers — with Eve
+S ≈ 1.41 and ≈ 25 % key errors, all 8 Bell terms at ±0.354 with the right signs (an S drifting to 1.57 on
+one batch was chance: 400 more gave 1.411); without Eve 300/300 identical keys; **browsers lying about Eve
+in either direction are ignored** (the rule, tested). **Ibra by hand, 2 browsers:** no Eve `00100`=`00100`;
+Eve `0000`≠`0001` and `0100101101`≠`0100101100`; bits balanced (15/30) — the old always-0 on basis 2 is gone.
+**Still frontend (M2), as expected:** the ending congratulates, and the Eve line keeps the old count (key
+bits where both chose basis 2 — meaningful only for the fake Eve). *Side effect noted:* results page and
+REST now also carry Eve's photons (as they already carried both players' bits); the frontend ignores them.
+
+**▶ M2a — ✅ AGREED 2026-09-25 (Ibra: "go").** Pure refactor, no visible change: the decision "compare the
+keys → celebrate, or the disturbed line" moves out of solo's `endRound` into one shared place multi will
+call too (Ibra's *same exact code* rule). The building blocks from solo are reused as they are — the
+popup, the ⓘ, the texts, the shared feed.
+Lives in **`lib/e91/ending-message.ts`** (`keysMatch`, `endingLine`) — first named `round-end.ts`, renamed at
+Ibra's confusion: "round" read as lifecycle (`lib/protocol-lifecycle/round.ts` is the restart). It is only
+"Félicitations" versus "the key was disturbed". **Once M2c wires multi to it, this is the ONE source of
+truth for the ending message, solo and multi, both roles** (Ibra's question). Only the decision and the
+line are shared: opening the popup stays with each screen, since multi Alice's ending arrives in a socket
+handler that has no popup (her line's ⓘ still opens it). The multi rename `keyBits` → `localPlayerKeyBits`
+moves to **after M2b** — the same order as solo, so the name never lies.
+**✅ M2a DONE — `4ba20a0` (2026-09-25).** 160 tests (5 new), tsc + lint clean. **First check played by Claude in its
+built-in browser** (solo, Bob, Eve 100 %, 30 photons; the pair sorting done by reading the stored bases and
+clicking each row, verified row by row before validating; the CHSH step skipped with "Sécuritaire"): keys
+`11111010` / `11111111`, Bob typed `11000000` → popup exactly as before, rows matching storage, positions
+6 and 8 red; feed line + ⓘ; Task 72's line "3 des 8 bits". The keys-equal branch is the same call, pinned
+by the unit tests.
+
+**▶ M2b — ✅ AGREED 2026-09-25:** multi, each student uses their own key (`messaging-tab.tsx:42`) — Task 71
+step 5. The truth becomes computed, not yet shown (M2c). Checked by Claude in its browser first (rule 4).
+**✅ M2b DONE — `3d43deb` (2026-09-25).** 160 tests, tsc + lint clean. **Verified by Ibra's own game** (2 browsers,
+Eve present, 20 photons; Claude's pane was hidden, so Ibra played it and Claude checked the stored numbers):
+keys `1110010` / `1100110` (differ at 3 and 5), cipher `0001101`; Bob's accepted answer `1101011` = **his own
+key ⊕ the cipher** — the old code would have accepted only `1111111` (Alice's message). The 7 key bits match
+both students' stored bits at the 7 key positions. As expected, both screens still said "Félicitations"
+(→ M2c) and "Ève a lu 5 bits" (both chose basis 2 five times — the old count, → M2d).
+**🔍 Side finding (priority: medium, not now):** one `npm test` run showed **1 failed / 159** while gating
+M2b; 30 reruns were all green. M2b touches no tested file. Most likely a statistical test's rare false
+alarm; which test is not known yet. To look at after M2. *Then 150 more runs in a loop: all green — so
+about 1 in 180.*
+
+**▶ M2c — ✅ AGREED 2026-09-25 (Ibra: "ok"):** multi's honest ending, both roles, with the shared
+`endingLine(keysMatch(aliceValidBits, bobValidBits), …)` from M2a. Two commits:
+**0 (refactor)** `messaging-tab.tsx`: `keyBits` → `localPlayerKeyBits`, no behaviour change.
+**1 (behaviour)** Bob, `messaging-tab.tsx` (was the unconditional congratulations): the ending line; toast only
+if the keys match; the popup opens if not. Alice, `socket-provider.tsx` `B_SUCCESS` handler: the same line
+from her store — no auto popup there (a socket handler), her line's ⓘ opens it. `sendBobSuccess` still sent:
+the round is over either way. Nothing new to build: multi's feed is the same `E91Progression` (ⓘ + popup).
+To confirm while testing: Alice's store holds Bob's key (the popup needs it).
+**Test:** Claude first in its browser, 2 origins — one game with Eve (both roles: "key disturbed" + ⓘ), one
+without (both: "Félicitations"); then Ibra checks the look.
+**✅ M2c DONE — `8300273` (rename) + `f280866` (ending), 2026-09-25.** 160 tests, tsc + lint clean. **Verified,
+2 games, 2 browsers, Eve at 100 %, both roles:**
+- *keys differ* (Ibra, by hand): keys `10101` / `01001`, cipher `01010`; both feeds "the key was disturbed"
+  (EN + FR); popup Alice's message `11111` vs Bob's `00011`, positions 1–3 red — all = cipher ⊕ each key; the 5
+  key bits match both students' raw bits; score 15 = 5×5 − 10 (Eve undetected).
+- *keys equal by chance*, 13 % with 7 bits (Claude's browser, localhost + 127.0.0.1): `1010011` both; both
+  feeds "Félicitations", Bob's "Correct !" toast, no popup; Alice's store holds Bob's key.
+Still wrong, as expected: "Ève a lu N bits" = the old count (both chose basis 2) → **M2d or its fallback**.
+**📌 M1 + M2a–c close the multiplayer chapter → a good moment to merge** (frontend + backend PRs), then Ibra's
+VM deploy (`git pull` → `python tools/e91_add_eve_columns.py` → restart, when no class plays).
+**✋ NOT YET — Ibra, 2026-09-25:** *"do not merge yet, since we did not finish multi… when we reach this level as
+solo we can merge."* **The chapter closes when multi is as good as solo**, not at M2c. Pushed (backup) only.
+**🔍 Finding (priority: low, after the deadline):** E91 has **two copies of every play tab** — `solo-*.tsx` and the
+multi one (measurement, basis, CHSH, messaging; ~3 500 lines together), from before this work. The *logic* shared
+so far lives once (`lib/e91/protocol.ts`, `ending-message.ts`, `key-perturbed-dialog.tsx`); what repeats is each
+tab's few lines of wiring (M2c: import, popup state, the if/else, mounting the popup). One tab per step for both
+modes = a big refactor — not before the deadline (*"do not over refactor"*).
+
+**▶ M2d — ✅ AGREED 2026-09-25 (Ibra: "ok agree. nice."): the server counts Eve's line, not the browser.**
+Ibra's idea, better than Claude's (send Eve's angles to the students): the round already stores Eve's angles and
+both students' bases, so the server finds the key positions (same basis) and counts itself. Students never see
+her angles; the server stays the only truth. **No new message:** Bob's `B_SUCCESS` already goes through the
+server to exactly the room's two students (`consumers.py:376`, group `game_{code}_{room}`); the server adds
+`{n, m, k, l}` — Eve measured n photons of m, and holds k of the l key bits for certain (her angle = the key's
+basis). Cost: the count exists in TS (solo, `solo-basis-tab.tsx:265`) and Python — the `protocol.ts` / `.py`
+pattern. **3 slices:** (1) backend: the count in `multiplayer.py` + tests; (2) backend: `B_SUCCESS` carries the
+numbers, checked with the fake browsers; (3) frontend: multi shows solo's line (`component.e91.evePresent.summary`)
+and the old basis-2 count is deleted — Ibra plays, Claude checks. **Deploy: backend first** (an old frontend
+ignores the extra numbers). The fallback ("Eve was present" without a number) is no longer needed.
+**✅ Slice 1 DONE — backend `a5b190a`.** `eve_summary(alice_bases, bob_bases, eve_angles)` → `{n, m, k, l}` in
+`e91/multiplayer.py`, key positions from `protocol.sift_key_bits`; not called yet. 4 tests (51 in all): an exact
+round (with a non-key match that must NOT count), no key, a whole round k/l ≈ ¼ at 4σ (8 runs green), misaligned
+refused. Two planted bugs — counting outside the key, l = every photon — each turned 3 of the 4 red.
+**▶ Slice 2 — ✅ AGREED 2026-09-25 (Ibra: "ok go").** **2a** `consumers.py` `B_SUCCESS`, E91: the server reads the
+round; with Eve it adds `eve_summary: {n, m, k, l}` before relaying. Guard: a round with no stored Eve angles (made
+before the deploy) is relayed without the numbers — `B_SUCCESS` must always go through, or both students are stuck.
+**2b** (tool, own commit) `e91_fake_browsers.mjs`: Bob also sends `B_SUCCESS`; checks both students receive it —
+with Eve: numbers present, n = m = 30, l = the exact key length, k/l ≈ ¼ pooled; without Eve: no numbers.
+**✅ Slice 2 DONE — backend `24b7b1f` (server) + `0a18844` (tool).** The tool first ran against the old server:
+10/10 problems with Eve (no numbers), 0/10 without — as expected. After 2a: **200 games with Eve, 0 problems**
+(both students the same numbers, n = m = 30, l = the exact key length), Eve holds **0.238** of the key pooled;
+S 1.35 / 1.38, 26.5 % key errors (unchanged); **100 without Eve: no numbers, 100/100 identical keys.** The
+promise checked by a one-off script: `B_SUCCESS` with an unknown player name is still relayed to both students,
+without the numbers. Review found the first guard too narrow (old rounds only): a failed room lookup would have
+been swallowed by the outer `except` and blocked `B_SUCCESS` — now the whole count is optional.
+**Seen in a real game (Ibra, round 2452, before slice 3):** the server already sent the numbers, the old frontend
+ignored them and the game ended normally — backend-first deploy is safe. The old line said "3" (all 3 key pairs
+were basis 2); the truth from the database: Eve's angles on the key were 0°, 135°, 135°, the key's 45° → **k = 0 of 3**.
+**▶ Slice 3 — ✅ AGREED 2026-09-25 (Ibra: "ok go", 3a + 3b).** **3a (refactor)** solo's Eve line moves into
+`lib/e91/ending-message.ts` as `eveLine({n, m, k, l})`, solo calls it — no visible change, and solo and multi cannot
+drift. **3b (behaviour, multi)** `socket-provider.tsx` `B_SUCCESS`: if the server sent `eve_summary`, push
+`eveLine(eve_summary)`, both roles, after the ending line; delete the basis-2 count (`basis-tab.tsx:286-294`) and
+the old line (`messaging-tab.tsx:102-108`; `saveScore` stays). Test: Ibra plays one multi game with Eve, Claude
+checks n, m, l and k exactly against the round's stored angles.
+**✅ 3a DONE — `0ed2d72`** (163 tests, 3 new; solo builds the same line object). **3b written, gates green, waiting
+for Ibra's game** (uncommitted): `B_SUCCESS` pushes `eveLine(eve_summary)` for both roles; the basis-2 count and
+the old line deleted (`evePresent` / `setEveGuessedRightBits` no longer read in `basis-tab.tsx`). Intended change:
+the line now shows whenever Eve was there, even at k = 0 (as solo, Task 72) — the old one hid it at 0. It is also
+pushed once, on `B_SUCCESS`, where the old one sat in an effect that runs again on remount.
+**✅ 3b DONE — `7ea2540` (2026-09-26). M2d COMPLETE.** Verified by Ibra's game (2 browsers, Eve, 30 photons, round
+2453): both feeds, EN + FR, *"Eve measured 30 photons out of 30; she guessed 3 of the 8 key bits"*. Checked against
+the database: Alice's basis on the 8 key positions `32323332`, Eve's angles `12342311` → equal at 3 ✓; the key
+errors (positions 1, 7, 8) fall only where Eve's angle was another one ✓; keys, cipher, popup consistent.
+**🧹 Cleanup (priority: low):** the text key `component.e91.evePresent.stats` (3 languages, `lang/e91-lines.ts:81,
+201, 312`) is now used nowhere — delete in its own cleanup commit.
+
+**🔁 UI checks revised (Ibra, 2026-09-25 — "this testing method is bad… it takes a lot of time… eats
+tokens").** Claude played M2c's first game in its built-in browser: ~60 round trips to the model for one
+multi game, where Ibra needs 3 minutes. Now (CLAUDE.md rule 4): **Ibra plays and pastes the feed + stored
+state; Claude checks the numbers in one step**; Claude's browser only for small checks (one screen, one
+popup). A robot playing whole games locally = Playwright, after the deadline (unchanged).
+
+**🧪 How UI checks are done from now on (Ibra, 2026-09-25 — "I feel tired each time I test manually").** Until
+the deadline: the **"Random" button** in the measurement tab's Basis header fills all 30 bases in one
+click (`solo-measurement-tab.tsx:256`, also in multi); and **Claude plays quick solo checks in its built-in
+browser**, sending screenshots and dumps (multi still needs two isolated browsers). **After the deadline:
+Playwright end-to-end tests** — a robot browser playing solo and multi like a student (the roadmap's testing
+phase 3; ~2 days, and a browser download to approve).
+
+**Exception inventory (read 2026-09-25):** (a) **restart without Eve** — the server switches Eve off
+but keeps the old bits → reset to fresh; (b) **short-key restart** (Task 28) — the server may never be
+told → to check; (c) **swap roles and restart** — the frontend sends `SWAP_ROLES_AND_RESTART`
+(`socket-provider.tsx:1446`) and **the E91 server does not handle it at all** (0 matches in
+`e91/consumers.py`) → to check; (d) **refresh / reconnect** — the round lives in the database →
+probably nothing to do, to confirm. The messages that write a round today: `START`, `A_MEASURE`,
+`B_MEASURE`, `RESTART_WITHOUT_EVE`, `EVE_SPOTTED`, `SCORE`, `A_KEY`.
+
+**⚖️ Option A — all physics in the frontend — compared and deferred, not rejected (Ibra asked for the
+comparison).** It is the better **destination**: one copy of the physics. It is not the cheaper road:
+today the browser has neither Eve's pair nor the partner's bits at the moment it measures, so A needs a
+new exchange (2 new events, one reply reshaped) through `socket-provider.tsx`, the riskiest file;
+both repos must deploy in lockstep; the race window widens from one round trip to two; and refresh
+gains a new in-between state. ~3–4 days vs ~2, with more risk, 5 days before the deadline. **B's work
+carries over:** Eve's pairs must be drawn once and stored on the server in A too — only where the
+formula runs changes. **Natural moment for A:** Task 40 Phase 5, when `socket-provider.tsx` is split
+per protocol anyway.
+
 ---
 
 ### 61. 🐛 The leave-game dialog is hardcoded French — in BB84 **and** E91
@@ -3770,6 +4139,25 @@ honest and `localize` can take the number in its own span; (b) placement — und
 beside the Secure/Unsecure buttons. **Recommend beside the buttons**: that is the moment the student
 needs it. All three languages, **both** CHSH tabs.
 
+**⚠️ Check the number before it goes on screen (noticed 2026-09-25).** The draft quotes *"S ≈ ±1.4"*
+at 20 photons, but a quick recomputation (~2.2 pairs per term, variance `(1 − E²)/n` with `E² = ½`)
+gives nearer **±1.0**; ±1.4 matches the worst case `E = 0`. The *measured* rates above (34 % false
+alarm, 27 % false negative, 20 000 games) are solid and are what a student can use — prefer them in
+the text, and re-derive any ± with `runE91Protocol` before quoting it.
+
+**🔍 SECOND GAP, same tab — found by Ibra 2026-09-25: the student cannot tell what to DO.** Playing
+Alice in solo, at *"Step 3: Drag the correct value (+1 or −1) to the appropriate container for each
+photon pair. Reminder: multiply Alice's and Bob's measurement outcomes…"*, with a table of pairs (bases
+`a a' b b'`, photons 0/1, `+1` / `−1` chips) and four containers `a|b`, `a'|b`, `a|b'`, `a'|b'` —
+Ibra: *"even I know E91 and all the steps, and here I really don't know what to do. How do I choose
++1 or −1? Then drag it to the same combination?"* If the protocol's own author is lost, a first-time
+student is. Unclear at least: (1) how photon values `0/1` map to the `±1` outcomes the multiplication
+needs (the hint says "multiply" but the table shows 0 and 1); (2) which chip to pick and where it goes
+— presumably the container matching that row's base pair; (3) what the four `E(·,·)` and `S` boxes
+below will do with it. **Not diagnosed, not scheduled — "not for now" (Ibra).** It belongs with
+Task 68's pedagogy work; worth deciding together whether one text fix covers both gaps or the drag
+step itself needs redesign. **Priority: important for teaching, after the deadline.**
+
 ---
 
 ### 67. 🔴🔥 E91 multiplayer writes into BB84's storage during NORMAL play — five unguarded handlers
@@ -3824,6 +4212,28 @@ and (3) is months away. It also makes (2)/(3) safer by pinning the expected beha
 
 **⚠️ Verification note:** any future "did protocol X leave protocol Y alone?" test must be run
 against this task, not against 5a. 5a fixed the restart path only.
+
+---
+
+### 76. 🎨 The disturbed-key popup works, but does not look good yet
+
+**Status**: 🎨 FINDING, **not a priority** (Ibra, 2026-09-25: *"all this is not a priority at all, just
+visually it doesn't feel good — and colleagues judge the UI more than the core and the refactor"*).
+**Found**: Ibra, testing PR #24 before the merge. **Frontend-only.** First concrete item under the
+roadmap's untracked row 14, *Design / visual polish*.
+
+The popup from Task 71 step 3c (`components/e91/play-page/key-perturbed-dialog.tsx`):
+
+1. **The differing bits are red.** Ibra would use the colour of the bold titles in the feed —
+   `text-highlight`, a golden yellow (`--highlight: 45 93% 50%`, `app/globals.css:40`) — so the popup
+   speaks the game's own visual language. (Red was chosen to mean "wrong"; worth deciding together.)
+2. **The sentence is hard to read — small and grey.** Cause, checked: it is a `DialogDescription`,
+   whose default style is `text-sm text-muted-foreground` (`components/ui/dialog.tsx:106`), i.e.
+   deliberately de-emphasised. Only the title and the four row labels read clearly.
+3. **The four rows could be separated better** — e.g. a line between the messages and the keys (today
+   only a padding gap).
+
+Small, cosmetic, local to one file; a good first slice whenever visual polish is scheduled.
 
 ---
 
