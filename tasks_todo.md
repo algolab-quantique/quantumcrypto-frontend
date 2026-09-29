@@ -114,6 +114,14 @@ first, then frontend, each checked before the next.
   multiplayer.py, real Eve, `eve_summary`), the 2 columns, the tools, the corrected install guide. 15 commits, no
   conflicts, no CI in that repo; admin merge at Ibra's request. Verified after: 0 commits missing, branch and
   `development` identical. The PR description carries our VM's one-time deploy steps. **Not deployed yet.**
+- **Backend ✅ DEPLOYED on the VM 2026-09-29 12:30 EDT** (Ibra ran each step, Claude checked each output): no play
+  since Sep 17 · backup `~/db.sqlite3.before-e91-20260929-1221` (307 200 B = the DB) · rollback commit `c649595` ·
+  everything owned by and run as `quantumcrypto` (`bb84.service`), so every command ran with `sudo -u
+  quantumcrypto` · pull fast-forward `c649595..0f1e52e`, 13 files · columns script: own backup
+  `db.sqlite3.backup-20260929-122943`, **rows 4 → 4**, `eve_angles, eve_bits` added · ASGI load check `OK` ·
+  **51/51 tests on the VM's Python 3.12.3** · restart: `active (running)`, clean log. Rollback if ever:
+  `sudo -u quantumcrypto git -C /home/quantumcrypto checkout c649595` + `sudo systemctl restart bb84`.
+  Still to do: one multiplayer game with Eve on the VM; then the frontend deploy.
 - **Before the backend PR (2026-09-29):** the VM checked by Ibra — branch `development`, Python 3.12.3 (the new
   code needs ≥ 3.10). Backend `c3c5dac` fixed `install_on_linux_server.md` §12, which would have broken the VM:
   it said `git pull origin main` (no such branch) and relied on `--run-syncdb`, which never adds columns. Now:
