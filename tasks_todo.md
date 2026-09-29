@@ -64,6 +64,9 @@ Secure/Unsecure (Task 68's first gap, its draft above in Task 68; prefer the mea
 commits, backend 13. Deploy order if ever: **backend first** (VM: `git pull` → `python
 tools/e91_add_eve_columns.py` → restart, when no class plays), **then frontend** — the new frontend on the
 old backend shows no Eve line in multi, and the old backend still has the fake Eve.
+**✅ DECIDED 2026-09-29 (Ibra): "yes for 2 PRs, yes for deploy, but in a very safe manner — step by step".**
+Order: frontend PR → backend PR → Ibra merges both → Claude checks nothing is left behind → deploy backend
+first, then frontend, each checked before the next.
 
 **🧳 Moving to a new machine — what is NOT in git** (checked 2026-09-28):
 
